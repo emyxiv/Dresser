@@ -1,0 +1,15 @@
+{
+    "Author": "Emyka",
+    "Name": "FabulousDresser",
+    "Punchline": "Open with /dresser.",
+    "Description": "Improve Glamour Dresser.",
+    "InternalName": "fabulousDresser",
+    "ApplicableVersion": "any",
+    "Tags": [
+        "glamour",
+        "dresser",
+        "organize",
+        "search",
+        "items"
+    ]
+}
