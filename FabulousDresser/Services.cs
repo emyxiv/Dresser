@@ -14,6 +14,14 @@ namespace FabulousDresser {
 		[PluginService] internal static DalamudPluginInterface PluginInterface { get; private set; } = null!;
 		[PluginService] internal static CommandManager CommandManager { get; private set; } = null!;
 		[PluginService] internal static ClientState ClientState { get; private set; } = null!;
+		[PluginService] internal static DataManager DataManager { get; private set; } = null!;
+		[PluginService] internal static ObjectTable ObjectTable { get; private set; } = null!;
+		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
+		[PluginService] internal static Framework Framework { get; private set; } = null!;
+		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
+		[PluginService] internal static GameGui GameGui { get; private set; } = null!;
+
+		internal static Interop.Hooks.AddonManager AddonManager = null!;
 
 
 		public static void Init(DalamudPluginInterface dalamud) {

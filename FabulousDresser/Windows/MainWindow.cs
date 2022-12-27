@@ -3,6 +3,8 @@ using System.Numerics;
 
 using Dalamud.Interface.Windowing;
 
+using FabulousDresser.Structs.FFXIV;
+
 using ImGuiNET;
 
 using ImGuiScene;
@@ -10,36 +12,26 @@ using ImGuiScene;
 namespace FabulousDresser.Windows;
 
 public class MainWindow : Window, IDisposable {
-	private TextureWrap GoatImage;
 	private Plugin Plugin;
 
 	public MainWindow(Plugin plugin, TextureWrap goatImage) : base(
-		"Fabulous Dresser", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse) {
+		"Fabulous Dresser", ImGuiWindowFlags.None) {
 		this.SizeConstraints = new WindowSizeConstraints {
-			MinimumSize = new Vector2(375, 330),
+			MinimumSize = new Vector2(ImGui.GetFontSize() * 4),
 			MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 		};
 
-		this.GoatImage = goatImage;
 		this.Plugin = plugin;
 	}
 
 	public void Dispose() {
-		this.GoatImage.Dispose();
+
 	}
 
 	public override void Draw() {
-		ImGui.Text($"The random config bool is {this.Plugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
+		ImGui.Text("start");
+		Components.Plates.Draw();
+		ImGui.Text("end");
 
-		if (ImGui.Button("Show Settings")) {
-			this.Plugin.DrawConfigUI();
-		}
-
-		ImGui.Spacing();
-
-		ImGui.Text("Have a goat:");
-		ImGui.Indent(55);
-		ImGui.Image(this.GoatImage.ImGuiHandle, new Vector2(this.GoatImage.Width, this.GoatImage.Height));
-		ImGui.Unindent(55);
 	}
 }

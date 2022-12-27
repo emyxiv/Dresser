@@ -23,6 +23,8 @@ namespace FabulousDresser {
 			this.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 			this.Configuration.Initialize(pluginInterface);
 
+			Interop.Hooks.Addons.Init();
+
 			// you might normally want to embed resources and load them from the manifest stream
 			var imagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
 			var goatImage = pluginInterface.UiBuilder.LoadImage(imagePath);
@@ -41,6 +43,8 @@ namespace FabulousDresser {
 		public void Dispose() {
 			this.WindowSystem.RemoveAllWindows();
 			Services.CommandManager.RemoveHandler(CommandName);
+
+			Interop.Hooks.Addons.Dispose();
 		}
 
 		private void OnCommand(string command, string args) {
