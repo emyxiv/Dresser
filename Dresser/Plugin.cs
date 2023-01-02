@@ -38,7 +38,7 @@ namespace Dresser {
 
 			Storage.Init();
 			Gathering.Init();
-			Interop.Hooks.Addons.Init();
+			Interop.Hooks.AddonListeners.Init();
 
 
 
@@ -75,7 +75,7 @@ namespace Dresser {
 			EventManager.GearSelectionClose -= CloseDresser;
 
 
-			Interop.Hooks.Addons.Dispose();
+			Interop.Hooks.AddonListeners.Dispose();
 			Storage.Dispose();
 			PluginServices.Dispose();
 		}

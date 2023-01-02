@@ -1,20 +1,13 @@
-﻿using Dalamud.Data;
-using Dalamud.Plugin;
-using ImGuiScene;
-using Dalamud.Plugin;
-using Dalamud.Utility;
-
-using Lumina.Data.Files;
-using Lumina.Excel.GeneratedSheets;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using ImGuiScene;
+
+using Dalamud.Utility;
+using Lumina.Data.Files;
+
 using CriticalCommonLib.Sheets;
 using CriticalCommonLib.Models;
-using Dresser.Data.Excel;
 
 namespace Dresser.Data {
 	public class IconStorage : IDisposable {

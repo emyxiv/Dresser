@@ -11,7 +11,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace Dresser.Interop.Hooks {
-	public class Addons {
+	public class AddonListeners {
 		public static void Init() {
 			PluginServices.AddonManager = new AddonManager();
 			PluginServices.ClientState.Login += OnLogin;

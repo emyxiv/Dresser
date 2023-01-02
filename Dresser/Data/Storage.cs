@@ -1,20 +1,14 @@
-﻿using CriticalCommonLib.MarketBoard;
-using CriticalCommonLib.Sheets;
-
-using Dresser.Data.Excel;
-using Dresser.Structs.FFXIV;
+﻿using System.Collections.Generic;
 
 using ImGuiScene;
 
 using Lumina.Data.Files;
 using Lumina.Excel;
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CriticalCommonLib.Sheets;
+
+using Dresser.Data.Excel;
+using Dresser.Structs.FFXIV;
 
 namespace Dresser.Data {
 	internal class Storage {
