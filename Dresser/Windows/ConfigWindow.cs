@@ -5,13 +5,13 @@ using Dalamud.Interface.Windowing;
 
 using ImGuiNET;
 
-namespace FabulousDresser.Windows;
+namespace Dresser.Windows;
 
 public class ConfigWindow : Window, IDisposable {
 	private Configuration Configuration;
 
 	public ConfigWindow(Plugin plugin) : base(
-		"Fabulous Dresser Settings",
+		"Dresser Settings",
 		ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
 		ImGuiWindowFlags.NoScrollWithMouse) {
 		this.Size = new Vector2(232, 75);

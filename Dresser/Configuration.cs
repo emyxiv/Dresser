@@ -3,7 +3,7 @@ using Dalamud.Plugin;
 
 using System;
 
-namespace FabulousDresser {
+namespace Dresser {
 	[Serializable]
 	public class Configuration : IPluginConfiguration {
 		public int Version { get; set; } = 0;

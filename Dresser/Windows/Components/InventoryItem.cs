@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FabulousDresser {
-	internal class EventManager {
+namespace Dresser.Windows.Components {
+	internal class InventoryItem {
+		public static void DrawIcon() {
 
+		}
 	}
 }

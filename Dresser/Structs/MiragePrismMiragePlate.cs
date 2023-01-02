@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+
+using Dresser.Data;
 
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -7,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 
-namespace FabulousDresser.Structs.FFXIV {
+namespace Dresser.Structs.FFXIV {
 
 	// Game structs
 	[Agent(AgentId.MiragePrismMiragePlate)]
@@ -24,7 +27,7 @@ namespace FabulousDresser.Structs.FFXIV {
 		// this getter exists because we cannot specify a sized array in the variable
 		public MiragePage[] Pages {
 			get {
-				var totalPages = Windows.Components.Plates.PlateNumber + 1; // the currently viewing/editing page is added at the end of the array
+				var totalPages = Storage.PlateNumber + 1; // the currently viewing/editing page is added at the end of the array
 				MiragePage[] pages = new MiragePage[totalPages];
 
 				if (!AgentInterface.IsAgentActive()) return pages;
@@ -57,6 +60,14 @@ namespace FabulousDresser.Structs.FFXIV {
 		[FieldOffset(0x2C * 09)] public MirageItem Bracelet;
 		[FieldOffset(0x2C * 10)] public MirageItem RingRight;
 		[FieldOffset(0x2C * 11)] public MirageItem RingLeft;
+
+		public Dictionary<GlamourPlateSlot, MirageItem> ToDictionary() {
+			Dictionary<GlamourPlateSlot, MirageItem> dic = new();
+			var fields = typeof(MiragePage).GetFields();
+			for (int slot = 0; slot < fields.Length; slot++)
+				dic.Add((GlamourPlateSlot)slot, (MirageItem)fields[slot].GetValue(this)!);
+			return dic;
+		}
 	}
 
 	// Thanks to Anna's Glamaholic code
