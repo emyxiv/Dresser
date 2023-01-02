@@ -9,6 +9,7 @@ using CriticalCommonLib.Sheets;
 
 using Dresser.Data.Excel;
 using Dresser.Structs.FFXIV;
+using CriticalCommonLib.Models;
 
 namespace Dresser.Data {
 	internal class Storage {
@@ -19,7 +20,7 @@ namespace Dresser.Data {
 
 		public const int PlateNumber = 20;
 		public static Dictionary<GlamourPlateSlot, MirageItem> SlotMirageItems = new();
-		public static Dictionary<GlamourPlateSlot, ItemEx> SlotItemsEx = new();
+		public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
 		public static MiragePage[]? Pages = null;
 		public static MiragePage? DisplayPage = null;
 

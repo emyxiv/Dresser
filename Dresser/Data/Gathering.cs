@@ -1,14 +1,13 @@
 ﻿using CriticalCommonLib;
+using CriticalCommonLib.Enums;
+using CriticalCommonLib.Models;
+using CriticalCommonLib.Sheets;
 
 using Dalamud.Logging;
 
 using Dresser.Structs.FFXIV;
 using Dresser.Windows.Components;
 
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 using ImGuiNET;
 
@@ -19,6 +18,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using static System.Reflection.Metadata.BlobBuilder;
+
 
 namespace Dresser.Data {
 
@@ -34,7 +34,10 @@ namespace Dresser.Data {
 			Storage.DisplayPage = Storage.Pages?.Last();
 			if (Storage.DisplayPage == null) return;
 			Storage.SlotMirageItems = Storage.DisplayPage.Value.ToDictionary();
-			Storage.SlotItemsEx = Storage.SlotMirageItems.ToDictionary(p => p.Key, p => Service.ExcelCache.GetItemExSheet().FirstOrDefault(i => i.RowId == p.Value.ItemId))!;
+			Storage.SlotInventoryItems = Storage.SlotMirageItems.ToDictionary(p => p.Key, p => 
+				new InventoryItem(InventoryType.GlamourChest, (short)p.Key, p.Value.ItemId, 1, 0, 0,
+					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, p.Value.DyeId, 0)
+			)!;
 		}
 		private unsafe static MiragePage[]? GetDataFromDresser() {
 			var agent = MiragePrismMiragePlate.MiragePlateAgent();

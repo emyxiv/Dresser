@@ -54,12 +54,12 @@ namespace Dresser.Windows.Components {
 		//public static bool DrawIcon(TextureWrap image, Dye? dye, InventoryItem item, bool isDyeable)
 		//	=> DrawIcon(image, dye, isDyeable, item, out bool _);
 
-		public static void DrawIcon(InventoryItem item) {
+		public static void DrawIcon(InventoryItem? item) {
 			bool _ = false;
 			bool __ = false;
 			DrawIcon(item, ref _, ref __);
 		}
-		public static bool DrawIcon(InventoryItem item, ref bool isHovered, ref bool isTooltipActive) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive) {
 
 			if (LocalPlayer == null) Init();
 			if (LocalPlayer == null
@@ -70,9 +70,9 @@ namespace Dresser.Windows.Components {
 
 
 			// item variables
-			var dye = Storage.Dyes!.FirstOrDefault(d => d.RowId == item.Stain);
+			var dye = Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = PluginServices.IconStorage.Get(item);
-			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item.Item.ClassJobCategory.Row, LocalPlayerClass.RowId);
+			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)LocalPlayerRace, (CharacterSex)LocalPlayerGender);
 			var isDyeable = item.Item.IsDyeable;
 
@@ -80,6 +80,7 @@ namespace Dresser.Windows.Components {
 			var clicked = DrawImage(image, dye, isDyeable, ref isHovered);
 
 			var isTooltipActive2 = isTooltipActive;
+			if(item != null && item.ItemId != 0)
 			GuiHelpers.Tooltip(() => {
 				if (isTooltipActive2) return;
 				isTooltipActive2 = true;
@@ -138,25 +139,28 @@ namespace Dresser.Windows.Components {
 			bool _ = false;
 			return DrawImage( image,dye, isDyeable, ref _);
 		}
-		private static bool DrawImage(TextureWrap image, Dye? dye, bool isDyeable, ref bool hovering) {
+		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering) {
 			ImGui.BeginGroup();
 
 			bool wasHovered = hovering;
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
 
-			ImGui.Image(image.ImGuiHandle, IconSize);
+			if (image != null) {
+				ImGui.Image(image.ImGuiHandle, IconSize);
+			} else {
+				// TODO: find a way to get a part of textures for:
+				// Empty item
+				// ring: 28 // bracer: 27 // necklace: 26 // earring: 25 // feet: 24 // legs: 23 // hands: 21 // body: 20 // head: 19 // head: 19 // main weapon: 17 // off weapon: 18
+				//if(DataStorage.EmptyEquipTexture != null)
+				//	ImGui.Image(DataStorage.EmptyEquipTexture.ImGuiHandle,new Vector2(DataStorage.EmptyEquipTexture.Width, DataStorage.EmptyEquipTexture.Height) * IconSize);
+			}
 			var clicked = ImGui.IsItemClicked();
 			hovering = ImGui.IsItemHovered();
 
 			// TODO: find a way to get a part of textures for:
-
-			// Empty item
-			// ring: 28 // bracer: 27 // necklace: 26 // earring: 25 // feet: 24 // legs: 23 // hands: 21 // body: 20 // head: 19 // head: 19 // main weapon: 17 // off weapon: 18
-			//if(DataStorage.EmptyEquipTexture != null)
-			//	ImGui.Image(DataStorage.EmptyEquipTexture.ImGuiHandle,new Vector2(DataStorage.EmptyEquipTexture.Width, DataStorage.EmptyEquipTexture.Height) * IconSize);
-
 			// Embed-like slot visual
 
+			// TODO: find a way to get a part of textures for:
 			// Hover visual
 			// (wasHovered)
 
