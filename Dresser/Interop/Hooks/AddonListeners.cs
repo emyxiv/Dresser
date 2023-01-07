@@ -57,6 +57,9 @@ namespace Dresser.Interop.Hooks {
 				)) {
 				DelayParseGlamPlates();
 			}
+			if (e.SenderID == 0 && e.EventArgs->Int == -2)
+				EventManager.GearSelectionClose?.Invoke();
+
 		}
 		private unsafe static void OnMiragePrismPrismBoxReceiveEvent(object? sender, ReceiveEventArgs e) {
 			//e.PrintData();
@@ -68,6 +71,11 @@ namespace Dresser.Interop.Hooks {
 				)) {
 				DelayParseGlamPlates();
 			}
+			if (e.SenderID == 0 && e.EventArgs->Int == 5)
+				EventManager.GearSelectionOpen?.Invoke();
+
+			if (e.SenderID == 0 && e.EventArgs->Int == -2)
+				EventManager.GearSelectionClose?.Invoke();
 		}
 		public static void DelayParseGlamPlates()
 			=> Task.Run(async delegate {

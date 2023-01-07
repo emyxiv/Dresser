@@ -1,23 +1,12 @@
-using System.IO;
-
-using CriticalCommonLib.Crafting;
-using CriticalCommonLib;
-using CriticalCommonLib.Services;
 
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 
 using Dresser.Data;
 using Dresser.Windows;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Dresser.Interop.Hooks;
-using static Dresser.EventManager;
-using Dalamud.Logging;
-using CriticalCommonLib.Services.Ui;
 
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
@@ -55,17 +44,15 @@ namespace Dresser {
 			pluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
 
-			PluginServices.GameUi.UiVisibilityChanged += UiVisibilityChanged;
-
 			EventManager.GearSelectionOpen += OpenDresser;
 			EventManager.GearSelectionClose += CloseDresser;
 
-			if (MiragePrismPrismBoxAddon.IsVisible())
-				UiVisibilityChanged(WindowName.MiragePrismPrismBox, true);
+			if (GlamourPlates.IsGlaming())
+				EventManager.GearSelectionOpen?.Invoke();
 		}
 
 		public void Dispose() {
-			UiVisibilityChanged(WindowName.MiragePrismPrismBox, false);
+			EventManager.GearSelectionClose?.Invoke();
 
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);
@@ -109,14 +96,5 @@ namespace Dresser {
 		}
 		public bool IsDresserVisible()
 			=> WindowSystem.GetWindow("Current Gear")!.IsOpen;
-		private void UiVisibilityChanged(WindowName windowName, bool? windowState) {
-			if(windowName == WindowName.MiragePrismPrismBox) {
-				//PluginLog.Debug($"MiragePrismPrismBox change = {windowState}");
-				if((bool)windowState!)
-					EventManager.GearSelectionOpen?.Invoke();
-				else
-					EventManager.GearSelectionClose?.Invoke();
-			}
-		}
 	}
 }
