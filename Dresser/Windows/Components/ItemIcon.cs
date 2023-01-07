@@ -130,6 +130,22 @@ namespace Dresser.Windows.Components {
 				// Acquisition
 				ImGui.Separator();
 
+				// Other info
+				var sameModelItems = Service.ExcelCache.AllItems.Where(i =>
+					(i.Value.ModelMain == item.Item.ModelMain
+					//|| (i.Value.ModelSub == item.Item.ModelSub && i.Value.ModelSub != 0)
+					//|| (i.Value.ModelMain == item.Item.ModelSub && i.Value.ModelSub != 0)
+					//|| (i.Value.ModelSub == item.Item.ModelMain && i.Value.ModelSub != 0)
+					) && i.Value.RowId != item.Item.RowId
+					&& i.Value.EquipSlotCategory.Value == item.Item.EquipSlotCategory.Value
+				).Select(i => i.Value);
+
+				if (sameModelItems != null && sameModelItems.Any()) {
+					ImGui.Text($"Same model [{item.Item.ModelMain} - {item.Item.ModelSub}]:");
+
+					foreach (var sameModelItem in sameModelItems.OrderBy(i => i.LevelEquip))
+						ImGui.TextColored(Storage.RarityColor(sameModelItem), sameModelItem.NameString);
+				}
 				ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
 				// TODO: market price
 
