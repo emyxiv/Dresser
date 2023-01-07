@@ -108,9 +108,9 @@ namespace Dresser.Interop.Hooks {
 		private delegate void* AgentReceiveEvent(AgentInterface* agent, void* rawData, AtkValue* eventArgs, uint eventArgsCount, ulong sender);
 		private readonly Hook<AgentReceiveEvent>? receiveEventHook;
 
+		internal unsafe static AgentInterface* AgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
 		public MiragePrismMiragePlateAddon() {
-			var MiragePrismMiragePlateAgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
-			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(MiragePrismMiragePlateAgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
+			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(AgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
 
 			receiveEventHook?.Enable();
 		}
@@ -142,9 +142,10 @@ namespace Dresser.Interop.Hooks {
 		//private readonly Hook<AgentShow>? showEventHook;
 		//private readonly Hook<AgentHide>? hideEventHook;
 
+		internal unsafe static AgentInterface* AgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
+
 		public MiragePrismPrismBoxAddon() {
-			var MiragePrismPrismBoxAgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
-			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(MiragePrismPrismBoxAgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
+			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(AgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
 			//showEventHook ??= Hook<AgentShow>.FromAddress(new IntPtr(MiragePrismPrismBoxAgentInterface->VTable->Show), OnShowEvent);
 			//hideEventHook ??= Hook<AgentHide>.FromAddress(new IntPtr(MiragePrismPrismBoxAgentInterface->VTable->Hide), OnHideEvent);
 
