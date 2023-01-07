@@ -38,6 +38,7 @@ namespace Dresser {
 
 
 		internal static Interop.Hooks.AddonManager AddonManager = null!;
+		internal static Interop.Hooks.GlamourPlates GlamourPlates = null!;
 
 
 		public static void Init(DalamudPluginInterface dalamud) {
@@ -62,7 +63,7 @@ namespace Dresser {
 			//InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface);
 			InventoryMonitor = new InventoryMonitor(OdrScanner, CharacterMonitor, GameUi, CraftMonitor);
 
-
+			GlamourPlates = new();
 
 			//PluginLoaded = true;
 			//OnPluginLoaded?.Invoke();
