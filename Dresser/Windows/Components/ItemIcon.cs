@@ -87,11 +87,17 @@ namespace Dresser.Windows.Components {
 
 				DrawImage(image, dye, isDyeable);
 
+				var rarityColor = Storage.RarityColor(item.Item);
+
 				// Side of the icon
 				ImGui.SameLine();
 				ImGui.BeginGroup();
-				ImGui.TextColored(ColorGrey, $"{item.FormattedName}");
-				ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType})");
+				ImGui.TextColored(rarityColor, $"{item.FormattedName}");
+				ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
+				ImGui.SameLine();
+				ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
+				ImGui.SameLine();
+				ImGui.TextColored(ColorGreyDark, $"]");
 				if (isDyeable) ImGui.TextColored(dye?.RowId != 0 ? ColorGoodLight : ColorGrey, $"{dye?.Name}");
 
 				ImGui.EndGroup();
