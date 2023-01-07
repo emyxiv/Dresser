@@ -10,6 +10,8 @@ using Dalamud.Logging;
 using CriticalCommonLib.Models;
 
 using Dresser.Windows.Components;
+using Dresser.Interop.Hooks;
+using Dresser.Data;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IDisposable {
@@ -58,7 +60,12 @@ namespace Dresser.Windows {
 					HoveredItem = null;
 
 				if (iconClicked) {
-					PluginLog.Debug($"clicked item {item.ItemId}");
+					if (GlamourPlates.IsGlaming()) {
+						PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
+						PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item);
+						Gathering.ParseGlamourPlates();
+						// TODO: preview glam on player
+					}
 				}
 
 
