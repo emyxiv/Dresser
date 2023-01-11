@@ -1,20 +1,18 @@
 using Dalamud.IoC;
 using Dalamud.Data;
 using Dalamud.Plugin;
+using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Game.ClientState;
-
-using CriticalCommonLib.Crafting;
-using CriticalCommonLib.Services.Ui;
-using CriticalCommonLib;
-using CriticalCommonLib.MarketBoard;
-using MarketCache = CriticalCommonLib.MarketBoard.Cache;
-using CriticalCommonLib.Services;
-using Dalamud.Logging;
-using Dalamud.Game.Gui;
-using Dalamud.Interface.ImGuiFileDialog;
-using Dresser.Data;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects;
+
+using CriticalCommonLib;
+using CriticalCommonLib.Crafting;
+using CriticalCommonLib.Services;
+using CriticalCommonLib.Services.Ui;
+
+using Dresser.Data;
 
 namespace Dresser {
 	internal class PluginServices {
@@ -23,6 +21,7 @@ namespace Dresser {
 		[PluginService] internal static ClientState ClientState { get; private set; } = null!;
 		[PluginService] internal static DataManager DataManager { get; private set; } = null!;
 		[PluginService] internal static TargetManager TargetManager { get; private set; } = null!;
+		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
 
 
 		public static OdrScanner OdrScanner { get; private set; } = null!;

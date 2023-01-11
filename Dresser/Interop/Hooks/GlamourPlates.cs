@@ -1,15 +1,20 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
+
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
+
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
 
+using Dresser.Data;
+using Dresser.Extensions;
 using Dresser.Structs.FFXIV;
 
 namespace Dresser.Interop.Hooks {
@@ -64,6 +69,18 @@ namespace Dresser.Interop.Hooks {
 				itemId,
 				stainId);
 		}
+		internal void ModifyGlamourPlateSlot(InventoryItem item, Action<InventoryItem>? doAfter = null) {
+			ModifyGlamourPlateSlot(item);
+			if (!Gathering.IsApplied(item))
+				Task.Run(async delegate {
+					await Task.Delay(100);
+					ModifyGlamourPlateSlot(item);
+					if (!Gathering.IsApplied(item))
+						PluginLog.Warning($"Unable to apply item after a retry {item.ItemId}");
+					else
+						doAfter?.Invoke(item);
+				});
+		}
 		internal unsafe void ModifyGlamourPlateSlot(GlamourPlateSlot slot, byte stainId, IntPtr numbers, int stainItemId) {
 			this._modifyGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, slot, stainId, numbers, stainItemId);
 		}
@@ -99,12 +116,11 @@ namespace Dresser.Interop.Hooks {
 			
 
 			// Get slot from item
-			var equipSlot = item.Item.EquipSlotCategoryEx;
-			if (equipSlot == null) return;
-			var slot = FromEquipSlotCategory(equipSlot);
+			var slot = item.Item.GlamourPlateSlot();
+			if (slot == null) return;
 
 			// change slot to the item's
-			*slotPtr = slot;
+			*slotPtr = (GlamourPlateSlot)slot;
 
 
 			SetGlamourPlateSlot((MirageSource)source, item.GlamourIndex, item.ItemId, item.Stain);
@@ -112,21 +128,7 @@ namespace Dresser.Interop.Hooks {
 			// restore initial slot, since changing this does not update the ui
 			*slotPtr = initialSlot;
 		}
-		public static GlamourPlateSlot FromEquipSlotCategory(EquipSlotCategory slot) {
-			if (slot.MainHand == 1) return GlamourPlateSlot.MainHand;
-			if (slot.OffHand == 1) return GlamourPlateSlot.OffHand;
-			if (slot.Head == 1) return GlamourPlateSlot.Head;
-			if (slot.Body == 1) return GlamourPlateSlot.Body;
-			if (slot.Gloves == 1) return GlamourPlateSlot.Hands;
-			if (slot.Legs == 1) return GlamourPlateSlot.Legs;
-			if (slot.Feet == 1) return GlamourPlateSlot.Feet;
-			if (slot.Ears == 1) return GlamourPlateSlot.Ears;
-			if (slot.Neck == 1) return GlamourPlateSlot.Neck;
-			if (slot.Wrists == 1) return GlamourPlateSlot.Wrists;
-			if (slot.FingerR == 1) return GlamourPlateSlot.RightRing;
-			if (slot.FingerL == 1) return GlamourPlateSlot.LeftRing;
-			throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
-		}
+
 		internal GlamourPlates() {
 
 			SignatureHelper.Initialise(this);

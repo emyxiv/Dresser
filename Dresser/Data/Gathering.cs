@@ -1,33 +1,17 @@
-﻿using CriticalCommonLib;
-using CriticalCommonLib.Enums;
-using CriticalCommonLib.Models;
-using CriticalCommonLib.Sheets;
-
-using Dalamud.Logging;
-
-using Dresser.Structs.FFXIV;
-using Dresser.Windows.Components;
-
-
-using ImGuiNET;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 
-using static System.Reflection.Metadata.BlobBuilder;
+using CriticalCommonLib.Enums;
+using CriticalCommonLib.Models;
 
+using Dresser.Extensions;
+using Dresser.Structs.FFXIV;
 
 namespace Dresser.Data {
 
 	internal class Gathering {
 		public static void Init() {
 			ParseGlamourPlates();
-
-
-			//ParseGlamourChest();
 		}
 		public static void ParseGlamourPlates() {
 			Storage.Pages = GetDataFromDresser();
@@ -39,6 +23,11 @@ namespace Dresser.Data {
 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, p.Value.DyeId, 0)
 			)!;
 		}
+		public static void DelayParseGlamPlates()
+			=> Task.Run(async delegate {
+				await Task.Delay(250);
+				ParseGlamourPlates();
+			});
 		private unsafe static MiragePage[]? GetDataFromDresser() {
 			var agent = MiragePrismMiragePlate.MiragePlateAgent();
 			if (agent == null) return null;
@@ -46,6 +35,17 @@ namespace Dresser.Data {
 			if (!miragePlates->AgentInterface.IsAgentActive()) return null;
 
 			return miragePlates->Pages;
+		}
+		public static bool IsApplied(InventoryItem item) {
+			ParseGlamourPlates();
+
+			var slot = item.Item.GlamourPlateSlot();
+			if (slot == null) return false;
+			if (Storage.SlotInventoryItems.TryGetValue((GlamourPlateSlot)slot, out var storedItem)) {
+				if (storedItem.ItemId == item.ItemId && storedItem.Stain == item.Stain)
+					return true;
+			}
+			return false;
 		}
 	}
 }

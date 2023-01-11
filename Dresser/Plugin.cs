@@ -7,6 +7,7 @@ using Dalamud.Plugin;
 using Dresser.Data;
 using Dresser.Windows;
 using Dresser.Interop.Hooks;
+using Dresser.Interop;
 
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
@@ -27,6 +28,8 @@ namespace Dresser {
 
 			Storage.Init();
 			Gathering.Init();
+
+			Methods.Init();
 			Interop.Hooks.AddonListeners.Init();
 
 

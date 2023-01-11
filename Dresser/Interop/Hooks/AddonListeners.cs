@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Dalamud.Hooking;
 using Dalamud.Logging;
@@ -55,7 +54,7 @@ namespace Dresser.Interop.Hooks {
 				e.EventArgs->Int == 18 // used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
 				|| e.EventArgs->Int == 17 // Change Glamour Plate Page
 				)) {
-				DelayParseGlamPlates();
+				Data.Gathering.DelayParseGlamPlates();
 			}
 			if (e.SenderID == 0 && e.EventArgs->Int == -2)
 				EventManager.GearSelectionClose?.Invoke();
@@ -69,20 +68,16 @@ namespace Dresser.Interop.Hooks {
 				e.EventArgs->Int == 2 // used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
 				//|| e.EventArgs->Int == 17 // Change Glamour Plate Page
 				)) {
-				DelayParseGlamPlates();
+				Data.Gathering.DelayParseGlamPlates();
 			}
-			if (e.SenderID == 0 && e.EventArgs->Int == 5)
+			if (e.SenderID == 0 && e.EventArgs->Int == 5) {
 				EventManager.GearSelectionOpen?.Invoke();
+				Data.Gathering.DelayParseGlamPlates();
+			}
 
 			if (e.SenderID == 0 && e.EventArgs->Int == -2)
 				EventManager.GearSelectionClose?.Invoke();
 		}
-		public static void DelayParseGlamPlates()
-			=> Task.Run(async delegate {
-				await Task.Delay(250);
-				Data.Gathering.ParseGlamourPlates();
-			});
-
 	}
 
 
@@ -113,18 +108,27 @@ namespace Dresser.Interop.Hooks {
 	// If adding new agents, it may be a good idea to move them in their own files
 	internal unsafe class MiragePrismMiragePlateAddon : IDisposable {
 		public event EventHandler<ReceiveEventArgs>? ReceiveEvent;
+		//public event EventHandler<IntPtr>? OnShow;
+
 		private delegate void* AgentReceiveEvent(AgentInterface* agent, void* rawData, AtkValue* eventArgs, uint eventArgsCount, ulong sender);
+		//private delegate void AgentShow(AgentInterface* agent);
+
 		private readonly Hook<AgentReceiveEvent>? receiveEventHook;
+		//private readonly Hook<AgentShow>? showEventHook;
 
 		internal unsafe static AgentInterface* AgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
 		public MiragePrismMiragePlateAddon() {
 			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(AgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
+			//showEventHook ??= Hook<AgentShow>.FromAddress(new IntPtr(AgentInterface->VTable->Show), OnShowEvent);
 
 			receiveEventHook?.Enable();
+			//showEventHook?.Enable();
+
 		}
 
 		public void Dispose() {
 			receiveEventHook?.Dispose();
+			//showEventHook?.Dispose();
 		}
 
 		private void* OnReceiveEvent(AgentInterface* agent, void* rawData, AtkValue* eventArgs, uint eventArgsCount, ulong sender) {
@@ -136,6 +140,17 @@ namespace Dresser.Interop.Hooks {
 
 			return receiveEventHook!.Original(agent, rawData, eventArgs, eventArgsCount, sender);
 		}
+		//private void OnShowEvent(AgentInterface* agent) {
+		//	PluginLog.Debug($"OnShowEvent");
+		//	try {
+		//		//Data.Gathering.DelayParseGlamPlates();
+
+		//		//EventManager.GearSelectionOpen?.Invoke();
+		//		OnShow?.Invoke(this, new IntPtr(agent));
+		//	} catch (Exception ex) {
+		//		PluginLog.Error(ex, "Something went wrong when the MiragePrismPrismBox Addon was opened");
+		//	}
+		//}
 	}
 	internal unsafe class MiragePrismPrismBoxAddon : IDisposable {
 		public event EventHandler<ReceiveEventArgs>? ReceiveEvent;
