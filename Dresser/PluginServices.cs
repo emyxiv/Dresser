@@ -22,6 +22,7 @@ namespace Dresser {
 		[PluginService] internal static DataManager DataManager { get; private set; } = null!;
 		[PluginService] internal static TargetManager TargetManager { get; private set; } = null!;
 		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
+		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
 
 
 		public static OdrScanner OdrScanner { get; private set; } = null!;
@@ -38,6 +39,7 @@ namespace Dresser {
 
 		internal static Interop.Hooks.AddonManager AddonManager = null!;
 		internal static Interop.Hooks.GlamourPlates GlamourPlates = null!;
+		internal static Storage Storage = null!;
 
 
 		public static void Init(DalamudPluginInterface dalamud) {
@@ -67,8 +69,13 @@ namespace Dresser {
 			//PluginLoaded = true;
 			//OnPluginLoaded?.Invoke();
 
+			Storage = new Storage();
+
+
 		}
 		public static void Dispose() {
+
+			Storage.Dispose();
 			//CommandManager.Dispose();
 			//FilterService.Dispose();
 			InventoryMonitor.Dispose();

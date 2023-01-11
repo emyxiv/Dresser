@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Numerics;
 
 using ImGuiNET;
+using ImGuiScene;
 
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface;
@@ -14,12 +17,15 @@ using CriticalCommonLib.Models;
 
 using Dresser.Data;
 using Dresser.Data.Excel;
-using ImGuiScene;
+using Dresser.Extensions;
+using Dresser.Structs.FFXIV;
 
 namespace Dresser.Windows.Components {
 	internal class ItemIcon {
 		public static float IconSizeMult = 1;
 		public static Vector2 IconSize => new Vector2(120) * IconSizeMult;
+		public static Vector2 TooltipFramePadding => new Vector2(ImGui.GetFontSize() * 0.2f);
+		public static Vector2 TooltipItemSpacing => TooltipFramePadding;
 		public static float DyeBorder => 3 * IconSizeMult;
 
 		public static Vector4 ColorGood = new Vector4(124, 236, 56, 255) / 255;
@@ -34,6 +40,7 @@ namespace Dresser.Windows.Components {
 		public static CharacterSex? LocalPlayerGender = null;
 		public static ClassJob? LocalPlayerClass = null;
 		public static byte LocalPlayerLevel = 0;
+		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
 		public static void Init() {
 			LocalPlayer = Service.ClientState.LocalPlayer;
@@ -59,7 +66,7 @@ namespace Dresser.Windows.Components {
 			bool __ = false;
 			DrawIcon(item, ref _, ref __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null) {
 
 			if (LocalPlayer == null) Init();
 			if (LocalPlayer == null
@@ -75,17 +82,25 @@ namespace Dresser.Windows.Components {
 			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)LocalPlayerRace, (CharacterSex)LocalPlayerGender);
 			var isDyeable = item.Item.IsDyeable;
+			var isApplicable = item.IsGlamourPlateApplicable();
+			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
 
-
-			var clicked = DrawImage(image, dye, isDyeable, ref isHovered);
+			if (item.ItemId == 0)
+				image = null;
+			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, emptySlot);
 
 			var isTooltipActive2 = isTooltipActive;
-			if(item != null && item.ItemId != 0)
+
+			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
 			GuiHelpers.Tooltip(() => {
 				if (isTooltipActive2) return;
+
+				ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, TooltipFramePadding);
+				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, TooltipItemSpacing);
+
 				isTooltipActive2 = true;
 
-				DrawImage(image, dye, isDyeable);
+				DrawImage(image!, dye, isDyeable);
 
 				var rarityColor = Storage.RarityColor(item.Item);
 
@@ -104,6 +119,7 @@ namespace Dresser.Windows.Components {
 
 				// type of item (body, legs, etc) under the icon
 				ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
+				ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.Container.ToInventoryCategory().ToString());
 
 				// Equip Conditions
 				ImGui.Separator();
@@ -150,6 +166,8 @@ namespace Dresser.Windows.Components {
 				// TODO: market price
 
 				ImGui.Text($"Sell for {item.SellToVendorPrice:n0} gil");
+
+				ImGui.PopStyleVar(2);
 			});
 			isTooltipActive = isTooltipActive2;
 
@@ -157,38 +175,71 @@ namespace Dresser.Windows.Components {
 
 			return clicked;
 		}
-		private static bool DrawImage(TextureWrap image, Dye? dye, bool isDyeable) {
+		private static bool DrawImage(TextureWrap image, Dye? dye, bool isDyeable, IconImageFlag iconImageFlag = 0) {
 			bool _ = false;
-			return DrawImage( image,dye, isDyeable, ref _);
+			return DrawImage( image,dye, isDyeable, ref _, iconImageFlag);
 		}
-		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering) {
+		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, GlamourPlateSlot? emptySlot = null) {
 			ImGui.BeginGroup();
 
 			bool wasHovered = hovering;
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
 
+			var initialPosition = ImGui.GetCursorPos();
+			var draw = ImGui.GetWindowDrawList();
+			var capSize = IconSize * new Vector2(1.17f, 1.16f);
+			var difference = capSize - IconSize;
+			initialPosition += (new Vector2(0, 3f) * IconSizeMult);
+
+
 			if (image != null) {
-				ImGui.Image(image.ImGuiHandle, IconSize);
-			} else {
-				// TODO: find a way to get a part of textures for:
-				// Empty item
-				// ring: 28 // bracer: 27 // necklace: 26 // earring: 25 // feet: 24 // legs: 23 // hands: 21 // body: 20 // head: 19 // head: 19 // main weapon: 17 // off weapon: 18
-				//if(DataStorage.EmptyEquipTexture != null)
-				//	ImGui.Image(DataStorage.EmptyEquipTexture.ImGuiHandle,new Vector2(DataStorage.EmptyEquipTexture.Width, DataStorage.EmptyEquipTexture.Height) * IconSize);
+				var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? GearBrowser.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
+				ImGui.Image(image.ImGuiHandle, IconSize, Vector2.Zero, Vector2.One, colorize);
+			} else if(emptySlot != null) {
+				var emptySlotInfo = ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
+
+				// TODO: smaller icons in their slot
+				// draw.AddImage(emptySlotInfo.Item1, slotPos, slotPos + slotSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
+				ImGui.Image(emptySlotInfo.Item1, IconSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
 			}
+
 			var clicked = ImGui.IsItemClicked();
 			hovering = ImGui.IsItemHovered();
 
-			// TODO: find a way to get a part of textures for:
-			// Embed-like slot visual
+			DrawStain(dye, isDyeable);
 
-			// TODO: find a way to get a part of textures for:
+			ImGui.SetCursorPos(initialPosition);
+			ImGui.SetCursorPos(ImGui.GetCursorPos() - (difference / 2));
+
+			var itemCapInfo = ImageGuiCrop.GetPart("icon_a_frame", 1);
+
+			// item slot
+			var itemSlotInfo = ImageGuiCrop.GetPart("mirage_prism_box", 3);
+			var slotSize = capSize * (itemSlotInfo.Item4.X / itemCapInfo.Item4.X);
+			//difference = slotSize - IconSize;
+			var slotPos = ImGui.GetCursorScreenPos();
+			//var slotPos = ImGui.GetCursorScreenPos() - (difference / 2);
+			draw.AddImage(itemSlotInfo.Item1, slotPos, slotPos + slotSize, itemSlotInfo.Item2, itemSlotInfo.Item3);
+
+
+			// item cap (but no item cap in glam dresser)
+			//ImGui.Image(itemCapInfo.Item1, capSize, itemCapInfo.Item2, itemCapInfo.Item3);
+			//var capPos = ImGui.GetCursorScreenPos();
+			//draw.AddImage(itemCapInfo.Item1, capPos, capPos + capSize, itemCapInfo.Item2, itemCapInfo.Item3);
+
 			// Hover visual
-			// (wasHovered)
+			if (wasHovered) {
+				var itemHoveredInfo = ImageGuiCrop.GetPart("icon_a_frame", 16);
+				ImGui.SetCursorPos(initialPosition);
+				var hoverSize = capSize * (itemHoveredInfo.Item4.X / itemCapInfo.Item4.X);
+				difference = hoverSize - IconSize;
+
+				var hoverPos = ImGui.GetCursorScreenPos() - (difference / 2);
+				draw.AddImage(itemHoveredInfo.Item1, hoverPos, hoverPos + hoverSize, itemHoveredInfo.Item2, itemHoveredInfo.Item3);
+			}
 
 			ImGui.PopStyleVar();
 
-			DrawStain(dye, isDyeable);
 			ImGui.EndGroup();
 			return clicked;
 		}
@@ -209,6 +260,10 @@ namespace Dresser.Windows.Components {
 			draw.AddCircleFilled(pos, radius, ImGui.ColorConvertFloat4ToU32(color));
 			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder);
 		}
-
+	}
+	[Flags]
+	enum IconImageFlag {
+		None = 0,
+		NotAppliable = 1,
 	}
 }

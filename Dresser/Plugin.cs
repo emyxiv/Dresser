@@ -26,7 +26,7 @@ namespace Dresser {
 			this.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 			this.Configuration.Initialize(pluginInterface);
 
-			Storage.Init();
+			ImageGuiCrop.Init();
 			Gathering.Init();
 
 			Methods.Init();
@@ -66,7 +66,7 @@ namespace Dresser {
 
 
 			Interop.Hooks.AddonListeners.Dispose();
-			Storage.Dispose();
+			ImageGuiCrop.Dispose();
 			PluginServices.Dispose();
 		}
 
