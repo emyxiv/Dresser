@@ -4,7 +4,9 @@
     "Punchline": "Open with /dresser.",
     "Description": "Improve Glamour Dresser.",
     "InternalName": "Dresser",
+    "AssemblyVersion": "0.0.0.1",
     "ApplicableVersion": "any",
+    "DalamudApiLevel": 8,
     "Tags": [
         "glamour",
         "dresser",
