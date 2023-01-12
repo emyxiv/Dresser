@@ -19,16 +19,6 @@ using Dresser.Structs.FFXIV;
 
 namespace Dresser.Interop.Hooks {
 	internal class GlamourPlates : IDisposable {
-		private static class Signatures {
-			internal const string SetGlamourPlateSlot = "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 46 10";
-			internal const string ModifyGlamourPlateSlot = "48 89 74 24 ?? 57 48 83 EC 20 80 79 30 00";
-			internal const string ClearGlamourPlateSlot = "80 79 30 00 4C 8B C1";
-			internal const string IsInArmoire = "E8 ?? ?? ?? ?? 84 C0 74 16 8B CB";
-			internal const string ArmoirePointer = "48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0 74 16 8B CB E8";
-			internal const string TryOn = "E8 ?? ?? ?? ?? EB 35 BA";
-			internal const string ExamineNamePointer = "48 8D 05 ?? ?? ?? ?? 48 89 85 ?? ?? ?? ?? 74 56 49 8B 4F";
-		}
-
 
 		private delegate void SetGlamourPlateSlotDelegate(IntPtr agent, MirageSource mirageSource, int glamId, uint itemId, byte stainId);
 		private delegate void ModifyGlamourPlateSlotDelegate(IntPtr agent, GlamourPlateSlot slot, byte stainId, IntPtr numbers, int stainItemId);
@@ -94,14 +84,14 @@ namespace Dresser.Interop.Hooks {
 			}
 
 			// Updated: 6.11 C98BC0
-			var editorInfo = *(IntPtr*)((IntPtr)agent + 0x28);
+			var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.EditorInfo);
 			if (editorInfo == IntPtr.Zero) {
 				return;
 			}
 
 			// Updated: 6.11 C984CF
 			// current plate 6.11 C9AC9F
-			var slotPtr = (GlamourPlateSlot*)(editorInfo + 0x18);
+			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentPlate);
 			var initialSlot = *slotPtr;
 
 

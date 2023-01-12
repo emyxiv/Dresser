@@ -21,8 +21,8 @@ namespace Dresser.Interop {
 			=> Marshal.GetDelegateForFunctionPointer<TDelegate>(PluginServices.SigScanner.ScanText(sig));
 
 		internal static void Init() {
-			ActorChangeEquip = Retrieve<ChangeEquipDelegate>("E8 ?? ?? ?? ?? 41 B5 01 FF C3");
-			ActorChangeWeapon = Retrieve<ChangeWeaponDelegate>("E8 ?? ?? ?? ?? 80 7F 25 00");
+			ActorChangeEquip = Retrieve<ChangeEquipDelegate>(Signatures.ChangeEquip);
+			ActorChangeWeapon = Retrieve<ChangeWeaponDelegate>(Signatures.ChangeWeapon);
 		}
 	}
 }

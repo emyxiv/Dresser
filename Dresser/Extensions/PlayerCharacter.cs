@@ -60,19 +60,20 @@ namespace Dresser.Extensions {
 		}
 
 		public unsafe static Equipment EquipmentModels(this SubKindsPlayerCharacter playerCharacter)
-			=> *(Equipment*)(playerCharacter.Address + 0x818);
+			=> *(Equipment*)(playerCharacter.Address + Offsets.Equipment);
 		public unsafe static Weapon MainHandModels(this SubKindsPlayerCharacter playerCharacter)
-			=> *(Weapon*)(playerCharacter.Address + 0x6E0);
+			=> *(Weapon*)(playerCharacter.Address + Offsets.WeaponMainHand);
 		public unsafe static Weapon OffHandModels(this SubKindsPlayerCharacter playerCharacter)
-			=> *(Weapon*)(playerCharacter.Address + 0x748);
+			=> *(Weapon*)(playerCharacter.Address + Offsets.WeaponOffHand);
 
 		private static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
 			if (Methods.ActorChangeEquip == null) return;
-			Methods.ActorChangeEquip(playerCharacter.Address + 0x6D0, index, item);
+			Methods.ActorChangeEquip(playerCharacter.Address + Offsets.ChangeActorEquipmentA1, index, item);
 		}
+
 		private static void Equip(this SubKindsPlayerCharacter playerCharacter, int slot, WeaponEquip item) {
 			if (Methods.ActorChangeWeapon == null) return;
-			Methods.ActorChangeWeapon(playerCharacter.Address + 0x6D0, slot, item, 0, 1, 0, 0);
+			Methods.ActorChangeWeapon(playerCharacter.Address + Offsets.ChangeActorEquipmentA1, slot, item, 0, 1, 0, 0);
 		}
 	}
 }
