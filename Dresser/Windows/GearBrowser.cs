@@ -36,13 +36,20 @@ namespace Dresser.Windows {
 		public static Vector4 CollectionColorBorder = (new Vector4(116,123,98,255) / 255 * 0.4f) + new Vector4(0,0,0,1);
 		public static Vector4 CollectionColorScrollbar = (new Vector4(116,123,98,255) / 255 * 0.2f) + new Vector4(0,0,0,1);
 
-		private static uint? HoveredItem = null;
+		private static int? HoveredItem = null;
 		private static string Search = "";
 		private static List<InventoryCategory> AllowedCategories = new() {
 			InventoryCategory.GlamourChest,
 			InventoryCategory.Armoire,
 			InventoryCategory.RetainerBags,
 			InventoryCategory.RetainerEquipped,
+			InventoryCategory.CharacterSaddleBags,
+			InventoryCategory.CharacterPremiumSaddleBags,
+			InventoryCategory.CharacterEquipped,
+			InventoryCategory.CharacterBags,
+			InventoryCategory.CharacterArmoryChest,
+			InventoryCategory.RetainerMarket,
+			InventoryCategory.FreeCompanyBags,
 		};
 		private static Dictionary<InventoryCategory, bool> DisplayInventoryCategories = AllowedCategories.ToDictionary(c => c, c => true);
 		public override void Draw() {
@@ -56,21 +63,26 @@ namespace Dresser.Windows {
 
 
 			ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100);
-			if (ImGui.CollapsingHeader($"Source ({string.Join(", ",DisplayInventoryCategories.Where(p=>p.Value).Select(p=>p.Key.FormattedName()))})##Source##GearBrowser")) {
+			
+			if (ImGui.CollapsingHeader($"Source##Source##GearBrowser")) {
 				ImGui.Columns(2);
+				int i = 0;
 				foreach ((var cat, var willDisplay) in DisplayInventoryCategories) {
-					if (!AllowedCategories.Contains(cat)) continue;
+					i++;
+					if (i % (DisplayInventoryCategories.Count /2 ) == 0)
+						ImGui.NextColumn();
 					var willDisplayValue = willDisplay;
-					if (ImGui.Checkbox($"{cat}##displayCategory",ref willDisplayValue))
-					DisplayInventoryCategories[cat] = willDisplayValue;
+					if (ImGui.Checkbox($"{cat}##displayCategory", ref willDisplayValue))
+						DisplayInventoryCategories[cat] = willDisplayValue;
 				}
-				ImGui.NextColumn();
-				ImGui.BeginDisabled();
-				bool disb = false;
-				ImGui.Checkbox("Calamity Salvager##GearBrowser", ref disb);
-				ImGui.Checkbox("Relic Replica Vendors##GearBrowser", ref disb);
-				ImGui.Checkbox("Unobtained##GearBrowser", ref disb);
-				ImGui.EndDisabled();
+				
+				//ImGui.NextColumn();
+				//ImGui.BeginDisabled();
+				//bool disb = false;
+				//ImGui.Checkbox("Calamity Salvager##GearBrowser", ref disb);
+				//ImGui.Checkbox("Relic Replica Vendors##GearBrowser", ref disb);
+				//ImGui.Checkbox("Unobtained##GearBrowser", ref disb);
+				//ImGui.EndDisabled();
 				ImGui.Columns();
 			}
 			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser")) {
@@ -81,6 +93,7 @@ namespace Dresser.Windows {
 				!i.IsEmpty
 				&& AllowedCategories.Contains(i.Container.ToInventoryCategory())
 				&& DisplayInventoryCategories[i.Container.ToInventoryCategory()]
+				&& i.Item.ModelMain != 0
 				&& i.Item.CanBeEquipedByPlayerCharacter()
 				&& (
 					//!Search.IsNullOrWhitespace() &&
@@ -88,6 +101,8 @@ namespace Dresser.Windows {
 					)
 
 				)
+				.GroupBy(i => i.GetHashCode())
+				.Select(i => i.First())
 				//.OrderBy(i => i.Item.EquipSlotCategoryEx)
 				.OrderByDescending(i => i.Item.LevelEquip)
 				//.OrderBy(i => i.Item.LevelItem)
@@ -98,43 +113,46 @@ namespace Dresser.Windows {
 			ImGui.Text($"Found: {items.Count()}");
 
 			PushStyleCollection();
-
 			ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
-			bool isTooltipActive = false;
+			try {
 
-			foreach (var item in items) {
+				bool isTooltipActive = false;
 
-				// icon
-				bool isHovered = item.ItemId == HoveredItem;
-				bool wasHovered = isHovered;
-				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
-				if (isHovered)
-					HoveredItem = item.ItemId;
-				else if (!isHovered && wasHovered)
-					HoveredItem = null;
+				foreach (var item in items) {
 
-				// execute when clicked
-				if (iconClicked) {
-					if (GlamourPlates.IsGlaming()) {
-						PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
+					// icon
+					bool isHovered = item.GetHashCode() == HoveredItem;
+					bool wasHovered = isHovered;
+					var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
+					if (isHovered)
+						HoveredItem = item.GetHashCode();
+					else if (!isHovered && wasHovered)
+						HoveredItem = null;
 
-						// TODO: make sure the item is still in glam chest or armoire
-						if(item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire) {
-							PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
-								(i)=> Gathering.ParseGlamourPlates()
-								);
-						}
+					// execute when clicked
+					if (iconClicked) {
+							PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
 
-						Service.ClientState.LocalPlayer?.Equip(item);
+							// TODO: make sure the item is still in glam chest or armoire
+							if (GlamourPlates.IsGlamingAtDresser() && (item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire)) {
+								PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
+									(i) => Gathering.ParseGlamourPlates()
+									);
+							}
+
+							Service.ClientState.LocalPlayer?.Equip(item);
 					}
+
+
+					ImGui.SameLine();
+					if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X)
+						ImGui.NewLine();
 				}
-
-
-				ImGui.SameLine();
-				if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X)
-					ImGui.NewLine();
+			} catch(Exception ex) {
+				PluginLog.Error(ex.ToString());
 			}
 
+			ImGui.EndChildFrame();
 			PopStyleCollection();
 		}
 

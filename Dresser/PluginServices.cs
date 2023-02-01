@@ -13,6 +13,8 @@ using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 
 using Dresser.Data;
+using Dresser.Logic;
+using Dalamud.Logging;
 
 namespace Dresser {
 	internal class PluginServices {
@@ -52,7 +54,9 @@ namespace Dresser {
 			//PluginLog.Debug($"data ready {Service.Data.IsDataReady == true}");
 
 			Service.ExcelCache = new ExcelCache(Service.Data);
-			//ConfigurationManager.Load();
+			ConfigurationManager.Load();
+			//GameInterface = new GameInterface();
+
 			//Universalis = new Universalis();
 			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
 
@@ -84,6 +88,10 @@ namespace Dresser {
 			TryOn.Dispose();
 			GameUi.Dispose();
 			CharacterMonitor.Dispose();
+			PluginLog.Debug("leaving dresserrrrrrrrrrrrrrrrrrrrrrrr");
+
+
+			ConfigurationManager.Save();
 			Service.ExcelCache.Destroy();
 			//MarketCache.SaveCache(true);
 			//MarketCache.Dispose();

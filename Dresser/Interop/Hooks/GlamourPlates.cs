@@ -32,7 +32,7 @@ namespace Dresser.Interop.Hooks {
 		internal unsafe static AgentInterface* MiragePrismPrismBoxAgent => Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
 		internal unsafe static AgentInterface* CabinetAgent => Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Cabinet);
 
-		internal unsafe static bool IsGlaming() {
+		internal unsafe static bool IsGlamingAtDresser() {
 
 
 			var isLocked = Service.Condition[ConditionFlag.OccupiedInQuestEvent];

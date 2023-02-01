@@ -18,7 +18,9 @@ namespace Dresser.Interop {
 		internal const int EquipChangeToWriteTo = 0x6D0;
 
 		// MiragePrismMiragePlate
+		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L164
 		internal const int EditorInfo = 0x28;
+		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L243
 		internal const int EditorCurrentPlate = 0x18;
 
 	}

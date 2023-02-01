@@ -9,7 +9,7 @@ namespace Dresser.Interop {
 		// Change actor equipment
 		// a1 = Actor + 0x6D0, a2 = EquipIndex, a3 = EquipItem
 
-		internal delegate IntPtr ChangeEquipDelegate(IntPtr writeTo, EquipIndex index, ItemEquip item);
+		internal delegate void ChangeEquipDelegate(IntPtr writeTo, EquipIndex index, ItemEquip item);
 		internal static ChangeEquipDelegate? ActorChangeEquip;
 
 		internal delegate void ChangeWeaponDelegate(IntPtr writeTo, int slot, WeaponEquip weapon, byte a4, byte a5, byte a6, byte a7); // a4-a7 is always 0,1,0,0.

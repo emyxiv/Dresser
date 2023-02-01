@@ -24,7 +24,7 @@ namespace Dresser.Data {
 
 		public const int PlateNumber = 20;
 		public static Dictionary<GlamourPlateSlot, MirageItem> SlotMirageItems = new();
-		public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
+		//public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
 		public static MiragePage[]? Pages = null;
 		public static MiragePage? DisplayPage = null;
 		public static Dictionary<byte, Vector4> RarityColors = new();

@@ -8,6 +8,7 @@ using Dalamud.Interface.Windowing;
 using Dresser.Data;
 using Dresser.Structs.FFXIV;
 using Dresser.Windows.Components;
+using Dalamud.Logging;
 
 namespace Dresser.Windows;
 
@@ -66,21 +67,27 @@ public class CurrentGear : Window, IDisposable {
 		};
 
 	public static void DrawSlots() {
-		bool isTooltipActive = false;
-		int i = 0;
-		foreach (var slot in SlotOrder) {
-			Storage.SlotInventoryItems.TryGetValue(slot, out var item);
-			bool isHovered = slot == HoveredSlot;
-			bool wasHovered = isHovered;
-			var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, slot);
-			if (isHovered)
-				HoveredSlot = slot;
-			else if (!isHovered && wasHovered)
-				HoveredSlot = null;
+		try {
+			bool isTooltipActive = false;
+			int i = 0;
+			foreach (var slot in SlotOrder) {
+				Configuration.SlotInventoryItems.TryGetValue(slot, out var item);
+				bool isHovered = slot == HoveredSlot;
+				bool wasHovered = isHovered;
+				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, slot);
+				if (isHovered)
+					HoveredSlot = slot;
+				else if (!isHovered && wasHovered)
+					HoveredSlot = null;
 
-			if (i % 2 == 0)
-				ImGui.SameLine();
-			i++;
+				if (i % 2 == 0)
+					ImGui.SameLine();
+				i++;
+			}
+
+		} catch(Exception ex) {
+			PluginLog.Error(ex.ToString());
 		}
+
 	}
 }

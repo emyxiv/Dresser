@@ -119,7 +119,7 @@ namespace Dresser.Windows.Components {
 
 				// type of item (body, legs, etc) under the icon
 				ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
-				ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.Container.ToInventoryCategory().ToString());
+				ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.Container.ToString());
 
 				// Equip Conditions
 				ImGui.Separator();
@@ -148,7 +148,7 @@ namespace Dresser.Windows.Components {
 
 				// Other info
 				var sameModelItems = Service.ExcelCache.AllItems.Where(i =>
-					(i.Value.ModelMain == item.Item.ModelMain
+					(i.Value.ModelMain == item.Item.ModelMain && i.Value.ModelMain != 0
 					//|| (i.Value.ModelSub == item.Item.ModelSub && i.Value.ModelSub != 0)
 					//|| (i.Value.ModelMain == item.Item.ModelSub && i.Value.ModelSub != 0)
 					//|| (i.Value.ModelSub == item.Item.ModelMain && i.Value.ModelSub != 0)
