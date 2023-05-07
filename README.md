@@ -15,6 +15,7 @@ Planned features:
     - restore current appearance on exit
     - load current plate appearance on enter
     - vanilla buttons for current appearance show/hide weapons/helmet/visor also affect current appearance
+    - show what gearsets are linked to this glam plate
 
 2. current gear window
     - add controls:
@@ -23,6 +24,11 @@ Planned features:
     - select a slot
     - displays greyed out when selecting an items that isn't in dresser/armoire
     - context menu 
+    - tasks to do
+      - get dyes
+      - buy from vendor
+      - take item from x inventory and put it in glamour chest
+      - select plate x and apply changes
 
 3. Gear Browser window
     - save inventories across disconnections
@@ -61,6 +67,15 @@ Planned features:
     - set lower FOV on enter
     - unset custom camera settings on leave
 
-8. gamepad support
+7. gamepad support
     - item navigation
     - ...
+
+8. keep track of everything
+    - add/save InventoryItem those data:
+      - number of tryon
+      - number of saved
+      - last tryon
+      - last saved
+    - analysis or "rarely used items" for suggestions what to store in retainers
+

@@ -1,35 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Authors>Emyka</Authors>
-    <Company></Company>
-    <Version>0.0.0.1</Version>
-    <Description>Improve Glamour Dresser.</Description>
-    <Copyright></Copyright>
-    <PackageProjectUrl>https://github.com/Emyka/Dresser</PackageProjectUrl>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <Platforms>x64</Platforms>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+      <LangVersion>10</LangVersion>
+      <Version>0.0.0.1</Version>
+      <AssemblyName>Dresser</AssemblyName>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+      <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+      <NoWarn>IDE0003</NoWarn>
+      <OutputType>Library</OutputType>
+      <OutputPath>bin\$(Configuration)\</OutputPath>
+      <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+      <Configurations>Debug;Release;FullDebug</Configurations>
+      <Platforms>AnyCPU</Platforms>
+      <Nullable>enable</Nullable>
+      <TargetFramework>net7.0-windows</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
   </PropertyGroup>
-  
-   <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
-    <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
+
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.10" />
+    <PackageReference Include="DalamudPackager" Version="2.1.11" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
@@ -61,8 +61,19 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Util\" />
-  </ItemGroup>
-
+  <ProjectExtensions>
+    <DalamudPlugin>
+      <ApiLevel>8</ApiLevel>
+      <Author>Emyka</Author>
+      <Name>Dresser</Name>
+      <Punchline>Make glamouring more enjoyable</Punchline>
+      <Description></Description>
+      <PackageProjectUrl>https://github.com/Emyka/Dresser</PackageProjectUrl>
+      <Tags>
+        <Tag>Inventory</Tag>
+        <Tag>Glamour</Tag>
+      </Tags>
+      <Hidden>False</Hidden>
+    </DalamudPlugin>
+  </ProjectExtensions>
 </Project>

@@ -3,15 +3,11 @@
     "Name": "Dresser",
     "Punchline": "Open with /dresser.",
     "Description": "Improve Glamour Dresser.",
+    "Tags": ["Glamour", "Dresser", "Organize", "Search", "Items"],
     "InternalName": "Dresser",
     "AssemblyVersion": "0.0.0.1",
+    "RepoUrl": "https://github.com/Emyka/Dresser",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 8,
-    "Tags": [
-        "glamour",
-        "dresser",
-        "organize",
-        "search",
-        "items"
-    ]
+    "LoadPriority": 0
 }
