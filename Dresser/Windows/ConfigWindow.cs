@@ -1,23 +1,24 @@
 using System;
 using System.Numerics;
 
+using CriticalCommonLib;
+
 using Dalamud.Interface.Windowing;
+
+using Dresser.Logic;
 
 using ImGuiNET;
 
 namespace Dresser.Windows;
 
 public class ConfigWindow : Window, IDisposable {
-	private Configuration Configuration;
 
 	public ConfigWindow(Plugin plugin) : base(
 		"Dresser Settings",
-		ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
-		ImGuiWindowFlags.NoScrollWithMouse) {
+		ImGuiWindowFlags.None) {
 		this.Size = new Vector2(232, 75);
-		this.SizeCondition = ImGuiCond.Always;
+		this.SizeCondition = ImGuiCond.FirstUseEver;
 
-		this.Configuration = plugin.Configuration;
 	}
 
 	public void Dispose() { }
@@ -26,9 +27,76 @@ public class ConfigWindow : Window, IDisposable {
 		// can't ref a property, so use a local copy
 		//var configValue = this.Configuration.SomePropertyToBeSavedAndWithADefault;
 		//if (ImGui.Checkbox("Random Config Bool", ref configValue)) {
-			//this.Configuration.SomePropertyToBeSavedAndWithADefault = configValue;
-			// can save immediately on change, if you don't want to provide a "Save and Close" button
-			//this.Configuration.Save();
+		//	Configuration.SomePropertyToBeSavedAndWithADefault = configValue;
+		//	//can save immediately on change, if you don't want to provide a "Save and Close" button
+		//	Configuration.Save();
 		//}
+
+		if(ImGui.Button("Force Save All configs and inventories")) {
+			ConfigurationManager.Save();
+		}
+		DrawInventoryStatusTable();
+	}
+
+	private void DrawInventoryStatusTable() {
+
+
+		if (ImGui.BeginTable("CharacterTable", 3, ImGuiTableFlags.BordersV |
+											 ImGuiTableFlags.BordersOuterV |
+											 ImGuiTableFlags.BordersInnerV |
+											 ImGuiTableFlags.BordersH |
+											 ImGuiTableFlags.BordersOuterH |
+											 ImGuiTableFlags.BordersInnerH)) {
+			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)0);
+			ImGui.TableSetupColumn("Items", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)1);
+			ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)2);
+			ImGui.TableHeadersRow();
+
+			var characters = PluginServices.CharacterMonitor.GetPlayerCharacters();
+			if (characters.Length == 0) {
+				ImGui.TableNextRow();
+				ImGui.Text("No characters available.");
+				ImGui.TableNextColumn();
+				ImGui.TableNextColumn();
+			}
+			for (var index = 0; index < characters.Length; index++) {
+				ImGui.TableNextRow();
+				var character = characters[index].Value;
+				ImGui.TableNextColumn();
+				if (character.Name != "") {
+					ImGui.Text(character.Name);
+					ImGui.SameLine();
+				}
+
+				ImGui.TableNextColumn();
+				ImGui.Text(character.ItemCount.ToString());
+				ImGui.SameLine();
+
+				ImGui.TableNextColumn();
+				if (ImGui.SmallButton("Clear All Bags##" + index)) {
+					ImGui.OpenPopup("Are you sure?##" + index);
+				}
+				if (ImGui.BeginPopupModal("Are you sure?##" + index)) {
+					ImGui.Text(
+						"Are you sure you want to clear all the bags stored for this character?.\nThis operation cannot be undone!\n\n");
+					ImGui.Separator();
+
+					if (ImGui.Button("OK", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
+						PluginServices.InventoryMonitor.ClearCharacterInventories(character.CharacterId);
+						ImGui.CloseCurrentPopup();
+					}
+
+					ImGui.SetItemDefaultFocus();
+					ImGui.SameLine();
+					if (ImGui.Button("Cancel", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
+						ImGui.CloseCurrentPopup();
+					}
+
+					ImGui.EndPopup();
+				}
+			}
+			ImGui.EndTable();
+		}
+
 	}
 }

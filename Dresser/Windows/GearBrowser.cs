@@ -17,17 +17,19 @@ using Dresser.Data;
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Windows.Components;
+using Dresser.Logic;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IDisposable {
+		private Plugin Plugin;
 
-		public GearBrowser() : base(
+		public GearBrowser(Plugin plugin) : base(
 			"Gear Browser", ImGuiWindowFlags.None) {
 			this.SizeConstraints = new WindowSizeConstraints {
 				MinimumSize = new Vector2(ImGui.GetFontSize() * 4),
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 			};
-
+			this.Plugin = plugin;
 		}
 		public void Dispose() { }
 
@@ -57,9 +59,19 @@ namespace Dresser.Windows {
 
 			// top "bar" with controls
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
-			ImGui.DragFloat("##IconSize##slider", ref ItemIcon.IconSizeMult, 0.01f, 0.1f, 4f, "%.2f %");
+			var iconSizeMult = Plugin.PluginConfiguration.IconSizeMult;
+			if(ImGui.DragFloat("##IconSize##slider", ref iconSizeMult, 0.01f, 0.1f, 4f, "%.2f %")) {
+				Plugin.PluginConfiguration.IconSizeMult = iconSizeMult;
+				ConfigurationManager.SaveAsync();
+			}
 			ImGui.SameLine();
 			ImGui.Text("%");
+			ImGui.SameLine();
+
+			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cogs)) {
+				this.Plugin.DrawConfigUI();
+			}
+
 
 
 			ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100);
@@ -86,15 +98,24 @@ namespace Dresser.Windows {
 				ImGui.Columns();
 			}
 			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser")) {
+
+				ImGui.Checkbox($"Filter Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
+				ImGui.SameLine();
+				ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
+
 			}
 
-
-			var items = PluginServices.InventoryMonitor.AllItems.Where(i =>
+			var currentCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
+			var savedItems = ConfigurationManager.Config.SavedInventories.First(c => c.Key == currentCharacter).Value.SelectMany(t=>t.Value);
+			PluginLog.Debug($" items: {savedItems.Count()}");
+			var items = savedItems.Where(i =>
 				!i.IsEmpty
+				&& (!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
+				&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
 				&& AllowedCategories.Contains(i.Container.ToInventoryCategory())
 				&& DisplayInventoryCategories[i.Container.ToInventoryCategory()]
 				&& i.Item.ModelMain != 0
-				&& i.Item.CanBeEquipedByPlayerCharacter()
+				&& i.Item.CanBeEquipedByPlayedRaceGender()
 				&& (
 					//!Search.IsNullOrWhitespace() &&
 					i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase)
@@ -107,6 +128,7 @@ namespace Dresser.Windows {
 				.OrderByDescending(i => i.Item.LevelEquip)
 				//.OrderBy(i => i.Item.LevelItem)
 				;
+			PluginLog.Debug($" found valid items: {items.Count()}");
 
 
 			//ImGui.SameLine();
@@ -134,11 +156,11 @@ namespace Dresser.Windows {
 							PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
 
 							// TODO: make sure the item is still in glam chest or armoire
-							if (GlamourPlates.IsGlamingAtDresser() && (item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire)) {
-								PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
-									(i) => Gathering.ParseGlamourPlates()
-									);
-							}
+							//if (GlamourPlates.IsGlamingAtDresser() && (item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire)) {
+							//	PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
+							//		(i) => Gathering.ParseGlamourPlates()
+							//		);
+							//}
 
 							Service.ClientState.LocalPlayer?.Equip(item);
 					}
@@ -160,17 +182,17 @@ namespace Dresser.Windows {
 		public static void PushStyleCollection() {
 			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 5f);
 			ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ItemIcon.IconSize / 8f);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 10 * ItemIcon.IconSizeMult);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 3 * ItemIcon.IconSizeMult);
-			ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 7 * ItemIcon.IconSizeMult);
+			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 10 * Plugin.PluginConfiguration.IconSizeMult);
+			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 3 * Plugin.PluginConfiguration.IconSizeMult);
+			ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 7 * Plugin.PluginConfiguration.IconSizeMult);
 			ImGui.PushStyleColor(ImGuiCol.FrameBg, ImGui.ColorConvertFloat4ToU32(CollectionColorBackground));
 			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(CollectionColorBorder));
 			ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, ImGui.ColorConvertFloat4ToU32(CollectionColorScrollbar));
 
 
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10 * ItemIcon.IconSizeMult);
+			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10 * Plugin.PluginConfiguration.IconSizeMult);
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, ItemIcon.IconSize / 8f);
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 3 * ItemIcon.IconSizeMult);
+			ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 3 * Plugin.PluginConfiguration.IconSizeMult);
 			ImGui.PushStyleColor(ImGuiCol.WindowBg, ImGui.ColorConvertFloat4ToU32(CollectionColorBackground));
 		}
 		public static void PopStyleCollection() {

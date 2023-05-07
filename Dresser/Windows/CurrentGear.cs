@@ -40,7 +40,7 @@ public class CurrentGear : Window, IDisposable {
 
 		draw.AddText(
 			PluginServices.Storage.FontTitle.ImFont,
-			80 * ItemIcon.IconSizeMult,
+			80 * Plugin.PluginConfiguration.IconSizeMult,
 			ImGui.GetCursorScreenPos() + new Vector2(0, -10),
 			ImGui.ColorConvertFloat4ToU32(CollectionColorTitle),
 			"Plate Creation");
@@ -67,11 +67,13 @@ public class CurrentGear : Window, IDisposable {
 		};
 
 	public static void DrawSlots() {
+		if (Plugin.PluginConfiguration.DisplayPlateItems.Count == 0) return;
+
 		try {
 			bool isTooltipActive = false;
 			int i = 0;
 			foreach (var slot in SlotOrder) {
-				Configuration.SlotInventoryItems.TryGetValue(slot, out var item);
+				Plugin.PluginConfiguration.DisplayPlateItems.TryGetValue(slot, out var item);
 				bool isHovered = slot == HoveredSlot;
 				bool wasHovered = isHovered;
 				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, slot);

@@ -22,11 +22,10 @@ using Dresser.Structs.FFXIV;
 
 namespace Dresser.Windows.Components {
 	internal class ItemIcon {
-		public static float IconSizeMult = 1;
-		public static Vector2 IconSize => new Vector2(120) * IconSizeMult;
+		public static Vector2 IconSize => new Vector2(120) * Plugin.PluginConfiguration.IconSizeMult;
 		public static Vector2 TooltipFramePadding => new Vector2(ImGui.GetFontSize() * 0.2f);
 		public static Vector2 TooltipItemSpacing => TooltipFramePadding;
-		public static float DyeBorder => 3 * IconSizeMult;
+		public static float DyeBorder => 3 * Plugin.PluginConfiguration.IconSizeMult;
 
 		public static Vector4 ColorGood = new Vector4(124, 236, 56, 255) / 255;
 		public static Vector4 ColorGoodLight = new Vector4(180, 244, 170, 255) / 255;
@@ -189,7 +188,7 @@ namespace Dresser.Windows.Components {
 			var draw = ImGui.GetWindowDrawList();
 			var capSize = IconSize * new Vector2(1.17f, 1.16f);
 			var difference = capSize - IconSize;
-			initialPosition += (new Vector2(0, 3f) * IconSizeMult);
+			initialPosition += (new Vector2(0, 3f) * Plugin.PluginConfiguration.IconSizeMult);
 
 
 			if (image != null) {
@@ -252,7 +251,7 @@ namespace Dresser.Windows.Components {
 
 			var draw = ImGui.GetWindowDrawList();
 			Vector2 cursorScreenPos = ImGui.GetCursorScreenPos();
-			var radius = (ImGui.GetFontSize()) * 0.5f * IconSizeMult;
+			var radius = (ImGui.GetFontSize()) * 0.5f * Plugin.PluginConfiguration.IconSizeMult;
 			var x = cursorScreenPos.X - radius - ImGui.GetStyle().ItemSpacing.X;
 			var y = cursorScreenPos.Y + radius;
 			var pos = new Vector2(x, y);

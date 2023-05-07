@@ -26,11 +26,11 @@ namespace Dresser {
 		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
 		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
 
-
 		public static OdrScanner OdrScanner { get; private set; } = null!;
 		public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
+		public static InventoryScanner InventoryScanner { get; private set; } = null!;
 		public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
-		//public static GameInterface GameInterface { get; private set; } = null!;
+		public static GameInterface GameInterface { get; private set; } = null!;
 		public static GameUiManager GameUi { get; private set; } = null!;
 		public static TryOn TryOn { get; private set; } = null!;
 		public static CraftMonitor CraftMonitor { get; private set; } = null!;
@@ -55,7 +55,7 @@ namespace Dresser {
 
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			ConfigurationManager.Load();
-			//GameInterface = new GameInterface();
+			GameInterface = new GameInterface();
 
 			//Universalis = new Universalis();
 			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
@@ -65,8 +65,9 @@ namespace Dresser {
 			TryOn = new TryOn();
 			OdrScanner = new OdrScanner(CharacterMonitor);
 			CraftMonitor = new CraftMonitor(GameUi);
-			//InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface);
-			InventoryMonitor = new InventoryMonitor(OdrScanner, CharacterMonitor, GameUi, CraftMonitor);
+			InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner);
+			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner);
+			InventoryScanner.Enable();
 
 			GlamourPlates = new();
 
@@ -75,33 +76,32 @@ namespace Dresser {
 
 			Storage = new Storage();
 
-
 		}
 		public static void Dispose() {
+			ConfigurationManager.ClearQueue();
+			ConfigurationManager.Save();
 
 			Storage.Dispose();
 			//CommandManager.Dispose();
 			//FilterService.Dispose();
 			InventoryMonitor.Dispose();
-			OdrScanner.Dispose();
+			InventoryScanner.Dispose();
 			CraftMonitor.Dispose();
 			TryOn.Dispose();
 			GameUi.Dispose();
 			CharacterMonitor.Dispose();
 			PluginLog.Debug("leaving dresserrrrrrrrrrrrrrrrrrrrrrrr");
 
-
-			ConfigurationManager.Save();
 			Service.ExcelCache.Destroy();
 			//MarketCache.SaveCache(true);
 			//MarketCache.Dispose();
 			//Universalis.Dispose();
-			//GameInterface.Dispose();
+			GameInterface.Dispose();
 			IconStorage.Dispose();
 
 
 			InventoryMonitor = null!;
-			OdrScanner = null!;
+			InventoryScanner = null!;
 			CharacterMonitor = null!;
 			GameUi = null!;
 			TryOn = null!;
@@ -111,7 +111,7 @@ namespace Dresser {
 			//PluginInterface = null!;
 			//MarketCache = null!;
 			//Universalis = null!;
-			//GameInterface = null!;
+			GameInterface = null!;
 			IconStorage = null!;
 		}
 	}

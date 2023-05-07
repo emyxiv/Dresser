@@ -13,12 +13,27 @@ namespace Dresser {
 	public class Configuration : IPluginConfiguration {
 		public int Version { get; set; } = 0;
 
-		public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems { get; set; } = new();
+		public Dictionary<GlamourPlateSlot, InventoryItem> DisplayPlateItems { get; set; } = new();
+		
+
+		// gear browser remember
+		public float IconSizeMult { get; set; } = 1.0f;
+		public bool filterCurrentJob = true;
+		public bool filterCurrentRace = true;
+
+
+
+
+
+
+
 
 		// inventory tool stuff
 		public bool AutoSave { get; set; } = true;
-		public int AutoSaveMinutes { get; set; } = 1;
+		public float AutoSaveMinutes { get; set; } = 0.1f;
 
+
+		public Dictionary<ulong, Character> SavedCharacters = new();
 		public bool SaveBackgroundFilter { get; set; } = false;
 		public string? ActiveBackgroundFilter { get; set; } = null;
 		public bool InventoriesMigrated { get; set; } = false;
@@ -30,7 +45,12 @@ namespace Dresser {
 			get => _acquiredItems ?? new Dictionary<ulong, HashSet<uint>>();
 			set => _acquiredItems = value;
 		}
-
+		public Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> GetSavedInventory() {
+			return SavedInventories;
+		}
+		public Dictionary<ulong, Character> GetSavedRetainers() {
+			return SavedCharacters;
+		}
 		public void MarkReloaded() {
 			if (!SaveBackgroundFilter) {
 				ActiveBackgroundFilter = null;
@@ -38,16 +58,12 @@ namespace Dresser {
 		}
 
 
-		// the below exist just to make saving less cumbersome
-		[NonSerialized]
-		private DalamudPluginInterface? PluginInterface;
 
-		public void Initialize(DalamudPluginInterface pluginInterface) {
-			this.PluginInterface = pluginInterface;
-		}
+		public delegate void ConfigurationChangedDelegate();
+		public event ConfigurationChangedDelegate? ConfigurationChanged;
 
 		public void Save() {
-			this.PluginInterface!.SavePluginConfig(this);
+			ConfigurationChanged?.Invoke();
 		}
 	}
 }

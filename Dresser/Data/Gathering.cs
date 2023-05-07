@@ -5,6 +5,7 @@ using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
 
 using Dresser.Extensions;
+using Dresser.Logic;
 using Dresser.Structs.FFXIV;
 
 namespace Dresser.Data {
@@ -18,10 +19,14 @@ namespace Dresser.Data {
 			Storage.DisplayPage = Storage.Pages?.Last();
 			if (Storage.DisplayPage == null) return;
 			Storage.SlotMirageItems = Storage.DisplayPage.Value.ToDictionary();
-			Configuration.SlotInventoryItems = Storage.SlotMirageItems.ToDictionary(p => p.Key, p => 
+			var newlyParsedDresser = Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
 				new InventoryItem(InventoryType.GlamourChest, (short)p.Key, p.Value.ItemId, 1, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, p.Value.DyeId, 0)
 			)!;
+
+
+			Plugin.PluginConfiguration.DisplayPlateItems = newlyParsedDresser;
+			ConfigurationManager.SaveAsync();
 		}
 		public static void DelayParseGlamPlates()
 			=> Task.Run(async delegate {
@@ -41,7 +46,7 @@ namespace Dresser.Data {
 
 			var slot = item.Item.GlamourPlateSlot();
 			if (slot == null) return false;
-			if (Configuration.SlotInventoryItems.TryGetValue((GlamourPlateSlot)slot, out var storedItem)) {
+			if (Plugin.PluginConfiguration.DisplayPlateItems.TryGetValue((GlamourPlateSlot)slot, out var storedItem)) {
 				if (storedItem.ItemId == item.ItemId && storedItem.Stain == item.Stain)
 					return true;
 			}

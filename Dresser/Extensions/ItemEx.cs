@@ -7,6 +7,7 @@ using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 using Dresser.Structs.Actor;
 using Dresser.Structs.FFXIV;
 using Dresser.Windows.Components;
+using CriticalCommonLib;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
@@ -46,14 +47,20 @@ namespace Dresser.Extensions {
 		}
 		public static bool IsWeapon(this CriticalItemEx item)
 			=> item.EquipSlotCategoryEx?.MainHand == 1 || item.EquipSlotCategoryEx?.OffHand == 1;
-		public static bool CanBeEquipedByPlayerCharacter(this CriticalItemEx item) {
+		public static bool CanBeEquipedByPlayedRaceGender(this CriticalItemEx item) {
 			var gender = ItemIcon.LocalPlayerGender;
 			var race = ItemIcon.LocalPlayerRace;
 			if (gender == null || race == null) return false;
 
 			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
 		}
-		
+		public static bool CanBeEquipedByPlayedJob(this CriticalItemEx item) {
+			var job = ItemIcon.LocalPlayerClass;
+			if (job == null) return false;
+
+			return Service.ExcelCache.IsItemEquippableBy(item.ClassJobCategory.Row, job.RowId);
+		}
+
 
 	}
 }

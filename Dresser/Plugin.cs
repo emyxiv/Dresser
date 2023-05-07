@@ -17,33 +17,41 @@ using CriticalCommonLib.Services;
 using Dalamud.Logging;
 using System.Collections.Generic;
 using Dalamud.Game.Text.SeStringHandling;
+using System.Linq;
 
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
 		public string Name => "Dresser";
 		private const string CommandName = "/dresser";
 
-		public Configuration Configuration { get; init; }
+		public static Configuration PluginConfiguration => ConfigurationManager.Config;
 
 		public WindowSystem WindowSystem = new("Dresser");
+
+		private static Plugin? PluginInstance = null;
+		public static Plugin GetInstance() => PluginInstance!;
 
 		public Plugin(
 			[RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
 			[RequiredVersion("1.0")] CommandManager commandManager) {
+			PluginInstance = this;
 			PluginServices.Init(pluginInterface);
 
 
+
+			PluginConfiguration.ConfigurationChanged += ConfigOnConfigurationChanged;
 			PluginServices.InventoryMonitor.OnInventoryChanged += InventoryMonitorOnOnInventoryChanged;
-			PluginServices.CharacterMonitor.OnActiveRetainerChanged += CharacterMonitorOnOnActiveCharacterChanged;
-			PluginServices.CharacterMonitor.OnActiveRetainerLoaded += CharacterMonitorOnOnActiveCharacterChanged;
 			PluginServices.CharacterMonitor.OnCharacterUpdated += CharacterMonitorOnOnCharacterUpdated;
-			this.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-			this.Configuration.Initialize(pluginInterface);
-
-			GameInterface.AcquiredItemsUpdated += GameInterfaceOnAcquiredItemsUpdated;
-
-
 			Service.Framework.Update += FrameworkOnUpdate;
+
+			PluginServices.InventoryMonitor.LoadExistingData(PluginConfiguration.GetSavedInventory());
+			PluginServices.CharacterMonitor.LoadExistingRetainers(PluginConfiguration.GetSavedRetainers());
+
+
+
+
+
+
 
 			ImageGuiCrop.Init();
 			Gathering.Init();
@@ -54,12 +62,12 @@ namespace Dresser {
 
 
 			WindowSystem.AddWindow(new ConfigWindow(this));
-			WindowSystem.AddWindow(new GearBrowser());
+			WindowSystem.AddWindow(new GearBrowser(this));
 			WindowSystem.AddWindow(new CurrentGear());
 
 
 			PluginServices.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) {
-				HelpMessage = "A useful message to display in /xlhelp"
+				HelpMessage = "Open dresser."
 			});
 
 			pluginInterface.UiBuilder.Draw += DrawUI;
@@ -79,13 +87,13 @@ namespace Dresser {
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);
 
-			GameInterface.AcquiredItemsUpdated -= GameInterfaceOnAcquiredItemsUpdated;
-
+			PluginServices.GameInterface.AcquiredItemsUpdated -= GameInterfaceOnAcquiredItemsUpdated;
+			PluginConfiguration.SavedCharacters = PluginServices.CharacterMonitor.Characters;
 			Service.Framework.Update -= FrameworkOnUpdate;
 			PluginServices.InventoryMonitor.OnInventoryChanged -= InventoryMonitorOnOnInventoryChanged;
-			PluginServices.CharacterMonitor.OnActiveRetainerChanged -= CharacterMonitorOnOnActiveCharacterChanged;
-			PluginServices.CharacterMonitor.OnActiveRetainerLoaded -= CharacterMonitorOnOnActiveCharacterChanged;
 			PluginServices.CharacterMonitor.OnCharacterUpdated -= CharacterMonitorOnOnCharacterUpdated;
+			PluginConfiguration.ConfigurationChanged -= ConfigOnConfigurationChanged;
+
 
 			EventManager.GearSelectionOpen -= OpenDresser;
 			EventManager.GearSelectionClose -= CloseDresser;
@@ -97,9 +105,15 @@ namespace Dresser {
 		}
 
 		private void OnCommand(string command, string args) {
-			// in response to the slash command, just display our main ui
-			WindowSystem.GetWindow("Gear Browser")!.IsOpen = true;
-			WindowSystem.GetWindow("Current Gear")!.IsOpen = true;
+			PluginLog.Debug($"{command} {args}");
+			switch (args) {
+				case "config": DrawConfigUI(); break;
+				default:
+					// in response to the slash command, just display our main ui
+					WindowSystem.GetWindow("Gear Browser")!.IsOpen = true;
+					WindowSystem.GetWindow("Current Gear")!.IsOpen = true;
+					break;
+			}
 		}
 
 		private void DrawUI() {
@@ -132,7 +146,6 @@ namespace Dresser {
 
 
 
-
 		// Inventory tools save inventories
 		private DateTime? _nextSaveTime = null;
 		public void ClearAutoSave() {
@@ -141,13 +154,14 @@ namespace Dresser {
 		public DateTime? NextSaveTime => _nextSaveTime;
 
 		private void FrameworkOnUpdate(Framework framework) {
-			if (Configuration.AutoSave) {
-				if (NextSaveTime == null && Configuration.AutoSaveMinutes != 0) {
-					_nextSaveTime = DateTime.Now.AddMinutes(Configuration.AutoSaveMinutes);
+			if (PluginConfiguration.AutoSave) {
+				if (NextSaveTime == null && PluginConfiguration.AutoSaveMinutes != 0) {
+					_nextSaveTime = DateTime.Now.AddMinutes(PluginConfiguration.AutoSaveMinutes);
 				} else {
 					if (DateTime.Now >= NextSaveTime) {
+						//PluginLog.Debug("===============SAVING INV NOW==============");
 						_nextSaveTime = null;
-						ConfigurationManager.Save();
+						ConfigurationManager.SaveAsync();
 					}
 				}
 			}
@@ -162,11 +176,13 @@ namespace Dresser {
 		private bool _clearCachedLines = false;
 
 
-		private Dictionary<int, InventoryMonitor.ItemChangesItem> _recentlyAddedSeen = new();
+		private Dictionary<uint, InventoryMonitor.ItemChangesItem> _recentlyAddedSeen = new();
 		private void InventoryMonitorOnOnInventoryChanged(Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> inventories, InventoryMonitor.ItemChanges itemChanges) {
-			PluginLog.Verbose("PluginLogic: Inventory changed, saving to config.");
+			PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
+			PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
 			_clearCachedLines = true;
-			Configuration.SavedInventories = inventories;
+			PluginConfiguration.SavedInventories = inventories;
+			PluginLog.Debug($"====== inv updated {PluginConfiguration.SavedInventories.Select(t=>t.Value.Count).Sum()}");
 
 			foreach (var item in itemChanges.NewItems) {
 				if (_recentlyAddedSeen.ContainsKey(item.ItemId)) {
@@ -177,28 +193,24 @@ namespace Dresser {
 		}
 
 		private void CharacterMonitorOnOnCharacterUpdated(Character? character) {
+			PluginLog.Debug($"====== RECORD CHAR UPDATE");
+
 			if (character != null) {
-				if (Configuration.AcquiredItems.ContainsKey(character.CharacterId)) {
-					GameInterface.AcquiredItems = Configuration.AcquiredItems[character.CharacterId];
+				if (PluginConfiguration.AcquiredItems.ContainsKey(character.CharacterId)) {
+					PluginServices.GameInterface.AcquiredItems = PluginConfiguration.AcquiredItems[character.CharacterId];
 				}
 			} else {
-				GameInterface.AcquiredItems = new HashSet<uint>();
+				PluginServices.GameInterface.AcquiredItems = new HashSet<uint>();
 			}
 		}
 		private void GameInterfaceOnAcquiredItemsUpdated() {
+			PluginLog.Debug($"====== RECORD ITEM ACQUIRE UPDATE");
+
 			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
 			if (activeCharacter != 0) {
-				Configuration.AcquiredItems[activeCharacter] = GameInterface.AcquiredItems;
+				PluginConfiguration.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
 			}
 		}
-
-		private ulong _currentRetainerId;
-		private void CharacterMonitorOnOnActiveCharacterChanged(ulong retainerId) {
-			PluginLog.Debug("Retainer changed.");
-			PluginLog.Debug("Retainer ID: " + retainerId);
-			_currentRetainerId = retainerId;
-		}
-
 
 	}
 }
