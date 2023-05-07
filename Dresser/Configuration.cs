@@ -18,6 +18,7 @@ namespace Dresser {
 
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;
+		public bool ShowImagesInBrowser = false;
 		public bool filterCurrentJob = true;
 		public bool filterCurrentRace = true;
 

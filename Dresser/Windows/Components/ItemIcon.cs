@@ -19,6 +19,8 @@ using Dresser.Data;
 using Dresser.Data.Excel;
 using Dresser.Extensions;
 using Dresser.Structs.FFXIV;
+using Dresser.Logic;
+using Dalamud.Logging;
 
 namespace Dresser.Windows.Components {
 	internal class ItemIcon {
@@ -77,7 +79,8 @@ namespace Dresser.Windows.Components {
 
 			// item variables
 			var dye = Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
-			var image = PluginServices.IconStorage.Get(item);
+			var image = ConfigurationManager.Config.ShowImagesInBrowser ? PluginServices.IconStorage.Get(item) : null;
+			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
 			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)LocalPlayerRace, (CharacterSex)LocalPlayerGender);
 			var isDyeable = item.Item.IsDyeable;
@@ -99,6 +102,7 @@ namespace Dresser.Windows.Components {
 
 				isTooltipActive2 = true;
 
+				if(image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = PluginServices.IconStorage.Get(item);
 				DrawImage(image!, dye, isDyeable);
 
 				var rarityColor = Storage.RarityColor(item.Item);
@@ -118,6 +122,7 @@ namespace Dresser.Windows.Components {
 
 				// type of item (body, legs, etc) under the icon
 				ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
+				//PluginLog.Debug($"ui category: {item.ItemUICategory} {item.EquipSlotCategory!.RowId}");
 				ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.Container.ToString());
 
 				// Equip Conditions

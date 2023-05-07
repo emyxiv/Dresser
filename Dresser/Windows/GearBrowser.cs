@@ -71,6 +71,10 @@ namespace Dresser.Windows {
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cogs)) {
 				this.Plugin.DrawConfigUI();
 			}
+			ImGui.SameLine();
+
+			ImGui.Checkbox($"Images##displayCategory", ref ConfigurationManager.Config.ShowImagesInBrowser);
+
 
 
 
@@ -107,7 +111,7 @@ namespace Dresser.Windows {
 
 			var currentCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
 			var savedItems = ConfigurationManager.Config.SavedInventories.First(c => c.Key == currentCharacter).Value.SelectMany(t=>t.Value);
-			PluginLog.Debug($" items: {savedItems.Count()}");
+			//PluginLog.Debug($" items: {savedItems.Count()}");
 			var items = savedItems.Where(i =>
 				!i.IsEmpty
 				&& (!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
@@ -128,7 +132,7 @@ namespace Dresser.Windows {
 				.OrderByDescending(i => i.Item.LevelEquip)
 				//.OrderBy(i => i.Item.LevelItem)
 				;
-			PluginLog.Debug($" found valid items: {items.Count()}");
+			//PluginLog.Debug($" found valid items: {items.Count()}");
 
 
 			//ImGui.SameLine();
@@ -153,16 +157,16 @@ namespace Dresser.Windows {
 
 					// execute when clicked
 					if (iconClicked) {
-							PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
+						PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
 
-							// TODO: make sure the item is still in glam chest or armoire
-							//if (GlamourPlates.IsGlamingAtDresser() && (item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire)) {
-							//	PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
-							//		(i) => Gathering.ParseGlamourPlates()
-							//		);
-							//}
+						// TODO: make sure the item is still in glam chest or armoire
+						//if (GlamourPlates.IsGlamingAtDresser() && (item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire)) {
+						//	PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
+						//		(i) => Gathering.ParseGlamourPlates()
+						//		);
+						//}
 
-							Service.ClientState.LocalPlayer?.Equip(item);
+						Service.ClientState.LocalPlayer?.Equip(item);
 					}
 
 
