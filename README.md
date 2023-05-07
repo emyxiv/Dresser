@@ -2,6 +2,9 @@
 
 A [Dalamud](https://discord.gg/3NMcUV5) plugin aiming to ease glamour dresser experience.
 
+TODO:
+Optimize image memory or make image-less option.
+
 Planned features:
 
 0. glam anywhere
