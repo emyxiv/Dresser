@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using CriticalCommonLib.Enums;
@@ -28,6 +29,12 @@ namespace Dresser.Data {
 			Plugin.PluginConfiguration.DisplayPlateItems = newlyParsedDresser;
 			ConfigurationManager.SaveAsync();
 		}
+		public static Dictionary<GlamourPlateSlot, InventoryItem> EmptyGlamourPlate() {
+			return Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
+				EmptyItemSlot()
+			);
+		}
+		public static InventoryItem EmptyItemSlot() => new InventoryItem(InventoryType.GlamourChest, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		public static void DelayParseGlamPlates()
 			=> Task.Run(async delegate {
 				await Task.Delay(250);

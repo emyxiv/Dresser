@@ -30,6 +30,8 @@ namespace Dresser.Data {
 		public static Dictionary<byte, Vector4> RarityColors = new();
 		public readonly GameFontHandle FontTitle =
 			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68));
+		public readonly GameFontHandle FontRadio =
+			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis36));
 
 		public Storage() {
 			Dyes = Sheets.GetSheet<Dye>();
@@ -136,6 +138,13 @@ namespace Dresser.Data {
 				{ 3, (new(0, 96), new(96, 96) ) },
 			}},
 
+			{ "mirage_prism_plate2", new(){
+				// button not selected plate (radio)
+				{ 5, (new(0, 56), new(56*2, 48) ) },
+				// button currently selected plate (radio)
+				{ 6, (new(56*2, 56), new(56*2, 48) ) },
+			}},
+
 		};
 
 		public static Dictionary<GlamourPlateSlot, int> EmptyGlamourPlateSlot = new() {
@@ -187,6 +196,7 @@ namespace Dresser.Data {
 				{"character", $"ui/uld/Character{Storage.HighResolutionSufix}.tex"},
 				{"icon_a_frame", $"ui/uld/IconA_Frame{Storage.HighResolutionSufix}.tex"},
 				{"mirage_prism_box", $"ui/uld/MiragePrismBoxIcon{Storage.HighResolutionSufix}.tex"},
+				{"mirage_prism_plate2", $"ui/uld/MiragePrismPlate2{Storage.HighResolutionSufix}.tex"}, // plate number tabs
 			};
 			foreach((var handle, var path) in paths) {
 

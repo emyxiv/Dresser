@@ -26,7 +26,8 @@ namespace Dresser.Extensions {
 			if (slot.Wrists == 1) return Structs.FFXIV.GlamourPlateSlot.Wrists;
 			if (slot.FingerR == 1) return Structs.FFXIV.GlamourPlateSlot.RightRing;
 			if (slot.FingerL == 1) return Structs.FFXIV.GlamourPlateSlot.LeftRing;
-			throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
+			return null;
+			//throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
 		}
 		public static EquipIndex? EquipIndex(this CriticalItemEx item) {
 			var slot = item.EquipSlotCategoryEx;

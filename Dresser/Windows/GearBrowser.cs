@@ -18,6 +18,7 @@ using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Windows.Components;
 using Dresser.Logic;
+using Dresser.Structs.FFXIV;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IDisposable {
@@ -54,6 +55,8 @@ namespace Dresser.Windows {
 			InventoryCategory.FreeCompanyBags,
 		};
 		private static Dictionary<InventoryCategory, bool> DisplayInventoryCategories = AllowedCategories.ToDictionary(c => c, c => true);
+		public static GlamourPlateSlot? SelectedSlot = null;
+
 		public override void Draw() {
 			//TestWindow();
 
@@ -116,6 +119,7 @@ namespace Dresser.Windows {
 				!i.IsEmpty
 				&& (!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
 				&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
+				&& SelectedSlot == i.Item.GlamourPlateSlot()
 				&& AllowedCategories.Contains(i.Container.ToInventoryCategory())
 				&& DisplayInventoryCategories[i.Container.ToInventoryCategory()]
 				&& i.Item.ModelMain != 0
