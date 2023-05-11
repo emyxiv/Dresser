@@ -18,6 +18,8 @@ using Dalamud.Logging;
 using System.Collections.Generic;
 using Dalamud.Game.Text.SeStringHandling;
 using System.Linq;
+using ImGuiNET;
+using Dresser.Windows.Components;
 
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
@@ -63,7 +65,7 @@ namespace Dresser {
 
 			WindowSystem.AddWindow(new ConfigWindow(this));
 			WindowSystem.AddWindow(new GearBrowser(this));
-			WindowSystem.AddWindow(new CurrentGear());
+			WindowSystem.AddWindow(new CurrentGear(this));
 
 
 			PluginServices.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) {
@@ -136,6 +138,11 @@ namespace Dresser {
 			//PluginLog.Debug($"CloseDresser");
 			WindowSystem.GetWindow("Current Gear")!.IsOpen = false;
 			WindowSystem.GetWindow("Gear Browser")!.IsOpen = false;
+		}
+		public void OpenGearBrowserIfClosed() {
+			if(!WindowSystem.GetWindow("Gear Browser")!.IsOpen) {
+				WindowSystem.GetWindow("Gear Browser")!.IsOpen = true;
+			}
 		}
 		public bool IsDresserVisible()
 			=> WindowSystem.GetWindow("Current Gear")!.IsOpen;

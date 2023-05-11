@@ -170,6 +170,12 @@ namespace Dresser.Windows {
 						//		);
 						//}
 
+						var slot = item.Item.GlamourPlateSlot();
+
+						if (slot != null && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) {
+							plate[(GlamourPlateSlot)slot] = item.Copy()!;
+						}
+
 						Service.ClientState.LocalPlayer?.Equip(item);
 					}
 

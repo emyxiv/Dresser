@@ -12,12 +12,16 @@ using Dresser.Data;
 using Dresser.Logic;
 using Dresser.Structs.FFXIV;
 using Dresser.Windows.Components;
+using Dresser.Extensions;
+using CriticalCommonLib;
+using Dresser.Interop.Hooks;
 
 namespace Dresser.Windows;
 
 public class CurrentGear : Window, IDisposable {
+	private Plugin Plugin;
 
-	public CurrentGear() : base(
+	public CurrentGear(Plugin plugin) : base(
 		"Current Gear",
 		ImGuiWindowFlags.AlwaysAutoResize
 		| ImGuiWindowFlags.NoScrollbar
@@ -27,6 +31,7 @@ public class CurrentGear : Window, IDisposable {
 			MinimumSize = new Vector2(10),
 			MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 		};
+		this.Plugin = plugin;
 	}
 
 	public override void PreDraw()
@@ -36,7 +41,7 @@ public class CurrentGear : Window, IDisposable {
 	public void Dispose() { }
 
 	public static Vector4 CollectionColorTitle = (new Vector4(116, 123, 98, 255) / 255 * 0.3f) + new Vector4(0, 0, 0, 1);
-	public static float opacityRadio = 0.60f;
+	public static float opacityRadio = 0.70f;
 	public static Vector4 CollectionColorRadio = ((new Vector4(116, 123, 98, 255) / 255 * 0.3f) * new Vector4(1, 1, 1, 0) ) + new Vector4(0, 0, 0, opacityRadio);
 	private static ushort? PlateSlotButtonHovering = null;
 	public override void Draw() {
@@ -110,6 +115,7 @@ public class CurrentGear : Window, IDisposable {
 		DrawSlots();
 		ImGui.EndGroup();
 
+		DrawChildren();
 	}
 
 	private static GlamourPlateSlot? HoveredSlot = null;
@@ -122,21 +128,20 @@ public class CurrentGear : Window, IDisposable {
 			GlamourPlateSlot.Feet, GlamourPlateSlot.LeftRing,
 		};
 
-	public static void DrawSlots() {
+	public void DrawSlots() {
 		if (Storage.DisplayPage != null && Plugin.PluginConfiguration.DisplayPlateItems.Count == 0) return;
-		ushort currentPend = 1;
+		var isGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
 
 		try {
 			Dictionary<GlamourPlateSlot, InventoryItem> plateItems = new(); ;
-			if (ConfigurationManager.Config.PendingPlateItems == null) ConfigurationManager.Config.PendingPlateItems = new();
-			if (Storage.DisplayPage == null) {
 
-				ConfigurationManager.Config.PendingPlateItems.TryGetValue(currentPend, out var plateItems2);
+			if (isGlamingAtDresser && Storage.DisplayPage != null) {
+				plateItems = Plugin.PluginConfiguration.DisplayPlateItems;
+			} else {
+				CheckPendingPlateItems();
+				ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2);
 				if (plateItems2 != null) plateItems = plateItems2;
 				else plateItems = Gathering.EmptyGlamourPlate();
-
-			} else {
-				plateItems = Plugin.PluginConfiguration.DisplayPlateItems;
 			}
 			bool isTooltipActive = false;
 			int i = 0;
@@ -147,13 +152,14 @@ public class CurrentGear : Window, IDisposable {
 				bool isHovered = slot == HoveredSlot;
 				bool wasHovered = isHovered;
 				isHovered |= GearBrowser.SelectedSlot == slot;
-				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, slot);
+				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, slot, ContextMenuCurrent);
 				if (isHovered)
 					HoveredSlot = slot;
 				else if (!isHovered && wasHovered)
 					HoveredSlot = null;
 				if (iconClicked) {
 					GearBrowser.SelectedSlot = slot;
+					this.Plugin.OpenGearBrowserIfClosed();
 				}
 
 				if (i % 2 == 0)
@@ -165,5 +171,28 @@ public class CurrentGear : Window, IDisposable {
 			PluginLog.Error(ex, ex.ToString());
 		}
 
+	}
+	private static void ContextMenuCurrent(InventoryItem item) {
+		if (ImGui.Selectable("Remove Item Image from Plate")) {
+			item.Clear();
+			Service.ClientState.LocalPlayer?.Equip(item);
+		}
+		if (ImGui.Selectable("Dye"))
+			PluginLog.Debug("TODO: open dye picker");
+		if (ImGui.Selectable("Remove Dye"))
+			item.Stain = 0;
+
+	}
+
+	private static void CheckPendingPlateItems() {
+		if(ConfigurationManager.Config.PendingPlateItems == null || !ConfigurationManager.Config.PendingPlateItems.Any()) {
+			ConfigurationManager.Config.PendingPlateItems = new();
+			for (ushort i = 0; i < Storage.PlateNumber; i++) {
+				ConfigurationManager.Config.PendingPlateItems[i] = new();
+			}
+		}
+	}
+	private static void DrawChildren() {
+		ItemIcon.DrawContextMenu();
 	}
 }

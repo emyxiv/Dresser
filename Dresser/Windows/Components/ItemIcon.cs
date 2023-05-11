@@ -21,6 +21,7 @@ using Dresser.Extensions;
 using Dresser.Structs.FFXIV;
 using Dresser.Logic;
 using Dalamud.Logging;
+using Dalamud.Interface.Components;
 
 namespace Dresser.Windows.Components {
 	internal class ItemIcon {
@@ -41,6 +42,8 @@ namespace Dresser.Windows.Components {
 		public static CharacterSex? LocalPlayerGender = null;
 		public static ClassJob? LocalPlayerClass = null;
 		public static byte LocalPlayerLevel = 0;
+		public static InventoryItem? ContexMenuItem = null;
+		public static Action<InventoryItem>? ContexMenuAction = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
 		public static void Init() {
@@ -67,7 +70,7 @@ namespace Dresser.Windows.Components {
 			bool __ = false;
 			DrawIcon(item, ref _, ref __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem>? contextAction = null) {
 
 			if (LocalPlayer == null) Init();
 			if (LocalPlayer == null
@@ -89,8 +92,13 @@ namespace Dresser.Windows.Components {
 
 			if (item.ItemId == 0)
 				image = null;
-			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, emptySlot);
-
+			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, out bool rightClicked, emptySlot);
+			if (contextAction != null && rightClicked) {
+				PluginLog.Debug("right clicked");
+				ContexMenuAction = contextAction;
+				ContexMenuItem = item;
+				ImGui.OpenPopup("ContextMenuItemDresser");
+			}
 			var isTooltipActive2 = isTooltipActive;
 
 			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
@@ -181,9 +189,9 @@ namespace Dresser.Windows.Components {
 		}
 		private static bool DrawImage(TextureWrap image, Dye? dye, bool isDyeable, IconImageFlag iconImageFlag = 0) {
 			bool _ = false;
-			return DrawImage( image,dye, isDyeable, ref _, iconImageFlag);
+			return DrawImage( image,dye, isDyeable, ref _, iconImageFlag, out var _);
 		}
-		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, GlamourPlateSlot? emptySlot = null) {
+		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, out bool rightClicked, GlamourPlateSlot? emptySlot = null) {
 			ImGui.BeginGroup();
 
 			bool wasHovered = hovering;
@@ -209,6 +217,8 @@ namespace Dresser.Windows.Components {
 
 			var clicked = ImGui.IsItemClicked();
 			hovering = ImGui.IsItemHovered();
+			rightClicked = ImGui.IsItemClicked(ImGuiMouseButton.Right);
+
 
 			DrawStain(dye, isDyeable);
 
@@ -263,6 +273,14 @@ namespace Dresser.Windows.Components {
 
 			draw.AddCircleFilled(pos, radius, ImGui.ColorConvertFloat4ToU32(color));
 			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder);
+		}
+		public static void DrawContextMenu() {
+			if(ContexMenuItem != null && ContexMenuAction != null) {
+				if (ImGui.BeginPopupContextWindow("ContextMenuItemDresser")) {
+					ContexMenuAction?.Invoke(ContexMenuItem);
+					ImGui.EndPopup();
+				}
+			}
 		}
 	}
 	[Flags]
