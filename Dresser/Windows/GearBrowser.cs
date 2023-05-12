@@ -61,30 +61,15 @@ namespace Dresser.Windows {
 			//TestWindow();
 
 			// top "bar" with controls
-			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
-			var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
-			if(ImGui.DragFloat("##IconSize##slider", ref iconSizeMult, 0.01f, 0.1f, 4f, "%.2f %")) {
-				ConfigurationManager.Config.IconSizeMult = iconSizeMult;
-				ConfigurationManager.SaveAsync();
-			}
+			ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search,100);
 			ImGui.SameLine();
-			ImGui.Text("%");
-			ImGui.SameLine();
-
-			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cogs)) {
+			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
 				this.Plugin.DrawConfigUI();
 			}
-			ImGui.SameLine();
-
-			ImGui.Checkbox($"Images##displayCategory", ref ConfigurationManager.Config.ShowImagesInBrowser);
 
 
-
-
-			ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100);
-			
-			if (ImGui.CollapsingHeader($"Source##Source##GearBrowser")) {
-				PluginLog.Debug($"ffff => {ConfigurationManager.Config.FilterInventoryCategory.Count()}");
+			if (ImGui.CollapsingHeader($"Source##Source##GearBrowser", ConfigurationManager.Config.FilterSourceCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+				ConfigurationManager.Config.FilterSourceCollapse = true;
 				ImGui.Columns(2);
 				int i = 0;
 				foreach ((var cat, var willDisplay) in ConfigurationManager.Config.FilterInventoryCategory) {
@@ -104,14 +89,17 @@ namespace Dresser.Windows {
 				//ImGui.Checkbox("Unobtained##GearBrowser", ref disb);
 				//ImGui.EndDisabled();
 				ImGui.Columns();
-			}
-			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser")) {
+			} else
+				ConfigurationManager.Config.FilterSourceCollapse = false;
 
+			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+				ConfigurationManager.Config.FilterAdvancedCollapse = true;
 				ImGui.Checkbox($"Filter Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
 				ImGui.SameLine();
 				ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
-			}
+			} else
+				ConfigurationManager.Config.FilterAdvancedCollapse = false;
 
 			var currentCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
 			var savedItems = ConfigurationManager.Config.SavedInventories.First(c => c.Key == currentCharacter).Value.SelectMany(t=>t.Value);

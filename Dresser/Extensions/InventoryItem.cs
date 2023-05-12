@@ -4,11 +4,14 @@ using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 using System.Collections.Generic;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Extensions;
+using Dresser.Logic;
 
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {
 		public static bool IsGlamourPlateApplicable(this CriticalInventoryItem item)
-			=> item.Container == CriticalCommonLib.Enums.InventoryType.GlamourChest || item.Container == CriticalCommonLib.Enums.InventoryType.Armoire;
+			=> item.SortedContainer == CriticalCommonLib.Enums.InventoryType.GlamourChest || item.SortedContainer == CriticalCommonLib.Enums.InventoryType.Armoire;
+		public static bool IsFadedInBrowser(this CriticalInventoryItem item)
+			=> ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip && !item.IsGlamourPlateApplicable();
 		public static void Clear(this CriticalInventoryItem item) {
 
 			item.Container = 0;

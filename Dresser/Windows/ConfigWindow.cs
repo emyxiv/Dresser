@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 
 using CriticalCommonLib;
@@ -31,11 +32,33 @@ public class ConfigWindow : Window, IDisposable {
 		//	//can save immediately on change, if you don't want to provide a "Save and Close" button
 		//	Configuration.Save();
 		//}
+		ImGui.Text($"Browser");
+		DrawBrowserConfigs();
+		ImGui.Text($"Inventory Memory");
+		DrawInventoryConfigs();
 
-		if(ImGui.Button("Force Save All configs and inventories")) {
+	}
+
+	public void DrawBrowserConfigs() {
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
+		var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
+		if (ImGui.DragFloat("##IconSize##slider", ref iconSizeMult, 0.01f, 0.1f, 4f, "%.2f %")) {
+			ConfigurationManager.Config.IconSizeMult = iconSizeMult;
+			ConfigurationManager.SaveAsync();
+		}
+		ImGui.SameLine();
+		ImGui.Text("%");
+		ImGui.Checkbox($"Show items icons##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowImagesInBrowser);
+		ImGui.Checkbox($"Fade unavailable items when hidding tooltips (Hold Alt)##Images##GearBrowserConfig", ref ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip);
+
+
+	}
+	public void DrawInventoryConfigs() {
+		if (ImGui.Button("Force Save All configs and inventories")) {
 			ConfigurationManager.Save();
 		}
 		DrawInventoryStatusTable();
+
 	}
 
 	private void DrawInventoryStatusTable() {
@@ -69,7 +92,13 @@ public class ConfigWindow : Window, IDisposable {
 				}
 
 				ImGui.TableNextColumn();
-				ImGui.Text(character.ItemCount.ToString());
+				int itemCount = 0;
+				if(ConfigurationManager.Config.SavedInventories.TryGetValue(character.CharacterId, out var invs)){
+					itemCount = invs.Sum(c => c.Value.Count);
+				}
+
+
+				ImGui.Text(itemCount.ToString());
 				ImGui.SameLine();
 
 				ImGui.TableNextColumn();

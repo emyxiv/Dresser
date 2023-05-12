@@ -65,7 +65,7 @@ namespace Dresser.Windows.Components {
 			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
 			var isDyeable = item.Item.IsDyeable;
-			var isApplicable = item.IsGlamourPlateApplicable();
+			var isApplicable = !item.IsFadedInBrowser();
 			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
 
 			if (item.ItemId == 0)

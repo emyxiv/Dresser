@@ -26,6 +26,7 @@ namespace Dresser {
 
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;
+		public bool FadeIconsIfNotHiddingTooltip = false;
 		public bool ShowImagesInBrowser = true;
 		public bool filterCurrentJob = true;
 		public bool filterCurrentRace = true;
@@ -41,7 +42,8 @@ namespace Dresser {
 				});
 			}
 		}
-
+		public bool FilterSourceCollapse = false;
+		public bool FilterAdvancedCollapse = true;
 
 
 
