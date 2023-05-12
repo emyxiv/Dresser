@@ -29,4 +29,8 @@ namespace Dresser.Structs.Actor {
 
 		[FieldOffset(0xA0)] public unsafe Skeleton* Skeleton;
 	}
+	public enum WeaponIndex : int {
+		MainHand,
+		OffHand,
+	}
 }

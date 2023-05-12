@@ -15,6 +15,8 @@ using Dresser.Windows.Components;
 using Dresser.Extensions;
 using CriticalCommonLib;
 using Dresser.Interop.Hooks;
+using Newtonsoft.Json.Linq;
+using Dalamud.Interface;
 
 namespace Dresser.Windows;
 
@@ -38,6 +40,15 @@ public class CurrentGear : Window, IDisposable {
 		=> GearBrowser.PushStyleCollection();
 	public override void PostDraw()
 		=> GearBrowser.PopStyleCollection();
+	public override void OnOpen() {
+		base.OnOpen();
+		PluginServices.ApplyGearChange.EnterBrowsingMode();
+	}
+
+	public override void OnClose() {
+		base.OnClose();
+		PluginServices.ApplyGearChange.ExitBrowsingMode();
+	}
 	public void Dispose() { }
 
 	public static Vector4 CollectionColorTitle = (new Vector4(116, 123, 98, 255) / 255 * 0.3f) + new Vector4(0, 0, 0, 1);
@@ -63,8 +74,27 @@ public class CurrentGear : Window, IDisposable {
 		draw.AddLine(start, end, ImGui.ColorConvertFloat4ToU32(CollectionColorTitle), 5);
 		ImGui.Spacing();
 
+		DrawPlateSelector(draw);
+		DrawSlots();
+		DrawBottomButtons();
 
+
+		DrawChildren();
+	}
+
+	private void DrawBottomButtons() {
+		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
+		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
+		//ImGui.SameLine();
+		if (GuiHelpers.IconButtonTooltip(ConfigurationManager.Config.CurrentGearDisplayGear?FontAwesomeIcon.Church: FontAwesomeIcon.Peace, "Display Gear", default)) {
+			ConfigurationManager.Config.CurrentGearDisplayGear = !ConfigurationManager.Config.CurrentGearDisplayGear;
+			PluginServices.ApplyGearChange.ToggleDisplayGear();
+		}
+	}
+
+	private void DrawPlateSelector(ImDrawListPtr draw) {
 		ImGui.BeginGroup();
+
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0));
 
 		var radioActive = ImageGuiCrop.GetPart("mirage_prism_plate2", 6);
@@ -92,11 +122,12 @@ public class CurrentGear : Window, IDisposable {
 				fontSize,
 				ImGui.GetCursorScreenPos() + textPlacement,
 				ImGui.ColorConvertFloat4ToU32(CollectionColorRadio),
-				$"{spacer}{plateNumber+1}");
+				$"{spacer}{plateNumber + 1}");
 
 			if (clicked) {
 				// Change selected plate
 				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
+				PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
 			}
 			if (hovering) {
 				// save hovered button for later
@@ -107,15 +138,8 @@ public class CurrentGear : Window, IDisposable {
 		if (!anythingHovered) PlateSlotButtonHovering = null;
 
 		ImGui.PopStyleVar();
-
-
 		ImGui.EndGroup();
 		ImGui.SameLine(radioInActive.Item4.X);
-		ImGui.BeginGroup();
-		DrawSlots();
-		ImGui.EndGroup();
-
-		DrawChildren();
 	}
 
 	private static GlamourPlateSlot? HoveredSlot = null;
@@ -128,14 +152,15 @@ public class CurrentGear : Window, IDisposable {
 			GlamourPlateSlot.Feet, GlamourPlateSlot.LeftRing,
 		};
 
-	public void DrawSlots() {
+	private void DrawSlots() {
+
 		if (Storage.DisplayPage != null && Plugin.PluginConfiguration.DisplayPlateItems.Count == 0) return;
-		var isGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
+		ImGui.BeginGroup();
 
 		try {
 			Dictionary<GlamourPlateSlot, InventoryItem> plateItems = new(); ;
 
-			if (isGlamingAtDresser && Storage.DisplayPage != null) {
+			if (PluginServices.Context.IsGlamingAtDresser && Storage.DisplayPage != null) {
 				plateItems = Plugin.PluginConfiguration.DisplayPlateItems;
 			} else {
 				CheckPendingPlateItems();
@@ -158,8 +183,7 @@ public class CurrentGear : Window, IDisposable {
 				else if (!isHovered && wasHovered)
 					HoveredSlot = null;
 				if (iconClicked) {
-					GearBrowser.SelectedSlot = slot;
-					this.Plugin.OpenGearBrowserIfClosed();
+					PluginServices.ApplyGearChange.ExecuteCurrentItem(slot);
 				}
 
 				if (i % 2 == 0)
@@ -170,17 +194,17 @@ public class CurrentGear : Window, IDisposable {
 		} catch(Exception ex) {
 			PluginLog.Error(ex, ex.ToString());
 		}
-
+		ImGui.EndGroup();
 	}
 	private static void ContextMenuCurrent(InventoryItem item) {
-		if (ImGui.Selectable("Remove Item Image from Plate")) {
-			item.Clear();
-			Service.ClientState.LocalPlayer?.Equip(item);
-		}
+		if (ImGui.Selectable("Remove Item Image from Plate"))
+			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item);
+
 		if (ImGui.Selectable("Dye"))
-			PluginLog.Debug("TODO: open dye picker");
+			PluginServices.ApplyGearChange.ExecuteCurrentContextDye(item);
+
 		if (ImGui.Selectable("Remove Dye"))
-			item.Stain = 0;
+			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveDye(item);
 
 	}
 

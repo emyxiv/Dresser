@@ -49,14 +49,14 @@ namespace Dresser.Extensions {
 		public static bool IsWeapon(this CriticalItemEx item)
 			=> item.EquipSlotCategoryEx?.MainHand == 1 || item.EquipSlotCategoryEx?.OffHand == 1;
 		public static bool CanBeEquipedByPlayedRaceGender(this CriticalItemEx item) {
-			var gender = ItemIcon.LocalPlayerGender;
-			var race = ItemIcon.LocalPlayerRace;
+			var gender = PluginServices.Context.LocalPlayerGender;
+			var race = PluginServices.Context.LocalPlayerRace;
 			if (gender == null || race == null) return false;
 
 			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
 		}
 		public static bool CanBeEquipedByPlayedJob(this CriticalItemEx item) {
-			var job = ItemIcon.LocalPlayerClass;
+			var job = PluginServices.Context.LocalPlayerClass;
 			if (job == null) return false;
 
 			return Service.ExcelCache.IsItemEquippableBy(item.ClassJobCategory.Row, job.RowId);

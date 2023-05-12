@@ -37,30 +37,9 @@ namespace Dresser.Windows.Components {
 		public static Vector4 ColorGreyDark = ColorGrey / 1.1f;
 		public static Vector4 ColorBronze = new Vector4(240, 223, 191, 255) / 255;
 
-		public static PlayerCharacter? LocalPlayer = null;
-		public static CharacterRace? LocalPlayerRace = null;
-		public static CharacterSex? LocalPlayerGender = null;
-		public static ClassJob? LocalPlayerClass = null;
-		public static byte LocalPlayerLevel = 0;
 		public static InventoryItem? ContexMenuItem = null;
 		public static Action<InventoryItem>? ContexMenuAction = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
-
-		public static void Init() {
-			LocalPlayer = Service.ClientState.LocalPlayer;
-			if (LocalPlayer == null) return;
-			LocalPlayerRace = (CharacterRace)(LocalPlayer.Customize[(int)CustomizeIndex.Race]);
-			LocalPlayerGender = (LocalPlayer.Customize[(int)CustomizeIndex.Gender]) == 0 ? CharacterSex.Male : CharacterSex.Female;
-			LocalPlayerClass = LocalPlayer.ClassJob.GameData;
-			LocalPlayerLevel = LocalPlayer.Level;
-		}
-		public static void Dispose() {
-			LocalPlayer = null;
-			LocalPlayerRace = null;
-			LocalPlayerGender = null;
-			LocalPlayerClass = null;
-			LocalPlayerLevel = 0;
-		}
 
 		//public static bool DrawIcon(TextureWrap image, Dye? dye, InventoryItem item, bool isDyeable)
 		//	=> DrawIcon(image, dye, isDyeable, item, out bool _);
@@ -72,11 +51,10 @@ namespace Dresser.Windows.Components {
 		}
 		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem>? contextAction = null) {
 
-			if (LocalPlayer == null) Init();
-			if (LocalPlayer == null
-				|| LocalPlayerRace == null
-				|| LocalPlayerGender == null
-				|| LocalPlayerClass == null
+			if (PluginServices.Context.LocalPlayer == null
+				|| PluginServices.Context.LocalPlayerRace == null
+				|| PluginServices.Context.LocalPlayerGender == null
+				|| PluginServices.Context.LocalPlayerClass == null
 				) return false;
 
 
@@ -84,8 +62,8 @@ namespace Dresser.Windows.Components {
 			var dye = Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? PluginServices.IconStorage.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
-			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, LocalPlayerClass.RowId);
-			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)LocalPlayerRace, (CharacterSex)LocalPlayerGender);
+			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
+			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
 			var isDyeable = item.Item.IsDyeable;
 			var isApplicable = item.IsGlamourPlateApplicable();
 			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
@@ -136,7 +114,7 @@ namespace Dresser.Windows.Components {
 				// Equip Conditions
 				ImGui.Separator();
 
-				ImGui.TextColored(LocalPlayerLevel < item.Item.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.LevelEquip}");
+				ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.LevelEquip}");
 				ImGui.SameLine();
 				ImGui.Text($"ilvl: {item.Item.LevelItem.Row}");
 

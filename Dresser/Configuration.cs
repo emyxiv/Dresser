@@ -16,6 +16,7 @@ namespace Dresser {
 		public Dictionary<GlamourPlateSlot, InventoryItem> DisplayPlateItems { get; set; } = new();
 		public Dictionary<ushort, Dictionary<GlamourPlateSlot, InventoryItem>> PendingPlateItems { get; set; } = new();
 		public ushort SelectedCurrentPlate { get; set; } = 0;
+		public bool CurrentGearDisplayGear = false;
 
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;

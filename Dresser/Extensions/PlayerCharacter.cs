@@ -48,12 +48,12 @@ namespace Dresser.Extensions {
 					var weapon = playerCharacter.MainHandModels().Equip;
 					weapon.Set = weaponSet; weapon.Base = weaponBase; weapon.Variant = weaponVariant; weapon.Dye = weaponDye;
 
-					playerCharacter.Equip(0, weapon);
+					playerCharacter.Equip(WeaponIndex.OffHand, weapon);
 				} else if (item.Item.EquipSlotCategoryEx?.OffHand == 1) {
 					var weapon = playerCharacter.OffHandModels().Equip;
 					weapon.Set = weaponSet; weapon.Base = weaponBase; weapon.Variant = weaponVariant; weapon.Dye = weaponDye;
 
-					playerCharacter.Equip(1, weapon);
+					playerCharacter.Equip(WeaponIndex.OffHand, weapon);
 				} else return;
 
 			}
@@ -66,12 +66,12 @@ namespace Dresser.Extensions {
 		public unsafe static Weapon OffHandModels(this SubKindsPlayerCharacter playerCharacter)
 			=> *(Weapon*)(playerCharacter.Address + Offsets.WeaponOffHand);
 
-		private static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
+		public static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
 			if (Methods.ActorChangeEquip == null) return;
 			Methods.ActorChangeEquip(playerCharacter.Address + Offsets.EquipChangeToWriteTo, index, item);
 		}
 
-		private static void Equip(this SubKindsPlayerCharacter playerCharacter, int slot, WeaponEquip item) {
+		public static void Equip(this SubKindsPlayerCharacter playerCharacter, WeaponIndex slot, WeaponEquip item) {
 			if (Methods.ActorChangeWeapon == null) return;
 			Methods.ActorChangeWeapon(playerCharacter.Address + Offsets.EquipChangeToWriteTo, slot, item, 0, 1, 0, 0);
 		}

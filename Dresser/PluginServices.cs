@@ -42,14 +42,17 @@ namespace Dresser {
 		internal static Interop.Hooks.AddonManager AddonManager = null!;
 		internal static Interop.Hooks.GlamourPlates GlamourPlates = null!;
 		internal static Storage Storage = null!;
+		internal static ApplyGearChange ApplyGearChange = null!;
+		internal static Context Context = null!;
 
 
-		public static void Init(DalamudPluginInterface dalamud) {
+		public static void Init(DalamudPluginInterface dalamud, Plugin plugin) {
 
 			dalamud.Create<PluginServices>();
 			dalamud.Create<Service>();
 
 			IconStorage = new IconStorage();
+			Context = new Context();
 
 			//PluginLog.Debug($"data ready {Service.Data.IsDataReady == true}");
 
@@ -75,6 +78,7 @@ namespace Dresser {
 			//OnPluginLoaded?.Invoke();
 
 			Storage = new Storage();
+			ApplyGearChange = new ApplyGearChange(plugin);
 
 		}
 		public static void Dispose() {
@@ -92,17 +96,21 @@ namespace Dresser {
 			CharacterMonitor.Dispose();
 			PluginLog.Debug("leaving dresserrrrrrrrrrrrrrrrrrrrrrrr");
 
+			Context.Dispose();
+
 			Service.ExcelCache.Destroy();
 			//MarketCache.SaveCache(true);
 			//MarketCache.Dispose();
 			//Universalis.Dispose();
 			GameInterface.Dispose();
 			IconStorage.Dispose();
+			ApplyGearChange.Dispose();
 
 
 			InventoryMonitor = null!;
 			InventoryScanner = null!;
 			CharacterMonitor = null!;
+			Context = null!;
 			GameUi = null!;
 			TryOn = null!;
 			//CommandManager = null!;
@@ -113,6 +121,7 @@ namespace Dresser {
 			//Universalis = null!;
 			GameInterface = null!;
 			IconStorage = null!;
+			ApplyGearChange = null!;
 		}
 	}
 

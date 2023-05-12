@@ -31,6 +31,7 @@ namespace Dresser.Windows {
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 			};
 			this.Plugin = plugin;
+
 		}
 		public void Dispose() { }
 
@@ -161,22 +162,7 @@ namespace Dresser.Windows {
 
 					// execute when clicked
 					if (iconClicked) {
-						PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
-
-						// TODO: make sure the item is still in glam chest or armoire
-						//if (GlamourPlates.IsGlamingAtDresser() && (item.Container == InventoryType.GlamourChest || item.Container == InventoryType.Armoire)) {
-						//	PluginServices.GlamourPlates.ModifyGlamourPlateSlot(item,
-						//		(i) => Gathering.ParseGlamourPlates()
-						//		);
-						//}
-
-						var slot = item.Item.GlamourPlateSlot();
-
-						if (slot != null && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) {
-							plate[(GlamourPlateSlot)slot] = item.Copy()!;
-						}
-
-						Service.ClientState.LocalPlayer?.Equip(item);
+						PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
 					}
 
 

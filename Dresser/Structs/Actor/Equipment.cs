@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Dresser.Structs.Actor {
@@ -15,6 +16,21 @@ namespace Dresser.Structs.Actor {
 		[FieldOffset(0x1C)] public ItemEquip Bracelet;
 		[FieldOffset(0x20)] public ItemEquip RingRight;
 		[FieldOffset(0x24)] public ItemEquip RingLeft;
+
+		public Dictionary<EquipIndex, ItemEquip> Dictionary() {
+			return new() {
+				{EquipIndex.Head,this.Head},
+				{EquipIndex.Chest,this.Chest},
+				{EquipIndex.Hands,this.Hands},
+				{EquipIndex.Legs,this.Legs},
+				{EquipIndex.Feet,this.Feet},
+				{EquipIndex.Earring,this.Earring},
+				{EquipIndex.Necklace,this.Necklace},
+				{EquipIndex.Bracelet,this.Bracelet},
+				{EquipIndex.RingRight,this.RingRight},
+				{EquipIndex.RingLeft,this.RingLeft},
+			};
+		}
 	}
 
 	[StructLayout(LayoutKind.Explicit, Size = 0x4)]
