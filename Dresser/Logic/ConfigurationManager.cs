@@ -53,7 +53,9 @@ namespace Dresser.Logic {
 				Config.MarkReloaded();
 				return;
 			}
-			if (!inventoryToolsConfiguration.InventoriesMigrated) {
+
+			// inventory migration
+			if (inventoryToolsConfiguration.InventoriesMigrated < 0) {
 				PluginLog.Verbose("Migrating inventories");
 				var temp = JObject.Parse(jsonText);
 				if (temp.ContainsKey("SavedInventories")) {
@@ -63,51 +65,15 @@ namespace Dresser.Logic {
 																	   List<InventoryItem>>>();
 				}
 
-				inventoryToolsConfiguration.InventoriesMigrated = true;
+				inventoryToolsConfiguration.InventoriesMigrated = 0;
 			} else {
 				inventoryToolsConfiguration.SavedInventories = LoadSavedInventories() ?? new();
 			}
 			Config = inventoryToolsConfiguration;
 
-			//PluginLog.Error($"Loaded {Config.SavedInventories.Select(c => c.Value.Select(t=>t.Value.Count).Sum()).Sum()} items in {Config.SavedInventories.Count} characters");
-			//var emyinv = Config.SavedInventories.First(c => c.Key == 18014598543713278).Value;
-			//PluginLog.Error($"Loaded Emy {emyinv.Select(t=>t.Value.Count).Sum()} ({string.Join(',', emyinv.Select(c=>c.Key))})");
-			
-			Config.MarkReloaded();
-		}
-		public static void LoadFromFile(string file, string inventoryFileName) {
-			PluginLog.Verbose("Loading configuration");
-			if (!File.Exists(file)) {
-				Config = new Configuration();
-				Config.MarkReloaded();
-				return;
-			}
+			// Config migration
+			Config.Migrate();
 
-			string jsonText = File.ReadAllText(file);
-			var inventoryToolsConfiguration = JsonConvert.DeserializeObject<Configuration>(jsonText, new JsonSerializerSettings() {
-				DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-				ContractResolver = MinifyResolver
-			});
-			if (inventoryToolsConfiguration == null) {
-				Config = new Configuration();
-				Config.MarkReloaded();
-				return;
-			}
-			if (!inventoryToolsConfiguration.InventoriesMigrated) {
-				PluginLog.Verbose("Migrating inventories");
-				var temp = JObject.Parse(jsonText);
-				if (temp.ContainsKey("SavedInventories")) {
-					var inventories = temp["SavedInventories"]?.ToObject<Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>>>();
-					inventoryToolsConfiguration.SavedInventories = inventories ??
-																   new Dictionary<ulong, Dictionary<InventoryCategory,
-																	   List<InventoryItem>>>();
-				}
-
-				inventoryToolsConfiguration.InventoriesMigrated = true;
-			} else {
-				inventoryToolsConfiguration.SavedInventories = LoadSavedInventories(inventoryFileName) ?? new();
-			}
-			Config = inventoryToolsConfiguration;
 			Config.MarkReloaded();
 		}
 
@@ -160,7 +126,6 @@ namespace Dresser.Logic {
 		private static MinifyResolver? _minifyResolver;
 
 		public static void SaveSavedInventories(Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> savedInventories) {
-			//PluginLog.Debug("Saving DRESSER INVENTORIES ============");
 
 			Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> newSavedInventories = new();
 

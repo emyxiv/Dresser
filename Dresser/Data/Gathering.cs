@@ -26,7 +26,7 @@ namespace Dresser.Data {
 			)!;
 
 
-			Plugin.PluginConfiguration.DisplayPlateItems = newlyParsedDresser;
+			ConfigurationManager.Config.DisplayPlateItems = newlyParsedDresser;
 			ConfigurationManager.SaveAsync();
 		}
 		public static Dictionary<GlamourPlateSlot, InventoryItem> EmptyGlamourPlate() {
@@ -53,7 +53,7 @@ namespace Dresser.Data {
 
 			var slot = item.Item.GlamourPlateSlot();
 			if (slot == null) return false;
-			if (Plugin.PluginConfiguration.DisplayPlateItems.TryGetValue((GlamourPlateSlot)slot, out var storedItem)) {
+			if (ConfigurationManager.Config.DisplayPlateItems.TryGetValue((GlamourPlateSlot)slot, out var storedItem)) {
 				if (storedItem.ItemId == item.ItemId && storedItem.Stain == item.Stain)
 					return true;
 			}

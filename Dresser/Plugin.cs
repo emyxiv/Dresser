@@ -26,7 +26,6 @@ namespace Dresser {
 		public string Name => "Dresser";
 		private const string CommandName = "/dresser";
 
-		public static Configuration PluginConfiguration => ConfigurationManager.Config;
 
 		public WindowSystem WindowSystem = new("Dresser");
 
@@ -40,14 +39,13 @@ namespace Dresser {
 			PluginServices.Init(pluginInterface, this);
 
 
-
-			PluginConfiguration.ConfigurationChanged += ConfigOnConfigurationChanged;
+			ConfigurationManager.Config.ConfigurationChanged += ConfigOnConfigurationChanged;
 			PluginServices.InventoryMonitor.OnInventoryChanged += InventoryMonitorOnOnInventoryChanged;
 			PluginServices.CharacterMonitor.OnCharacterUpdated += CharacterMonitorOnOnCharacterUpdated;
 			Service.Framework.Update += FrameworkOnUpdate;
 
-			PluginServices.InventoryMonitor.LoadExistingData(PluginConfiguration.GetSavedInventory());
-			PluginServices.CharacterMonitor.LoadExistingRetainers(PluginConfiguration.GetSavedRetainers());
+			PluginServices.InventoryMonitor.LoadExistingData(ConfigurationManager.Config.GetSavedInventory());
+			PluginServices.CharacterMonitor.LoadExistingRetainers(ConfigurationManager.Config.GetSavedRetainers());
 
 
 
@@ -90,11 +88,11 @@ namespace Dresser {
 			PluginServices.CommandManager.RemoveHandler(CommandName);
 
 			PluginServices.GameInterface.AcquiredItemsUpdated -= GameInterfaceOnAcquiredItemsUpdated;
-			PluginConfiguration.SavedCharacters = PluginServices.CharacterMonitor.Characters;
+			ConfigurationManager.Config.SavedCharacters = PluginServices.CharacterMonitor.Characters;
 			Service.Framework.Update -= FrameworkOnUpdate;
 			PluginServices.InventoryMonitor.OnInventoryChanged -= InventoryMonitorOnOnInventoryChanged;
 			PluginServices.CharacterMonitor.OnCharacterUpdated -= CharacterMonitorOnOnCharacterUpdated;
-			PluginConfiguration.ConfigurationChanged -= ConfigOnConfigurationChanged;
+			ConfigurationManager.Config.ConfigurationChanged -= ConfigOnConfigurationChanged;
 
 
 			EventManager.GearSelectionOpen -= OpenDresser;
@@ -164,9 +162,9 @@ namespace Dresser {
 		public DateTime? NextSaveTime => _nextSaveTime;
 
 		private void FrameworkOnUpdate(Framework framework) {
-			if (PluginConfiguration.AutoSave) {
-				if (NextSaveTime == null && PluginConfiguration.AutoSaveMinutes != 0) {
-					_nextSaveTime = DateTime.Now.AddMinutes(PluginConfiguration.AutoSaveMinutes);
+			if (ConfigurationManager.Config.AutoSave) {
+				if (NextSaveTime == null && ConfigurationManager.Config.AutoSaveMinutes != 0) {
+					_nextSaveTime = DateTime.Now.AddMinutes(ConfigurationManager.Config.AutoSaveMinutes);
 				} else {
 					if (DateTime.Now >= NextSaveTime) {
 						//PluginLog.Debug("===============SAVING INV NOW==============");
@@ -192,8 +190,9 @@ namespace Dresser {
 			PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
 			PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
 			_clearCachedLines = true;
-			PluginConfiguration.SavedInventories = inventories;
-			PluginLog.Debug($"====== inv updated {PluginConfiguration.SavedInventories.Select(t=>t.Value.Count).Sum()}");
+			//ConfigurationManager.Config.SavedInventories = inventories;
+			//PluginConfiguration.SavedInventories = inventories;
+			PluginLog.Debug($"====== inv updated {ConfigurationManager.Config.SavedInventories.Select(t=>t.Value.Count).Sum()}");
 
 			foreach (var item in itemChanges.NewItems) {
 				if (_recentlyAddedSeen.ContainsKey(item.ItemId)) {
@@ -208,8 +207,8 @@ namespace Dresser {
 			PluginLog.Debug($"====== RECORD CHAR UPDATE");
 
 			if (character != null) {
-				if (PluginConfiguration.AcquiredItems.ContainsKey(character.CharacterId)) {
-					PluginServices.GameInterface.AcquiredItems = PluginConfiguration.AcquiredItems[character.CharacterId];
+				if (ConfigurationManager.Config.AcquiredItems.ContainsKey(character.CharacterId)) {
+					PluginServices.GameInterface.AcquiredItems = ConfigurationManager.Config.AcquiredItems[character.CharacterId];
 				}
 			} else {
 				PluginServices.GameInterface.AcquiredItems = new HashSet<uint>();
@@ -221,7 +220,7 @@ namespace Dresser {
 
 			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
 			if (activeCharacter != 0) {
-				PluginConfiguration.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
+				ConfigurationManager.Config.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
 			}
 			if (this.WindowSystem.GetWindow("Current Gear")!.IsOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 		}

@@ -1,16 +1,22 @@
 ﻿using CriticalCommonLib.Models;
+using CriticalCommonLib.Extensions;
 
 using Dalamud.Configuration;
 using Dalamud.Plugin;
 
 using Dresser.Structs.FFXIV;
+using Dresser.Windows;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dresser {
 	[Serializable]
 	public class Configuration : IPluginConfiguration {
+		public Configuration() {
+			LoadFilterInventoryCategory();
+		}
 		public int Version { get; set; } = 0;
 
 		public Dictionary<GlamourPlateSlot, InventoryItem> DisplayPlateItems { get; set; } = new();
@@ -23,6 +29,18 @@ namespace Dresser {
 		public bool ShowImagesInBrowser = true;
 		public bool filterCurrentJob = true;
 		public bool filterCurrentRace = true;
+		public Dictionary<InventoryCategory, bool> FilterInventoryCategory { get; set; } = new();
+		public void LoadFilterInventoryCategory() {
+			if (this.FilterInventoryCategory.Count != GearBrowser.AllowedCategories.Count || this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count() != 0) {
+				//PluginLog.Debug($"FilterInventoryCategory different, recreating it");
+				var oldFilterInventoryCategory = this.FilterInventoryCategory.Copy();
+				this.FilterInventoryCategory = GearBrowser.AllowedCategories.ToDictionary(c => c, (c) => {
+					if (oldFilterInventoryCategory != null && oldFilterInventoryCategory.TryGetValue(c, out bool d) && d)
+						return d;
+					return true;
+				});
+			}
+		}
 
 
 
@@ -39,7 +57,7 @@ namespace Dresser {
 		public Dictionary<ulong, Character> SavedCharacters = new();
 		public bool SaveBackgroundFilter { get; set; } = false;
 		public string? ActiveBackgroundFilter { get; set; } = null;
-		public bool InventoriesMigrated { get; set; } = false;
+		public int InventoriesMigrated { get; set; } = 0;
 		[NonSerialized]
 		public Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> SavedInventories = new();
 
@@ -64,6 +82,12 @@ namespace Dresser {
 
 		public delegate void ConfigurationChangedDelegate();
 		public event ConfigurationChangedDelegate? ConfigurationChanged;
+
+
+		/// Migrations
+		public void Migrate() {
+			LoadFilterInventoryCategory();
+		}
 
 		public void Save() {
 			ConfigurationChanged?.Invoke();

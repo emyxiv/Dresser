@@ -61,7 +61,7 @@ public class CurrentGear : Window, IDisposable {
 
 		draw.AddText(
 			PluginServices.Storage.FontTitle.ImFont,
-			80 * Plugin.PluginConfiguration.IconSizeMult,
+			80 * ConfigurationManager.Config.IconSizeMult,
 			ImGui.GetCursorScreenPos() + new Vector2(0, -10),
 			ImGui.ColorConvertFloat4ToU32(CollectionColorTitle),
 			"Plate Creation");
@@ -154,14 +154,14 @@ public class CurrentGear : Window, IDisposable {
 
 	private void DrawSlots() {
 
-		if (Storage.DisplayPage != null && Plugin.PluginConfiguration.DisplayPlateItems.Count == 0) return;
+		if (Storage.DisplayPage != null && ConfigurationManager.Config.DisplayPlateItems.Count == 0) return;
 		ImGui.BeginGroup();
 
 		try {
 			Dictionary<GlamourPlateSlot, InventoryItem> plateItems = new(); ;
 
 			if (PluginServices.Context.IsGlamingAtDresser && Storage.DisplayPage != null) {
-				plateItems = Plugin.PluginConfiguration.DisplayPlateItems;
+				plateItems = ConfigurationManager.Config.DisplayPlateItems;
 			} else {
 				CheckPendingPlateItems();
 				ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2);

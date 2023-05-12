@@ -1,6 +1,9 @@
 ﻿
 using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using System.Collections.Generic;
+using CriticalCommonLib.Models;
+using CriticalCommonLib.Extensions;
 
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {
@@ -26,6 +29,11 @@ namespace Dresser.Extensions {
 			item.MateriaLevel3 = 0;
 			item.MateriaLevel4 = 0;
 			item.Stain = 0;
+		}
+		public static bool IsFilterDisplayable(this CriticalInventoryItem item, Dictionary<InventoryCategory, bool> displayInventoryCategories) {
+			if (displayInventoryCategories.TryGetValue(item.SortedContainer.ToInventoryCategory(), out bool shouldBeDisplayed))
+				return shouldBeDisplayed;
+			return false;
 		}
 	}
 }
