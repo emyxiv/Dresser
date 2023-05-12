@@ -69,6 +69,8 @@ namespace Dresser.Logic {
 		public void ExecuteCurrentContextRemoveItem(InventoryItem item) {
 			item.Clear();
 			Service.ClientState.LocalPlayer?.Equip(item);
+			RestoreAppearance();
+			ReApplyAppearanceAfterEquipUpdate();
 		}
 		public void ExecuteCurrentContextDye(InventoryItem item) {
 			PluginLog.Warning("TODO: open dye picker");
