@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Dalamud.Plugin;
-
-using Lumina.Excel.GeneratedSheets;
 
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Extensions;
@@ -15,8 +9,8 @@ using Dalamud.Logging;
 using Dresser.Extensions;
 using Dresser.Structs.FFXIV;
 using Dresser.Windows;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dresser.Structs.Actor;
+using Dresser.Data;
 
 namespace Dresser.Logic {
 	public class ApplyGearChange : IDisposable {
@@ -85,9 +79,11 @@ namespace Dresser.Logic {
 			AppearanceBackupWeaponMain = PluginServices.Context.LocalPlayer?.MainHandModels().Equip ?? new();
 			AppearanceBackupWeaponOff = PluginServices.Context.LocalPlayer?.OffHandModels().Equip ?? new();
 			AppearanceBackupEquip = PluginServices.Context.LocalPlayer?.EquipmentModels().Dictionary();
-			PluginLog.Debug("Backed up appearance");
+			PluginLog.Verbose("Backed up appearance");
 		}
 		public void RestoreAppearance() {
+			PluginLog.Verbose("Restoring appearance");
+
 			PluginServices.Context.LocalPlayer?.Equip(WeaponIndex.MainHand, AppearanceBackupWeaponMain);
 			PluginServices.Context.LocalPlayer?.Equip(WeaponIndex.OffHand, AppearanceBackupWeaponOff);
 			if (AppearanceBackupEquip != null)
@@ -143,6 +139,7 @@ namespace Dresser.Logic {
 					}
 				}
 			}
+
 		}
 		public void ToggleDisplayGear() {
 			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
@@ -150,7 +147,89 @@ namespace Dresser.Logic {
 
 		}
 
+		public void OverwritePendingWithCurrentPlate() {
+			ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems;
+		}
 
+		public void CheckModificationsOnPendingPlates() {
+			PluginLog.Debug("Start CheckModificationsOnPendingPlates ...");
+			var pendingPlates = ConfigurationManager.Config.PendingPlateItems;
+			var actualPlates = Storage.Pages!.Select((value,index) => new { value, index }).ToDictionary(pair=>(ushort)pair.index,pair=> Gathering.MirageToInvItems(pair.value));
+
+
+			Dictionary<ushort, Dictionary<GlamourPlateSlot, InventoryItem?>> differencesToApply = new();
+
+			foreach ((var plateIndex, var actualPlateValues) in actualPlates) {
+				pendingPlates.TryGetValue(plateIndex, out var pendingPlateValues_tmp);
+				if (pendingPlateValues_tmp == null) PluginLog.Debug($"pending plate {plateIndex} is NULL");
+				Dictionary<GlamourPlateSlot, InventoryItem> pendingPlateValues = pendingPlateValues_tmp ?? new();
+
+
+				foreach ((var slot, var actualInventoryItem) in actualPlateValues) {
+					PluginLog.Verbose($"checking {(int)slot} on actual plate {plateIndex} (slot name: {slot})");
+
+					bool toChange = false;
+					InventoryItem? itemReplacement = null;
+					if (!pendingPlateValues.TryGetValue(slot, out var pendingInventoryItem)) {
+						PluginLog.Verbose($"Item {slot} not present on pending plate");
+						toChange = true;
+					} else {
+						PluginLog.Verbose($"item id difference? : {actualInventoryItem.ItemId} != {pendingInventoryItem.ItemId}");
+						bool itemDifferent = actualInventoryItem.ItemId != pendingInventoryItem.ItemId;
+						bool dyeDifferent = actualInventoryItem.Stain != pendingInventoryItem.Stain;
+						if (itemDifferent) {
+							PluginLog.Verbose($"Plate {plateIndex} slot {(int)slot}: Item is different: pending:{pendingInventoryItem.ItemId} => actual:{actualInventoryItem.ItemId}  (slot name: {slot})");
+						}
+						if (dyeDifferent) {
+							PluginLog.Verbose($"Plate {plateIndex} slot {(int)slot}: Dye is different pending:{pendingInventoryItem.Stain} => actual:{actualInventoryItem.Stain}  (slot name: {slot})");
+						}
+						toChange = itemDifferent || dyeDifferent;
+						itemReplacement = pendingInventoryItem;
+
+					}
+
+					if(toChange) {
+						if (!differencesToApply.TryGetValue(plateIndex, out var plateChanges) || plateChanges == null)
+							differencesToApply[plateIndex] = new();
+
+						differencesToApply[plateIndex][slot] = itemReplacement;
+					}
+				}
+			}
+
+			ApplyChangesDialog(differencesToApply);
+		}
+
+
+		public void ApplyChangesDialog(Dictionary<ushort, Dictionary<GlamourPlateSlot, InventoryItem?>> differencesToApply) {
+
+			PluginLog.Debug($"start apply changes on plates ...");
+
+			foreach ((var plateIndex, var changeValues) in differencesToApply) {
+				PluginLog.Debug($"inserting glams on plate {plateIndex} ...");
+
+
+
+				// todo change plate
+				foreach ((var slot, var itemToApply) in changeValues) {
+
+
+					// todo find item container in armoire or prismbox
+					// todo if one item missing, report to the user, offer options: "still apply witout missing", "skip this plate", "stop"
+					// todo change container after this finding
+					PluginServices.GlamourPlates.ModifyGlamourPlateSlot(itemToApply, slot);
+				}
+
+				// todo auto click save
+				// todo wait the window open
+				// todo if simple "save", ask user to click Yes (or auto...)
+				// todo if missing dye and window "missing dye" opens, offer options: "skip this plate", "stop"
+
+				// todo apply actual plate number change
+				break; // temprorary only do the first plate
+
+			}
+		}
 
 	}
 }

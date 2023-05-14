@@ -24,6 +24,7 @@ namespace Dresser.Logic {
 		public CharacterSex? LocalPlayerGender = null;
 		public ClassJob? LocalPlayerClass = null;
 		public byte LocalPlayerLevel = 0;
+		public ulong LocalPlayerCharacterId = 0;
 
 
 
@@ -44,6 +45,8 @@ namespace Dresser.Logic {
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
 			if (LocalPlayer == null) return;
+
+			LocalPlayerCharacterId = PluginServices.CharacterMonitor?.ActiveCharacter ?? 0;
 			LocalPlayerRace = (CharacterRace)(LocalPlayer.Customize[(int)CustomizeIndex.Race]);
 			LocalPlayerGender = (LocalPlayer.Customize[(int)CustomizeIndex.Gender]) == 0 ? CharacterSex.Male : CharacterSex.Female;
 			LocalPlayerClass = LocalPlayer.ClassJob.GameData;

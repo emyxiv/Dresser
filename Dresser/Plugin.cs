@@ -74,16 +74,10 @@ namespace Dresser {
 			pluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
 
-			EventManager.GearSelectionOpen += OpenDresser;
-			EventManager.GearSelectionClose += CloseDresser;
-
-			if (PluginServices.Context.IsGlamingAtDresser)
-				EventManager.GearSelectionOpen?.Invoke();
 		}
 
 		public void Dispose() {
 			PluginServices.ApplyGearChange.RestoreAppearance();
-			EventManager.GearSelectionClose?.Invoke();
 
 
 			this.WindowSystem.RemoveAllWindows();
@@ -97,8 +91,6 @@ namespace Dresser {
 			ConfigurationManager.Config.ConfigurationChanged -= ConfigOnConfigurationChanged;
 
 
-			EventManager.GearSelectionOpen -= OpenDresser;
-			EventManager.GearSelectionClose -= CloseDresser;
 
 
 			Interop.Hooks.AddonListeners.Dispose();
@@ -148,7 +140,7 @@ namespace Dresser {
 			}
 		}
 		public bool IsDresserVisible()
-			=> WindowSystem.GetWindow("Current Gear")?.IsOpen ?? false;
+			=> WindowSystem?.GetWindow("Current Gear")?.IsOpen ?? false;
 
 
 

@@ -96,6 +96,12 @@ namespace Dresser {
 		public Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> GetSavedInventory() {
 			return SavedInventories;
 		}
+		public Dictionary<InventoryCategory, List<InventoryItem>> GetSavedInventoryLocalChar() {
+			if (SavedInventories.TryGetValue(PluginServices.Context.LocalPlayerCharacterId, out var inventories))
+				return inventories;
+			return new();
+		}
+
 		public Dictionary<ulong, Character> GetSavedRetainers() {
 			return SavedCharacters;
 		}

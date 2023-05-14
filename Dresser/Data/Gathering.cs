@@ -39,6 +39,12 @@ namespace Dresser.Data {
 				await Task.Delay(250);
 				ParseGlamourPlates();
 			});
+		public static void DelayParseGlamPlatesAndComparePending()
+			=> Task.Run(async delegate {
+				await Task.Delay(250);
+				ParseGlamourPlates();
+				PluginServices.ApplyGearChange.CheckModificationsOnPendingPlates();
+			});
 		private unsafe static MiragePage[]? GetDataFromDresser() {
 			var agent = MiragePrismMiragePlate.MiragePlateAgent();
 			if (agent == null) return null;
@@ -48,6 +54,8 @@ namespace Dresser.Data {
 			return miragePlates->Pages;
 		}
 		public static bool IsApplied(InventoryItem item) {
+
+			// Todo: avoid getting everything each time for performance purposes
 			ParseGlamourPlates();
 
 			var slot = item.Item.GlamourPlateSlot();

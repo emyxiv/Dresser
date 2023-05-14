@@ -18,6 +18,7 @@ namespace Dresser.Interop.Hooks {
 
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent += OnGlamourPlatesReceiveEvent;
+			MiragePrismMiragePlate.OnShow += OnGlamourPlatesShow;
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent += OnMiragePrismPrismBoxReceiveEvent;
 
@@ -31,6 +32,7 @@ namespace Dresser.Interop.Hooks {
 
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent -= OnGlamourPlatesReceiveEvent;
+			MiragePrismMiragePlate.OnShow -= OnGlamourPlatesShow;
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent += OnMiragePrismPrismBoxReceiveEvent;
 
@@ -46,6 +48,11 @@ namespace Dresser.Interop.Hooks {
 			//Sets.Dispose();
 		}
 
+
+		private unsafe static void OnGlamourPlatesShow(object? sender, IntPtr ptr) {
+			Data.Gathering.DelayParseGlamPlatesAndComparePending();
+
+		}
 		private unsafe static void OnGlamourPlatesReceiveEvent(object? sender, ReceiveEventArgs e) {
 			//e.PrintData();
 
@@ -108,27 +115,27 @@ namespace Dresser.Interop.Hooks {
 	// If adding new agents, it may be a good idea to move them in their own files
 	internal unsafe class MiragePrismMiragePlateAddon : IDisposable {
 		public event EventHandler<ReceiveEventArgs>? ReceiveEvent;
-		//public event EventHandler<IntPtr>? OnShow;
+		public event EventHandler<IntPtr>? OnShow;
 
 		private delegate void* AgentReceiveEvent(AgentInterface* agent, void* rawData, AtkValue* eventArgs, uint eventArgsCount, ulong sender);
-		//private delegate void AgentShow(AgentInterface* agent);
+		private delegate void AgentShow(AgentInterface* agent);
 
 		private readonly Hook<AgentReceiveEvent>? receiveEventHook;
-		//private readonly Hook<AgentShow>? showEventHook;
+		private readonly Hook<AgentShow>? showEventHook;
 
 		internal unsafe static AgentInterface* AgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
 		public MiragePrismMiragePlateAddon() {
 			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(AgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
-			//showEventHook ??= Hook<AgentShow>.FromAddress(new IntPtr(AgentInterface->VTable->Show), OnShowEvent);
+			showEventHook ??= Hook<AgentShow>.FromAddress(new IntPtr(AgentInterface->VTable->Show), OnShowEvent);
 
 			receiveEventHook?.Enable();
-			//showEventHook?.Enable();
+			showEventHook?.Enable();
 
 		}
 
 		public void Dispose() {
 			receiveEventHook?.Dispose();
-			//showEventHook?.Dispose();
+			showEventHook?.Dispose();
 		}
 
 		private void* OnReceiveEvent(AgentInterface* agent, void* rawData, AtkValue* eventArgs, uint eventArgsCount, ulong sender) {
@@ -140,17 +147,15 @@ namespace Dresser.Interop.Hooks {
 
 			return receiveEventHook!.Original(agent, rawData, eventArgs, eventArgsCount, sender);
 		}
-		//private void OnShowEvent(AgentInterface* agent) {
-		//	PluginLog.Debug($"OnShowEvent");
-		//	try {
-		//		//Data.Gathering.DelayParseGlamPlates();
-
-		//		//EventManager.GearSelectionOpen?.Invoke();
-		//		OnShow?.Invoke(this, new IntPtr(agent));
-		//	} catch (Exception ex) {
-		//		PluginLog.Error(ex, "Something went wrong when the MiragePrismPrismBox Addon was opened");
-		//	}
-		//}
+		private void OnShowEvent(AgentInterface* agent) {
+			PluginLog.Debug($"OnShowEvent MiragePrismMiragePlateAddon");
+			try {
+				OnShow?.Invoke(this, new IntPtr(agent));
+			} catch (Exception ex) {
+				PluginLog.Error(ex, "Something went wrong when the MiragePrismPrismBox Addon was opened");
+			}
+			showEventHook!.Original(agent);
+		}
 	}
 	internal unsafe class MiragePrismPrismBoxAddon : IDisposable {
 		public event EventHandler<ReceiveEventArgs>? ReceiveEvent;
