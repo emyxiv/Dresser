@@ -72,7 +72,7 @@ namespace Dresser.Windows {
 
 			DrawItems();
 		}
-		private static void DrawSearchBar() {
+		private void DrawSearchBar() {
 			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
 				RecomputeItems();
 			ImGui.SameLine();
