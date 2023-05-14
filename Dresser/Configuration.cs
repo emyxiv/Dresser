@@ -35,6 +35,10 @@ namespace Dresser {
 		public bool filterCurrentJob = true;
 		public bool filterCurrentRace = true;
 		public Dictionary<InventoryCategory, bool> FilterInventoryCategory { get; set; } = new();
+		public float FilterInventoryCategoryColumnDistribution { get; set; } = 1.5f;
+		public int FilterInventoryCategoryColumnNumber { get; set; } = 1;
+		public int FilterInventoryTypeColumnNumber { get; set; } = 1;
+
 		public void LoadFilterInventoryCategory() {
 			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");
 			if (this.FilterInventoryCategory.Count != GearBrowser.AllowedCategories.Count || this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count() != 0) {
@@ -63,7 +67,6 @@ namespace Dresser {
 		public bool FilterSourceCollapse = false;
 		public bool FilterAdditionalCollapse = true;
 		public bool FilterAdvancedCollapse = true;
-
 
 
 

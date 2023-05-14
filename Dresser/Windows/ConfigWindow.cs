@@ -42,7 +42,7 @@ public class ConfigWindow : Window, IDisposable {
 	public void DrawBrowserConfigs() {
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
 		var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
-		if (ImGui.DragFloat("##IconSize##slider", ref iconSizeMult, 0.01f, 0.1f, 4f, "%.2f %")) {
+		if (ImGui.DragFloat("Icon Size##IconSize##slider", ref iconSizeMult, 0.01f, 0.1f, 4f, "%.2f %")) {
 			ConfigurationManager.Config.IconSizeMult = iconSizeMult;
 			ConfigurationManager.SaveAsync();
 		}
@@ -50,7 +50,15 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Text("%");
 		ImGui.Checkbox($"Show items icons##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowImagesInBrowser);
 		ImGui.Checkbox($"Fade unavailable items when hidding tooltips (Hold Alt)##Images##GearBrowserConfig", ref ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip);
-
+		//var FilterInventoryCategoryColumnDistribution = ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution;
+		//if(ImGui.DragFloat("Source - column distribution##GearBrowserConfig", ref FilterInventoryCategoryColumnDistribution, 0.005f, -5f, 15f))
+		//	ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution = FilterInventoryCategoryColumnDistribution;
+		var FilterInventoryCategoryColumnNumber = ConfigurationManager.Config.FilterInventoryCategoryColumnNumber;
+		if (ImGui.DragInt("Col # — Source##GearBrowserConfig", ref FilterInventoryCategoryColumnNumber, 0.05f, 1, 5))
+			ConfigurationManager.Config.FilterInventoryCategoryColumnNumber = FilterInventoryCategoryColumnNumber;
+		var FilterInventoryTypeColumnNumber = ConfigurationManager.Config.FilterInventoryTypeColumnNumber;
+		if (ImGui.DragInt("Col # — Unobtained##GearBrowserConfig", ref FilterInventoryTypeColumnNumber, 0.05f, 1, 5))
+			ConfigurationManager.Config.FilterInventoryTypeColumnNumber = FilterInventoryTypeColumnNumber;
 
 	}
 	public void DrawInventoryConfigs() {

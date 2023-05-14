@@ -86,17 +86,29 @@ namespace Dresser.Windows {
 
 			if (ImGui.CollapsingHeader($"Source##Source##GearBrowser", ConfigurationManager.Config.FilterSourceCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSourceCollapse = true;
-				ImGui.Columns(2);
+				ImGui.Columns(ConfigurationManager.Config.FilterInventoryCategoryColumnNumber is >= 1 and <= 5 ? ConfigurationManager.Config.FilterInventoryCategoryColumnNumber : 2);
 				ImGui.BeginGroup();
+
 				int i = 0;
 				foreach ((var cat, var willDisplay) in ConfigurationManager.Config.FilterInventoryCategory) {
-					i++;
-					if (i == (int)(ConfigurationManager.Config.FilterInventoryCategory.Count / 1.6f)) {
-						ImGui.EndGroup(); ImGui.NextColumn(); ImGui.BeginGroup();
-					}
+
+
+
 					var willDisplayValue = willDisplay;
 					if (filterChanged |= ImGui.Checkbox($"{cat}##displayCategory", ref willDisplayValue))
 						ConfigurationManager.Config.FilterInventoryCategory[cat] = willDisplayValue;
+
+
+					// column breaker
+					i++;
+					bool columnBreak = false;
+					//var valu =  (int)(ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution);
+					var valu = 1;
+					for (int colNum = 1; colNum <= ConfigurationManager.Config.FilterInventoryCategoryColumnNumber; colNum++)
+						columnBreak |= i == valu * colNum;
+					if (i > 0 && columnBreak)
+						ImGui.EndGroup(); ImGui.NextColumn(); ImGui.BeginGroup();
+
 				}
 				ImGui.EndGroup();
 				ImGui.Columns();
@@ -106,7 +118,10 @@ namespace Dresser.Windows {
 			if (ImGui.CollapsingHeader($"Unobtained##Source##GearBrowser", ConfigurationManager.Config.FilterAdditionalCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterAdditionalCollapse = true;
 
-				foreach((var AddItemKind, var option) in Storage.FilterNames) {
+				ImGui.Columns(ConfigurationManager.Config.FilterInventoryTypeColumnNumber is >= 1 and <= 5 ? ConfigurationManager.Config.FilterInventoryTypeColumnNumber : 2);
+				ImGui.BeginGroup();
+				int i = 0;
+				foreach ((var AddItemKind, var option) in Storage.FilterNames) {
 					ImGui.TextDisabled(AddItemKind.ToString());
 					foreach((var inventoryType, var addItemTitle) in option) {
 						bool isChecked = false;
@@ -115,8 +130,23 @@ namespace Dresser.Windows {
 						if (filterChanged |= ImGui.Checkbox($"{addItemTitle}##displayInventoryTypeAdditionalItem", ref isChecked))
 							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
 
+
+
 					}
+
+					// column breaker
+					i++;
+					bool columnBreak = false;
+					//var valu =  (int)(ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution);
+					var valu = 1;
+					for (int colNum = 1; colNum <= ConfigurationManager.Config.FilterInventoryTypeColumnNumber; colNum++)
+						columnBreak |= i == valu * colNum;
+					if (i > 0 && columnBreak)
+						ImGui.EndGroup(); ImGui.NextColumn(); ImGui.BeginGroup();
+
 				}
+				ImGui.EndGroup();
+				ImGui.Columns();
 
 			} else
 				ConfigurationManager.Config.FilterAdditionalCollapse = false;
