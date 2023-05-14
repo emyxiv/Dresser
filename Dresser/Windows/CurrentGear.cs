@@ -86,9 +86,13 @@ public class CurrentGear : Window, IDisposable {
 		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
 		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
 		//ImGui.SameLine();
-		if (GuiHelpers.IconButtonTooltip(ConfigurationManager.Config.CurrentGearDisplayGear?FontAwesomeIcon.Church: FontAwesomeIcon.Peace, "Display Gear", default)) {
+		if (GuiHelpers.IconButtonTooltip(ConfigurationManager.Config.CurrentGearDisplayGear?FontAwesomeIcon.Church: FontAwesomeIcon.Peace, "Display Gear", default, "DisplayGear##CurrentGear")) {
 			ConfigurationManager.Config.CurrentGearDisplayGear = !ConfigurationManager.Config.CurrentGearDisplayGear;
 			PluginServices.ApplyGearChange.ToggleDisplayGear();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileExport, $"Overwrite pending plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with actual plate contents", default, "OverwritePendingWithCurrent##CurrentGear")) {
+			PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
 		}
 	}
 
