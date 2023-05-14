@@ -19,15 +19,14 @@ namespace Dresser.Data {
 			Storage.Pages = GetDataFromDresser();
 			Storage.DisplayPage = Storage.Pages?.Last();
 			if (Storage.DisplayPage == null) return;
-			Storage.SlotMirageItems = Storage.DisplayPage.Value.ToDictionary();
-			var newlyParsedDresser = Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
+			ConfigurationManager.Config.DisplayPlateItems = MirageToInvItems((MiragePage)Storage.DisplayPage);
+		}
+		public static Dictionary<GlamourPlateSlot,InventoryItem> MirageToInvItems(MiragePage miragePage) {
+			var mirageDictionary = miragePage.ToDictionary();
+			return mirageDictionary.ToDictionary(p => p.Key, p =>
 				new InventoryItem(InventoryType.GlamourChest, (short)p.Key, p.Value.ItemId, 1, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, p.Value.DyeId, 0)
 			)!;
-
-
-			ConfigurationManager.Config.DisplayPlateItems = newlyParsedDresser;
-			ConfigurationManager.SaveAsync();
 		}
 		public static Dictionary<GlamourPlateSlot, InventoryItem> EmptyGlamourPlate() {
 			return Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
