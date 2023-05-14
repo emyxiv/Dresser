@@ -8,6 +8,7 @@ using Dresser.Structs.Actor;
 using Dresser.Structs.FFXIV;
 using Dresser.Windows.Components;
 using CriticalCommonLib;
+using CriticalCommonLib.Enums;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
@@ -60,6 +61,9 @@ namespace Dresser.Extensions {
 			if (job == null) return false;
 
 			return Service.ExcelCache.IsItemEquippableBy(item.ClassJobCategory.Row, job.RowId);
+		}
+		public static CriticalInventoryItem ToInventoryItem(this CriticalItemEx itemEx,InventoryType inventoryType) {
+			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		}
 
 

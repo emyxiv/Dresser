@@ -17,6 +17,7 @@ namespace Dresser.Logic {
 	internal class Context : IDisposable {
 
 		public bool IsGlamingAtDresser = false;
+		public bool IsDresserCurrentGearOpen = false;
 
 		public PlayerCharacter? LocalPlayer = null;
 		public CharacterRace? LocalPlayerRace = null;
@@ -39,6 +40,7 @@ namespace Dresser.Logic {
 
 		public void Refresh() {
 			IsGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
+			IsDresserCurrentGearOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
 			if (LocalPlayer == null) return;

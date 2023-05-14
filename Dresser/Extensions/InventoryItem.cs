@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Extensions;
 using Dresser.Logic;
+using Dresser.Data;
+using System.Linq;
 
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {
@@ -33,10 +35,28 @@ namespace Dresser.Extensions {
 			item.MateriaLevel4 = 0;
 			item.Stain = 0;
 		}
-		public static bool IsFilterDisplayable(this CriticalInventoryItem item, Dictionary<InventoryCategory, bool> displayInventoryCategories) {
-			if (displayInventoryCategories.TryGetValue(item.SortedContainer.ToInventoryCategory(), out bool shouldBeDisplayed))
-				return shouldBeDisplayed;
-			return false;
+		public static bool IsFilterDisplayable(this CriticalInventoryItem item) {
+			var returnVal = false;
+			// inventory categories
+			var displayInventoryCategories = ConfigurationManager.Config.FilterInventoryCategory;
+			if (displayInventoryCategories.TryGetValue(item.SortedContainer.ToInventoryCategory(), out bool shouldCategoryBeDisplayed))
+				returnVal |= shouldCategoryBeDisplayed;
+			// OR inventory types
+			var displayInventoryTypes = ConfigurationManager.Config.FilterInventoryType;
+			if (displayInventoryTypes.TryGetValue(item.SortedContainer, out bool shouldTypeBeDisplayed))
+				returnVal |= shouldTypeBeDisplayed;
+
+
+			return returnVal;
 		}
+		//public static bool IsSoldBy(this CriticalInventoryItem item, string VendorFilterName) {
+		//	if (PluginServices.Storage.VendorItems.TryGetValue(VendorFilterName, out var itemList))
+		//		return itemList.Contains(item.ItemId);
+		//	return false;
+		//}
+		//public static bool IsSoldByVendorFilter(this CriticalInventoryItem item) {
+		//	return PluginServices.Storage.VendorItems.Where(v => ConfigurationManager.Config.FilterVendors.TryGetValue(v.Key, out bool b) && b).Any(v=>v.Value.Contains(item.ItemId));
+		//}
+
 	}
 }

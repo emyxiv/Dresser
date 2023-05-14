@@ -64,6 +64,7 @@ namespace Dresser.Logic {
 		}
 		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
+			GearBrowser.RecomputeItems();
 			this.Plugin.OpenGearBrowserIfClosed();
 		}
 		public void ExecuteCurrentContextRemoveItem(InventoryItem item) {

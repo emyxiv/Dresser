@@ -10,12 +10,16 @@ using Dresser.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dresser.Data;
+using CriticalCommonLib.Enums;
+using Dalamud.Logging;
 
 namespace Dresser {
 	[Serializable]
 	public class Configuration : IPluginConfiguration {
 		public Configuration() {
 			LoadFilterInventoryCategory();
+			LoadAdditionaltems();
 		}
 		public int Version { get; set; } = 0;
 
@@ -32,17 +36,32 @@ namespace Dresser {
 		public bool filterCurrentRace = true;
 		public Dictionary<InventoryCategory, bool> FilterInventoryCategory { get; set; } = new();
 		public void LoadFilterInventoryCategory() {
+			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");
 			if (this.FilterInventoryCategory.Count != GearBrowser.AllowedCategories.Count || this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count() != 0) {
-				//PluginLog.Debug($"FilterInventoryCategory different, recreating it");
 				var oldFilterInventoryCategory = this.FilterInventoryCategory.Copy();
-				this.FilterInventoryCategory = GearBrowser.AllowedCategories.ToDictionary(c => c, (c) => {
+				this.FilterInventoryCategory = GearBrowser.AllowedCategories.ToDictionary(c => c, c => {
 					if (oldFilterInventoryCategory != null && oldFilterInventoryCategory.TryGetValue(c, out bool d) && d)
 						return d;
 					return true;
 				});
 			}
 		}
+
+
+		public Dictionary<InventoryType, bool> FilterInventoryType { get; set; } = new();
+		public void LoadAdditionaltems() {
+			//PluginLog.Debug($"FilterInventoryType: cc:{FilterInventoryType.Count} nc:{Storage.FilterNames.Sum(k => k.Value.Count)} dc:{this.FilterInventoryType.Select(i => i.Key).Except(Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count()}");
+			if (this.FilterInventoryType.Count != Storage.FilterNames.Sum(k=>k.Value.Count) || this.FilterInventoryType.Select(i => i.Key).Except(Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count() != 0) {
+				var oldFilterInventoryType = this.FilterInventoryType.Copy();
+				this.FilterInventoryType = Storage.FilterNames.SelectMany(v => v.Value.Keys).ToDictionary(it => it, it => {
+					if (oldFilterInventoryType != null && oldFilterInventoryType.TryGetValue(it, out bool d) && d)
+						return d;
+					return true;
+				});
+			}
+		}
 		public bool FilterSourceCollapse = false;
+		public bool FilterAdditionalCollapse = true;
 		public bool FilterAdvancedCollapse = true;
 
 
@@ -89,6 +108,7 @@ namespace Dresser {
 		/// Migrations
 		public void Migrate() {
 			LoadFilterInventoryCategory();
+			LoadAdditionaltems();
 		}
 
 		public void Save() {

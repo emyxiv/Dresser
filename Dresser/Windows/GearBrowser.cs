@@ -19,6 +19,8 @@ using Dresser.Interop.Hooks;
 using Dresser.Windows.Components;
 using Dresser.Logic;
 using Dresser.Structs.FFXIV;
+using Lumina.Excel.GeneratedSheets;
+using System.Collections.Immutable;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IDisposable {
@@ -31,7 +33,6 @@ namespace Dresser.Windows {
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 			};
 			this.Plugin = plugin;
-
 		}
 		public void Dispose() { }
 
@@ -45,126 +46,181 @@ namespace Dresser.Windows {
 		public static List<InventoryCategory> AllowedCategories = new() {
 			InventoryCategory.GlamourChest,
 			InventoryCategory.Armoire,
+			InventoryCategory.CharacterArmoryChest,
 			InventoryCategory.RetainerBags,
 			InventoryCategory.RetainerEquipped,
 			InventoryCategory.CharacterSaddleBags,
 			InventoryCategory.CharacterPremiumSaddleBags,
 			InventoryCategory.CharacterEquipped,
 			InventoryCategory.CharacterBags,
-			InventoryCategory.CharacterArmoryChest,
 			InventoryCategory.RetainerMarket,
 			InventoryCategory.FreeCompanyBags,
 		};
+		//public static List<InventoryType> AllowedType => Storage.FilterVendorNames.Select(vfic => vfic.Value).Concat(new List<InventoryType>() {
+			//InventoryType.RetainerBag0
+		//}).ToList();
 		public static GlamourPlateSlot? SelectedSlot = null;
 
 		public override void Draw() {
 			//TestWindow();
 
 			// top "bar" with controls
-			ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search,100);
+			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
+				RecomputeItems();
 			ImGui.SameLine();
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
 				this.Plugin.DrawConfigUI();
 			}
 
+			if(DrawFilters())
+				RecomputeItems();
+
+
+			DrawItems();
+		}
+		private static bool DrawFilters() {
+			bool filterChanged = false;
 
 			if (ImGui.CollapsingHeader($"Source##Source##GearBrowser", ConfigurationManager.Config.FilterSourceCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSourceCollapse = true;
 				ImGui.Columns(2);
+				ImGui.BeginGroup();
 				int i = 0;
 				foreach ((var cat, var willDisplay) in ConfigurationManager.Config.FilterInventoryCategory) {
 					i++;
-					if (i % (ConfigurationManager.Config.FilterInventoryCategory.Count /2 ) == 0)
-						ImGui.NextColumn();
+					if (i == (int)(ConfigurationManager.Config.FilterInventoryCategory.Count / 1.6f)) {
+						ImGui.EndGroup(); ImGui.NextColumn(); ImGui.BeginGroup();
+					}
 					var willDisplayValue = willDisplay;
-					if (ImGui.Checkbox($"{cat}##displayCategory", ref willDisplayValue))
+					if (filterChanged |= ImGui.Checkbox($"{cat}##displayCategory", ref willDisplayValue))
 						ConfigurationManager.Config.FilterInventoryCategory[cat] = willDisplayValue;
 				}
-				
-				//ImGui.NextColumn();
-				//ImGui.BeginDisabled();
-				//bool disb = false;
-				//ImGui.Checkbox("Calamity Salvager##GearBrowser", ref disb);
-				//ImGui.Checkbox("Relic Replica Vendors##GearBrowser", ref disb);
-				//ImGui.Checkbox("Unobtained##GearBrowser", ref disb);
-				//ImGui.EndDisabled();
+				ImGui.EndGroup();
 				ImGui.Columns();
 			} else
 				ConfigurationManager.Config.FilterSourceCollapse = false;
 
+			if (ImGui.CollapsingHeader($"Unobtained##Source##GearBrowser", ConfigurationManager.Config.FilterAdditionalCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+				ConfigurationManager.Config.FilterAdditionalCollapse = true;
+
+				foreach((var AddItemKind, var option) in Storage.FilterNames) {
+					ImGui.TextDisabled(AddItemKind.ToString());
+					foreach((var inventoryType, var addItemTitle) in option) {
+						bool isChecked = false;
+						ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out isChecked);
+
+						if (filterChanged |= ImGui.Checkbox($"{addItemTitle}##displayInventoryTypeAdditionalItem", ref isChecked))
+							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
+
+					}
+				}
+
+			} else
+				ConfigurationManager.Config.FilterAdditionalCollapse = false;
+
+
 			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
-				ImGui.Checkbox($"Filter Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
+				filterChanged |= ImGui.Checkbox($"Filter Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
 				ImGui.SameLine();
-				ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
+				filterChanged |= ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
 			} else
 				ConfigurationManager.Config.FilterAdvancedCollapse = false;
 
-			var currentCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
-			var savedItems = ConfigurationManager.Config.SavedInventories.First(c => c.Key == currentCharacter).Value.SelectMany(t=>t.Value);
-			//PluginLog.Debug($" items: {savedItems.Count()} {string.Join(",", savedItems.Select(p=>p.Container.ToInventoryCategory()).Distinct())}");
-			var items = savedItems.Where(i =>
+			return filterChanged;
+		}
+
+		public static IOrderedEnumerable<InventoryItem>? Items = null;
+		public static void RecomputeItems() {
+			PluginLog.Information($" ========== Recreated ItemList ========== ");
+			PluginLog.Information($" ======================================== ");
+			IEnumerable<InventoryItem> items = new HashSet<InventoryItem>();
+
+			foreach( (var g, var h) in ConfigurationManager.Config.FilterInventoryType) {
+				PluginLog.Debug($"{g}:{h}");
+			}
+
+
+			foreach ((var inventoryType, var itemsToAdd) in PluginServices.Storage.AdditionalItems) {
+				if (ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out var isEnabled) && isEnabled) {
+					items = items.Concat(itemsToAdd);
+					PluginLog.Debug($"included {inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => p.SortedContainer).Distinct())}");
+					if (inventoryType == (InventoryType)99300) break;
+				}
+			}
+
+			PluginLog.Debug($"all items => {items.Count()} cat:{string.Join(",", items.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", items.Select(p => p.SortedContainer).Distinct())}");
+
+			// items from saved inventory (critical impact lib)
+			items = items.Concat(ConfigurationManager.Config.SavedInventories.First(c => c.Key == PluginServices.CharacterMonitor.ActiveCharacter).Value.SelectMany(t => t.Value));
+
+			items = items.Where(i =>
 				!i.IsEmpty
 				&& i.Item.ModelMain != 0
 				&& (!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
 				&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
 				&& SelectedSlot == i.Item.GlamourPlateSlot()
-				&& i.IsFilterDisplayable(ConfigurationManager.Config.FilterInventoryCategory)
+				&& i.IsFilterDisplayable()
 				&& i.Item.CanBeEquipedByPlayedRaceGender()
 				&& (
 					//!Search.IsNullOrWhitespace() &&
 					i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase)
 					)
 
-				)
-				.GroupBy(i => i.GetHashCode())
-				.Select(i => i.First())
+				);
+
+
+			Items = items
+				// remove duplicates
+				.GroupBy(i => i.GetHashCode()).Select(i => i.First())
+
+				// sort the items
 				//.OrderBy(i => i.Item.EquipSlotCategoryEx)
 				.OrderByDescending(i => i.Item.LevelEquip)
 				//.OrderBy(i => i.Item.LevelItem)
 				;
-			//PluginLog.Debug($" found valid items: {items.Count()}");
+		}
 
-
+		public void DrawItems() {
 			//ImGui.SameLine();
-			ImGui.Text($"Found: {items.Count()}");
+			ImGui.Text($"Found: {Items?.Count() ?? 0}");
 
 			PushStyleCollection();
 			ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
-			try {
+			if(Items != null)
+				try {
 
-				bool isTooltipActive = false;
+					bool isTooltipActive = false;
 
-				foreach (var item in items) {
+					foreach (var item in Items) {
 
-					// icon
-					bool isHovered = item.GetHashCode() == HoveredItem;
-					bool wasHovered = isHovered;
-					var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
-					if (isHovered)
-						HoveredItem = item.GetHashCode();
-					else if (!isHovered && wasHovered)
-						HoveredItem = null;
+						// icon
+						bool isHovered = item.GetHashCode() == HoveredItem;
+						bool wasHovered = isHovered;
+						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
+						if (isHovered)
+							HoveredItem = item.GetHashCode();
+						else if (!isHovered && wasHovered)
+							HoveredItem = null;
 
-					// execute when clicked
-					if (iconClicked) {
-						PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
+						// execute when clicked
+						if (iconClicked) {
+							PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
+						}
+
+
+						ImGui.SameLine();
+						if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X)
+							ImGui.NewLine();
 					}
-
-
-					ImGui.SameLine();
-					if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X)
-						ImGui.NewLine();
+				} catch (Exception ex) {
+					PluginLog.Error(ex.ToString());
 				}
-			} catch(Exception ex) {
-				PluginLog.Error(ex.ToString());
-			}
 
 			ImGui.EndChildFrame();
 			PopStyleCollection();
 		}
-
 
 		public static void PushStyleCollection() {
 			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 5f);

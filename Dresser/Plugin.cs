@@ -82,7 +82,9 @@ namespace Dresser {
 		}
 
 		public void Dispose() {
+			PluginServices.ApplyGearChange.RestoreAppearance();
 			EventManager.GearSelectionClose?.Invoke();
+
 
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);
@@ -146,7 +148,7 @@ namespace Dresser {
 			}
 		}
 		public bool IsDresserVisible()
-			=> WindowSystem.GetWindow("Current Gear")!.IsOpen;
+			=> WindowSystem.GetWindow("Current Gear")?.IsOpen ?? false;
 
 
 
@@ -200,7 +202,8 @@ namespace Dresser {
 				}
 				_recentlyAddedSeen.Add(item.ItemId, item);
 			}
-			if (this.WindowSystem.GetWindow("Current Gear")!.IsOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
+			
+			if (PluginServices.Context.IsDresserCurrentGearOpen) PluginServices.ApplyGearChange?.ReApplyAppearanceAfterEquipUpdate();
 		}
 
 		private void CharacterMonitorOnOnCharacterUpdated(Character? character) {
@@ -210,10 +213,10 @@ namespace Dresser {
 				if (ConfigurationManager.Config.AcquiredItems.ContainsKey(character.CharacterId)) {
 					PluginServices.GameInterface.AcquiredItems = ConfigurationManager.Config.AcquiredItems[character.CharacterId];
 				}
+				if (PluginServices.Context.IsDresserCurrentGearOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 			} else {
 				PluginServices.GameInterface.AcquiredItems = new HashSet<uint>();
 			}
-			if(this.WindowSystem.GetWindow("Current Gear")!.IsOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 		}
 		private void GameInterfaceOnAcquiredItemsUpdated() {
 			PluginLog.Debug($"====== RECORD ITEM ACQUIRE UPDATE");
@@ -221,8 +224,8 @@ namespace Dresser {
 			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
 			if (activeCharacter != 0) {
 				ConfigurationManager.Config.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
+				if (PluginServices.Context.IsDresserCurrentGearOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 			}
-			if (this.WindowSystem.GetWindow("Current Gear")!.IsOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 		}
 
 	}

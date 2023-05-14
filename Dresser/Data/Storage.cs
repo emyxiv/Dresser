@@ -15,6 +15,9 @@ using CriticalCommonLib.Sheets;
 
 using Dresser.Data.Excel;
 using Dresser.Structs.FFXIV;
+using CriticalCommonLib.Enums;
+using Dresser.Extensions;
+using Dalamud.Logging;
 
 namespace Dresser.Data {
 	internal class Storage : IDisposable {
@@ -61,6 +64,8 @@ namespace Dresser.Data {
 
 			foreach ((var slot, var part_id) in ImageGuiCrop.EmptyGlamourPlateSlot)
 				ImageGuiCrop.GetPart("character", part_id);
+
+			LoadAdditionalItems();
 		}
 		public void Dispose() {
 			Dyes = null;
@@ -78,141 +83,98 @@ namespace Dresser.Data {
 				rarityColor = Vector4.One;
 			return rarityColor;
 		}
-	}
 
 
-	internal class ImageGuiCrop {
-		public static Dictionary<string,TextureWrap> Textures = new ();
-		public static Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
-
-		public static Dictionary<string, Dictionary<int, (Vector2,Vector2)>> TexturesParts = new() {
-			{ "character", new(){
-
-				// main weapon: 17
-				{ 17, (new(0, 3*48), new(64, 64) ) },
-				// off weapon: 18
-				{ 18, (new(64, 3*48), new(64, 64) ) },
-				// head: 19
-				{ 19, (new(2*64, 3*48), new(64, 64) ) },
-				// body: 20
-				{ 20, (new(3*64, 3*48), new(64, 64) ) },
-				// hands: 21
-				{ 21, (new(4*64, 3*48), new(64, 64) ) },
-				// legs: 23
-				{ 23, (new(6*64, 3*48), new(64, 64) ) },
-				// feet: 24
-				{ 24, (new(0, 3*48 + 64), new(64, 64) ) },
-				// earring: 25
-				{ 25, (new(64, 3*48 + 64), new(64, 64) ) },
-				// necklace: 26
-				{ 26, (new(2*64, 3*48 + 64), new(64, 64) ) },
-				// bracer: 27
-				{ 27, (new(3*64, 3*48 + 64), new(64, 64) ) },
-				// ring: 28
-				{ 28, (new(4*64, 3*48 + 64), new(64, 64) ) },
 
 
-			}},
-			{ "icon_a_frame", new(){
-
-				// item cap - normal
-				{ 1, (new(0, 0), new(96, 96) ) },
-				// item cap - blue cross
-				{ 2, (new(0, 96), new(96, 96) ) },
-				// item cap - red cross
-				{ 4, (new(96, 96), new(96, 96) ) },
-				// highlight
-				{ 16, (new(96*5, 0), new(144, 144) ) },
-				// normal slot
-				{ 11, (new(96*6+144, 0), new(96, 96) ) },
-				// hovered slot
-				{ 12, (new(0, 96*2), new(96, 96) ) },
-			}},
-			{ "mirage_prism_box", new(){
-
-				// item slot - blue cross
-				{ 1, (new(0, 0), new(96, 96) ) },
-				// item slot - red cross
-				{ 2, (new(96, 0), new(96, 96) ) },
-				// item slot - normal
-				{ 3, (new(0, 96), new(96, 96) ) },
-			}},
-
-			{ "mirage_prism_plate2", new(){
-				// button not selected plate (radio)
-				{ 5, (new(0, 56), new(56*2, 48) ) },
-				// button currently selected plate (radio)
-				{ 6, (new(56*2, 56), new(56*2, 48) ) },
-			}},
-
-		};
-
-		public static Dictionary<GlamourPlateSlot, int> EmptyGlamourPlateSlot = new() {
-				{ GlamourPlateSlot.MainHand, 17 }, // main weapon: 17
-				{ GlamourPlateSlot.OffHand, 18 }, // off weapon: 18
-				{ GlamourPlateSlot.Head, 19 }, // head: 19
-				{ GlamourPlateSlot.Body, 20 }, // body: 20
-				{ GlamourPlateSlot.Hands, 21 }, // hands: 21
-				{ GlamourPlateSlot.Legs, 23 }, // legs: 23
-				{ GlamourPlateSlot.Feet, 24 }, // feet: 24
-				{ GlamourPlateSlot.Ears, 25 }, // earring: 25
-				{ GlamourPlateSlot.Neck, 26 }, // necklace: 26
-				{ GlamourPlateSlot.Wrists, 27 }, // bracer: 27
-				{ GlamourPlateSlot.RightRing, 28 }, // ring: 28
-				{ GlamourPlateSlot.LeftRing, 28 }, // ring: 28
-			};
-
-		public static (IntPtr, Vector2, Vector2, Vector2) GetPart(string type, int part_id) {
-			if (Cache.TryGetValue((type, part_id), out var cachedInfo))
-				return cachedInfo;
-			if (Textures.TryGetValue(type, out var texture))
-				if (texture != null && TexturesParts.TryGetValue(type, out var parts))
-					if (parts != null && parts.Count > 0 && parts.TryGetValue(part_id, out var posSize)) {
-
-						var textureSize = new Vector2(texture.Width, texture.Height);
-						var pos = posSize.Item1;
-						var size = posSize.Item2;
-						Vector2 uv0 = new(
-							pos.X / textureSize.X,
-							pos.Y / textureSize.Y
-							);
-						Vector2 uv1 = new(
-							(pos.X + size.X) / textureSize.X,
-							(pos.Y + size.Y) / textureSize.Y
-							);
-						var partInfo = (texture.ImGuiHandle, uv0, uv1, size);
-						Cache.Add((type, part_id), partInfo);
-						return partInfo;
-					}
-
-			return (default, default, default, default);
+		// prepare aditional items data
+		public enum AdditionalItem {
+			None,
+			All,
+			Vendor,
+			Currency,
 		}
 
-		public static (IntPtr, Vector2, Vector2, Vector2) GetPart(GlamourPlateSlot slot)
-			=> GetPart("character", EmptyGlamourPlateSlot[slot]);
+		public static Dictionary<AdditionalItem, Dictionary<InventoryType, string>> FilterNames = new() {
+			{AdditionalItem.All,new() {
+				{ (InventoryType) 99300, "All Items" },
+			}},
+			{AdditionalItem.Vendor,new() {
+				{ (InventoryType) 99400, "Calamity Vendor" },
+				{ (InventoryType) 99401, "Relic Vendor" },
+			}},
+			{AdditionalItem.Currency,new() {
+				{(InventoryType) 99520, "Storm Seal" },
+				{(InventoryType) 99521, "Serpent Seal" },
+				{(InventoryType) 99522, "Flame Seal" },
+				{(InventoryType) 99528, "Poetics" },
+			}},
+		};
+		public Dictionary<InventoryType, HashSet<InventoryItem>> AdditionalItems = FilterNames.SelectMany(a => a.Value.Keys).ToDictionary(itn => itn, itn => new HashSet<InventoryItem>());
+		//public Dictionary<AdditionalItem, Dictionary<InventoryType, HashSet<InventoryItem>>> AdditionalItems = FilterNames.ToDictionary(fn=>fn.Key,fn=>fn.Value.ToDictionary(itn=>itn.Key,itn=> new HashSet<InventoryItem>()));
 
-		public static void Init() {
-			Dictionary<string, string> paths = new() {
-				{"character", $"ui/uld/Character{Storage.HighResolutionSufix}.tex"},
-				{"icon_a_frame", $"ui/uld/IconA_Frame{Storage.HighResolutionSufix}.tex"},
-				{"mirage_prism_box", $"ui/uld/MiragePrismBoxIcon{Storage.HighResolutionSufix}.tex"},
-				{"mirage_prism_plate2", $"ui/uld/MiragePrismPlate2{Storage.HighResolutionSufix}.tex"}, // plate number tabs
-			};
-			foreach((var handle, var path) in paths) {
+		public static InventoryItem NewInventoryItem(InventoryType inventoryType, uint itemId) {
 
-				var image = PluginServices.DataManager.GetFile<TexFile>(path);
-				if (image == null) continue;
-				var tex = PluginServices.DataManager.GetImGuiTexture(path);
-				if (tex == null) continue;
+			var invIt =  new InventoryItem(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			invIt.SortedContainer = inventoryType;
+			return invIt;
+		}
 
-				Textures.Add(handle, tex);
+		// all items
+		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)99300 };
+		// vendor
+		public static Dictionary<InventoryType, HashSet<string>> FilterVendorAllowedNames = new() {
+			{ (InventoryType) 99400 , new(){"Calamity salvager", "journeyman salvager"} },
+			{ (InventoryType) 99401 , new(){"restoration node", "Drake"} },
+		};
+		// currency
+		public static Dictionary<InventoryType, uint> FilterCurrencyIds = new() {
+			{(InventoryType) 99520, 20 },
+			{(InventoryType) 99521, 21 },
+			{(InventoryType) 99522, 22 },
+			{(InventoryType) 99528, 28 },
+		};
+		private void LoadAdditional_All() {
+			foreach (var inventoryType in FilterAll) {
+				// at least filter glam items
+				PluginLog.Debug($"================= item numbers all: {Service.ExcelCache.AllItems.Count}");
+
+				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
+					//.DistinctBy(i=>i.Value.GetSharedModels())
+					.Where((itemPair) => itemPair.Value.ModelMain != 0)
+					.Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
+
+
+				var a = FilterNames[AdditionalItem.All][inventoryType];
+				var b = AdditionalItems[inventoryType].Count;
+				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.All][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
 		}
-		public static void Dispose() {
-			Cache.Clear();
-			foreach ((var handle, var texture) in Textures)
-				texture.Dispose();
-			Textures.Clear();
+		private void LoadAdditional_Vendor() {
+
+			foreach ((var inventoryType, var allowedVendorsForType) in FilterVendorAllowedNames) {
+				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems.Where((itemPair) => {
+					return Service.ExcelCache.ShopCollection.GetShops(itemPair.Key).Any(s => s.ENpcs.Any(n => allowedVendorsForType.Any(av => av == n.Resident!.Singular)));
+				}).Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
+				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Vendor][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
+			}
+		}
+		private void LoadAdditional_Currency() {
+			foreach ((var inventoryType, var currencyId) in FilterCurrencyIds) {
+				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
+					.Where((itemPair) => itemPair.Value.ObtainedWithSpecialShopCurrency(currencyId))
+					.Select(i => NewInventoryItem(inventoryType, i.Key))
+					.ToHashSet();
+				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Currency][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
+			}
+		}
+
+		public void LoadAdditionalItems() {
+
+			LoadAdditional_All();
+			LoadAdditional_Vendor();
+			LoadAdditional_Currency();
+
 		}
 	}
 }
