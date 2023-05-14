@@ -64,7 +64,15 @@ namespace Dresser.Windows {
 		public override void Draw() {
 			//TestWindow();
 
-			// top "bar" with controls
+			DrawSearchBar();
+
+			if(DrawFilters())
+				RecomputeItems();
+
+
+			DrawItems();
+		}
+		private static void DrawSearchBar() {
 			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
 				RecomputeItems();
 			ImGui.SameLine();
@@ -72,11 +80,6 @@ namespace Dresser.Windows {
 				this.Plugin.DrawConfigUI();
 			}
 
-			if(DrawFilters())
-				RecomputeItems();
-
-
-			DrawItems();
 		}
 		private static bool DrawFilters() {
 			bool filterChanged = false;
