@@ -40,7 +40,7 @@ namespace Dresser {
 		public int FilterInventoryCategoryColumnNumber { get; set; } = 1;
 		public int FilterInventoryTypeColumnNumber { get; set; } = 1;
 		public float GearBrowserSideBarSize { get; set; } = 300f;
-		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnLeft;
+		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnRight;
 
 		public void LoadFilterInventoryCategory() {
 			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");
