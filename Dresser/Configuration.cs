@@ -60,7 +60,7 @@ namespace Dresser {
 				this.FilterInventoryType = Storage.FilterNames.SelectMany(v => v.Value.Keys).ToDictionary(it => it, it => {
 					if (oldFilterInventoryType != null && oldFilterInventoryType.TryGetValue(it, out bool d) && d)
 						return d;
-					return true;
+					return false;
 				});
 			}
 		}
