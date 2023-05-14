@@ -62,23 +62,54 @@ namespace Dresser.Windows {
 		public static GlamourPlateSlot? SelectedSlot = null;
 
 		public override void Draw() {
-			//TestWindow();
 
+			switch(ConfigurationManager.Config.GearBrowserDisplayMode) {
+				case DisplayMode.Vertical:DrawWithMode_Vertical(); break;
+				case DisplayMode.SidebarOnRight: DrawWithMode_SidebarOnRight(); break;
+				default: DrawWithMode_Vertical(); break;
+			}
+
+		}
+
+		public enum DisplayMode {
+			Vertical,
+			SidebarOnRight,
+			//SidebarOnLeft,
+		}
+		private void DrawWithMode_Vertical() {
 			DrawSearchBar();
 
-			if(DrawFilters())
-				RecomputeItems();
-
+			if (DrawFilters()) RecomputeItems();
 
 			DrawItems();
+
+		}
+		private void DrawWithMode_SidebarOnRight() {
+
+			DrawSearchBar();
+			ImGui.BeginGroup();
+			DrawItems();
+			ImGui.EndGroup();
+			ImGui.SameLine();
+
+			ImGui.BeginGroup();
+			ImGui.BeginChildFrame(84, ImGui.GetContentRegionAvail() - new Vector2(0, 0));
+			if (DrawFilters()) RecomputeItems();
+			ImGui.EndChildFrame();
+			ImGui.EndGroup();
+
 		}
 		private void DrawSearchBar() {
 			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
 				RecomputeItems();
 			ImGui.SameLine();
+			ImGui.Text($"Found: {Items?.Count() ?? 0}");
+
+			ImGui.SameLine();
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
 				this.Plugin.DrawConfigUI();
 			}
+
 
 		}
 		private static bool DrawFilters() {
@@ -216,11 +247,12 @@ namespace Dresser.Windows {
 		}
 
 		public void DrawItems() {
-			//ImGui.SameLine();
-			ImGui.Text($"Found: {Items?.Count() ?? 0}");
-
 			PushStyleCollection();
-			ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
+			Vector2 sideBarSize = new(ConfigurationManager.Config.GearBrowserSideBarSize, 0);
+			Vector2 available = ImGui.GetContentRegionAvail();
+			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
+			ImGui.BeginChildFrame(76, size);
+			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
 			if(Items != null)
 				try {
 

@@ -13,6 +13,7 @@ using System.Linq;
 using Dresser.Data;
 using CriticalCommonLib.Enums;
 using Dalamud.Logging;
+using static Dresser.Windows.GearBrowser;
 
 namespace Dresser {
 	[Serializable]
@@ -38,6 +39,8 @@ namespace Dresser {
 		public float FilterInventoryCategoryColumnDistribution { get; set; } = 1.5f;
 		public int FilterInventoryCategoryColumnNumber { get; set; } = 1;
 		public int FilterInventoryTypeColumnNumber { get; set; } = 1;
+		public float GearBrowserSideBarSize { get; set; } = 300f;
+		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnLeft;
 
 		public void LoadFilterInventoryCategory() {
 			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");

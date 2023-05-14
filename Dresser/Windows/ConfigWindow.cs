@@ -59,7 +59,15 @@ public class ConfigWindow : Window, IDisposable {
 		var FilterInventoryTypeColumnNumber = ConfigurationManager.Config.FilterInventoryTypeColumnNumber;
 		if (ImGui.DragInt("Col # — Unobtained##GearBrowserConfig", ref FilterInventoryTypeColumnNumber, 0.05f, 1, 5))
 			ConfigurationManager.Config.FilterInventoryTypeColumnNumber = FilterInventoryTypeColumnNumber;
+		var GearBrowserSideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
+		if (ImGui.DragFloat("size — Sidebar##GearBrowserConfig", ref GearBrowserSideBarSize, 10f, 20, 2000))
+			ConfigurationManager.Config.GearBrowserSideBarSize = GearBrowserSideBarSize;
 
+		var GearBrowserDisplayMode = (int)ConfigurationManager.Config.GearBrowserDisplayMode;
+		var GearBrowserDisplayMode_items = Enum.GetValues<GearBrowser.DisplayMode>().Select(d=>d.ToString()).ToArray();
+		if (ImGui.Combo("Display mode##GearBrowserConfig", ref GearBrowserDisplayMode, GearBrowserDisplayMode_items, GearBrowserDisplayMode_items.Count())) {
+			ConfigurationManager.Config.GearBrowserDisplayMode = (GearBrowser.DisplayMode)GearBrowserDisplayMode;
+		}
 	}
 	public void DrawInventoryConfigs() {
 		if (ImGui.Button("Force Save All configs and inventories")) {
