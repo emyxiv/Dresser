@@ -176,7 +176,6 @@ public class CurrentGear : Window, IDisposable {
 			int i = 0;
 			foreach (var slot in SlotOrder) {
 				plateItems.TryGetValue(slot, out var item);
-				item ??= Gathering.EmptyItemSlot();
 
 				bool isHovered = slot == HoveredSlot;
 				bool wasHovered = isHovered;
