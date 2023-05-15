@@ -49,7 +49,7 @@ namespace Dresser.Windows.Components {
 			bool __ = false;
 			DrawIcon(item, ref _, ref __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem>? contextAction = null) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem>? contextAction = null, float sizeMod = 1) {
 
 			if (PluginServices.Context.LocalPlayer == null
 				|| PluginServices.Context.LocalPlayerRace == null
@@ -57,6 +57,7 @@ namespace Dresser.Windows.Components {
 				|| PluginServices.Context.LocalPlayerClass == null
 				) return false;
 
+			item ??= Gathering.EmptyItemSlot();
 
 			// item variables
 			var dye = Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
@@ -70,7 +71,7 @@ namespace Dresser.Windows.Components {
 
 			if (item.ItemId == 0)
 				image = null;
-			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, out bool rightClicked, emptySlot);
+			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, out bool rightClicked, emptySlot, sizeMod);
 			if (contextAction != null && rightClicked) {
 				PluginLog.Debug("right clicked");
 				ContexMenuAction = contextAction;
@@ -193,8 +194,10 @@ namespace Dresser.Windows.Components {
 			bool _ = false;
 			return DrawImage( image,dye, isDyeable, ref _, iconImageFlag, out var _);
 		}
-		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, out bool rightClicked, GlamourPlateSlot? emptySlot = null) {
+		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, out bool rightClicked, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
+
+			var iconSize = IconSize * sizeMod;
 
 			bool wasHovered = hovering;
 			var clicked = false;
@@ -203,20 +206,20 @@ namespace Dresser.Windows.Components {
 
 				var initialPosition = ImGui.GetCursorPos();
 				var draw = ImGui.GetWindowDrawList();
-				var capSize = IconSize * new Vector2(1.17f, 1.16f);
-				var difference = capSize - IconSize;
-				initialPosition += (new Vector2(0, 3f) * ConfigurationManager.Config.IconSizeMult);
+				var capSize = iconSize * new Vector2(1.17f, 1.16f);
+				var difference = capSize - iconSize;
+				initialPosition += (new Vector2(0, 3f) * ConfigurationManager.Config.IconSizeMult * sizeMod);
 
 
 				if (image != null) {
 					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? GearBrowser.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
-					ImGui.Image(image.ImGuiHandle, IconSize, Vector2.Zero, Vector2.One, colorize);
+					ImGui.Image(image.ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
 				} else if (emptySlot != null) {
 					var emptySlotInfo = ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
 
 					// TODO: smaller icons in their slot
 					// draw.AddImage(emptySlotInfo.Item1, slotPos, slotPos + slotSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
-					ImGui.Image(emptySlotInfo.Item1, IconSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
+					ImGui.Image(emptySlotInfo.Item1, iconSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
 				}
 
 				clicked = ImGui.IsItemClicked();
@@ -224,7 +227,7 @@ namespace Dresser.Windows.Components {
 				rightClicked = ImGui.IsItemClicked(ImGuiMouseButton.Right);
 
 
-				DrawStain(dye, isDyeable);
+				DrawStain(dye, isDyeable, sizeMod);
 
 				ImGui.SetCursorPos(initialPosition);
 				ImGui.SetCursorPos(ImGui.GetCursorPos() - (difference / 2));
@@ -234,7 +237,7 @@ namespace Dresser.Windows.Components {
 				// item slot
 				var itemSlotInfo = ImageGuiCrop.GetPart("mirage_prism_box", 3);
 				var slotSize = capSize * (itemSlotInfo.Item4.X / itemCapInfo.Item4.X);
-				//difference = slotSize - IconSize;
+				//difference = slotSize - iconSize;
 				var slotPos = ImGui.GetCursorScreenPos();
 				//var slotPos = ImGui.GetCursorScreenPos() - (difference / 2);
 				draw.AddImage(itemSlotInfo.Item1, slotPos, slotPos + slotSize, itemSlotInfo.Item2, itemSlotInfo.Item3);
@@ -250,7 +253,7 @@ namespace Dresser.Windows.Components {
 					var itemHoveredInfo = ImageGuiCrop.GetPart("icon_a_frame", 16);
 					ImGui.SetCursorPos(initialPosition);
 					var hoverSize = capSize * (itemHoveredInfo.Item4.X / itemCapInfo.Item4.X);
-					difference = hoverSize - IconSize;
+					difference = hoverSize - iconSize;
 
 					var hoverPos = ImGui.GetCursorScreenPos() - (difference / 2);
 					draw.AddImage(itemHoveredInfo.Item1, hoverPos, hoverPos + hoverSize, itemHoveredInfo.Item2, itemHoveredInfo.Item3);
@@ -267,7 +270,7 @@ namespace Dresser.Windows.Components {
 			return clicked;
 		}
 
-		public static void DrawStain(Dye? dye, bool isDyeable) {
+		public static void DrawStain(Dye? dye, bool isDyeable, float sizeMod = 1) {
 			if (dye == null || !isDyeable) return;
 
 			ImGui.SameLine();
@@ -275,13 +278,13 @@ namespace Dresser.Windows.Components {
 
 			var draw = ImGui.GetWindowDrawList();
 			Vector2 cursorScreenPos = ImGui.GetCursorScreenPos();
-			var radius = (ImGui.GetFontSize()) * 0.5f * ConfigurationManager.Config.IconSizeMult;
+			var radius = (ImGui.GetFontSize()) * 0.5f * ConfigurationManager.Config.IconSizeMult * sizeMod;
 			var x = cursorScreenPos.X - radius - ImGui.GetStyle().ItemSpacing.X;
 			var y = cursorScreenPos.Y + radius;
 			var pos = new Vector2(x, y);
 
 			draw.AddCircleFilled(pos, radius, ImGui.ColorConvertFloat4ToU32(color));
-			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder);
+			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder * sizeMod);
 		}
 		public static void DrawContextMenu() {
 			if(ContexMenuItem != null && ContexMenuAction != null) {
