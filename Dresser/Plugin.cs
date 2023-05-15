@@ -32,6 +32,11 @@ namespace Dresser {
 		private static Plugin? PluginInstance = null;
 		public static Plugin GetInstance() => PluginInstance!;
 
+		internal ConfigWindow? ConfigWindow = null;
+		internal GearBrowser? GearBrowser = null;
+		internal CurrentGear? CurrentGear = null;
+		internal Dialogs? Dialogs = null;
+
 		public Plugin(
 			[RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
 			[RequiredVersion("1.0")] CommandManager commandManager) {
@@ -60,10 +65,15 @@ namespace Dresser {
 			Interop.Hooks.AddonListeners.Init();
 
 
+			ConfigWindow = new ConfigWindow(this);
+			WindowSystem.AddWindow(ConfigWindow);
+			GearBrowser = new GearBrowser(this);
+			WindowSystem.AddWindow(GearBrowser);
+			CurrentGear = new CurrentGear(this);
+			WindowSystem.AddWindow(CurrentGear);
+			Dialogs = new Dialogs(this);
+			WindowSystem.AddWindow(Dialogs);
 
-			WindowSystem.AddWindow(new ConfigWindow(this));
-			WindowSystem.AddWindow(new GearBrowser(this));
-			WindowSystem.AddWindow(new CurrentGear(this));
 
 
 			PluginServices.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) {
@@ -141,7 +151,10 @@ namespace Dresser {
 		}
 		public bool IsDresserVisible()
 			=> WindowSystem?.GetWindow("Current Gear")?.IsOpen ?? false;
-
+		public void OpenDialog(DialogInfo dialogInfo) {
+			Dialogs!.DialogInfo = dialogInfo;
+			WindowSystem.GetWindow("Dialogs")!.IsOpen = true;
+		}
 
 
 

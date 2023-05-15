@@ -11,6 +11,8 @@ using Dresser.Structs.FFXIV;
 using Dresser.Windows;
 using Dresser.Structs.Actor;
 using Dresser.Data;
+using ImGuiNET;
+using Dresser.Windows.Components;
 
 namespace Dresser.Logic {
 	public class ApplyGearChange : IDisposable {
@@ -157,7 +159,10 @@ namespace Dresser.Logic {
 			var actualPlates = Storage.Pages!.Select((value,index) => new { value, index }).ToDictionary(pair=>(ushort)pair.index,pair=> Gathering.MirageToInvItems(pair.value));
 
 
-			Dictionary<ushort, Dictionary<GlamourPlateSlot, InventoryItem?>> differencesToApply = new();
+
+			// make a list with all the changes between pending and actual plates
+			// ()
+			Dictionary<ushort, Dictionary<GlamourPlateSlot, (InventoryItem? replacement, InventoryItem? replaced)>> differencesToApply = new();
 
 			foreach ((var plateIndex, var actualPlateValues) in actualPlates) {
 				pendingPlates.TryGetValue(plateIndex, out var pendingPlateValues_tmp);
@@ -192,16 +197,91 @@ namespace Dresser.Logic {
 						if (!differencesToApply.TryGetValue(plateIndex, out var plateChanges) || plateChanges == null)
 							differencesToApply[plateIndex] = new();
 
-						differencesToApply[plateIndex][slot] = itemReplacement;
+						var itemReplaced = actualInventoryItem.ItemId == 0 ? null : actualInventoryItem;
+						differencesToApply[plateIndex][slot] = (itemReplacement, itemReplaced);
 					}
 				}
+
+				// remove empty plates, they are probably untouched (todo: maybe offer them the option to also clean those)
+				if(differencesToApply.ContainsKey(plateIndex) && !differencesToApply[plateIndex].Any(s => s.Value.replacement != null))
+					differencesToApply.Remove(plateIndex);
+
 			}
 
-			ApplyChangesDialog(differencesToApply);
+
+			if (differencesToApply.Count == 0) return;
+
+			Popup_AskApplyOnPlates(differencesToApply);
 		}
 
 
-		public void ApplyChangesDialog(Dictionary<ushort, Dictionary<GlamourPlateSlot, InventoryItem?>> differencesToApply) {
+		public static int HoveredIcon = -1;
+		public void Popup_AskApplyOnPlates(Dictionary<ushort, Dictionary<GlamourPlateSlot, (InventoryItem? replacement, InventoryItem? replaced)>> differencesToApply) {
+			var dialog = new DialogInfo(() => {
+				var spaceSize = ImGui.GetFontSize() * 1.8f;
+				var sizeMod = 0.33f;
+				ImGui.Text($"Glamour plate changes detected, would you like to apply them?");
+				ImGui.Text($"{differencesToApply.Count} Glamour plate affected");
+				bool isAnotherTooltipActive = false;
+				int iconKey = 0;
+
+				ImGui.BeginGroup();
+				foreach ((var plateIndex, var plateValues) in differencesToApply) {
+					ImGui.BulletText($"Plate {plateIndex + 1}: ");
+					foreach ((var slot, (var replacementItem, var replacedItem)) in plateValues) {
+						ImGui.AlignTextToFramePadding();
+
+						// item icon
+						//ImGui.SameLine();
+
+
+						bool isHovering = iconKey == HoveredIcon;
+						ItemIcon.DrawIcon(replacementItem, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
+						if (isHovering) HoveredIcon = iconKey;
+						iconKey++;
+
+						ImGui.BeginDisabled();
+						ImGui.SameLine(); GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ChevronRight); ImGui.SameLine();
+						ImGui.EndDisabled();
+
+
+						isHovering = iconKey == HoveredIcon;
+						ItemIcon.DrawIcon(replacedItem, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
+						if (isHovering) HoveredIcon = iconKey;
+						iconKey++;
+					}
+					ImGui.EndGroup();
+					ImGui.SameLine();
+					ImGui.Text("   ");
+					ImGui.SameLine();
+					ImGui.BeginGroup();
+
+				}
+				if (!isAnotherTooltipActive) HoveredIcon = -1;
+				ImGui.EndGroup();
+
+				if (ImGui.Button("Continue##Dialog##Dresser")) {
+					return 1;
+				}
+				ImGui.SameLine();
+				if (ImGui.Button("Stop##Dialog##Dresser")) {
+					return 2;
+				}
+				return -1;
+
+			}, (choice) => {
+				if (choice == 1)
+					PluginServices.ApplyGearChange.ApplyChangesDialog(differencesToApply);
+			});
+
+
+
+			Plugin.OpenDialog(dialog);
+
+		}
+
+
+	public void ApplyChangesDialog(Dictionary<ushort, Dictionary<GlamourPlateSlot, (InventoryItem? replacement, InventoryItem? replaced)>> differencesToApply) {
 
 			PluginLog.Debug($"start apply changes on plates ...");
 
@@ -211,13 +291,13 @@ namespace Dresser.Logic {
 
 
 				// todo change plate
-				foreach ((var slot, var itemToApply) in changeValues) {
+				foreach ((var slot, (var replacementItem, var replacedItem)) in changeValues) {
 
 
 					// todo find item container in armoire or prismbox
 					// todo if one item missing, report to the user, offer options: "still apply witout missing", "skip this plate", "stop"
 					// todo change container after this finding
-					PluginServices.GlamourPlates.ModifyGlamourPlateSlot(itemToApply, slot);
+					PluginServices.GlamourPlates.ModifyGlamourPlateSlot(replacementItem, slot);
 				}
 
 				// todo auto click save
@@ -229,6 +309,8 @@ namespace Dresser.Logic {
 				break; // temprorary only do the first plate
 
 			}
+
+			PluginLog.Debug("———— All done ————");
 		}
 
 	}
