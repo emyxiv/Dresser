@@ -40,9 +40,9 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	public void DrawBrowserConfigs() {
-		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
+		//ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
 		var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
-		if (ImGui.DragFloat("Icon Size##IconSize##slider", ref iconSizeMult, 0.01f, 0.1f, 4f, "%.2f %")) {
+		if (ImGui.DragFloat("Icon Size##IconSize##slider", ref iconSizeMult, 0.001f, 0.001f, 4f, "%.3f %")) {
 			ConfigurationManager.Config.IconSizeMult = iconSizeMult;
 			ConfigurationManager.SaveAsync();
 		}
