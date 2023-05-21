@@ -38,7 +38,8 @@ namespace Dresser.Windows.Components {
 		public static Vector4 ColorBronze = new Vector4(240, 223, 191, 255) / 255;
 
 		public static InventoryItem? ContexMenuItem = null;
-		public static Action<InventoryItem>? ContexMenuAction = null;
+		public static Action<InventoryItem, GlamourPlateSlot?>? ContexMenuAction = null;
+		public static GlamourPlateSlot? ContexMenuItemSlot = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
 		//public static bool DrawIcon(TextureWrap image, Dye? dye, InventoryItem item, bool isDyeable)
@@ -49,7 +50,7 @@ namespace Dresser.Windows.Components {
 			bool __ = false;
 			DrawIcon(item, ref _, ref __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem>? contextAction = null, float sizeMod = 1) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem,GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
 
 			if (PluginServices.Context.LocalPlayer == null
 				|| PluginServices.Context.LocalPlayerRace == null
@@ -75,6 +76,8 @@ namespace Dresser.Windows.Components {
 			if (contextAction != null && rightClicked) {
 				ContexMenuAction = contextAction;
 				ContexMenuItem = item;
+				ContexMenuItemSlot = emptySlot;
+
 			}
 			var isTooltipActive2 = isTooltipActive;
 
@@ -224,7 +227,6 @@ namespace Dresser.Windows.Components {
 				hovering = ImGui.IsItemHovered();
 				rightClicked = ImGui.IsItemClicked(ImGuiMouseButton.Right);
 
-
 				DrawStain(dye, isDyeable, sizeMod);
 
 				ImGui.SetCursorPos(initialPosition);
@@ -287,7 +289,7 @@ namespace Dresser.Windows.Components {
 		public static void DrawContextMenu() {
 			if(ContexMenuItem != null && ContexMenuAction != null) {
 				if (ImGui.BeginPopupContextWindow("ContextMenuItemDresser")) {
-					ContexMenuAction?.Invoke(ContexMenuItem);
+					ContexMenuAction?.Invoke(ContexMenuItem, ContexMenuItemSlot);
 					ImGui.EndPopup();
 				}
 			}

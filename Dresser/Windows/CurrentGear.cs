@@ -77,13 +77,12 @@ public class CurrentGear : Window, IDisposable {
 
 		DrawPlateSelector(draw);
 		DrawSlots();
-		DrawBottomButtons();
 
 
 		DrawChildren();
 	}
 
-	private void DrawBottomButtons() {
+	private static void DrawBottomButtons() {
 		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
 		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
 		//ImGui.SameLine();
@@ -188,6 +187,7 @@ public class CurrentGear : Window, IDisposable {
 				else if (!isHovered && wasHovered)
 					HoveredSlot = null;
 				if (iconClicked) {
+					if (SlotSelectDye != null) SlotSelectDye = slot;
 					PluginServices.ApplyGearChange.ExecuteCurrentItem(slot);
 				}
 
@@ -201,12 +201,16 @@ public class CurrentGear : Window, IDisposable {
 		}
 		ImGui.EndGroup();
 	}
-	private static void ContextMenuCurrent(InventoryItem item) {
+
+	public static GlamourPlateSlot? SlotSelectDye = null;
+	private static void ContextMenuCurrent(InventoryItem item, GlamourPlateSlot? slot) {
 		if (ImGui.Selectable("Remove Item Image from Plate"))
 			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item);
 
-		if (ImGui.Selectable("Dye"))
-			PluginServices.ApplyGearChange.ExecuteCurrentContextDye(item);
+		if (ImGui.Selectable("Dye")) {
+			SlotSelectDye = slot;
+			//PluginServices.ApplyGearChange.ExecuteCurrentContextDye(item);
+		}
 
 		if (ImGui.Selectable("Remove Dye"))
 			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveDye(item);
@@ -222,6 +226,20 @@ public class CurrentGear : Window, IDisposable {
 		}
 	}
 	private static void DrawChildren() {
+		GearBrowser.PopStyleCollection();
+
+		DrawBottomButtons();
+
 		ItemIcon.DrawContextMenu();
+		if (SlotSelectDye != null) {
+			try {
+				DyePicker.DrawDyePicker((GlamourPlateSlot)SlotSelectDye);
+
+			}catch (Exception ex) {
+				PluginLog.Error(ex, "Error in DrawDyePicker");
+			}
+		}
+
+		GearBrowser.PushStyleCollection();
 	}
 }

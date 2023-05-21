@@ -15,6 +15,7 @@ using CriticalCommonLib.Enums;
 using Dalamud.Logging;
 using static Dresser.Windows.GearBrowser;
 using Dresser.Structs;
+using System.Numerics;
 
 namespace Dresser {
 	[Serializable]
@@ -29,6 +30,8 @@ namespace Dresser {
 		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearDisplayGear = false;
+
+		public Vector2 DyePickerDyeSize = new(0);
 
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;

@@ -79,6 +79,15 @@ namespace Dresser.Logic {
 		public void ExecuteCurrentContextRemoveDye(InventoryItem item) {
 			item.Stain = 0;
 		}
+		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain) {
+			if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(PlateNumber, out var plate)) {
+				var item = plate.GetSlot(slot);
+				if(item != null) {
+					item.Stain = stain;
+					PluginServices.Context.LocalPlayer?.Equip(item);
+				}
+			}
+		}
 
 		public void OpenGlamourDresser() {
 			if(!ConfigurationManager.Config.PendingPlateItems.Any()) {

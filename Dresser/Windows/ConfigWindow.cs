@@ -33,13 +33,26 @@ public class ConfigWindow : Window, IDisposable {
 		//	//can save immediately on change, if you don't want to provide a "Save and Close" button
 		//	Configuration.Save();
 		//}
+		ImGui.Text($"Plate Creation");
+		DrawCurrentGearConfigs();
+
+		ImGui.Spacing();
 		ImGui.Text($"Browser");
 		DrawBrowserConfigs();
+
+		ImGui.Spacing();
 		ImGui.Text($"Inventory Memory");
 		DrawInventoryConfigs();
 
 	}
 
+	public void DrawCurrentGearConfigs() {
+
+		var dyeSize = ConfigurationManager.Config.DyePickerDyeSize.X;
+		if(ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 0.1f, 300f)) {
+			ConfigurationManager.Config.DyePickerDyeSize = new Vector2(dyeSize);
+		}
+	}
 	public void DrawBrowserConfigs() {
 		//ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
 		var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
