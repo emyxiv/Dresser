@@ -3,21 +3,19 @@ using CriticalCommonLib.Extensions;
 
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+
 using Dresser.Interop.Hooks;
 
 using Lumina.Excel.GeneratedSheets;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dresser.Logic {
 	internal class Context : IDisposable {
 
 		public bool IsGlamingAtDresser = false;
-		public bool IsDresserCurrentGearOpen = false;
+		public bool IsCurrentGearWindowOpen = false;
+		public ushort? SelectedPlate = null;
 
 		public PlayerCharacter? LocalPlayer = null;
 		public CharacterRace? LocalPlayerRace = null;
@@ -39,9 +37,17 @@ namespace Dresser.Logic {
 			LocalPlayerLevel = 0;
 		}
 
+		private bool _lastState_IsGlamingAtDresser = false;
+		public delegate void OnChangeGlamingAtDresserDelegate(bool newIsGlamingAtDresser);
+		public static event OnChangeGlamingAtDresserDelegate? OnChangeGlamingAtDresser;
+
+
 		public void Refresh() {
 			IsGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
-			IsDresserCurrentGearOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
+			if (IsGlamingAtDresser != _lastState_IsGlamingAtDresser) OnChangeGlamingAtDresser?.Invoke(IsGlamingAtDresser);
+			_lastState_IsGlamingAtDresser = IsGlamingAtDresser;
+
+			IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
 			if (LocalPlayer == null) return;

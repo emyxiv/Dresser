@@ -1,8 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
+using CriticalCommonLib.Models;
+
+using Dalamud.Logging;
+
 using Dresser.Data;
+using Dresser.Extensions;
 
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -44,6 +50,15 @@ namespace Dresser.Structs.FFXIV {
 				return pages;
 			}
 		}
+		public bool VerifyItem(ushort plateNumber, GlamourPlateSlot slot, InventoryItem item) {
+			if (!AgentInterface.IsAgentActive()) return false;
+			var agent = MiragePlateAgent();
+			var glamPlatePointer = *(IntPtr*)((IntPtr)agent + 40) + 36;
+			var offset = 44 * 12 * plateNumber;
+			var plate = *(MiragePage*)(glamPlatePointer + offset);
+			var mirageItem = plate[slot];
+			return item.IsAppearanceDifferent(item);
+		}
 	}
 
 	[StructLayout(LayoutKind.Explicit, Size = 0x210)]
@@ -68,6 +83,29 @@ namespace Dresser.Structs.FFXIV {
 				dic.Add((GlamourPlateSlot)slot, (MirageItem)fields[slot].GetValue(this)!);
 			return dic;
 		}
+		//public static explicit operator InventoryItemSet(MiragePage page) {
+		//	var items = page.ToDictionary().ToDictionary(i=>i.Key,i=>(InventoryItem?)i.Value);
+		//	return new InventoryItemSet(items);
+		//}
+		public MirageItem this[GlamourPlateSlot slot] {
+			get {
+				return slot switch {
+					GlamourPlateSlot.MainHand => this.MainHand,
+					GlamourPlateSlot.OffHand => this.OffHand,
+					GlamourPlateSlot.Head => this.Head,
+					GlamourPlateSlot.Body => this.Chest,
+					GlamourPlateSlot.Hands => this.Hands,
+					GlamourPlateSlot.Legs => this.Legs,
+					GlamourPlateSlot.Feet => this.Feet,
+					GlamourPlateSlot.Ears => this.Earring,
+					GlamourPlateSlot.Neck => this.Necklace,
+					GlamourPlateSlot.Wrists => this.Bracelet,
+					GlamourPlateSlot.RightRing => this.RingRight,
+					GlamourPlateSlot.LeftRing => this.RingLeft,
+					_ => throw new NotImplementedException()
+				};
+			}
+		}
 	}
 
 	// Thanks to Anna's Glamaholic code
@@ -86,6 +124,10 @@ namespace Dresser.Structs.FFXIV {
 		//[FieldOffset(28)] public uint Unk7; // > 0 when previewing item + dye
 		//[FieldOffset(39)] public byte Unk8; // = 1 when previewing item + dye
 		//[FieldOffset(42)] public ushort Unk9;
+
+		public static explicit operator InventoryItem?(MirageItem a) {
+			return a.ItemId == 0 ? null : InventoryItemExtensions.New(a.ItemId, a.DyeId);
+		}
 	}
 
 	public enum GlamourPlateSlot : uint {

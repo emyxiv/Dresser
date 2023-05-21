@@ -194,12 +194,12 @@ namespace Dresser {
 
 		private Dictionary<uint, InventoryMonitor.ItemChangesItem> _recentlyAddedSeen = new();
 		private void InventoryMonitorOnOnInventoryChanged(Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> inventories, InventoryMonitor.ItemChanges itemChanges) {
-			PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
-			PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
+			//PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
+			//PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
 			_clearCachedLines = true;
 			//ConfigurationManager.Config.SavedInventories = inventories;
 			//PluginConfiguration.SavedInventories = inventories;
-			PluginLog.Debug($"====== inv updated {ConfigurationManager.Config.SavedInventories.Select(t=>t.Value.Count).Sum()}");
+			//PluginLog.Debug($"====== inv updated {ConfigurationManager.Config.SavedInventories.Select(t=>t.Value.Count).Sum()}");
 
 			foreach (var item in itemChanges.NewItems) {
 				if (_recentlyAddedSeen.ContainsKey(item.ItemId)) {
@@ -207,29 +207,28 @@ namespace Dresser {
 				}
 				_recentlyAddedSeen.Add(item.ItemId, item);
 			}
-			
-			if (PluginServices.Context.IsDresserCurrentGearOpen) PluginServices.ApplyGearChange?.ReApplyAppearanceAfterEquipUpdate();
+			ConfigurationManager.SaveAsync();
+			PluginLog.Debug($"PluginServices.Context.IsCurrentGearWindowOpen {PluginServices.Context.IsCurrentGearWindowOpen}");
+			if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange?.ReApplyAppearanceAfterEquipUpdate();
 		}
 
 		private void CharacterMonitorOnOnCharacterUpdated(Character? character) {
-			PluginLog.Debug($"====== RECORD CHAR UPDATE");
-
 			if (character != null) {
 				if (ConfigurationManager.Config.AcquiredItems.ContainsKey(character.CharacterId)) {
 					PluginServices.GameInterface.AcquiredItems = ConfigurationManager.Config.AcquiredItems[character.CharacterId];
 				}
-				if (PluginServices.Context.IsDresserCurrentGearOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
+				ConfigurationManager.SaveAsync();
+				if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 			} else {
 				PluginServices.GameInterface.AcquiredItems = new HashSet<uint>();
 			}
 		}
 		private void GameInterfaceOnAcquiredItemsUpdated() {
-			PluginLog.Debug($"====== RECORD ITEM ACQUIRE UPDATE");
-
 			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
 			if (activeCharacter != 0) {
 				ConfigurationManager.Config.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
-				if (PluginServices.Context.IsDresserCurrentGearOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
+				if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
+				ConfigurationManager.SaveAsync();
 			}
 		}
 

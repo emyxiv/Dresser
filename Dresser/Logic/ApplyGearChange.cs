@@ -13,6 +13,12 @@ using Dresser.Structs.Actor;
 using Dresser.Data;
 using ImGuiNET;
 using Dresser.Windows.Components;
+using System.IO.Pipes;
+using Dresser.Interop.GameUi;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using System.Threading.Tasks;
+using Dresser.Structs;
+using System.Numerics;
 
 namespace Dresser.Logic {
 	public class ApplyGearChange : IDisposable {
@@ -29,12 +35,10 @@ namespace Dresser.Logic {
 		private Dictionary<EquipIndex, ItemEquip>? AppearanceBackupEquip = new();
 
 		public void EnterBrowsingMode() {
-			PluginLog.Warning("Entering Dresser");
-
 			ReApplyAppearanceAfterEquipUpdate();
 		}
 		public void ExitBrowsingMode() {
-			PluginLog.Warning("Closing Dresser");
+			PluginLog.Verbose("Closing Dresser");
 			Plugin.CloseBrowser();
 
 			RestoreAppearance();
@@ -53,7 +57,7 @@ namespace Dresser.Logic {
 			var slot = item.Item.GlamourPlateSlot();
 
 			if (slot != null && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) {
-				plate[(GlamourPlateSlot)slot] = item.Copy()!;
+				plate.SetSlot((GlamourPlateSlot)slot, item.Copy());
 			}
 
 			Service.ClientState.LocalPlayer?.Equip(item);
@@ -76,12 +80,18 @@ namespace Dresser.Logic {
 			item.Stain = 0;
 		}
 
+		public void OpenGlamourDresser() {
+			if(!ConfigurationManager.Config.PendingPlateItems.Any()) {
+				PluginLog.Verbose($"Found found no portable plates, populating them with current");
+				PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
+			}
+		}
 
 		public void BackupAppearance() {
+			PluginLog.Verbose("Backing up appearance");
 			AppearanceBackupWeaponMain = PluginServices.Context.LocalPlayer?.MainHandModels().Equip ?? new();
 			AppearanceBackupWeaponOff = PluginServices.Context.LocalPlayer?.OffHandModels().Equip ?? new();
 			AppearanceBackupEquip = PluginServices.Context.LocalPlayer?.EquipmentModels().Dictionary();
-			PluginLog.Verbose("Backed up appearance");
 		}
 		public void RestoreAppearance() {
 			PluginLog.Verbose("Restoring appearance");
@@ -95,10 +105,12 @@ namespace Dresser.Logic {
 		}
 		public void ApplyCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
-				foreach ((var s, var item) in currentPlate) {
-					PluginServices.Context.LocalPlayer?.Equip(item);
+				foreach ((var s, var item) in currentPlate.Items) {
+					if(item != null) PluginServices.Context.LocalPlayer?.Equip(item);
 				}
 			}
+			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
+			else ShowStrippedSlots();
 		}
 		public void ReApplyAppearanceAfterEquipUpdate() {
 			BackupAppearance();
@@ -109,10 +121,10 @@ namespace Dresser.Logic {
 		public void StripEmptySlotCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
-				foreach(var g in glamourPlates) {
-					if(!currentPlate.TryGetValue(g, out var item) || item.ItemId == 0) {
+				foreach (var g in glamourPlates) {
+					if (!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0) {
 						var index = g.ToEquipIndex();
-						if(index != null) {
+						if (index != null) {
 							PluginServices.Context.LocalPlayer?.Equip((EquipIndex)index, new ItemEquip() { Id = 0, Variant = 0, Dye = 0 });
 						} else {
 							var indexW = g.ToWeaponIndex();
@@ -127,7 +139,7 @@ namespace Dresser.Logic {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
 				foreach (var g in glamourPlates) {
-					if (!currentPlate.TryGetValue(g, out var item) || item.ItemId == 0) {
+					if (!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0) {
 						var index = g.ToEquipIndex();
 						if (index != null && AppearanceBackupEquip!.TryGetValue((EquipIndex)index, out var equip)) {
 							PluginServices.Context.LocalPlayer?.Equip((EquipIndex)index, equip);
@@ -135,7 +147,7 @@ namespace Dresser.Logic {
 							var indexW = g.ToWeaponIndex();
 							if (indexW == WeaponIndex.MainHand)
 								PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponMain);
-							else if(indexW == WeaponIndex.OffHand)
+							else if (indexW == WeaponIndex.OffHand)
 								PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponOff);
 						}
 					}
@@ -150,115 +162,106 @@ namespace Dresser.Logic {
 		}
 
 		public void OverwritePendingWithCurrentPlate() {
-			ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems;
+			ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems.Copy().RemoveEmpty();
+		}
+		public void OverwritePendingWithActualPlates() {
+			Task.Run(async delegate {
+				Gathering.ParseGlamourPlates();
+				await Task.Delay(2500);
+				if (Storage.Pages == null) {
+					return;
+				}
+				foreach ((var plateNumber, var set) in Storage.PagesInv) {
+					if (plateNumber == Storage.PlateNumber || set.IsEmpty()) continue;
+					ConfigurationManager.Config.PendingPlateItems[plateNumber] = set;
+				}
+			});
 		}
 
+		public Dictionary<ushort, InventoryItemSet> DifferencesToApply = new();
+		private Dictionary<ushort, InventoryItemSet> DifferencesToReplace = new();
+		private Dictionary<ushort, InventoryItemSet> AppliedPending = new();
+
 		public void CheckModificationsOnPendingPlates() {
-			PluginLog.Debug("Start CheckModificationsOnPendingPlates ...");
+			PluginLog.Verbose("Calculating Modifications On Pending Plates ...");
 			var pendingPlates = ConfigurationManager.Config.PendingPlateItems;
-			var actualPlates = Storage.Pages!.Select((value,index) => new { value, index }).ToDictionary(pair=>(ushort)pair.index,pair=> Gathering.MirageToInvItems(pair.value));
+			var actualPlates = Storage.PagesInv;
 
 
 
 			// make a list with all the changes between pending and actual plates
 			// ()
-			Dictionary<ushort, Dictionary<GlamourPlateSlot, (InventoryItem? replacement, InventoryItem? replaced)>> differencesToApply = new();
+			Dictionary<ushort, InventoryItemSet> differencesToApply = new();
 
-			foreach ((var plateIndex, var actualPlateValues) in actualPlates) {
-				pendingPlates.TryGetValue(plateIndex, out var pendingPlateValues_tmp);
-				if (pendingPlateValues_tmp == null) PluginLog.Debug($"pending plate {plateIndex} is NULL");
-				Dictionary<GlamourPlateSlot, InventoryItem> pendingPlateValues = pendingPlateValues_tmp ?? new();
+			foreach ((var plateIndex, var pendingInvSet) in pendingPlates) {
+				if(actualPlates.TryGetValue(plateIndex, out var actualInvSet)) {
+					if (pendingInvSet.IsEmpty()) continue; // (todo: maybe offer them the option to also clean untouched plates)
 
-
-				foreach ((var slot, var actualInventoryItem) in actualPlateValues) {
-					PluginLog.Verbose($"checking {(int)slot} on actual plate {plateIndex} (slot name: {slot})");
-
-					bool toChange = false;
-					InventoryItem? itemReplacement = null;
-					if (!pendingPlateValues.TryGetValue(slot, out var pendingInventoryItem)) {
-						PluginLog.Verbose($"Item {slot} not present on pending plate");
-						toChange = true;
-					} else {
-						PluginLog.Verbose($"item id difference? : {actualInventoryItem.ItemId} != {pendingInventoryItem.ItemId}");
-						bool itemDifferent = actualInventoryItem.ItemId != pendingInventoryItem.ItemId;
-						bool dyeDifferent = actualInventoryItem.Stain != pendingInventoryItem.Stain;
-						if (itemDifferent) {
-							PluginLog.Verbose($"Plate {plateIndex} slot {(int)slot}: Item is different: pending:{pendingInventoryItem.ItemId} => actual:{actualInventoryItem.ItemId}  (slot name: {slot})");
-						}
-						if (dyeDifferent) {
-							PluginLog.Verbose($"Plate {plateIndex} slot {(int)slot}: Dye is different pending:{pendingInventoryItem.Stain} => actual:{actualInventoryItem.Stain}  (slot name: {slot})");
-						}
-						toChange = itemDifferent || dyeDifferent;
-						itemReplacement = pendingInventoryItem;
-
-					}
-
-					if(toChange) {
-						if (!differencesToApply.TryGetValue(plateIndex, out var plateChanges) || plateChanges == null)
-							differencesToApply[plateIndex] = new();
-
-						var itemReplaced = actualInventoryItem.ItemId == 0 ? null : actualInventoryItem;
-						differencesToApply[plateIndex][slot] = (itemReplacement, itemReplaced);
+					if (pendingInvSet.IsDifferentGlam(actualInvSet, out var diffLeft, out var diffRight)) {
+						differencesToApply[plateIndex] = diffLeft;
+						DifferencesToReplace[plateIndex] = diffRight;
 					}
 				}
-
-				// remove empty plates, they are probably untouched (todo: maybe offer them the option to also clean those)
-				if(differencesToApply.ContainsKey(plateIndex) && !differencesToApply[plateIndex].Any(s => s.Value.replacement != null))
-					differencesToApply.Remove(plateIndex);
-
 			}
-
 
 			if (differencesToApply.Count == 0) return;
 
-			Popup_AskApplyOnPlates(differencesToApply);
+			DifferencesToApply = differencesToApply;
+			Popup_AskApplyOnPlates();
 		}
 
 
 		public static int HoveredIcon = -1;
-		public void Popup_AskApplyOnPlates(Dictionary<ushort, Dictionary<GlamourPlateSlot, (InventoryItem? replacement, InventoryItem? replaced)>> differencesToApply) {
-			var dialog = new DialogInfo(() => {
-				var spaceSize = ImGui.GetFontSize() * 1.8f;
-				var sizeMod = 0.33f;
-				ImGui.Text($"Glamour plate changes detected, would you like to apply them?");
-				ImGui.Text($"{differencesToApply.Count} Glamour plate affected");
-				bool isAnotherTooltipActive = false;
-				int iconKey = 0;
+		public void DrawListOfItemsForDialogs(ushort? focusOnPlateIndex = null) {
+			bool isAnotherTooltipActive = false;
+			int iconKey = 0;
+			var sizeMod = 0.33f;
 
-				ImGui.BeginGroup();
-				foreach ((var plateIndex, var plateValues) in differencesToApply) {
-					ImGui.BulletText($"Plate {plateIndex + 1}: ");
-					foreach ((var slot, (var replacementItem, var replacedItem)) in plateValues) {
-						ImGui.AlignTextToFramePadding();
+			ImGui.BeginGroup();
+			foreach ((var plateIndex, var plateValues) in DifferencesToApply) {
+				if (focusOnPlateIndex != null && plateIndex != focusOnPlateIndex) continue;
+				DifferencesToReplace.TryGetValue(plateIndex, out var diffToReplacePlate);
 
-						// item icon
-						//ImGui.SameLine();
+				ImGui.BulletText($"Plate {plateIndex + 1}: ");
+				foreach ((var slot, var replacementItem) in plateValues.Items) {
+					ImGui.AlignTextToFramePadding();
 
-
-						bool isHovering = iconKey == HoveredIcon;
-						ItemIcon.DrawIcon(replacementItem, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
-						if (isHovering) HoveredIcon = iconKey;
-						iconKey++;
-
-						ImGui.BeginDisabled();
-						ImGui.SameLine(); GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ChevronRight); ImGui.SameLine();
-						ImGui.EndDisabled();
+					// item icon
+					//ImGui.SameLine();
 
 
-						isHovering = iconKey == HoveredIcon;
-						ItemIcon.DrawIcon(replacedItem, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
-						if (isHovering) HoveredIcon = iconKey;
-						iconKey++;
-					}
-					ImGui.EndGroup();
-					ImGui.SameLine();
-					ImGui.Text("   ");
-					ImGui.SameLine();
-					ImGui.BeginGroup();
+					bool isHovering = iconKey == HoveredIcon;
+					ItemIcon.DrawIcon(replacementItem, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
+					if (isHovering) HoveredIcon = iconKey;
+					iconKey++;
 
+					ImGui.BeginDisabled();
+					ImGui.SameLine(); GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ChevronRight); ImGui.SameLine();
+					ImGui.EndDisabled();
+
+
+					isHovering = iconKey == HoveredIcon;
+					ItemIcon.DrawIcon(diffToReplacePlate.GetSlot(slot), ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
+					if (isHovering) HoveredIcon = iconKey;
+					iconKey++;
 				}
-				if (!isAnotherTooltipActive) HoveredIcon = -1;
 				ImGui.EndGroup();
+				ImGui.SameLine();
+				ImGui.Text("   ");
+				ImGui.SameLine();
+				ImGui.BeginGroup();
+
+			}
+			if (!isAnotherTooltipActive) HoveredIcon = -1;
+			ImGui.EndGroup();
+
+		}
+		public void Popup_AskApplyOnPlates() {
+			var dialog = new DialogInfo(() => {
+				ImGui.Text($"Glamour plate changes detected, would you like to apply them?");
+				ImGui.Text($"{DifferencesToApply.Count} Glamour plate affected");
+
+				PluginServices.ApplyGearChange.DrawListOfItemsForDialogs();
 
 				if (ImGui.Button("Continue##Dialog##Dresser")) {
 					return 1;
@@ -271,47 +274,244 @@ namespace Dresser.Logic {
 
 			}, (choice) => {
 				if (choice == 1)
-					PluginServices.ApplyGearChange.ApplyChangesDialog(differencesToApply);
+					PluginServices.ApplyGearChange.ProceedWithFirstChangesAndHiglights();
+				else
+					ClearApplyDresser();
+
 			});
-
-
 
 			Plugin.OpenDialog(dialog);
 
 		}
 
+		//private unsafe void Dddddddddd(CriticalCommonLib.Services.Ui.AtkBaseWrapper? addon) {
+		//	PluginLog.Debug($"attempting change plate to 5");
+		//	if (addon != null && addon.AtkUnitBase != null) {
+		//		PluginLog.Debug($">>>>>>>>>>>>>>>>>>>>>>>>>");
+		//		var actualAddon = (InventoryMiragePrismMiragePlateAddon*)addon.AtkUnitBase;
+		//		actualAddon->SelectedPlate = 5;
+		//	}
+		//}
 
-	public void ApplyChangesDialog(Dictionary<ushort, Dictionary<GlamourPlateSlot, (InventoryItem? replacement, InventoryItem? replaced)>> differencesToApply) {
+		public Dictionary<ushort,Vector4?> HighlightPlatesRadio = new();
+		private Vector4? Highlight_apply_todo = new Vector4(8, 63, 153, 255) /255f; // blue
+		private Vector4? Highlight_apply_none = new Vector4(153, 8, 8, 255) / 255f; // red
+		private Vector4? Highlight_apply_partial = new Vector4(153, 37, 8, 255 / 255f); // orange
+		private Vector4? Highlight_apply_all = new Vector4(8, 153, 44, 255) / 255f; // green
+		//private Vector4 Highlight_save_todo = new Vector4();
+		//private Vector4 Highlight_save_fail = new Vector4();
+		private Vector4? Highlight_save_ok = null; // remove highlight
+		public bool? HighlightSaveButton = false;
+		public void ProceedWithFirstChangesAndHiglights() {
+			//if(PluginServices.OverlayService.Overlays.TryGetValue(CriticalCommonLib.Services.Ui.WindowName.MiragePrismMiragePlate, out var state)){
+			//	Dddddddddd(state.AtkUnitBase);
+			//}
+			if (DifferencesToApply.Count == 0) return;
 
-			PluginLog.Debug($"start apply changes on plates ...");
+			// put all todo tab in Highlight_apply_todo color
+			HighlightPlatesRadio = DifferencesToApply.ToDictionary(p=>p.Key,p=> Highlight_apply_todo);
+			PluginServices.OverlayService.RefreshOverlayStates();
 
-			foreach ((var plateIndex, var changeValues) in differencesToApply) {
-				PluginLog.Debug($"inserting glams on plate {plateIndex} ...");
-
-
-
-				// todo change plate
-				foreach ((var slot, (var replacementItem, var replacedItem)) in changeValues) {
-
-
-					// todo find item container in armoire or prismbox
-					// todo if one item missing, report to the user, offer options: "still apply witout missing", "skip this plate", "stop"
-					// todo change container after this finding
-					PluginServices.GlamourPlates.ModifyGlamourPlateSlot(replacementItem, slot);
-				}
-
-				// todo auto click save
-				// todo wait the window open
-				// todo if simple "save", ask user to click Yes (or auto...)
-				// todo if missing dye and window "missing dye" opens, offer options: "skip this plate", "stop"
-
-				// todo apply actual plate number change
-				break; // temprorary only do the first plate
-
-			}
-
-			PluginLog.Debug("———— All done ————");
+			ExecuteChangesOnSelectedPlate();
 		}
 
+		public void CheckIfLeavingPlateWasApplied(ushort? previousPlateNumber) {
+			if (previousPlateNumber == null) return;
+			var previousPlateNumber2 = (ushort)previousPlateNumber;
+			if (!DifferencesToApply.ContainsKey(previousPlateNumber2)) return;
+			if (!IsGlamPlateDifferentFromPending(previousPlateNumber2) && HighlightPlatesRadio.ContainsKey(previousPlateNumber2)) {
+				// change highlight color as "saved"
+				HighlightPlatesRadio[previousPlateNumber2] = Highlight_save_ok;
+				// change Di
+				if (AppliedPending.TryGetValue(previousPlateNumber2, out var appliedPlate)){
+					if (appliedPlate.IsEmpty()) {
+						DifferencesToApply.Remove(previousPlateNumber2);
+					} else {
+						Gathering.ParseGlamourPlates();
+						var dd = Storage.Pages?[previousPlateNumber2];
+						if(dd != null) {
+							DifferencesToApply[previousPlateNumber2] = (InventoryItemSet)dd;
+						}
+
+					}
+				}
+			} else {
+				HighlightPlatesRadio[previousPlateNumber2] = Highlight_apply_todo;
+
+			}
+		}
+		private bool IsGlamPlateDifferentFromPending(ushort platelateNumber) {
+			Gathering.ParseGlamourPlates();
+			if(Storage.Pages != null && platelateNumber  >= 0 && platelateNumber < Storage.Pages.Length) {
+				var miragePlate = Storage.Pages[(int)platelateNumber];
+				var ggg = (InventoryItemSet)miragePlate;
+				if(ConfigurationManager.Config.PendingPlateItems.TryGetValue((ushort)platelateNumber, out var pendingPlate)) {
+					return pendingPlate.IsDifferentGlam(ggg, out var _, out var _);
+				}
+			}
+			return true;
+		}
+		public void ExecuteChangesOnSelectedPlate() {
+			Task.Run(async delegate {
+				await Task.Delay(250);
+			}).Wait();
+
+			if (PluginServices.Context.SelectedPlate == null) return;
+			var plateIndex = (ushort)PluginServices.Context.SelectedPlate;
+			if (!DifferencesToApply.ContainsKey(plateIndex)) return;
+
+			if (PluginServices.Context.SelectedPlate != plateIndex) return;
+			// todo change plate
+			if(DifferencesToApply.TryGetValue(plateIndex, out var replacementGlams)) {
+
+				//HashSet<GlamourPlateSlot> successfullyApplied = new();
+
+				var glamaholicPlate = new Interop.Hooks.SavedPlate();
+				foreach ((var slot, var replacementItem) in replacementGlams.Items) {
+						glamaholicPlate.Items.Add(slot, new Interop.Hooks.SavedGlamourItem {
+							ItemId = replacementItem?.ItemId ?? 0,
+							StainId = replacementItem?.Stain ?? 0
+						});
+					//if (PluginServices.GlamourPlates.ModifyGlamourPlateSlot(replacementItem, slot))
+					//	successfullyApplied.Add(slot);
+
+				}
+
+				var successfullyApplied = PluginServices.GlamourPlates.LoadPlate(glamaholicPlate);
+
+				if (successfullyApplied.Any()) {
+					AppliedPending[plateIndex] = replacementGlams.Copy();
+					foreach (var slotDone in successfullyApplied) {
+						AppliedPending[plateIndex].RemoveSlot(slotDone);
+					}
+				}
+
+				if (successfullyApplied.Count() == replacementGlams.Items.Count) {
+					PluginLog.Verbose($"Apply Glame to plate: success all");
+					// success all
+					HighlightPlatesRadio[plateIndex] = Highlight_apply_all;
+					HighlightSaveButton = true;
+					PluginServices.OverlayService.RefreshOverlayStates();
+
+				} else if (successfullyApplied.Any()) {
+					PluginLog.Verbose($"Apply Glame to plate: success partial");
+					// success partial
+					HighlightPlatesRadio[plateIndex] = Highlight_apply_partial;
+					PluginServices.OverlayService.RefreshOverlayStates();
+					Popup_FailedSomeAskWhatToDo(plateIndex);
+
+				} else {
+					PluginLog.Verbose($"Apply Glame to plate: fail");
+					// fail
+					HighlightPlatesRadio[plateIndex] = Highlight_apply_none;
+					PluginServices.OverlayService.RefreshOverlayStates();
+					Popup_FailedSomeAskWhatToDo(plateIndex);
+				}
+
+				return;
+			}
+			PluginLog.Verbose($"No plate ({plateIndex}) found in DifferencesToApply");
+
+
+			// todo auto click save
+			// todo wait the window open
+			// todo if simple "save", ask user to click Yes (or auto...)
+			// todo if missing dye and window "missing dye" opens, offer options: "skip this plate", "stop"
+
+			// todo apply actual plate number change
+
+		}
+		public HashSet<ushort> PlatesFailed = new();
+		public void Popup_FailedSomeAskWhatToDo(ushort plateIndex) {
+			var dialog = new DialogInfo(() => {
+				ImGui.Text($"The following items could could not be applied to the plate.");
+
+				PluginServices.ApplyGearChange.DrawListOfItemsForDialogs(plateIndex);
+
+				if (ImGui.Button("Ignore and Continue##Dialog##Dresser")) {
+					return 1;
+				}
+				ImGui.SameLine();
+				if (ImGui.Button("Stop All##Dialog##Dresser")) {
+					return 2;
+				}
+				return -1;
+
+			}, (choice) => {
+				if (choice == 1) { // ignore and continue
+					//DifferencesToApply.Remove(plateIndex);
+					//PlatesFailed.Add(plateIndex);
+					// offer saving
+					HighlightSaveButton = true;
+					PluginServices.OverlayService.RefreshOverlayStates();
+
+				} else if (choice == 2) { // stop all
+					PluginServices.ApplyGearChange.ClearApplyDresser();
+				}
+			});
+
+			Plugin.OpenDialog(dialog);
+
+		}
+		public void ExecuteSavingPlateChanges() {
+			var currentPlateNumber = PluginServices.Context.SelectedPlate;
+			if(currentPlateNumber != null) {
+				DifferencesToApply.Remove((ushort)currentPlateNumber);
+				HighlightPlatesRadio[(ushort)currentPlateNumber] = Highlight_save_ok;
+				HighlightSaveButton = false;
+				PluginServices.OverlayService.RefreshOverlayStates();
+			}
+
+			if (!DifferencesToApply.Any()) {
+				PluginServices.ApplyGearChange.Popup_AllDone();
+			}
+		}
+		public void Popup_AllDone() {
+			if (DifferencesToApply.Any()) {
+
+				var dialog = new DialogInfo(() => {
+					ImGui.Text($"Some change were not saved.");
+
+					PluginServices.ApplyGearChange.DrawListOfItemsForDialogs();
+
+					ImGui.BeginDisabled();
+					ImGui.TextWrapped($"\"Forget\" will copy the contents of the plates into portable plates.");
+					ImGui.EndDisabled();
+
+					if (ImGui.Button("Keep##Dialog##Dresser")) {
+						return 1;
+					}
+					ImGui.SameLine();
+					if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Trash, $"CTRL + Shift to \"Forget\".\nIt will copy the contents of the plates into portable plates.")) {
+						return 2;
+					}
+					return -1;
+
+				}, (choice) => {
+					if (choice == 1)
+						PluginServices.ApplyGearChange.ClearApplyDresser();
+					else if (choice == 2) {
+						PluginServices.ApplyGearChange.ClearApplyDresser();
+						PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
+					}
+				});
+
+				Plugin.OpenDialog(dialog);
+			} else {
+				PluginServices.ApplyGearChange.ClearApplyDresser();
+			}
+
+		}
+		public void ClearApplyDresser() {
+			PluginLog.Debug(" -- Clean apply dresser -- ");
+			Vector4? n = null;
+			HighlightPlatesRadio = HighlightPlatesRadio.ToDictionary(h => h.Key, h => n);
+			HighlightSaveButton = null;
+			PluginServices.OverlayService.RefreshOverlayStates();
+			HighlightPlatesRadio.Clear();
+			DifferencesToApply.Clear();
+			DifferencesToReplace.Clear();
+			PlatesFailed.Clear();
+		}
 	}
 }

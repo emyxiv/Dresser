@@ -7,6 +7,7 @@ using CriticalCommonLib;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Logic;
+using Dresser.Windows.Components;
 
 using ImGuiNET;
 
@@ -74,6 +75,16 @@ public class ConfigWindow : Window, IDisposable {
 			ConfigurationManager.Save();
 		}
 		DrawInventoryStatusTable();
+
+		if (!PluginServices.Context.IsGlamingAtDresser)
+			ImGui.BeginDisabled();
+		if(ImGui.Button("Forget portable plate changes")) {
+			PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
+		}
+		if (!PluginServices.Context.IsGlamingAtDresser) {
+			ImGui.EndDisabled();
+			GuiHelpers.Tooltip("The dresser must be opened to copy the plates");
+		}
 
 	}
 

@@ -8,6 +8,7 @@ using CriticalCommonLib.Models;
 using Dresser.Extensions;
 using Dresser.Logic;
 using Dresser.Structs.FFXIV;
+using Dresser.Structs;
 
 namespace Dresser.Data {
 
@@ -16,22 +17,18 @@ namespace Dresser.Data {
 			ParseGlamourPlates();
 		}
 		public static void ParseGlamourPlates() {
+			var tempPages = GetDataFromDresser();
+			if (tempPages == null) return;
 			Storage.Pages = GetDataFromDresser();
 			Storage.DisplayPage = Storage.Pages?.Last();
 			if (Storage.DisplayPage == null) return;
-			ConfigurationManager.Config.DisplayPlateItems = MirageToInvItems((MiragePage)Storage.DisplayPage);
+			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(MiragePage)Storage.DisplayPage;
 		}
-		public static Dictionary<GlamourPlateSlot,InventoryItem> MirageToInvItems(MiragePage miragePage) {
-			var mirageDictionary = miragePage.ToDictionary();
-			return mirageDictionary.ToDictionary(p => p.Key, p =>
-				new InventoryItem(InventoryType.GlamourChest, (short)p.Key, p.Value.ItemId, 1, 0, 0,
-					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, p.Value.DyeId, 0)
-			)!;
-		}
-		public static Dictionary<GlamourPlateSlot, InventoryItem> EmptyGlamourPlate() {
-			return Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
-				EmptyItemSlot()
-			);
+		public static InventoryItemSet EmptyGlamourPlate() {
+			return new() {
+				Items = Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
+				(InventoryItem?)EmptyItemSlot()
+			)};
 		}
 		public static InventoryItem EmptyItemSlot() => new InventoryItem(InventoryType.GlamourChest, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		public static void DelayParseGlamPlates()
@@ -53,6 +50,14 @@ namespace Dresser.Data {
 
 			return miragePlates->Pages;
 		}
+		public unsafe static bool VerifyItem(ushort plateNumber, GlamourPlateSlot slot, InventoryItem item) {
+			var agent = MiragePrismMiragePlate.MiragePlateAgent();
+			if (agent == null) return false;
+			var miragePlates = (MiragePrismMiragePlate*)agent;
+			if (!miragePlates->AgentInterface.IsAgentActive()) return false;
+
+			return miragePlates->VerifyItem(plateNumber, slot, item);
+		}
 		public static bool IsApplied(InventoryItem item) {
 
 			// Todo: avoid getting everything each time for performance purposes
@@ -60,10 +65,9 @@ namespace Dresser.Data {
 
 			var slot = item.Item.GlamourPlateSlot();
 			if (slot == null) return false;
-			if (ConfigurationManager.Config.DisplayPlateItems.TryGetValue((GlamourPlateSlot)slot, out var storedItem)) {
-				if (storedItem.ItemId == item.ItemId && storedItem.Stain == item.Stain)
-					return true;
-			}
+			var storedItem = ConfigurationManager.Config.DisplayPlateItems.GetSlot((GlamourPlateSlot)slot);
+			if ((storedItem?.ItemId ?? 0) == (item?.ItemId ?? 0) && (storedItem?.Stain ?? 0) == (item?.Stain ?? 0))
+				return true;
 			return false;
 		}
 	}

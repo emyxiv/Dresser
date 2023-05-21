@@ -73,10 +73,8 @@ namespace Dresser.Windows.Components {
 				image = null;
 			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, out bool rightClicked, emptySlot, sizeMod);
 			if (contextAction != null && rightClicked) {
-				PluginLog.Debug("right clicked");
 				ContexMenuAction = contextAction;
 				ContexMenuItem = item;
-				ImGui.OpenPopup("ContextMenuItemDresser");
 			}
 			var isTooltipActive2 = isTooltipActive;
 

@@ -17,6 +17,7 @@ using CriticalCommonLib;
 using Dresser.Interop.Hooks;
 using Newtonsoft.Json.Linq;
 using Dalamud.Interface;
+using Dresser.Structs;
 
 namespace Dresser.Windows;
 
@@ -158,24 +159,25 @@ public class CurrentGear : Window, IDisposable {
 
 	private void DrawSlots() {
 
-		if (Storage.DisplayPage != null && ConfigurationManager.Config.DisplayPlateItems.Count == 0) return;
+		if (Storage.DisplayPage != null && ConfigurationManager.Config.DisplayPlateItems.Items.Count == 0) return;
 		ImGui.BeginGroup();
 
 		try {
-			Dictionary<GlamourPlateSlot, InventoryItem> plateItems = new(); ;
+			InventoryItemSet plateItems = new(); ;
 
 			if (PluginServices.Context.IsGlamingAtDresser && Storage.DisplayPage != null) {
 				plateItems = ConfigurationManager.Config.DisplayPlateItems;
 			} else {
 				CheckPendingPlateItems();
-				ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2);
-				if (plateItems2 != null) plateItems = plateItems2;
+				if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2)){
+					plateItems = plateItems2;
+				}
 				else plateItems = Gathering.EmptyGlamourPlate();
 			}
 			bool isTooltipActive = false;
 			int i = 0;
 			foreach (var slot in SlotOrder) {
-				plateItems.TryGetValue(slot, out var item);
+				var item = plateItems.GetSlot(slot);
 
 				bool isHovered = slot == HoveredSlot;
 				bool wasHovered = isHovered;
@@ -195,7 +197,7 @@ public class CurrentGear : Window, IDisposable {
 			}
 
 		} catch(Exception ex) {
-			PluginLog.Error(ex, ex.ToString());
+			PluginLog.Error(ex, "Error in DrawSlots");
 		}
 		ImGui.EndGroup();
 	}

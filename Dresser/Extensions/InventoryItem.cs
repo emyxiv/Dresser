@@ -49,6 +49,16 @@ namespace Dresser.Extensions {
 
 			return returnVal;
 		}
+		public static CriticalInventoryItem Clone(this CriticalInventoryItem item)
+			=> new(item);
+
+		public static CriticalInventoryItem New(uint itemId, byte stain)
+			=> new(0, 0, itemId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, stain, 0);
+
+		public static bool IsAppearanceDifferent(this CriticalInventoryItem item, CriticalInventoryItem? item2)
+			=> (item?.ItemId ?? 0) != (item2?.ItemId ?? 0) || (item?.Stain ?? 0) != (item2?.Stain ?? 0);
+
+
 		//public static bool IsSoldBy(this CriticalInventoryItem item, string VendorFilterName) {
 		//	if (PluginServices.Storage.VendorItems.TryGetValue(VendorFilterName, out var itemList))
 		//		return itemList.Contains(item.ItemId);

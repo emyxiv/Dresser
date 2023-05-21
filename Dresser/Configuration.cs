@@ -14,6 +14,7 @@ using Dresser.Data;
 using CriticalCommonLib.Enums;
 using Dalamud.Logging;
 using static Dresser.Windows.GearBrowser;
+using Dresser.Structs;
 
 namespace Dresser {
 	[Serializable]
@@ -24,8 +25,8 @@ namespace Dresser {
 		}
 		public int Version { get; set; } = 0;
 
-		public Dictionary<GlamourPlateSlot, InventoryItem> DisplayPlateItems { get; set; } = new();
-		public Dictionary<ushort, Dictionary<GlamourPlateSlot, InventoryItem>> PendingPlateItems { get; set; } = new();
+		public InventoryItemSet DisplayPlateItems { get; set; } = new();
+		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearDisplayGear = false;
 
@@ -78,7 +79,7 @@ namespace Dresser {
 
 		// inventory tool stuff
 		public bool AutoSave { get; set; } = true;
-		public float AutoSaveMinutes { get; set; } = 0.1f;
+		public float AutoSaveMinutes { get; set; } = 5f;
 
 
 		public Dictionary<ulong, Character> SavedCharacters = new();

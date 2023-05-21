@@ -32,6 +32,7 @@ namespace Dresser {
 		public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
 		public static GameInterface GameInterface { get; private set; } = null!;
 		public static GameUiManager GameUi { get; private set; } = null!;
+		public static OverlayService OverlayService { get; private set; } = null!;
 		public static TryOn TryOn { get; private set; } = null!;
 		public static CraftMonitor CraftMonitor { get; private set; } = null!;
 		//public static MarketCache MarketCache { get; private set; } = null!;
@@ -45,6 +46,10 @@ namespace Dresser {
 		internal static ApplyGearChange ApplyGearChange = null!;
 		internal static Context Context = null!;
 
+		public static bool PluginLoaded { get; private set; } = false;
+
+		public delegate void PluginLoadedDelegate();
+		public static event PluginLoadedDelegate? OnPluginLoaded;
 
 		public static void Init(DalamudPluginInterface dalamud, Plugin plugin) {
 
@@ -65,6 +70,8 @@ namespace Dresser {
 
 			CharacterMonitor = new CharacterMonitor();
 			GameUi = new GameUiManager();
+			OverlayService = new OverlayService(GameUi);
+
 			TryOn = new TryOn();
 			OdrScanner = new OdrScanner(CharacterMonitor);
 			CraftMonitor = new CraftMonitor(GameUi);
@@ -80,14 +87,19 @@ namespace Dresser {
 			Storage = new Storage();
 			ApplyGearChange = new ApplyGearChange(plugin);
 
+			PluginLoaded = true;
+			OnPluginLoaded?.Invoke();
+
 		}
 		public static void Dispose() {
+			PluginLoaded = false;
 			ConfigurationManager.ClearQueue();
 			ConfigurationManager.Save();
 
 			Storage.Dispose();
 			//CommandManager.Dispose();
 			//FilterService.Dispose();
+			OverlayService.Dispose();
 			InventoryMonitor.Dispose();
 			InventoryScanner.Dispose();
 			CraftMonitor.Dispose();
@@ -115,6 +127,7 @@ namespace Dresser {
 			TryOn = null!;
 			//CommandManager = null!;
 			//FilterService = null!;
+			OverlayService = null!;
 			CraftMonitor = null!;
 			//PluginInterface = null!;
 			//MarketCache = null!;

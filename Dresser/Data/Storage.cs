@@ -18,6 +18,7 @@ using Dresser.Structs.FFXIV;
 using CriticalCommonLib.Enums;
 using Dresser.Extensions;
 using Dalamud.Logging;
+using Dresser.Structs;
 
 namespace Dresser.Data {
 	internal class Storage : IDisposable {
@@ -82,6 +83,9 @@ namespace Dresser.Data {
 			if (!RarityColors.TryGetValue(itemEx.Rarity, out var rarityColor))
 				rarityColor = Vector4.One;
 			return rarityColor;
+		}
+		public static Dictionary<ushort, InventoryItemSet> PagesInv {
+			get => Pages?.Select((value, index) => new { value, index }).ToDictionary(p => (ushort)p.index, p => (InventoryItemSet)p.value) ?? new();
 		}
 
 

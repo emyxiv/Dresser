@@ -1,3 +1,9 @@
+using Dalamud.Logging;
+
+using Dresser.Logic;
+
+using InventoryTools.GameUi;
+
 using System;
 
 namespace Dresser.Interop.Hooks {
@@ -9,9 +15,12 @@ namespace Dresser.Interop.Hooks {
 
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent += OnGlamourPlatesReceiveEvent;
-			MiragePrismMiragePlate.OnShow += OnGlamourPlatesShow;
+			//MiragePrismMiragePlate.OnShow += OnGlamourPlatesShow;
+			Context.OnChangeGlamingAtDresser += OnGlamourPlatesShow2;
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent += OnMiragePrismPrismBoxReceiveEvent;
+
+			MiragePrismMiragePlateOverlay.OnPlateChanged += OnPlateChanged;
 
 			OnLogin(null!, null!);
 		}
@@ -23,9 +32,12 @@ namespace Dresser.Interop.Hooks {
 
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent -= OnGlamourPlatesReceiveEvent;
-			MiragePrismMiragePlate.OnShow -= OnGlamourPlatesShow;
+			//MiragePrismMiragePlate.OnShow -= OnGlamourPlatesShow;
+			Context.OnChangeGlamingAtDresser += OnGlamourPlatesShow2;
+
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
-			MiragePrismPrismBox.ReceiveEvent += OnMiragePrismPrismBoxReceiveEvent;
+			MiragePrismPrismBox.ReceiveEvent -= OnMiragePrismPrismBoxReceiveEvent;
+			MiragePrismMiragePlateOverlay.OnPlateChanged -= OnPlateChanged;
 
 
 			OnLogout(null!, null!);
@@ -40,23 +52,40 @@ namespace Dresser.Interop.Hooks {
 		}
 
 
-		private unsafe static void OnGlamourPlatesShow(object? sender, IntPtr ptr) {
+		private static void OnGlamourPlatesShow(object? sender, IntPtr ptr) {
 			Data.Gathering.DelayParseGlamPlatesAndComparePending();
 
+		}
+		private static void OnGlamourPlatesShow2(bool isShowing) {
+			if (isShowing) {
+				Data.Gathering.DelayParseGlamPlatesAndComparePending();
+				PluginServices.ApplyGearChange.OpenGlamourDresser();
+			}
 		}
 		private unsafe static void OnGlamourPlatesReceiveEvent(object? sender, ReceiveEventArgs e) {
 			//e.PrintData();
 
-			if (
-				e.SenderID == 0 && (
-				e.EventArgs->Int == 18 // used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
-				|| e.EventArgs->Int == 17 // Change Glamour Plate Page
-				)) {
+			if (e.SenderID == 0 && e.EventArgs->Int == 18) {
+				// used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
+				Data.Gathering.DelayParseGlamPlates();
+				PluginServices.ApplyGearChange.Popup_AllDone();
+			}
+			if (e.SenderID == 0 && e.EventArgs->Int == 17) {
+				// Change Glamour Plate Page
 				Data.Gathering.DelayParseGlamPlates();
 			}
-			//if (e.SenderID == 0 && e.EventArgs->Int == -2)
-			//	EventManager.GearSelectionClose?.Invoke();
+			if (e.SenderID == 0 && e.EventArgs->Int == -2) {
 
+				//	EventManager.GearSelectionClose?.Invoke();
+			}
+			if (e.SenderID == 1 && e.EventArgs->Int == 0 ) {
+				// if change plate + discards
+				PluginServices.OverlayService.RefreshOverlayStates();
+			}
+			if (e.SenderID == 4 && e.EventArgs->Int == 0) {
+				// click "yes" when asked to saving changes
+				PluginServices.ApplyGearChange.ExecuteSavingPlateChanges();
+			}
 		}
 		private unsafe static void OnMiragePrismPrismBoxReceiveEvent(object? sender, ReceiveEventArgs e) {
 			//e.PrintData();
@@ -75,6 +104,11 @@ namespace Dresser.Interop.Hooks {
 
 			//if (e.SenderID == 0 && e.EventArgs->Int == -2)
 			//	EventManager.GearSelectionClose?.Invoke();
+		}
+		private static void OnPlateChanged(ushort? newPlateIndex, ushort? oldPlateIndex) {
+			PluginLog.Warning($"OnPlateChanged >>{newPlateIndex ?? -1}<< OnPlateChanged OnPlateChanged");
+			PluginServices.ApplyGearChange.CheckIfLeavingPlateWasApplied(oldPlateIndex);
+			PluginServices.ApplyGearChange.ExecuteChangesOnSelectedPlate();
 		}
 	}
 
