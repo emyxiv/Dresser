@@ -7,6 +7,9 @@ This plugin is still under development, there are a lot of things to improve.
 
 ⚠️ This plugin may be resources hungry as it attempts to recreate original item's slots style visuals.
 
+ℹ️ Refactor needed: The project was made by sticking concepts and code bits together witout preparing a good architecture. Sorry about that.
+
+
 ### Planned features
 
 1. current gear window
