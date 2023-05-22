@@ -185,8 +185,10 @@ namespace Dresser.Windows {
 
 			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
+				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
+
 				filterChanged |= ImGui.Checkbox($"Filter Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
-				ImGui.SameLine();
+				if(columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
 			} else
