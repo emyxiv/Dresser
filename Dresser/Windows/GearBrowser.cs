@@ -122,12 +122,20 @@ namespace Dresser.Windows {
 
 				int i = 0;
 				foreach ((var cat, var willDisplay) in ConfigurationManager.Config.FilterInventoryCategory) {
+					var numberOfItems = SavedQuantityCacheGet(cat);
 
+
+					if (numberOfItems < 1) ImGui.BeginDisabled();
 
 
 					var willDisplayValue = willDisplay;
-					if (filterChanged |= ImGui.Checkbox($"{cat}##displayCategory", ref willDisplayValue))
+					if (filterChanged |= ImGui.Checkbox($"{cat} ({numberOfItems})##displayCategory", ref willDisplayValue))
 						ConfigurationManager.Config.FilterInventoryCategory[cat] = willDisplayValue;
+
+					if (numberOfItems < 1) {
+						GuiHelpers.Tooltip("No item available for this filter");
+						ImGui.EndDisabled();
+					}
 
 
 					// column breaker
@@ -197,10 +205,22 @@ namespace Dresser.Windows {
 			return filterChanged;
 		}
 
+		private static Dictionary<InventoryCategory, int> SavedQuantityCache = new();
+		public static void SavedQuantityCacheMake()
+			 => SavedQuantityCache = ConfigurationManager.Config.GetSavedInventoryLocalChar().ToDictionary(c => c.Key, c => c.Value.Count(i => i.ItemId != 0));
+		private static int SavedQuantityCacheGet(InventoryCategory cat) {
+			SavedQuantityCache.TryGetValue(cat, out var count);
+			return count;
+		}
+
+
 		public static IOrderedEnumerable<InventoryItem>? Items = null;
 		public static void RecomputeItems() {
 			PluginLog.Information($" ========== Recreated ItemList ========== ");
 			PluginLog.Information($" ======================================== ");
+
+			SavedQuantityCacheMake();
+
 			IEnumerable<InventoryItem> items = new HashSet<InventoryItem>();
 
 			foreach( (var g, var h) in ConfigurationManager.Config.FilterInventoryType) {
