@@ -5,7 +5,7 @@
     "Description": "Improve Glamour Dresser.",
     "Tags": ["Glamour", "Dresser", "Organize", "Search", "Items"],
     "InternalName": "Dresser",
-    "AssemblyVersion": "0.0.0.1",
+    "AssemblyVersion": "0.0.1.0",
     "RepoUrl": "https://github.com/Emyka/Dresser",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 8,
