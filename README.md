@@ -4,7 +4,8 @@ A [Dalamud](https://discord.gg/3NMcUV5) plugin aiming to ease glamour dresser ex
 
 
 This plugin is still under development, there are a lot of things to improve.
-WARNING: this plugin may be resources hungry as it attempts to recreate original item's slots style visuals.
+
+⚠️ This plugin may be resources hungry as it attempts to recreate original item's slots style visuals.
 
 ### Planned features
 
@@ -20,6 +21,7 @@ WARNING: this plugin may be resources hungry as it attempts to recreate original
       - take item from x inventory and put it in glamour chest
 
 2. Gear Browser window
+    - make a "lite" version without icons so it can run smoother on low grade hardware
     - fuzzy search (split sentances with && contains words ignorecase)
       - also add search in dye names and show items with dye name matching with the text
     - advanced filters
@@ -69,4 +71,4 @@ WARNING: this plugin may be resources hungry as it attempts to recreate original
 
 
 
-Thanks to Critical impact for making CriticalImpactLib and their great AllaganTools. Thanks to Anna for their great Glamaholic. Thanks to Chirp for their amazing discoveries in Ktisis, and Fayti1703 for their patience when teaching me all kind of dev tips ♥.
+Thanks to Critical impact for making CriticalImpactLib and their great AllaganTools. Thanks to Anna for their great Glamaholic. Thanks to Chirp for their amazing discoveries in Ktisis, and Fayti1703 for their patience when teaching me all kind of dev tips ❤️.
