@@ -5,17 +5,13 @@ namespace Dresser.Interop {
 	internal static class Offsets {
 		// PlayerCharacter/Actor/GameObject(?) Appearance
 		// Thanks Chirp ♥
-		// https://github.com/ktisis-tools/Ktisis/blob/0ee4bf058833e118eaf384728814b64643a85b4b/Ktisis/Structs/Actor/Actor.cs#L22
-		internal const int WeaponMainHand = 0x6E0;
-		internal const int WeaponOffHand = 0x748;
-		internal const int Equipment = 0x818;
-		internal const int Customize = 0x840;
-
-		// PlayerCharacter/Actor/GameObject(?) Change equip
-		// Thanks Chirp ♥
-		// https://github.com/ktisis-tools/Ktisis/blob/0ee4bf058833e118eaf384728814b64643a85b4b/Ktisis/Interop/Methods.cs#L16
-		// https://github.com/ktisis-tools/Ktisis/blob/0ee4bf058833e118eaf384728814b64643a85b4b/Ktisis/Structs/Actor/Actor.cs#L56
-		internal const int EquipChangeToWriteTo = 0x6D0;
+		// https://github.com/ktisis-tools/Ktisis/blob/862a0c41ba4027c981d4d227b721c0090b9ec3d5/Ktisis/Structs/Actor/Actor.cs#LL22C38-L22C38
+		internal const int ActorDrawData = 0x6E8;
+		// https://github.com/ktisis-tools/Ktisis/blob/862a0c41ba4027c981d4d227b721c0090b9ec3d5/Ktisis/Structs/Actor/ActorDrawData.cs#L5
+		internal const int WeaponMainHand = ActorDrawData + 0x010;
+		internal const int WeaponOffHand = ActorDrawData + 0x078;
+		internal const int Equipment = ActorDrawData + 0x148;
+		internal const int Customize = ActorDrawData + 0x170;
 
 		// MiragePrismMiragePlate
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L164

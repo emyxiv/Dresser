@@ -26,6 +26,7 @@ namespace Dresser {
 		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
 		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
 
+		public static FrameworkService FrameworkService { get; private set; } = null!;
 		public static OdrScanner OdrScanner { get; private set; } = null!;
 		public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
 		public static InventoryScanner InventoryScanner { get; private set; } = null!;
@@ -62,6 +63,7 @@ namespace Dresser {
 			//PluginLog.Debug($"data ready {Service.Data.IsDataReady == true}");
 
 			Service.ExcelCache = new ExcelCache(Service.Data);
+			FrameworkService = new FrameworkService(Service.Framework);
 			ConfigurationManager.Load();
 			GameInterface = new GameInterface();
 
@@ -76,7 +78,7 @@ namespace Dresser {
 			OdrScanner = new OdrScanner(CharacterMonitor);
 			CraftMonitor = new CraftMonitor(GameUi);
 			InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner);
-			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner);
+			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, FrameworkService);
 			InventoryScanner.Enable();
 
 			GlamourPlates = new();
@@ -117,8 +119,10 @@ namespace Dresser {
 			GameInterface.Dispose();
 			IconStorage.Dispose();
 			ApplyGearChange.Dispose();
+			FrameworkService.Dispose();
 
 
+			FrameworkService = null!;
 			InventoryMonitor = null!;
 			InventoryScanner = null!;
 			CharacterMonitor = null!;

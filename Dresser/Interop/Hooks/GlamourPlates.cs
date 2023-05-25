@@ -24,6 +24,7 @@ using Dresser.Extensions;
 using Dresser.Structs;
 using Dresser.Structs.FFXIV;
 using System.Runtime.InteropServices;
+using CriticalCommonLib.GameStructs;
 
 namespace Dresser.Interop.Hooks {
 	internal class GlamourPlates : IDisposable {

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Dalamud.Logging;
 using Dresser.Interop.GameUi;
-using InventoryTools.GameUi;
 using Dalamud.Game;
 
 namespace Dresser.Logic {

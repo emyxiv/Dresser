@@ -239,7 +239,7 @@ namespace Dresser.Windows {
 			PluginLog.Debug($"all items => {items.Count()} cat:{string.Join(",", items.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", items.Select(p => p.SortedContainer).Distinct())}");
 
 			// items from saved inventory (critical impact lib)
-			items = items.Concat(ConfigurationManager.Config.SavedInventories.First(c => c.Key == PluginServices.CharacterMonitor.ActiveCharacter).Value.SelectMany(t => t.Value));
+			items = items.Concat(ConfigurationManager.Config.SavedInventories.First(c => c.Key == PluginServices.CharacterMonitor.ActiveCharacterId).Value.SelectMany(t => t.Value));
 
 			items = items.Where(i =>
 				!i.IsEmpty

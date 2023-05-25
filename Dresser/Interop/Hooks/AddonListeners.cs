@@ -2,7 +2,7 @@ using Dalamud.Logging;
 
 using Dresser.Logic;
 
-using InventoryTools.GameUi;
+using Dresser.Interop.GameUi;
 
 using System;
 

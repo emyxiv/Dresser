@@ -224,7 +224,7 @@ namespace Dresser {
 			}
 		}
 		private void GameInterfaceOnAcquiredItemsUpdated() {
-			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacter;
+			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacterId;
 			if (activeCharacter != 0) {
 				ConfigurationManager.Config.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
 				if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();

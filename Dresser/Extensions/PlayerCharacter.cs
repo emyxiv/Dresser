@@ -68,12 +68,12 @@ namespace Dresser.Extensions {
 
 		public static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
 			if (Methods.ActorChangeEquip == null) return;
-			Methods.ActorChangeEquip(playerCharacter.Address + Offsets.EquipChangeToWriteTo, index, item);
+			Methods.ActorChangeEquip(playerCharacter.Address + Offsets.ActorDrawData, index, item);
 		}
 
 		public static void Equip(this SubKindsPlayerCharacter playerCharacter, WeaponIndex slot, WeaponEquip item) {
 			if (Methods.ActorChangeWeapon == null) return;
-			Methods.ActorChangeWeapon(playerCharacter.Address + Offsets.EquipChangeToWriteTo, slot, item, 0, 1, 0, 0);
+			Methods.ActorChangeWeapon(playerCharacter.Address + Offsets.ActorDrawData, slot, item, 0, 1, 0, 0);
 		}
 	}
 }

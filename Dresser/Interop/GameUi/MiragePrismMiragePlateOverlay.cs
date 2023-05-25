@@ -6,7 +6,7 @@ using Dresser;
 using System.Linq;
 using Dalamud.Logging;
 
-namespace InventoryTools.GameUi {
+namespace Dresser.Interop.GameUi {
 	public class MiragePrismMiragePlateOverlay : AtkMiragePrismMiragePlate, IAtkOverlayState {
 		public bool HasState { get; set; }
 		public bool NeedsStateRefresh { get; set; }
@@ -58,7 +58,7 @@ namespace InventoryTools.GameUi {
 		}
 
 		public void UpdateState(HighlighterState? newState) {
-			if (PluginServices.CharacterMonitor.ActiveCharacter == 0) {
+			if (PluginServices.CharacterMonitor.ActiveCharacterId == 0) {
 				return;
 			}
 			if (newState != null && HasAddon && newState.Value.PlatesToHighlight.Any()) {
