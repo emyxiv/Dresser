@@ -74,6 +74,7 @@ namespace Dresser {
 		public bool FilterSourceCollapse = false;
 		public bool FilterAdditionalCollapse = true;
 		public bool FilterAdvancedCollapse = true;
+		public bool FilterSortCollapse = true;
 
 
 

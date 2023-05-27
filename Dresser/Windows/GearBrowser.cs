@@ -215,8 +215,19 @@ namespace Dresser.Windows {
 				if(columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
+				// todo: level
+				// todo: ilvl
+				// todo: rarity
+				// todo: dyeable only / not dyeable / all
+				// todo: dyed with
 			} else
 				ConfigurationManager.Config.FilterAdvancedCollapse = false;
+
+			if (ImGui.CollapsingHeader($"Sort##Source##GearBrowser", ConfigurationManager.Config.FilterAdditionalCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+				ConfigurationManager.Config.FilterSortCollapse = true;
+			} else
+				ConfigurationManager.Config.FilterSortCollapse = false;
+
 
 			return filterChanged;
 		}
