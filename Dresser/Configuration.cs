@@ -53,7 +53,7 @@ namespace Dresser {
 				this.FilterInventoryCategory = GearBrowser.AllowedCategories.ToDictionary(c => c, c => {
 					if (oldFilterInventoryCategory != null && oldFilterInventoryCategory.TryGetValue(c, out bool d) && d)
 						return d;
-					return true;
+					return c == InventoryCategory.GlamourChest || c == InventoryCategory.Armoire;
 				});
 			}
 		}
