@@ -232,56 +232,74 @@ namespace Dresser.Windows {
 			return filterChanged;
 		}
 
-		private static Dictionary<InventoryCategory, int> SavedQuantityCache = new();
-		public static void SavedQuantityCacheMake()
-			 => SavedQuantityCache = ConfigurationManager.Config.GetSavedInventoryLocalChar().ToDictionary(c => c.Key, c => c.Value.Count(i => i.ItemId != 0));
+		private static Dictionary<InventoryCategory, int> SavedQuantityInventoryCategoryCache = new();
+		private static Dictionary<InventoryType, int> SavedQuantityInventoryTypeCache = new();
+		public static void SavedQuantityCacheMake(IEnumerable<InventoryItem> items) {
+			SavedQuantityInventoryTypeCache.Clear();
+			SavedQuantityInventoryCategoryCache.Clear();
+
+			foreach (var item in items) {
+				var itemCat = item.SortedCategory;
+				var itemType = item.SortedContainer;
+				if ((int)itemType >= (int)InventoryTypeExtra.AllItems) continue;
+				if(!SavedQuantityInventoryCategoryCache.TryAdd(itemCat, 1)) {
+					SavedQuantityInventoryCategoryCache[itemCat]++;
+				}
+				if(!SavedQuantityInventoryTypeCache.TryAdd(itemType, 1)) {
+					SavedQuantityInventoryTypeCache[itemType]++;
+				}
+			}
+			foreach((var type, var list) in PluginServices.Storage.AdditionalItems) {
+				SavedQuantityInventoryTypeCache[type] = list.Count;
+			}
+
+		}
+		//=> SavedQuantityCache = ConfigurationManager.Config.GetSavedInventoryLocalChar().ToDictionary(c => c.Key, c => c.Value.Count(i => i.ItemId != 0));
 		private static int SavedQuantityCacheGet(InventoryCategory cat) {
-			SavedQuantityCache.TryGetValue(cat, out var count);
+			SavedQuantityInventoryCategoryCache.TryGetValue(cat, out var count);
+			return count;
+		}
+		private static int SavedQuantityCacheGet(InventoryType type) {
+			SavedQuantityInventoryTypeCache.TryGetValue(type, out var count);
 			return count;
 		}
 
 
 		public static IOrderedEnumerable<InventoryItem>? Items = null;
 		public static void RecomputeItems() {
-			PluginLog.Information($" ========== Recreated ItemList ========== ");
-			PluginLog.Information($" ======================================== ");
-
-			SavedQuantityCacheMake();
 
 			IEnumerable<InventoryItem> items = new HashSet<InventoryItem>();
-
-			foreach( (var g, var h) in ConfigurationManager.Config.FilterInventoryType) {
-				PluginLog.Debug($"{g}:{h}");
-			}
-
 
 			foreach ((var inventoryType, var itemsToAdd) in PluginServices.Storage.AdditionalItems) {
 				if (ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out var isEnabled) && isEnabled) {
 					items = items.Concat(itemsToAdd);
-					PluginLog.Debug($"included {inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => p.SortedContainer).Distinct())}");
+					//PluginLog.Debug($"included {inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => p.SortedContainer).Distinct())}");
 					if (inventoryType == (InventoryType)InventoryTypeExtra.AllItems) break;
 				}
 			}
 
-			PluginLog.Debug($"all items => {items.Count()} cat:{string.Join(",", items.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", items.Select(p => p.SortedContainer).Distinct())}");
+			//PluginLog.Debug($"all items => {items.Count()} cat:{string.Join(",", items.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", items.Select(p => p.SortedContainer).Distinct())}");
 
 			// items from saved inventory (critical impact lib)
-			items = items.Concat(ConfigurationManager.Config.SavedInventories.First(c => c.Key == PluginServices.CharacterMonitor.ActiveCharacterId).Value.SelectMany(t => t.Value));
+			items = items.Concat(ConfigurationManager.Config.GetSavedInventoryLocalChar().SelectMany(t => t.Value));
+			items = items.Concat(ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers().SelectMany(t => t.Value));
+
+			items = items.Where(i => !i.IsEmpty && i.Item.ModelMain != 0);
+
+			SavedQuantityCacheMake(items);
 
 			items = items.Where(i =>
-				!i.IsEmpty
-				&& i.Item.ModelMain != 0
-				&& (!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
-				&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
-				&& SelectedSlot == i.Item.GlamourPlateSlot()
-				&& i.IsFilterDisplayable()
-				&& i.Item.CanBeEquipedByPlayedRaceGender()
-				&& (
-					//!Search.IsNullOrWhitespace() &&
-					i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase)
-					)
+					(!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
+					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
+					&& SelectedSlot == i.Item.GlamourPlateSlot()
+					&& i.IsFilterDisplayable()
+					&& i.Item.CanBeEquipedByPlayedRaceGender()
+					&& (
+						//!Search.IsNullOrWhitespace() &&
+						i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase)
+						)
 
-				);
+					);
 
 
 			Items = items
