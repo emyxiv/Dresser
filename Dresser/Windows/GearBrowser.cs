@@ -167,6 +167,8 @@ namespace Dresser.Windows {
 				foreach ((var AddItemKind, var option) in PluginServices.Storage.FilterNames) {
 					ImGui.TextDisabled(AddItemKind.ToString());
 					foreach((var inventoryType, var addItemTitle) in option) {
+						var numberOfItems = SavedQuantityCacheGet(inventoryType);
+
 						bool isChecked = false;
 						ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out isChecked);
 
@@ -178,15 +180,28 @@ namespace Dresser.Windows {
 								filterChanged = true;
 								ConfigurationManager.Config.FilterInventoryType[inventoryType] = !isChecked;
 							}
-							GuiHelpers.Tooltip($"{itex.NameString}");
+							GuiHelpers.Tooltip($"{itex.NameString} ({numberOfItems})");
 
 							ImGui.SameLine();
 							var itemSize = ImGui.GetCursorPosX() - savedPosX + ImGui.GetStyle().ItemSpacing.X;
 							if (ImGui.GetContentRegionAvail().X < itemSize) ImGui.NewLine();
+						} else {
+
+							var uncheckedd = (InventoryTypeExtra)inventoryType == InventoryTypeExtra.AllItems && !isChecked && !(ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift);
+							if (uncheckedd) {
+								bool _ = false;
+								ImGui.BeginDisabled();
+								ImGui.Checkbox("##__placeholder498", ref _);
+								ImGui.EndDisabled();
+								ImGui.SameLine();
+								ImGui.TextDisabled($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})");
+								GuiHelpers.Tooltip("Displaying this much items is very resource hungry, the fps with drop drastically.\nHold Ctrl & Shift to enable it.");
+							}
+							else
+								if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
+									ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
+
 						}
-						else
-							if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType}##displayInventoryTypeAdditionalItem", ref isChecked))
-							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
 					}
 
 					// column breaker
@@ -207,13 +222,13 @@ namespace Dresser.Windows {
 				ConfigurationManager.Config.FilterAdditionalCollapse = false;
 
 
-			if (ImGui.CollapsingHeader($"Filter##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+			if (ImGui.CollapsingHeader($"Filters##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
-				filterChanged |= ImGui.Checkbox($"Filter Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
+				filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
 				if(columnMode) ImGui.SameLine();
-				filterChanged |= ImGui.Checkbox($"Filter Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
+				filterChanged |= ImGui.Checkbox($"Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
 				// todo: level
 				// todo: ilvl
@@ -320,7 +335,7 @@ namespace Dresser.Windows {
 			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
-			if(Items != null)
+			if(Items != null && Items.Any())
 				try {
 
 					bool isTooltipActive = false;
@@ -349,6 +364,13 @@ namespace Dresser.Windows {
 				} catch (Exception ex) {
 					PluginLog.Error(ex.ToString());
 				}
+			else {
+				var message = "No item found.\nThe filters may be too strong, or you may need to open various inventories(e.g. retainers, Glamour Dresser, Armoire) to populate the item memory with your belongings.";
+				if (SelectedSlot == null) message = "No slot selected.\nStart looking for items by selecting a slot (e.g. chest or legs) in Plate Creation window.";
+				ImGui.BeginDisabled();
+				ImGui.TextWrapped($"{message}");
+				ImGui.EndDisabled();
+			}
 
 			ImGui.EndChildFrame();
 			PopStyleCollection();
