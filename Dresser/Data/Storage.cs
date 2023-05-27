@@ -199,7 +199,7 @@ namespace Dresser.Data {
 
 			foreach ((var inventoryType, var allowedVendorsForType) in FilterVendorAllowedNames) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems.Where((itemPair) => {
-					return Service.ExcelCache.ShopCollection.GetShops(itemPair.Key).Any(s => s.ENpcs.Any(n => allowedVendorsForType.Any(av => av == n.Resident!.Singular)));
+					return itemPair.Value.ModelMain != 0 && Service.ExcelCache.ShopCollection.GetShops(itemPair.Key).Any(s => s.ENpcs.Any(n => allowedVendorsForType.Any(av => av == n.Resident!.Singular)));
 				}).Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Vendor][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
@@ -207,7 +207,7 @@ namespace Dresser.Data {
 		private void LoadAdditional_Currency() {
 			foreach ((var inventoryType, var currencyId) in FilterCurrencyIds) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
-					.Where((itemPair) => itemPair.Value.ObtainedWithSpecialShopCurrency2(currencyId))
+					.Where((itemPair) => itemPair.Value.ModelMain != 0 && itemPair.Value.ObtainedWithSpecialShopCurrency2(currencyId))
 					.Select(i => NewInventoryItem(inventoryType, i.Key))
 					.ToHashSet();
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Currency][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");

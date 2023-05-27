@@ -20,6 +20,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using System.Linq;
 using ImGuiNET;
 using Dresser.Windows.Components;
+using CriticalCommonLib.Services.Ui;
 
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
@@ -53,7 +54,17 @@ namespace Dresser {
 			PluginServices.CharacterMonitor.LoadExistingRetainers(ConfigurationManager.Config.GetSavedRetainers());
 
 
+			PluginServices.GameUi.WatchWindowState(WindowName.RetainerGrid0);
+			PluginServices.GameUi.WatchWindowState(WindowName.InventoryGrid0E);
+			PluginServices.GameUi.WatchWindowState(WindowName.RetainerList);
+			PluginServices.GameUi.WatchWindowState(WindowName.Inventory);
+			PluginServices.GameUi.WatchWindowState(WindowName.InventoryLarge);
+			PluginServices.GameUi.WatchWindowState(WindowName.InventoryRetainerLarge);
+			PluginServices.GameUi.WatchWindowState(WindowName.InventoryRetainer);
+			PluginServices.GameUi.WatchWindowState(WindowName.InventoryBuddy);
+			PluginServices.GameUi.WatchWindowState(WindowName.InventoryBuddy2);
 
+			PluginServices.GameInterface.AcquiredItemsUpdated += GameInterfaceOnAcquiredItemsUpdated;
 
 
 
