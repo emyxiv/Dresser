@@ -9,6 +9,8 @@ using Dresser.Structs.FFXIV;
 using Dresser.Windows.Components;
 using CriticalCommonLib;
 using CriticalCommonLib.Enums;
+using System.Linq;
+using ImGuiScene;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
@@ -66,6 +68,16 @@ namespace Dresser.Extensions {
 			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		}
 
+		public static bool ObtainedWithSpecialShopCurrency2(this CriticalItemEx itemEx, uint currencyItemId) {
+			if(Service.ExcelCache.SpecialShopItemRewardCostLookup.TryGetValue(itemEx.RowId, out var specialShop)) {
+				return specialShop.Any(c => c.Item2 == currencyItemId);
+			}
+
+			return false;
+		}
+		public static TextureWrap IconTextureWrap(this CriticalItemEx itemEx) {
+			return PluginServices.IconStorage.Get(itemEx);
+		}
 
 	}
 }

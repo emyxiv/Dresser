@@ -62,9 +62,9 @@ namespace Dresser {
 		public Dictionary<InventoryType, bool> FilterInventoryType { get; set; } = new();
 		public void LoadAdditionaltems() {
 			//PluginLog.Debug($"FilterInventoryType: cc:{FilterInventoryType.Count} nc:{Storage.FilterNames.Sum(k => k.Value.Count)} dc:{this.FilterInventoryType.Select(i => i.Key).Except(Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count()}");
-			if (this.FilterInventoryType.Count != Storage.FilterNames.Sum(k=>k.Value.Count) || this.FilterInventoryType.Select(i => i.Key).Except(Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count() != 0) {
+			if (this.FilterInventoryType.Count != PluginServices.Storage.FilterNames.Sum(k=>k.Value.Count) || this.FilterInventoryType.Select(i => i.Key).Except(PluginServices.Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count() != 0) {
 				var oldFilterInventoryType = this.FilterInventoryType.Copy();
-				this.FilterInventoryType = Storage.FilterNames.SelectMany(v => v.Value.Keys).ToDictionary(it => it, it => {
+				this.FilterInventoryType = PluginServices.Storage.FilterNames.SelectMany(v => v.Value.Keys).ToDictionary(it => it, it => {
 					if (oldFilterInventoryType != null && oldFilterInventoryType.TryGetValue(it, out bool d) && d)
 						return d;
 					return false;

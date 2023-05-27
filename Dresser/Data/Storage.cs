@@ -19,6 +19,9 @@ using CriticalCommonLib.Enums;
 using Dresser.Extensions;
 using Dalamud.Logging;
 using Dresser.Structs;
+using System.Threading.Tasks;
+using Dalamud.Utility;
+using Lumina.Excel.GeneratedSheets;
 
 namespace Dresser.Data {
 	internal class Storage : IDisposable {
@@ -66,6 +69,7 @@ namespace Dresser.Data {
 			foreach ((var slot, var part_id) in ImageGuiCrop.EmptyGlamourPlateSlot)
 				ImageGuiCrop.GetPart("character", part_id);
 
+			InitItemTypes();
 			LoadAdditionalItems();
 		}
 		public void Dispose() {
@@ -93,28 +97,68 @@ namespace Dresser.Data {
 
 		// prepare aditional items data
 		public enum AdditionalItem {
-			None,
-			All,
-			Vendor,
-			Currency,
+			None = 0,
+			All = 1,
+			Vendor = 2,
+			Currency = 3,
+		}
+		// InventoryTypeExtra must match AdditionalItem * 1000000 + (currency item id OR other)
+		public enum InventoryTypeExtra {
+			AllItems = 1000000,
+
+			CalamityVendor = 2000001,
+			RelicVendor = 2000002,
+
+			//StormSeal = 3000020,
+			//SerpentSeal = 3000021,
+			//FlameSeal = 3000022,
+			WolfMarks = 3000025,
+			AlliedSeals = 3000027,
+			Poetics = 3000028,
+			MandervilleGoldsaucerPoints = 3000029,
+			AllaganTomestonesOfCausality = 3000044,
+			CenturioSeals = 3010307,
+			WhiteCraftersScrips = 3025199,
+			WhiteGaterersScrips = 3025200,
+			SackOfNuts = 3026553,
+			PurpleCraftersScripts = 3033913,
+			PurpleGatherersScripts = 3033914,
+			TrophyCrystal = 3036656,
+			SeafarersCowrie = 3037549,
+
 		}
 
-		public static Dictionary<AdditionalItem, Dictionary<InventoryType, string>> FilterNames = new() {
-			{AdditionalItem.All,new() {
-				{ (InventoryType) 99300, "All Items" },
-			}},
-			{AdditionalItem.Vendor,new() {
-				{ (InventoryType) 99400, "Calamity Vendor" },
-				{ (InventoryType) 99401, "Relic Vendor" },
-			}},
-			{AdditionalItem.Currency,new() {
-				{(InventoryType) 99520, "Storm Seal" },
-				{(InventoryType) 99521, "Serpent Seal" },
-				{(InventoryType) 99522, "Flame Seal" },
-				{(InventoryType) 99528, "Poetics" },
-			}},
-		};
-		public Dictionary<InventoryType, HashSet<InventoryItem>> AdditionalItems = FilterNames.SelectMany(a => a.Value.Keys).ToDictionary(itn => itn, itn => new HashSet<InventoryItem>());
+		public void InitItemTypes() {
+
+			var inventoryTypeExtras = Enum.GetValues<InventoryTypeExtra>();
+
+
+			FilterNames = new();
+			FilterCurrencyIds = new();
+			FilterCurrencyItemEx = new();
+			FilterCurrencyIconTexture = new();
+
+			foreach ( var invTypeExtra in inventoryTypeExtras) {
+				var additionalItem = (AdditionalItem)((int)invTypeExtra / 1000000);
+				var itemId = (uint)invTypeExtra % 100000;
+
+				if (!FilterNames.ContainsKey(additionalItem))
+					FilterNames.Add(additionalItem, new());
+				FilterNames[additionalItem].Add((InventoryType)invTypeExtra, invTypeExtra.ToString());
+
+				if(additionalItem == AdditionalItem.Currency) {
+					FilterCurrencyIds.Add((InventoryType)invTypeExtra, itemId);
+					var itemEx = Service.ExcelCache.GetItemExSheet().First(i => i.RowId == itemId);
+					FilterCurrencyItemEx.Add((InventoryType)invTypeExtra, itemEx);
+					FilterCurrencyIconTexture.Add((InventoryType)invTypeExtra, itemEx.IconTextureWrap());
+				}
+			}
+
+			AdditionalItems = FilterNames.SelectMany(a => a.Value.Keys).ToDictionary(itn => itn, itn => new HashSet<InventoryItem>());
+
+		}
+		public Dictionary<AdditionalItem, Dictionary<InventoryType, string>> FilterNames;
+		public Dictionary<InventoryType, HashSet<InventoryItem>> AdditionalItems;
 		//public Dictionary<AdditionalItem, Dictionary<InventoryType, HashSet<InventoryItem>>> AdditionalItems = FilterNames.ToDictionary(fn=>fn.Key,fn=>fn.Value.ToDictionary(itn=>itn.Key,itn=> new HashSet<InventoryItem>()));
 
 		public static InventoryItem NewInventoryItem(InventoryType inventoryType, uint itemId) {
@@ -125,19 +169,16 @@ namespace Dresser.Data {
 		}
 
 		// all items
-		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)99300 };
+		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems };
 		// vendor
 		public static Dictionary<InventoryType, HashSet<string>> FilterVendorAllowedNames = new() {
-			{ (InventoryType) 99400 , new(){"Calamity salvager", "journeyman salvager"} },
-			{ (InventoryType) 99401 , new(){"restoration node", "Drake"} },
+			{ (InventoryType) InventoryTypeExtra.CalamityVendor , new(){"Calamity salvager", "journeyman salvager"} },
+			{ (InventoryType) InventoryTypeExtra.RelicVendor , new(){"restoration node", "Drake"} },
 		};
 		// currency
-		public static Dictionary<InventoryType, uint> FilterCurrencyIds = new() {
-			{(InventoryType) 99520, 20 },
-			{(InventoryType) 99521, 21 },
-			{(InventoryType) 99522, 22 },
-			{(InventoryType) 99528, 28 },
-		};
+		public Dictionary<InventoryType, uint> FilterCurrencyIds;
+		public Dictionary<InventoryType, ItemEx> FilterCurrencyItemEx;
+		public Dictionary<InventoryType, TextureWrap> FilterCurrencyIconTexture;
 		private void LoadAdditional_All() {
 			foreach (var inventoryType in FilterAll) {
 				// at least filter glam items
@@ -166,7 +207,7 @@ namespace Dresser.Data {
 		private void LoadAdditional_Currency() {
 			foreach ((var inventoryType, var currencyId) in FilterCurrencyIds) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
-					.Where((itemPair) => itemPair.Value.ObtainedWithSpecialShopCurrency(currencyId))
+					.Where((itemPair) => itemPair.Value.ObtainedWithSpecialShopCurrency2(currencyId))
 					.Select(i => NewInventoryItem(inventoryType, i.Key))
 					.ToHashSet();
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Currency][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
@@ -174,11 +215,11 @@ namespace Dresser.Data {
 		}
 
 		public void LoadAdditionalItems() {
-
-			LoadAdditional_All();
-			LoadAdditional_Vendor();
-			LoadAdditional_Currency();
-
+			Task.Run(async delegate {
+				await Task.Run(() => LoadAdditional_All());
+				await Task.Run(() => LoadAdditional_Vendor());
+				await Task.Run(() => LoadAdditional_Currency());
+			});
 		}
 	}
 }

@@ -57,13 +57,15 @@ namespace Dresser {
 			dalamud.Create<PluginServices>();
 			dalamud.Create<Service>();
 
-			IconStorage = new IconStorage();
 			Context = new Context();
 
 			//PluginLog.Debug($"data ready {Service.Data.IsDataReady == true}");
 
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			FrameworkService = new FrameworkService(Service.Framework);
+			IconStorage = new IconStorage();
+			Storage = new Storage();
+
 			ConfigurationManager.Load();
 			GameInterface = new GameInterface();
 
@@ -86,7 +88,6 @@ namespace Dresser {
 			//PluginLoaded = true;
 			//OnPluginLoaded?.Invoke();
 
-			Storage = new Storage();
 			ApplyGearChange = new ApplyGearChange(plugin);
 
 			PluginLoaded = true;

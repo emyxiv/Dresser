@@ -21,6 +21,7 @@ using Dresser.Logic;
 using Dresser.Structs.FFXIV;
 using Lumina.Excel.GeneratedSheets;
 using System.Collections.Immutable;
+using static Dresser.Data.Storage;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IDisposable {
@@ -40,6 +41,8 @@ namespace Dresser.Windows {
 		public static Vector4 CollectionColorBackground = new Vector4(113,98,119,200) / 255;
 		public static Vector4 CollectionColorBorder = (new Vector4(116,123,98,255) / 255 * 0.4f) + new Vector4(0,0,0,1);
 		public static Vector4 CollectionColorScrollbar = (new Vector4(116,123,98,255) / 255 * 0.2f) + new Vector4(0,0,0,1);
+		public static Vector4 ColorIconImageTintDisabled = new(1,1,1,0.5f);
+		public static Vector4 ColorIconImageTintEnabled = Vector4.One;
 
 		private static int? HoveredItem = null;
 		private static string Search = "";
@@ -129,16 +132,13 @@ namespace Dresser.Windows {
 					var numberOfItems = SavedQuantityCacheGet(cat);
 
 
-					if (numberOfItems < 1) ImGui.BeginDisabled();
-
-
 					var willDisplayValue = willDisplay;
+					if (numberOfItems < 1) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * new Vector4(1, 1, 1, 0.5f));
 					if (filterChanged |= ImGui.Checkbox($"{cat} ({numberOfItems})##displayCategory", ref willDisplayValue))
 						ConfigurationManager.Config.FilterInventoryCategory[cat] = willDisplayValue;
-
 					if (numberOfItems < 1) {
+						ImGui.PopStyleColor();
 						GuiHelpers.Tooltip("No item available for this filter");
-						ImGui.EndDisabled();
 					}
 
 
@@ -164,17 +164,29 @@ namespace Dresser.Windows {
 				ImGui.Columns(ConfigurationManager.Config.FilterInventoryTypeColumnNumber is >= 1 and <= 5 ? ConfigurationManager.Config.FilterInventoryTypeColumnNumber : 2);
 				ImGui.BeginGroup();
 				int i = 0;
-				foreach ((var AddItemKind, var option) in Storage.FilterNames) {
+				foreach ((var AddItemKind, var option) in PluginServices.Storage.FilterNames) {
 					ImGui.TextDisabled(AddItemKind.ToString());
 					foreach((var inventoryType, var addItemTitle) in option) {
 						bool isChecked = false;
 						ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out isChecked);
 
-						if (filterChanged |= ImGui.Checkbox($"{addItemTitle}##displayInventoryTypeAdditionalItem", ref isChecked))
+						if (AddItemKind == AdditionalItem.Currency && PluginServices.Storage.FilterCurrencyItemEx.TryGetValue(inventoryType, out var itex) && itex != null && PluginServices.Storage.FilterCurrencyIconTexture.TryGetValue(inventoryType, out var texWrap) && texWrap != null) {
+							var savedPosX = ImGui.GetCursorPosX();
+							if (ImGui.ImageButton(texWrap.ImGuiHandle, ItemIcon.IconSize / 2,Vector2.Zero, Vector2.One,0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? ColorIconImageTintEnabled : ColorIconImageTintDisabled)) {
+
+
+								filterChanged = true;
+								ConfigurationManager.Config.FilterInventoryType[inventoryType] = !isChecked;
+							}
+							GuiHelpers.Tooltip($"{itex.NameString}");
+
+							ImGui.SameLine();
+							var itemSize = ImGui.GetCursorPosX() - savedPosX + ImGui.GetStyle().ItemSpacing.X;
+							if (ImGui.GetContentRegionAvail().X < itemSize) ImGui.NewLine();
+						}
+						else
+							if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType}##displayInventoryTypeAdditionalItem", ref isChecked))
 							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
-
-
-
 					}
 
 					// column breaker
@@ -195,7 +207,7 @@ namespace Dresser.Windows {
 				ConfigurationManager.Config.FilterAdditionalCollapse = false;
 
 
-			if (ImGui.CollapsingHeader($"Advanced Filtering##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+			if (ImGui.CollapsingHeader($"Filter##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
@@ -236,7 +248,7 @@ namespace Dresser.Windows {
 				if (ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out var isEnabled) && isEnabled) {
 					items = items.Concat(itemsToAdd);
 					PluginLog.Debug($"included {inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => p.SortedContainer).Distinct())}");
-					if (inventoryType == (InventoryType)99300) break;
+					if (inventoryType == (InventoryType)InventoryTypeExtra.AllItems) break;
 				}
 			}
 
