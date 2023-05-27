@@ -61,6 +61,10 @@ namespace Dresser.Windows {
 		//}).ToList();
 		public static GlamourPlateSlot? SelectedSlot = null;
 
+		public override void OnOpen() {
+			RecomputeItems();
+		}
+
 		public override void Draw() {
 
 			switch(ConfigurationManager.Config.GearBrowserDisplayMode) {

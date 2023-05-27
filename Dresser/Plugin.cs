@@ -151,6 +151,8 @@ namespace Dresser {
 		}
 		public bool IsDresserVisible()
 			=> WindowSystem?.GetWindow("Current Gear")?.IsOpen ?? false;
+		public bool IsBrowserVisible()
+			=> WindowSystem?.GetWindow("Gear Browser")?.IsOpen ?? false;
 		public void OpenDialog(DialogInfo dialogInfo) {
 			Dialogs!.DialogInfo = dialogInfo;
 			WindowSystem.GetWindow("Dialogs")!.IsOpen = true;

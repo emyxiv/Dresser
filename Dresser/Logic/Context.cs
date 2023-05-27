@@ -15,6 +15,7 @@ namespace Dresser.Logic {
 
 		public bool IsGlamingAtDresser = false;
 		public bool IsCurrentGearWindowOpen = false;
+		public bool IsBrowserWindowOpen = false;
 		public ushort? SelectedPlate = null;
 
 		public PlayerCharacter? LocalPlayer = null;
@@ -48,6 +49,7 @@ namespace Dresser.Logic {
 			_lastState_IsGlamingAtDresser = IsGlamingAtDresser;
 
 			IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
+			IsBrowserWindowOpen = Plugin.GetInstance()?.IsBrowserVisible() ?? false;
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
 			if (LocalPlayer == null) return;

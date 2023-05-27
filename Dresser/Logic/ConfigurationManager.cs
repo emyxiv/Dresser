@@ -14,6 +14,7 @@ using Dalamud.Logging;
 using Dispatch;
 
 using Dresser;
+using Dresser.Windows;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -88,6 +89,7 @@ namespace Dresser.Logic {
 					ContractResolver = MinifyResolver
 				}));
 				SaveSavedInventories(Config.SavedInventories);
+				if (PluginServices.Context.IsBrowserWindowOpen) GearBrowser.RecomputeItems();
 			} catch (Exception e) {
 				PluginLog.Error($"Failed to save allagan tools configuration due to {e.Message}");
 			}
