@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -38,6 +39,10 @@ namespace Dresser.Logic {
 		}
 		public static void Load() {
 			PluginLog.Verbose("Loading configuration");
+
+			Stopwatch loadConfigStopwatch = new Stopwatch();
+			loadConfigStopwatch.Start();
+
 			if (!File.Exists(ConfigurationFile)) {
 				Config = new Configuration();
 				Config.MarkReloaded();
@@ -55,6 +60,7 @@ namespace Dresser.Logic {
 				return;
 			}
 
+			loadConfigStopwatch.Stop();
 			// inventory migration
 			if (inventoryToolsConfiguration.InventoriesMigrated < 0) {
 				PluginLog.Verbose("Migrating inventories");
@@ -70,6 +76,9 @@ namespace Dresser.Logic {
 			} else {
 				inventoryToolsConfiguration.SavedInventories = LoadSavedInventories() ?? new();
 			}
+
+			loadConfigStopwatch.Stop();
+			PluginLog.Verbose("Took " + loadConfigStopwatch.Elapsed.TotalSeconds + " to load inventories.");
 			Config = inventoryToolsConfiguration;
 
 			// Config migration
@@ -79,6 +88,9 @@ namespace Dresser.Logic {
 		}
 
 		public static void Save() {
+			Stopwatch loadConfigStopwatch = new Stopwatch();
+			loadConfigStopwatch.Start();
+
 			PluginLog.Verbose("Saving allagan tools configuration");
 			try {
 				File.WriteAllText(ConfigurationFile, JsonConvert.SerializeObject(Config, Formatting.None, new JsonSerializerSettings() {
@@ -88,6 +100,10 @@ namespace Dresser.Logic {
 					DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
 					ContractResolver = MinifyResolver
 				}));
+
+				loadConfigStopwatch.Stop();
+				PluginLog.Verbose("Took " + loadConfigStopwatch.Elapsed.TotalSeconds + " to save configuration.");
+
 				SaveSavedInventories(Config.SavedInventories);
 				if (PluginServices.Context.IsBrowserWindowOpen) GearBrowser.RecomputeItems();
 			} catch (Exception e) {
