@@ -120,7 +120,7 @@ namespace Dresser.Data {
 			CenturioSeals = 3010307,
 			WhiteCraftersScrips = 3025199,
 			WhiteGaterersScrips = 3025200,
-			SackOfNuts = 3026553,
+			SackOfNuts = 3026533,
 			PurpleCraftersScripts = 3033913,
 			PurpleGatherersScripts = 3033914,
 			TrophyCrystal = 3036656,
