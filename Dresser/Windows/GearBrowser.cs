@@ -110,7 +110,7 @@ namespace Dresser.Windows {
 			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
 				RecomputeItems();
 			ImGui.SameLine();
-			ImGui.Text($"Found: {Items?.Count() ?? 0}");
+			ImGui.Text($"Found: {ItemsCount}");
 
 			ImGui.SameLine();
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
@@ -280,7 +280,8 @@ namespace Dresser.Windows {
 		}
 
 
-		public static IOrderedEnumerable<InventoryItem>? Items = null;
+		public static IEnumerable<InventoryItem>? Items = null;
+		private static int ItemsCount = 0;
 		public static void RecomputeItems() {
 
 			IEnumerable<InventoryItem> items = new HashSet<InventoryItem>();
@@ -325,7 +326,10 @@ namespace Dresser.Windows {
 				//.OrderBy(i => i.Item.EquipSlotCategoryEx)
 				.OrderByDescending(i => i.Item.LevelEquip)
 				//.OrderBy(i => i.Item.LevelItem)
+				.ToList()
 				;
+
+			ItemsCount = Items.Count();
 		}
 
 		public void DrawItems() {
@@ -335,7 +339,7 @@ namespace Dresser.Windows {
 			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
-			if(Items != null && Items.Any())
+			if(Items != null && ItemsCount > 0)
 				try {
 
 					bool isTooltipActive = false;
