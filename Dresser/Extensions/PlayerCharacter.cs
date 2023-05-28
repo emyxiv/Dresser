@@ -48,7 +48,7 @@ namespace Dresser.Extensions {
 					var weapon = playerCharacter.MainHandModels().Equip;
 					weapon.Set = weaponSet; weapon.Base = weaponBase; weapon.Variant = weaponVariant; weapon.Dye = weaponDye;
 
-					playerCharacter.Equip(WeaponIndex.OffHand, weapon);
+					playerCharacter.Equip(WeaponIndex.MainHand, weapon);
 				} else if (item.Item.EquipSlotCategoryEx?.OffHand == 1) {
 					var weapon = playerCharacter.OffHandModels().Equip;
 					weapon.Set = weaponSet; weapon.Base = weaponBase; weapon.Variant = weaponVariant; weapon.Dye = weaponDye;
