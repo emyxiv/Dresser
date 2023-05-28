@@ -185,23 +185,10 @@ namespace Dresser.Windows {
 							ImGui.SameLine();
 							var itemSize = ImGui.GetCursorPosX() - savedPosX + ImGui.GetStyle().ItemSpacing.X;
 							if (ImGui.GetContentRegionAvail().X < itemSize) ImGui.NewLine();
-						} else {
+						} else
+							if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
+								ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
 
-							var uncheckedd = (InventoryTypeExtra)inventoryType == InventoryTypeExtra.AllItems && !isChecked && !(ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift);
-							if (uncheckedd) {
-								bool _ = false;
-								ImGui.BeginDisabled();
-								ImGui.Checkbox("##__placeholder498", ref _);
-								ImGui.EndDisabled();
-								ImGui.SameLine();
-								ImGui.TextDisabled($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})");
-								GuiHelpers.Tooltip("Displaying this much items is very resource hungry, the fps with drop drastically.\nHold Ctrl & Shift to enable it.");
-							}
-							else
-								if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
-									ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
-
-						}
 					}
 
 					// column breaker
