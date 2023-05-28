@@ -49,13 +49,13 @@ namespace Dresser.Windows {
 		public static List<InventoryCategory> AllowedCategories = new() {
 			InventoryCategory.GlamourChest,
 			InventoryCategory.Armoire,
+			InventoryCategory.CharacterBags,
 			InventoryCategory.CharacterArmoryChest,
+			InventoryCategory.CharacterEquipped,
+			InventoryCategory.CharacterSaddleBags,
+			//InventoryCategory.CharacterPremiumSaddleBags,
 			InventoryCategory.RetainerBags,
 			InventoryCategory.RetainerEquipped,
-			InventoryCategory.CharacterSaddleBags,
-			InventoryCategory.CharacterPremiumSaddleBags,
-			InventoryCategory.CharacterEquipped,
-			InventoryCategory.CharacterBags,
 			InventoryCategory.RetainerMarket,
 			InventoryCategory.FreeCompanyBags,
 		};
