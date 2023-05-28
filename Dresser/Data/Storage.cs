@@ -173,7 +173,7 @@ namespace Dresser.Data {
 		// vendor
 		public static Dictionary<InventoryType, HashSet<string>> FilterVendorAllowedNames = new() {
 			{ (InventoryType) InventoryTypeExtra.CalamityVendor , new(){"Calamity salvager", "journeyman salvager"} },
-			{ (InventoryType) InventoryTypeExtra.RelicVendor , new(){"restoration node", "Drake"} },
+			{ (InventoryType) InventoryTypeExtra.RelicVendor , new(){"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor", } },
 		};
 		// currency
 		public Dictionary<InventoryType, uint> FilterCurrencyIds;
