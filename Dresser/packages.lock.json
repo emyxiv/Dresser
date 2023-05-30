@@ -20,8 +20,8 @@
       },
       "Dalamud.ContextMenu": {
         "type": "Transitive",
-        "resolved": "1.2.2",
-        "contentHash": "k+bCV7Xyxx/MCWFIEucSkQxQ9w+Zzz/FwIFOkSAh+13/F8IngivbRuL5NpDz9eAhlqnkifcPIycIKSauxNWHUg=="
+        "resolved": "1.2.3",
+        "contentHash": "ydemplF7DNcA/LLeongDVzWUD/JV0Fw3EwA2+P0jYq3Le2ZYSt4U8qyJq4FyoChqt0lFG8BxYCAzfeWp4Jmnqw=="
       },
       "NaturalSort.Extension": {
         "type": "Transitive",
@@ -41,7 +41,7 @@
       "criticalcommonlib": {
         "type": "Project",
         "dependencies": {
-          "Dalamud.ContextMenu": "[1.2.2, )",
+          "Dalamud.ContextMenu": "[1.2.3, )",
           "LuminaSupplemental.Excel": "[6.0.2, )",
           "NaturalSort.Extension": "[3.2.0, )",
           "SerialQueue": "[2.1.0, )",
