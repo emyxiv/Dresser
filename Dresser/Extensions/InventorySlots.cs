@@ -1,15 +1,11 @@
 ﻿using Dresser.Structs.Actor;
-using Dresser.Structs.FFXIV;
+using Dresser.Structs.Dresser;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dresser.Extensions {
-	public static class SlotsEnumExtensions {
+namespace Dresser.Extensions
+{
+    public static class SlotsEnumExtensions {
 		public static EquipIndex? ToEquipIndex(this GlamourPlateSlot slot) {
 			return slot switch {
 				GlamourPlateSlot.Head => EquipIndex.Head,

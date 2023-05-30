@@ -1,30 +1,26 @@
+using CriticalCommonLib.Enums;
+using CriticalCommonLib.Models;
+
+using Dalamud.Interface.Windowing;
+using Dalamud.Logging;
+
+using Dresser.Extensions;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
+using Dresser.Windows.Components;
+
+using ImGuiNET;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using ImGuiNET;
+using static Dresser.Services.Storage;
 
-using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
-
-using CriticalCommonLib;
-using CriticalCommonLib.Enums;
-using CriticalCommonLib.Extensions;
-using CriticalCommonLib.Models;
-
-using Dresser.Data;
-using Dresser.Extensions;
-using Dresser.Interop.Hooks;
-using Dresser.Windows.Components;
-using Dresser.Logic;
-using Dresser.Structs.FFXIV;
-using Lumina.Excel.GeneratedSheets;
-using System.Collections.Immutable;
-using static Dresser.Data.Storage;
-
-namespace Dresser.Windows {
-	public class GearBrowser : Window, IDisposable {
+namespace Dresser.Windows
+{
+    public class GearBrowser : Window, IDisposable {
 		private Plugin Plugin;
 
 		public GearBrowser(Plugin plugin) : base(
@@ -38,10 +34,10 @@ namespace Dresser.Windows {
 		public void Dispose() { }
 
 
-		public static Vector4 CollectionColorBackground = new Vector4(113,98,119,200) / 255;
-		public static Vector4 CollectionColorBorder = (new Vector4(116,123,98,255) / 255 * 0.4f) + new Vector4(0,0,0,1);
-		public static Vector4 CollectionColorScrollbar = (new Vector4(116,123,98,255) / 255 * 0.2f) + new Vector4(0,0,0,1);
-		public static Vector4 ColorIconImageTintDisabled = new(1,1,1,0.5f);
+		public static Vector4 CollectionColorBackground = new Vector4(113, 98, 119, 200) / 255;
+		public static Vector4 CollectionColorBorder = (new Vector4(116, 123, 98, 255) / 255 * 0.4f) + new Vector4(0, 0, 0, 1);
+		public static Vector4 CollectionColorScrollbar = (new Vector4(116, 123, 98, 255) / 255 * 0.2f) + new Vector4(0, 0, 0, 1);
+		public static Vector4 ColorIconImageTintDisabled = new(1, 1, 1, 0.5f);
 		public static Vector4 ColorIconImageTintEnabled = Vector4.One;
 
 		private static int? HoveredItem = null;
@@ -60,7 +56,7 @@ namespace Dresser.Windows {
 			InventoryCategory.FreeCompanyBags,
 		};
 		//public static List<InventoryType> AllowedType => Storage.FilterVendorNames.Select(vfic => vfic.Value).Concat(new List<InventoryType>() {
-			//InventoryType.RetainerBag0
+		//InventoryType.RetainerBag0
 		//}).ToList();
 		public static GlamourPlateSlot? SelectedSlot = null;
 
@@ -70,8 +66,8 @@ namespace Dresser.Windows {
 
 		public override void Draw() {
 
-			switch(ConfigurationManager.Config.GearBrowserDisplayMode) {
-				case DisplayMode.Vertical:DrawWithMode_Vertical(); break;
+			switch (ConfigurationManager.Config.GearBrowserDisplayMode) {
+				case DisplayMode.Vertical: DrawWithMode_Vertical(); break;
 				case DisplayMode.SidebarOnRight: DrawWithMode_SidebarOnRight(); break;
 				default: DrawWithMode_Vertical(); break;
 			}
@@ -166,7 +162,7 @@ namespace Dresser.Windows {
 				int i = 0;
 				foreach ((var AddItemKind, var option) in PluginServices.Storage.FilterNames) {
 					ImGui.TextDisabled(AddItemKind.ToString());
-					foreach((var inventoryType, var addItemTitle) in option) {
+					foreach ((var inventoryType, var addItemTitle) in option) {
 						var numberOfItems = SavedQuantityCacheGet(inventoryType);
 
 						bool isChecked = false;
@@ -174,7 +170,7 @@ namespace Dresser.Windows {
 
 						if (AddItemKind == AdditionalItem.Currency && PluginServices.Storage.FilterCurrencyItemEx.TryGetValue(inventoryType, out var itex) && itex != null && PluginServices.Storage.FilterCurrencyIconTexture.TryGetValue(inventoryType, out var texWrap) && texWrap != null) {
 							var savedPosX = ImGui.GetCursorPosX();
-							if (ImGui.ImageButton(texWrap.ImGuiHandle, ItemIcon.IconSize / 2,Vector2.Zero, Vector2.One,0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? ColorIconImageTintEnabled : ColorIconImageTintDisabled)) {
+							if (ImGui.ImageButton(texWrap.ImGuiHandle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? ColorIconImageTintEnabled : ColorIconImageTintDisabled)) {
 
 
 								filterChanged = true;
@@ -187,7 +183,7 @@ namespace Dresser.Windows {
 							if (ImGui.GetContentRegionAvail().X < itemSize) ImGui.NewLine();
 						} else
 							if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
-								ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
+							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
 
 					}
 
@@ -214,7 +210,7 @@ namespace Dresser.Windows {
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
 				filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
-				if(columnMode) ImGui.SameLine();
+				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
 				// todo: level
@@ -244,14 +240,14 @@ namespace Dresser.Windows {
 				var itemCat = item.SortedCategory;
 				var itemType = item.SortedContainer;
 				if ((int)itemType >= (int)InventoryTypeExtra.AllItems) continue;
-				if(!SavedQuantityInventoryCategoryCache.TryAdd(itemCat, 1)) {
+				if (!SavedQuantityInventoryCategoryCache.TryAdd(itemCat, 1)) {
 					SavedQuantityInventoryCategoryCache[itemCat]++;
 				}
-				if(!SavedQuantityInventoryTypeCache.TryAdd(itemType, 1)) {
+				if (!SavedQuantityInventoryTypeCache.TryAdd(itemType, 1)) {
 					SavedQuantityInventoryTypeCache[itemType]++;
 				}
 			}
-			foreach((var type, var list) in PluginServices.Storage.AdditionalItems) {
+			foreach ((var type, var list) in PluginServices.Storage.AdditionalItems) {
 				SavedQuantityInventoryTypeCache[type] = list.Count;
 			}
 
@@ -326,7 +322,7 @@ namespace Dresser.Windows {
 			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
-			if(Items != null && ItemsCount > 0)
+			if (Items != null && ItemsCount > 0)
 				try {
 
 					bool isTooltipActive = false;
@@ -390,7 +386,7 @@ namespace Dresser.Windows {
 
 
 		private void TestWindow() {
-			if(ImGui.Begin("Test Window")) {
+			if (ImGui.Begin("Test Window")) {
 
 
 				// textures

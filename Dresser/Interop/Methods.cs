@@ -1,7 +1,7 @@
+using Dresser.Structs.Actor;
+
 using System;
 using System.Runtime.InteropServices;
-
-using Dresser.Structs.Actor;
 
 namespace Dresser.Interop {
 	internal class Methods {

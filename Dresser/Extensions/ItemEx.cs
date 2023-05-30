@@ -1,40 +1,41 @@
-﻿using System;
-
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
-using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
 using Dresser.Structs.Actor;
-using Dresser.Structs.FFXIV;
-using Dresser.Windows.Components;
-using CriticalCommonLib;
-using CriticalCommonLib.Enums;
-using System.Linq;
+using Dresser.Structs.Dresser;
+
 using ImGuiScene;
 
-namespace Dresser.Extensions {
-	internal static class ItemExExtention {
+using System.Linq;
+
+using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
+
+namespace Dresser.Extensions
+{
+    internal static class ItemExExtention {
 		public static GlamourPlateSlot? GlamourPlateSlot(this CriticalItemEx item) {
 			var slot = item.EquipSlotCategoryEx;
-			if(slot == null) return null;
-			if (slot.MainHand == 1) return Structs.FFXIV.GlamourPlateSlot.MainHand;
-			if (slot.OffHand == 1) return Structs.FFXIV.GlamourPlateSlot.OffHand;
-			if (slot.Head == 1) return Structs.FFXIV.GlamourPlateSlot.Head;
-			if (slot.Body == 1) return Structs.FFXIV.GlamourPlateSlot.Body;
-			if (slot.Gloves == 1) return Structs.FFXIV.GlamourPlateSlot.Hands;
-			if (slot.Legs == 1) return Structs.FFXIV.GlamourPlateSlot.Legs;
-			if (slot.Feet == 1) return Structs.FFXIV.GlamourPlateSlot.Feet;
-			if (slot.Ears == 1) return Structs.FFXIV.GlamourPlateSlot.Ears;
-			if (slot.Neck == 1) return Structs.FFXIV.GlamourPlateSlot.Neck;
-			if (slot.Wrists == 1) return Structs.FFXIV.GlamourPlateSlot.Wrists;
-			if (slot.FingerR == 1) return Structs.FFXIV.GlamourPlateSlot.RightRing;
-			if (slot.FingerL == 1) return Structs.FFXIV.GlamourPlateSlot.LeftRing;
+			if (slot == null) return null;
+			if (slot.MainHand == 1) return Structs.Dresser.GlamourPlateSlot.MainHand;
+			if (slot.OffHand == 1) return Structs.Dresser.GlamourPlateSlot.OffHand;
+			if (slot.Head == 1) return Structs.Dresser.GlamourPlateSlot.Head;
+			if (slot.Body == 1) return Structs.Dresser.GlamourPlateSlot.Body;
+			if (slot.Gloves == 1) return Structs.Dresser.GlamourPlateSlot.Hands;
+			if (slot.Legs == 1) return Structs.Dresser.GlamourPlateSlot.Legs;
+			if (slot.Feet == 1) return Structs.Dresser.GlamourPlateSlot.Feet;
+			if (slot.Ears == 1) return Structs.Dresser.GlamourPlateSlot.Ears;
+			if (slot.Neck == 1) return Structs.Dresser.GlamourPlateSlot.Neck;
+			if (slot.Wrists == 1) return Structs.Dresser.GlamourPlateSlot.Wrists;
+			if (slot.FingerR == 1) return Structs.Dresser.GlamourPlateSlot.RightRing;
+			if (slot.FingerL == 1) return Structs.Dresser.GlamourPlateSlot.LeftRing;
 			return null;
 			//throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
 		}
 		public static EquipIndex? EquipIndex(this CriticalItemEx item) {
 			var slot = item.EquipSlotCategoryEx;
-			if(slot == null) return null;
+			if (slot == null) return null;
 			//if (slot.MainHand == 1) return EquipIndex.MainHand;
 			//if (slot.OffHand == 1) return EquipIndex.OffHand;
 			if (slot.Head == 1) return Structs.Actor.EquipIndex.Head;
@@ -64,12 +65,12 @@ namespace Dresser.Extensions {
 
 			return Service.ExcelCache.IsItemEquippableBy(item.ClassJobCategory.Row, job.RowId);
 		}
-		public static CriticalInventoryItem ToInventoryItem(this CriticalItemEx itemEx,InventoryType inventoryType) {
+		public static CriticalInventoryItem ToInventoryItem(this CriticalItemEx itemEx, InventoryType inventoryType) {
 			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		}
 
 		public static bool ObtainedWithSpecialShopCurrency2(this CriticalItemEx itemEx, uint currencyItemId) {
-			if(Service.ExcelCache.SpecialShopItemRewardCostLookup.TryGetValue(itemEx.RowId, out var specialShop)) {
+			if (Service.ExcelCache.SpecialShopItemRewardCostLookup.TryGetValue(itemEx.RowId, out var specialShop)) {
 				return specialShop.Any(c => c.Item2 == currencyItemId);
 			}
 

@@ -1,27 +1,27 @@
-﻿using System;
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Models;
+
+using Dalamud.Logging;
+
+using Dresser.Extensions;
+using Dresser.Logic;
+using Dresser.Structs.Actor;
+using Dresser.Structs.Dresser;
+using Dresser.Windows;
+using Dresser.Windows.Components;
+
+using ImGuiNET;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using CriticalCommonLib.Models;
-using CriticalCommonLib.Extensions;
-using CriticalCommonLib;
-using Dalamud.Logging;
-using Dresser.Extensions;
-using Dresser.Structs.FFXIV;
-using Dresser.Windows;
-using Dresser.Structs.Actor;
-using Dresser.Data;
-using ImGuiNET;
-using Dresser.Windows.Components;
-using System.IO.Pipes;
-using Dresser.Interop.GameUi;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using System.Threading.Tasks;
-using Dresser.Structs;
 using System.Numerics;
+using System.Threading.Tasks;
 
-namespace Dresser.Logic {
-	public class ApplyGearChange : IDisposable {
+namespace Dresser.Services
+{
+    public class ApplyGearChange : IDisposable {
 		private Plugin Plugin;
 		public ApplyGearChange(Plugin plugin) {
 			Plugin = plugin;
@@ -65,7 +65,7 @@ namespace Dresser.Logic {
 		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
 			GearBrowser.RecomputeItems();
-			this.Plugin.OpenGearBrowserIfClosed();
+			Plugin.OpenGearBrowserIfClosed();
 		}
 		public void ExecuteCurrentContextRemoveItem(InventoryItem item) {
 			item.Clear();
@@ -80,9 +80,9 @@ namespace Dresser.Logic {
 			item.Stain = 0;
 		}
 		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain) {
-			if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(PlateNumber, out var plate)) {
+			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(PlateNumber, out var plate)) {
 				var item = plate.GetSlot(slot);
-				if(item != null) {
+				if (item != null) {
 					item.Stain = stain;
 					PluginServices.Context.LocalPlayer?.Equip(item);
 				}
@@ -90,7 +90,7 @@ namespace Dresser.Logic {
 		}
 
 		public void OpenGlamourDresser() {
-			if(!ConfigurationManager.Config.PendingPlateItems.Any()) {
+			if (!ConfigurationManager.Config.PendingPlateItems.Any()) {
 				PluginLog.Verbose($"Found found no portable plates, populating them with current");
 				PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 			}
@@ -115,7 +115,7 @@ namespace Dresser.Logic {
 		public void ApplyCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				foreach ((var s, var item) in currentPlate.Items) {
-					if(item != null) PluginServices.Context.LocalPlayer?.Equip(item);
+					if (item != null) PluginServices.Context.LocalPlayer?.Equip(item);
 				}
 			}
 			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
@@ -203,7 +203,7 @@ namespace Dresser.Logic {
 			Dictionary<ushort, InventoryItemSet> differencesToApply = new();
 
 			foreach ((var plateIndex, var pendingInvSet) in pendingPlates) {
-				if(actualPlates.TryGetValue(plateIndex, out var actualInvSet)) {
+				if (actualPlates.TryGetValue(plateIndex, out var actualInvSet)) {
 					if (pendingInvSet.IsEmpty()) continue; // (todo: maybe offer them the option to also clean untouched plates)
 
 					if (pendingInvSet.IsDifferentGlam(actualInvSet, out var diffLeft, out var diffRight)) {
@@ -302,13 +302,13 @@ namespace Dresser.Logic {
 		//	}
 		//}
 
-		public Dictionary<ushort,Vector4?> HighlightPlatesRadio = new();
-		private Vector4? Highlight_apply_todo = new Vector4(8, 63, 153, 255) /255f; // blue
+		public Dictionary<ushort, Vector4?> HighlightPlatesRadio = new();
+		private Vector4? Highlight_apply_todo = new Vector4(8, 63, 153, 255) / 255f; // blue
 		private Vector4? Highlight_apply_none = new Vector4(153, 8, 8, 255) / 255f; // red
 		private Vector4? Highlight_apply_partial = new Vector4(153, 37, 8, 255 / 255f); // orange
 		private Vector4? Highlight_apply_all = new Vector4(8, 153, 44, 255) / 255f; // green
-		//private Vector4 Highlight_save_todo = new Vector4();
-		//private Vector4 Highlight_save_fail = new Vector4();
+																					//private Vector4 Highlight_save_todo = new Vector4();
+																					//private Vector4 Highlight_save_fail = new Vector4();
 		private Vector4? Highlight_save_ok = null; // remove highlight
 		public bool? HighlightSaveButton = false;
 		public void ProceedWithFirstChangesAndHiglights() {
@@ -318,7 +318,7 @@ namespace Dresser.Logic {
 			if (DifferencesToApply.Count == 0) return;
 
 			// put all todo tab in Highlight_apply_todo color
-			HighlightPlatesRadio = DifferencesToApply.ToDictionary(p=>p.Key,p=> Highlight_apply_todo);
+			HighlightPlatesRadio = DifferencesToApply.ToDictionary(p => p.Key, p => Highlight_apply_todo);
 			PluginServices.OverlayService.RefreshOverlayStates();
 
 			ExecuteChangesOnSelectedPlate();
@@ -332,13 +332,13 @@ namespace Dresser.Logic {
 				// change highlight color as "saved"
 				HighlightPlatesRadio[previousPlateNumber2] = Highlight_save_ok;
 				// change Di
-				if (AppliedPending.TryGetValue(previousPlateNumber2, out var appliedPlate)){
+				if (AppliedPending.TryGetValue(previousPlateNumber2, out var appliedPlate)) {
 					if (appliedPlate.IsEmpty()) {
 						DifferencesToApply.Remove(previousPlateNumber2);
 					} else {
 						Gathering.ParseGlamourPlates();
 						var dd = PluginServices.Storage.Pages?[previousPlateNumber2];
-						if(dd != null) {
+						if (dd != null) {
 							DifferencesToApply[previousPlateNumber2] = (InventoryItemSet)dd;
 						}
 
@@ -351,10 +351,10 @@ namespace Dresser.Logic {
 		}
 		private bool IsGlamPlateDifferentFromPending(ushort platelateNumber) {
 			Gathering.ParseGlamourPlates();
-			if(PluginServices.Storage.Pages != null && platelateNumber  >= 0 && platelateNumber < PluginServices.Storage.Pages.Length) {
-				var miragePlate = PluginServices.Storage.Pages[(int)platelateNumber];
+			if (PluginServices.Storage.Pages != null && platelateNumber >= 0 && platelateNumber < PluginServices.Storage.Pages.Length) {
+				var miragePlate = PluginServices.Storage.Pages[platelateNumber];
 				var ggg = (InventoryItemSet)miragePlate;
-				if(ConfigurationManager.Config.PendingPlateItems.TryGetValue((ushort)platelateNumber, out var pendingPlate)) {
+				if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(platelateNumber, out var pendingPlate)) {
 					return pendingPlate.IsDifferentGlam(ggg, out var _, out var _);
 				}
 			}
@@ -371,16 +371,16 @@ namespace Dresser.Logic {
 
 			if (PluginServices.Context.SelectedPlate != plateIndex) return;
 			// todo change plate
-			if(DifferencesToApply.TryGetValue(plateIndex, out var replacementGlams)) {
+			if (DifferencesToApply.TryGetValue(plateIndex, out var replacementGlams)) {
 
 				//HashSet<GlamourPlateSlot> successfullyApplied = new();
 
 				var glamaholicPlate = new Interop.Hooks.SavedPlate();
 				foreach ((var slot, var replacementItem) in replacementGlams.Items) {
-						glamaholicPlate.Items.Add(slot, new Interop.Hooks.SavedGlamourItem {
-							ItemId = replacementItem?.ItemId ?? 0,
-							StainId = replacementItem?.Stain ?? 0
-						});
+					glamaholicPlate.Items.Add(slot, new Interop.Hooks.SavedGlamourItem {
+						ItemId = replacementItem?.ItemId ?? 0,
+						StainId = replacementItem?.Stain ?? 0
+					});
 					//if (PluginServices.GlamourPlates.ModifyGlamourPlateSlot(replacementItem, slot))
 					//	successfullyApplied.Add(slot);
 
@@ -448,9 +448,9 @@ namespace Dresser.Logic {
 
 			}, (choice) => {
 				if (choice == 1) { // ignore and continue
-					//DifferencesToApply.Remove(plateIndex);
-					//PlatesFailed.Add(plateIndex);
-					// offer saving
+								   //DifferencesToApply.Remove(plateIndex);
+								   //PlatesFailed.Add(plateIndex);
+								   // offer saving
 					HighlightSaveButton = true;
 					PluginServices.OverlayService.RefreshOverlayStates();
 
@@ -464,7 +464,7 @@ namespace Dresser.Logic {
 		}
 		public void ExecuteSavingPlateChanges() {
 			var currentPlateNumber = PluginServices.Context.SelectedPlate;
-			if(currentPlateNumber != null) {
+			if (currentPlateNumber != null) {
 				DifferencesToApply.Remove((ushort)currentPlateNumber);
 				HighlightPlatesRadio[(ushort)currentPlateNumber] = Highlight_save_ok;
 				HighlightSaveButton = false;

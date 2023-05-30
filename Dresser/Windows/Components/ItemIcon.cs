@@ -1,30 +1,28 @@
-﻿using System;
-using System.Linq;
-using System.Numerics;
-
-using ImGuiNET;
-using ImGuiScene;
-
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Interface;
-using Lumina.Excel.GeneratedSheets;
-
-using CriticalCommonLib;
+﻿using CriticalCommonLib;
 using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
-using Dresser.Data;
+using Dalamud.Game.ClientState.Keys;
+using Dalamud.Interface;
+using Dalamud.Logging;
+
 using Dresser.Data.Excel;
 using Dresser.Extensions;
-using Dresser.Structs.FFXIV;
 using Dresser.Logic;
-using Dalamud.Logging;
-using Dalamud.Interface.Components;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
 
-namespace Dresser.Windows.Components {
-	internal class ItemIcon {
+using ImGuiNET;
+
+using ImGuiScene;
+
+using System;
+using System.Linq;
+using System.Numerics;
+
+namespace Dresser.Windows.Components
+{
+    internal class ItemIcon {
 		public static Vector2 IconSize => new Vector2(120) * ConfigurationManager.Config.IconSizeMult;
 		public static Vector2 TooltipFramePadding => new Vector2(ImGui.GetFontSize() * 0.2f);
 		public static Vector2 TooltipItemSpacing => TooltipFramePadding;

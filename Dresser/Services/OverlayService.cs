@@ -1,13 +1,15 @@
-﻿using CriticalCommonLib.Services.Ui;
-using CriticalCommonLib;
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Services.Ui;
+
+using Dalamud.Game;
+using Dalamud.Logging;
+
+using Dresser.Interop.GameUi;
 
 using System;
 using System.Collections.Generic;
-using Dalamud.Logging;
-using Dresser.Interop.GameUi;
-using Dalamud.Game;
 
-namespace Dresser.Logic {
+namespace Dresser.Services {
 	public class OverlayService : IDisposable {
 		private GameUiManager _gameUiManager;
 
@@ -179,7 +181,7 @@ namespace Dresser.Logic {
 			// disposed by the programmer.
 
 			if (_disposed == false) {
-				PluginLog.Error("There is a disposable object which hasn't been disposed before the finalizer call: " + (this.GetType().Name));
+				PluginLog.Error("There is a disposable object which hasn't been disposed before the finalizer call: " + GetType().Name);
 			}
 #endif
 			Dispose(true);

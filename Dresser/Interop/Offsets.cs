@@ -1,7 +1,4 @@
-﻿
-using Dresser.Structs.Actor;
-
-namespace Dresser.Interop {
+﻿namespace Dresser.Interop {
 	internal static class Offsets {
 		// PlayerCharacter/Actor/GameObject(?) Appearance
 		// Thanks Chirp ♥

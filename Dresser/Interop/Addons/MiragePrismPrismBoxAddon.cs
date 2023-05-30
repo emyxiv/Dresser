@@ -1,13 +1,13 @@
-﻿using System;
-
-using Dalamud.Hooking;
+﻿using Dalamud.Hooking;
 using Dalamud.Logging;
 
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace Dresser.Interop.Hooks {
+using System;
+
+namespace Dresser.Interop.Addons {
 	internal unsafe class MiragePrismPrismBoxAddon : IDisposable {
 		public event EventHandler<ReceiveEventArgs>? ReceiveEvent;
 		//public event EventHandler<IntPtr>? OnShow;

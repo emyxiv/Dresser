@@ -1,16 +1,16 @@
-﻿using Dresser.Structs.FFXIV;
+﻿using Dresser.Structs.Dresser;
+
 using ImGuiScene;
+
 using Lumina.Data.Files;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dresser.Data {
-	internal class ImageGuiCrop : IDisposable {
+namespace Dresser.Services
+{
+    internal class ImageGuiCrop : IDisposable {
 		public Dictionary<string, TextureWrap> Textures = new();
 		public Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
 

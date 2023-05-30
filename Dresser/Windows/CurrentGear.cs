@@ -1,23 +1,20 @@
+using CriticalCommonLib.Models;
+
+using Dalamud.Interface;
+using Dalamud.Interface.Windowing;
+using Dalamud.Logging;
+
+using Dresser.Logic;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
+using Dresser.Windows.Components;
+
+using ImGuiNET;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
-using ImGuiNET;
-using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
-using CriticalCommonLib.Models;
-
-using Dresser.Data;
-using Dresser.Logic;
-using Dresser.Structs.FFXIV;
-using Dresser.Windows.Components;
-using Dresser.Extensions;
-using CriticalCommonLib;
-using Dresser.Interop.Hooks;
-using Newtonsoft.Json.Linq;
-using Dalamud.Interface;
-using Dresser.Structs;
 
 namespace Dresser.Windows;
 

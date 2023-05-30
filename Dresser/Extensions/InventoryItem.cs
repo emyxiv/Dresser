@@ -1,12 +1,8 @@
-﻿
-using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
+﻿using CriticalCommonLib.Extensions;
+
+using Dresser.Services;
+
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
-using System.Collections.Generic;
-using CriticalCommonLib.Models;
-using CriticalCommonLib.Extensions;
-using Dresser.Logic;
-using Dresser.Data;
-using System.Linq;
 
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {

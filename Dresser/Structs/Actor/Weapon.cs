@@ -1,8 +1,8 @@
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
+using FFXIVClientStructs.Havok;
+
 using System.Numerics;
 using System.Runtime.InteropServices;
-
-using FFXIVClientStructs.Havok;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 
 namespace Dresser.Structs.Actor {
 	[StructLayout(LayoutKind.Explicit)]

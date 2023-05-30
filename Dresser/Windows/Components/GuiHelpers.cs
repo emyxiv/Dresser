@@ -1,9 +1,10 @@
-﻿using System;
-using System.Numerics;
-
-using Dalamud.Interface;
+﻿using Dalamud.Interface;
 using Dalamud.Utility;
+
 using ImGuiNET;
+
+using System;
+using System.Numerics;
 
 namespace Dresser.Windows.Components {
 	internal class GuiHelpers {

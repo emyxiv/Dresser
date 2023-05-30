@@ -10,7 +10,7 @@ using Lumina.Excel.GeneratedSheets;
 
 using System;
 
-namespace Dresser.Logic {
+namespace Dresser.Services {
 	internal class Context : IDisposable {
 
 		public bool IsGlamingAtDresser = false;
@@ -55,8 +55,8 @@ namespace Dresser.Logic {
 			if (LocalPlayer == null) return;
 
 			LocalPlayerCharacterId = PluginServices.CharacterMonitor?.ActiveCharacterId ?? 0;
-			LocalPlayerRace = (CharacterRace)(LocalPlayer.Customize[(int)CustomizeIndex.Race]);
-			LocalPlayerGender = (LocalPlayer.Customize[(int)CustomizeIndex.Gender]) == 0 ? CharacterSex.Male : CharacterSex.Female;
+			LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];
+			LocalPlayerGender = LocalPlayer.Customize[(int)CustomizeIndex.Gender] == 0 ? CharacterSex.Male : CharacterSex.Female;
 			LocalPlayerClass = LocalPlayer.ClassJob.GameData;
 			LocalPlayerLevel = LocalPlayer.Level;
 		}

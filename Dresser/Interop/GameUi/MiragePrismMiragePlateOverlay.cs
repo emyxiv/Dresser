@@ -1,10 +1,8 @@
-using System.Collections.Generic;
-using System.Numerics;
-
-using Dresser.Interop.GameUi;
-using Dresser;
-using System.Linq;
 using Dalamud.Logging;
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 namespace Dresser.Interop.GameUi {
 	public class MiragePrismMiragePlateOverlay : AtkMiragePrismMiragePlate, IAtkOverlayState {
@@ -65,7 +63,7 @@ namespace Dresser.Interop.GameUi {
 				HasState = true;
 
 				TabColours = EmptyTabs;
-				foreach ((var plateIndex, var color)  in newState.Value.PlatesToHighlight) {
+				foreach ((var plateIndex, var color) in newState.Value.PlatesToHighlight) {
 					TabColours[plateIndex] = color;
 				}
 

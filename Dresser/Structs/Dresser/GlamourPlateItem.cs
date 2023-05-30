@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Dresser.Structs {
+namespace Dresser.Structs.Dresser {
 	[StructLayout(LayoutKind.Explicit, Size = 136)]
 	internal readonly struct GlamourPlateItem {
 		[FieldOffset(0x70)]

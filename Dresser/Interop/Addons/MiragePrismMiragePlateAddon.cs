@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Dalamud.Hooking;
+﻿using Dalamud.Hooking;
 using Dalamud.Logging;
 
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-using static Lumina.Data.Parsing.Uld.NodeData;
+using System;
 
-namespace Dresser.Interop.Hooks {
+namespace Dresser.Interop.Addons {
 	// This is Glamour Plate event hook
 	// If adding new agents, it may be a good idea to move them in their own files
 	internal unsafe class MiragePrismMiragePlateAddon : IDisposable {

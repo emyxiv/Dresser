@@ -1,33 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-
-using CriticalCommonLib;
+﻿using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
+using CriticalCommonLib.GameStructs;
 using CriticalCommonLib.Models;
 
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 
-using Lumina.Excel.GeneratedSheets;
+using Dresser.Extensions;
+using Dresser.Logic;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
 
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-using Dresser.Data;
-using Dresser.Extensions;
-using Dresser.Structs;
-using Dresser.Structs.FFXIV;
-using System.Runtime.InteropServices;
-using CriticalCommonLib.GameStructs;
+using Lumina.Excel.GeneratedSheets;
 
-namespace Dresser.Interop.Hooks {
-	internal class GlamourPlates : IDisposable {
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+
+namespace Dresser.Interop.Hooks
+{
+    internal class GlamourPlates : IDisposable {
 
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/branch/main/Glamaholic/GameFunctions.cs
 
@@ -51,7 +52,7 @@ namespace Dresser.Interop.Hooks {
 
 
 			var isLocked = Service.Condition[ConditionFlag.OccupiedInQuestEvent];
-			
+
 			bool isActiveMiragePrismMiragePlate = false;
 			bool isActiveMiragePrismPrismBox = false;
 			bool isActiveCabinet = false;
@@ -162,7 +163,7 @@ namespace Dresser.Interop.Hooks {
 			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentPlate);
 			var initialSlot = *slotPtr;
 
-			if(item == null || item.ItemId == 0) {
+			if (item == null || item.ItemId == 0) {
 				ClearGlamourPlateSlot(glamPlateSlotIfEmpty);
 				return true;
 			}
@@ -177,7 +178,7 @@ namespace Dresser.Interop.Hooks {
 				var index = matchingItemsInGlamourCest.FindIndex(i => i.StainId == item.Stain);
 
 				itemTmp = item.Copy();
-				if(itemTmp != null) {
+				if (itemTmp != null) {
 					itemTmp.GlamourIndex = index == -1 ? 0 : index;
 					itemTmp.Container = InventoryType.GlamourChest;
 				}
@@ -218,10 +219,10 @@ namespace Dresser.Interop.Hooks {
 			// todo: sometimes, it fails to apply the glamour, maybe it's because of ClearGlamourPlateSlot?
 			bool isApplied = false;
 			int maxTries = 3;
-			for( int i = 0; i < maxTries; i++) {
+			for (int i = 0; i < maxTries; i++) {
 				isApplied = Gathering.IsApplied(item);
 				if (isApplied) break;
-				if (!isApplied) PluginLog.Warning($"Glamour place change did not take effect ({i+1} try)");
+				if (!isApplied) PluginLog.Warning($"Glamour place change did not take effect ({i + 1} try)");
 				Wait(500);
 				SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain);
 			}
@@ -263,7 +264,7 @@ namespace Dresser.Interop.Hooks {
 						continue;
 					}
 				}
-				if(Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)fakeEmptyItem)) {
+				if (Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)fakeEmptyItem)) {
 					continue;
 				}
 
@@ -271,7 +272,7 @@ namespace Dresser.Interop.Hooks {
 				*slotPtr = slot;
 				if (item.ItemId == 0) {
 					this._clearGlamourPlateSlot((IntPtr)agent, slot);
-					if(!Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)item))
+					if (!Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)item))
 						successSlots.Add(slot);
 					continue;
 				}
@@ -497,7 +498,7 @@ namespace Dresser.Interop.Hooks {
 		}
 		public static explicit operator InventoryItem(SavedGlamourItem item)
 			=> Extensions.InventoryItemExtensions.New(item.ItemId, item.StainId);
-		
+
 	}
 	public class SavedPlate {
 		public Dictionary<GlamourPlateSlot, SavedGlamourItem> Items { get; init; } = new();
@@ -523,7 +524,7 @@ namespace Dresser.Interop.Hooks {
 				set2Items.TryGetValue(slot, out var item2);
 
 				if ((item1?.ItemId ?? 0) != (item2?.ItemId ?? 0) || (item1?.StainId ?? 0) != (item2?.StainId ?? 0)) {
-					diffLeft.Items.Add(slot, item1?.Clone() ?? new() { ItemId = 0, StainId = 0});
+					diffLeft.Items.Add(slot, item1?.Clone() ?? new() { ItemId = 0, StainId = 0 });
 					diffRight.Items.Add(slot, item2?.Clone() ?? new() { ItemId = 0, StainId = 0 });
 				}
 

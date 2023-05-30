@@ -1,7 +1,7 @@
+using Lumina.Excel;
+
 using System;
 using System.Collections.Generic;
-
-using Lumina.Excel;
 
 namespace Dresser.Data {
 	internal class Sheets {

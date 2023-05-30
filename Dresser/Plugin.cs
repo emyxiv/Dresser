@@ -1,26 +1,25 @@
 
-using Dalamud.Game.Command;
-using Dalamud.Interface.Windowing;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-
-using Dresser.Data;
-using Dresser.Windows;
-using Dresser.Interop.Hooks;
-using Dresser.Interop;
 using CriticalCommonLib;
-using Dresser.Logic;
-using System;
-using Dalamud.Game;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Services;
-using Dalamud.Logging;
-using System.Collections.Generic;
-using Dalamud.Game.Text.SeStringHandling;
-using System.Linq;
-using ImGuiNET;
-using Dresser.Windows.Components;
 using CriticalCommonLib.Services.Ui;
+
+using Dalamud.Game;
+using Dalamud.Game.Command;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Interface.Windowing;
+using Dalamud.IoC;
+using Dalamud.Logging;
+using Dalamud.Plugin;
+
+using Dresser.Interop;
+using Dresser.Interop.Addons;
+using Dresser.Logic;
+using Dresser.Services;
+using Dresser.Windows;
+
+using System;
+using System.Collections.Generic;
 
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
@@ -72,7 +71,7 @@ namespace Dresser {
 			Gathering.Init();
 
 			Methods.Init();
-			Interop.Hooks.AddonListeners.Init();
+			AddonListeners.Init();
 
 
 			ConfigWindow = new ConfigWindow(this);
@@ -113,7 +112,7 @@ namespace Dresser {
 
 
 
-			Interop.Hooks.AddonListeners.Dispose();
+			AddonListeners.Dispose();
 			PluginServices.Dispose();
 		}
 

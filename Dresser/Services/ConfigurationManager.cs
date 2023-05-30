@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using CriticalCommonLib;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Resolvers;
@@ -14,13 +6,19 @@ using Dalamud.Logging;
 
 using Dispatch;
 
-using Dresser;
 using Dresser.Windows;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Dresser.Logic {
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+namespace Dresser.Services {
 	public static class ConfigurationManager {
 		public static Configuration Config {
 			get;
@@ -40,7 +38,7 @@ namespace Dresser.Logic {
 		public static void Load() {
 			PluginLog.Verbose("Loading configuration");
 
-			Stopwatch loadConfigStopwatch = new Stopwatch();
+			var loadConfigStopwatch = new Stopwatch();
 			loadConfigStopwatch.Start();
 
 			if (!File.Exists(ConfigurationFile)) {
@@ -88,7 +86,7 @@ namespace Dresser.Logic {
 		}
 
 		public static void Save() {
-			Stopwatch loadConfigStopwatch = new Stopwatch();
+			var loadConfigStopwatch = new Stopwatch();
 			loadConfigStopwatch.Start();
 
 			PluginLog.Verbose("Saving allagan tools configuration");

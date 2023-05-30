@@ -1,30 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-
-using ImGuiScene;
-
-using Dalamud.Interface.GameFonts;
-using Lumina.Data.Files;
-using Lumina.Excel;
-
-using CriticalCommonLib;
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Sheets;
 
-using Dresser.Data.Excel;
-using Dresser.Structs.FFXIV;
-using CriticalCommonLib.Enums;
-using Dresser.Extensions;
+using Dalamud.Interface.GameFonts;
 using Dalamud.Logging;
-using Dresser.Structs;
-using System.Threading.Tasks;
-using Dalamud.Utility;
-using Lumina.Excel.GeneratedSheets;
 
-namespace Dresser.Data {
-	internal class Storage : IDisposable {
+using Dresser.Data;
+using Dresser.Data.Excel;
+using Dresser.Extensions;
+using Dresser.Structs.Dresser;
+
+using ImGuiScene;
+
+using Lumina.Data.Files;
+using Lumina.Excel;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
+
+namespace Dresser.Services
+{
+    internal class Storage : IDisposable {
 
 		public ExcelSheet<Dye>? Dyes = null;
 		public static string HighResolutionSufix = "_hr1";
@@ -136,7 +136,7 @@ namespace Dresser.Data {
 			FilterCurrencyItemEx = new();
 			FilterCurrencyIconTexture = new();
 
-			foreach ( var invTypeExtra in inventoryTypeExtras) {
+			foreach (var invTypeExtra in inventoryTypeExtras) {
 				var additionalItem = (AdditionalItem)((int)invTypeExtra / 1000000);
 				var itemId = (uint)invTypeExtra % 100000;
 
@@ -144,7 +144,7 @@ namespace Dresser.Data {
 					FilterNames.Add(additionalItem, new());
 				FilterNames[additionalItem].Add((InventoryType)invTypeExtra, invTypeExtra.ToString());
 
-				if(additionalItem == AdditionalItem.Currency) {
+				if (additionalItem == AdditionalItem.Currency) {
 					FilterCurrencyIds.Add((InventoryType)invTypeExtra, itemId);
 					var itemEx = Service.ExcelCache.GetItemExSheet().First(i => i.RowId == itemId);
 					FilterCurrencyItemEx.Add((InventoryType)invTypeExtra, itemEx);
@@ -161,7 +161,7 @@ namespace Dresser.Data {
 
 		public static InventoryItem NewInventoryItem(InventoryType inventoryType, uint itemId) {
 
-			var invIt =  new InventoryItem(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			var invIt = new InventoryItem(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 			invIt.SortedContainer = inventoryType;
 			return invIt;
 		}

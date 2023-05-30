@@ -1,23 +1,24 @@
-using Dalamud.IoC;
-using Dalamud.Data;
-using Dalamud.Plugin;
-using Dalamud.Game;
-using Dalamud.Game.Command;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.ClientState.Objects;
-
 using CriticalCommonLib;
 using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 
-using Dresser.Data;
-using Dresser.Logic;
+using Dalamud.Data;
+using Dalamud.Game;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Keys;
+using Dalamud.Game.ClientState.Objects;
+using Dalamud.Game.Command;
+using Dalamud.IoC;
 using Dalamud.Logging;
+using Dalamud.Plugin;
 
-namespace Dresser {
-	internal class PluginServices {
+using Dresser.Interop.Addons;
+using Dresser.Services;
+
+namespace Dresser
+{
+    internal class PluginServices {
 		[PluginService] internal static DalamudPluginInterface PluginInterface { get; private set; } = null!;
 		[PluginService] internal static CommandManager CommandManager { get; private set; } = null!;
 		[PluginService] internal static ClientState ClientState { get; private set; } = null!;
@@ -42,7 +43,7 @@ namespace Dresser {
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 
 
-		internal static Interop.Hooks.AddonManager AddonManager = null!;
+		internal static AddonManager AddonManager = null!;
 		internal static Interop.Hooks.GlamourPlates GlamourPlates = null!;
 		internal static Storage Storage = null!;
 		internal static ApplyGearChange ApplyGearChange = null!;

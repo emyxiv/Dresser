@@ -1,10 +1,10 @@
-using System.Numerics;
-
 using ImGuiNET;
 
 using Lumina.Data;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
+
+using System.Numerics;
 
 namespace Dresser.Data.Excel {
 	[Sheet("Stain")]

@@ -1,15 +1,13 @@
-using System;
-using System.Linq;
-using System.Numerics;
-
-using CriticalCommonLib;
-
 using Dalamud.Interface.Windowing;
 
-using Dresser.Logic;
+using Dresser.Services;
 using Dresser.Windows.Components;
 
 using ImGuiNET;
+
+using System;
+using System.Linq;
+using System.Numerics;
 
 namespace Dresser.Windows;
 

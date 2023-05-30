@@ -1,22 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-
 using CriticalCommonLib.Models;
 
-using Dalamud.Logging;
-
-using Dresser.Data;
 using Dresser.Extensions;
+using Dresser.Services;
 
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
-namespace Dresser.Structs.FFXIV {
+
+namespace Dresser.Structs.Dresser {
 
 	// Game structs
 	[Agent(AgentId.MiragePrismMiragePlate)]
@@ -34,7 +31,7 @@ namespace Dresser.Structs.FFXIV {
 		public MiragePage[] Pages {
 			get {
 				var totalPages = Storage.PlateNumber + 1; // the currently viewing/editing page is added at the end of the array
-				MiragePage[] pages = new MiragePage[totalPages];
+				var pages = new MiragePage[totalPages];
 
 				if (!AgentInterface.IsAgentActive()) return pages;
 
@@ -90,18 +87,18 @@ namespace Dresser.Structs.FFXIV {
 		public MirageItem this[GlamourPlateSlot slot] {
 			get {
 				return slot switch {
-					GlamourPlateSlot.MainHand => this.MainHand,
-					GlamourPlateSlot.OffHand => this.OffHand,
-					GlamourPlateSlot.Head => this.Head,
-					GlamourPlateSlot.Body => this.Chest,
-					GlamourPlateSlot.Hands => this.Hands,
-					GlamourPlateSlot.Legs => this.Legs,
-					GlamourPlateSlot.Feet => this.Feet,
-					GlamourPlateSlot.Ears => this.Earring,
-					GlamourPlateSlot.Neck => this.Necklace,
-					GlamourPlateSlot.Wrists => this.Bracelet,
-					GlamourPlateSlot.RightRing => this.RingRight,
-					GlamourPlateSlot.LeftRing => this.RingLeft,
+					GlamourPlateSlot.MainHand => MainHand,
+					GlamourPlateSlot.OffHand => OffHand,
+					GlamourPlateSlot.Head => Head,
+					GlamourPlateSlot.Body => Chest,
+					GlamourPlateSlot.Hands => Hands,
+					GlamourPlateSlot.Legs => Legs,
+					GlamourPlateSlot.Feet => Feet,
+					GlamourPlateSlot.Ears => Earring,
+					GlamourPlateSlot.Neck => Necklace,
+					GlamourPlateSlot.Wrists => Bracelet,
+					GlamourPlateSlot.RightRing => RingRight,
+					GlamourPlateSlot.LeftRing => RingLeft,
 					_ => throw new NotImplementedException()
 				};
 			}

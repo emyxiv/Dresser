@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dresser.Interop.Hooks {
+namespace Dresser.Interop.Addons {
 	// The classes AddonManager and ReceiveEventArgs are from DailyDuty plugin.
 	// MiragePrismMiragePlateAddon class is strongly inspired from the different addons managed in DailyDuty.
 	// Thank you MidoriKami <3

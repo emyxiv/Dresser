@@ -1,8 +1,8 @@
 ﻿using Dresser.Interop;
 using Dresser.Structs.Actor;
 
-using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter;
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter;
 
 namespace Dresser.Extensions {
 	public static class PlayerCharacterExtention {
@@ -34,8 +34,7 @@ namespace Dresser.Extensions {
 				itemEquip.Dye = item.Item.IsDyeable ? item.Stain : (byte)0;
 
 				playerCharacter.Equip((EquipIndex)index, itemEquip);
-			}
-			else if(item.Item.IsWeapon()) {
+			} else if (item.Item.IsWeapon()) {
 
 				var model = item.Item.ModelSub != 0 ? item.Item.ModelSub : item.Item.ModelMain;
 

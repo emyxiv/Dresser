@@ -1,12 +1,11 @@
 using Dalamud.Logging;
 
-using Dresser.Logic;
-
 using Dresser.Interop.GameUi;
+using Dresser.Services;
 
 using System;
 
-namespace Dresser.Interop.Hooks {
+namespace Dresser.Interop.Addons {
 	public class AddonListeners {
 		public static void Init() {
 			PluginServices.AddonManager = new AddonManager();
@@ -53,12 +52,12 @@ namespace Dresser.Interop.Hooks {
 
 
 		private static void OnGlamourPlatesShow(object? sender, IntPtr ptr) {
-			Data.Gathering.DelayParseGlamPlatesAndComparePending();
+			Logic.Gathering.DelayParseGlamPlatesAndComparePending();
 
 		}
 		private static void OnGlamourPlatesShow2(bool isShowing) {
 			if (isShowing) {
-				Data.Gathering.DelayParseGlamPlatesAndComparePending();
+				Logic.Gathering.DelayParseGlamPlatesAndComparePending();
 				PluginServices.ApplyGearChange.OpenGlamourDresser();
 			}
 		}
@@ -67,18 +66,18 @@ namespace Dresser.Interop.Hooks {
 
 			if (e.SenderID == 0 && e.EventArgs->Int == 18) {
 				// used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
-				Data.Gathering.DelayParseGlamPlates();
+				Logic.Gathering.DelayParseGlamPlates();
 				PluginServices.ApplyGearChange.Popup_AllDone();
 			}
 			if (e.SenderID == 0 && e.EventArgs->Int == 17) {
 				// Change Glamour Plate Page
-				Data.Gathering.DelayParseGlamPlates();
+				Logic.Gathering.DelayParseGlamPlates();
 			}
 			if (e.SenderID == 0 && e.EventArgs->Int == -2) {
 
 				//	EventManager.GearSelectionClose?.Invoke();
 			}
-			if (e.SenderID == 1 && e.EventArgs->Int == 0 ) {
+			if (e.SenderID == 1 && e.EventArgs->Int == 0) {
 				// if change plate + discards
 				PluginServices.OverlayService.RefreshOverlayStates();
 			}
@@ -91,15 +90,15 @@ namespace Dresser.Interop.Hooks {
 			//e.PrintData();
 
 			if (
-				e.SenderID == 0 && (
+				e.SenderID == 0 &&
 				e.EventArgs->Int == 2 // used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
-				//|| e.EventArgs->Int == 17 // Change Glamour Plate Page
-				)) {
-				Data.Gathering.DelayParseGlamPlates();
+									  //|| e.EventArgs->Int == 17 // Change Glamour Plate Page
+				) {
+				Logic.Gathering.DelayParseGlamPlates();
 			}
 			if (e.SenderID == 0 && e.EventArgs->Int == 5) {
 				//EventManager.GearSelectionOpen?.Invoke();
-				Data.Gathering.DelayParseGlamPlates();
+				Logic.Gathering.DelayParseGlamPlates();
 			}
 
 			//if (e.SenderID == 0 && e.EventArgs->Int == -2)

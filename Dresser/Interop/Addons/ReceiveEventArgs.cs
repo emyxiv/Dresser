@@ -1,10 +1,10 @@
-﻿using System;
-
-using Dalamud.Logging;
+﻿using Dalamud.Logging;
 
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace Dresser.Interop.Hooks {
+using System;
+
+namespace Dresser.Interop.Addons {
 	internal unsafe class ReceiveEventArgs : EventArgs {
 		public ReceiveEventArgs(AgentInterface* agentInterface, void* rawData, AtkValue* eventArgs, uint eventArgsCount, ulong senderID) {
 			AgentInterface = agentInterface;

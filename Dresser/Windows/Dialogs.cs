@@ -1,9 +1,9 @@
-﻿using System;
-using System.Numerics;
+﻿using Dalamud.Interface.Windowing;
 
 using ImGuiNET;
 
-using Dalamud.Interface.Windowing;
+using System;
+using System.Numerics;
 
 namespace Dresser.Windows {
 	internal class Dialogs : Window, IDisposable {
@@ -21,7 +21,7 @@ namespace Dresser.Windows {
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 			};
 			this.PositionCondition = ImGuiCond.Appearing;
-			this.Position = ImGui.GetIO().DisplaySize * new Vector2(0.25f,0.3f);
+			this.Position = ImGui.GetIO().DisplaySize * new Vector2(0.25f, 0.3f);
 			this.Plugin = plugin;
 		}
 		public void Dispose() { }
@@ -44,9 +44,9 @@ namespace Dresser.Windows {
 
 
 		public override void Draw() {
-			if(DialogInfo != null) {
+			if (DialogInfo != null) {
 				DialogInfo.Choice = DialogInfo.Contents();
-				if(DialogInfo.Choice != -1) {
+				if (DialogInfo.Choice != -1) {
 					this.IsOpen = false;
 				}
 			}

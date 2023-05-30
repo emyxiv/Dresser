@@ -1,18 +1,17 @@
-﻿using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using CriticalCommonLib.Enums;
+﻿using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
 
 using Dresser.Extensions;
-using Dresser.Logic;
-using Dresser.Structs.FFXIV;
-using Dresser.Structs;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
 
-namespace Dresser.Data {
+using System.Linq;
+using System.Threading.Tasks;
 
-	internal static class Gathering {
+namespace Dresser.Logic
+{
+
+    internal static class Gathering {
 		public static void Init() {
 			ParseGlamourPlates();
 		}
@@ -28,7 +27,8 @@ namespace Dresser.Data {
 			return new() {
 				Items = PluginServices.Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
 				(InventoryItem?)EmptyItemSlot()
-			)};
+			)
+			};
 		}
 		public static InventoryItem EmptyItemSlot() => new InventoryItem(InventoryType.GlamourChest, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		public static void DelayParseGlamPlates()

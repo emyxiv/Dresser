@@ -1,12 +1,9 @@
-﻿using CriticalCommonLib.Enums;
-
-using Dalamud.Interface;
-using Dalamud.Logging;
+﻿using Dalamud.Logging;
 
 using Dresser.Data;
 using Dresser.Data.Excel;
-using Dresser.Logic;
-using Dresser.Structs.FFXIV;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
 
 using ImGuiNET;
 
@@ -14,11 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dresser.Windows.Components {
-	internal class DyePicker {
+namespace Dresser.Windows.Components
+{
+    internal class DyePicker {
 
 		public static readonly IEnumerable<Dye> Dyes = Sheets.GetSheet<Dye>()
 			.Where(i => i.IsValid())

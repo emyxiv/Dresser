@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CriticalCommonLib.Models;
+using CriticalCommonLib.Sheets;
+
+using Dalamud.Utility;
 
 using ImGuiScene;
 
-using Dalamud.Utility;
 using Lumina.Data.Files;
 
-using CriticalCommonLib.Sheets;
-using CriticalCommonLib.Models;
+using System;
+using System.Collections.Generic;
 
-namespace Dresser.Data {
+namespace Dresser.Services {
 	public class IconStorage : IDisposable {
 
 		private readonly Dictionary<uint, TextureWrap> _icons;
@@ -24,11 +25,11 @@ namespace Dresser.Data {
 			=> this[id ?? 0];
 		public TextureWrap Get(ItemEx? itemEx) {
 			if (itemEx == null)
-			return this[0];
+				return this[0];
 			return this[itemEx.Icon];
 		}
 		public TextureWrap Get(InventoryItem? inventoryItem)
-			=> this.Get(inventoryItem?.Item);
+			=> Get(inventoryItem?.Item);
 
 		private TexFile? LoadIconHq(uint id) {
 			var path = $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}_hr1.tex";
@@ -41,7 +42,7 @@ namespace Dresser.Data {
 			var icon = LoadIconHq(id) ?? PluginServices.DataManager.GetIcon(id)!;
 			var iconData = icon.GetRgbaImageData();
 
-			
+
 			ret = PluginServices.PluginInterface.UiBuilder.LoadImageRaw(iconData, icon.Header.Width, icon.Header.Height, 4);
 			_icons[id] = ret;
 			return ret;

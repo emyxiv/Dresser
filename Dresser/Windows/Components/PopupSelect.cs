@@ -1,9 +1,9 @@
+using ImGuiNET;
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Collections.Generic;
-
-using ImGuiNET;
 
 namespace Dresser.Windows.Components {
 	public static class PopupSelect {

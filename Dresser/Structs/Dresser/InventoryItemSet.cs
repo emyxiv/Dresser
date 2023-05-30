@@ -1,26 +1,20 @@
-﻿using CriticalCommonLib.Extensions;
-using CriticalCommonLib.Models;
-
-using Dalamud.Logging;
+﻿using CriticalCommonLib.Models;
 
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
-using Dresser.Structs.FFXIV;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dresser.Structs {
+namespace Dresser.Structs.Dresser {
 	public struct InventoryItemSet {
 		public Dictionary<GlamourPlateSlot, InventoryItem?> Items;
 		public InventoryItemSet() {
-			this.Items = new();
+			Items = new();
 		}
 		public InventoryItemSet(Dictionary<GlamourPlateSlot, InventoryItem?> items) {
-			this.Items = items;
+			Items = items;
 		}
 		public static explicit operator SavedPlate(InventoryItemSet a)
 			=> new() {
@@ -37,10 +31,10 @@ namespace Dresser.Structs {
 		public static explicit operator InventoryItemSet(MiragePage a)
 			 => new InventoryItemSet(a.ToDictionary().ToDictionary(p => p.Key, p => (InventoryItem?)p.Value));
 
-		public void SetSlot(GlamourPlateSlot slot, InventoryItem? item) 
+		public void SetSlot(GlamourPlateSlot slot, InventoryItem? item)
 			=> Items[slot] = item;
 		public InventoryItem? GetSlot(GlamourPlateSlot slot) {
-			if(! this.Items.TryGetValue(slot, out var item)) return null;
+			if (!Items.TryGetValue(slot, out var item)) return null;
 			return item;
 		}
 		public void RemoveSlot(GlamourPlateSlot slot)
@@ -52,10 +46,10 @@ namespace Dresser.Structs {
 				//   - key/item doesn't exist
 				//   - null
 				//   - ItemId == 0
-				if(this.Items.TryGetValue(g, out var item)) {
-					if(item == null || item.ItemId == 0) {
+				if (Items.TryGetValue(g, out var item)) {
+					if (item == null || item.ItemId == 0) {
 						//this.Items.Remove(g); // here we use remove method
-						this.Items[g] = null; // here we make it null
+						Items[g] = null; // here we make it null
 					}
 				}
 			}
@@ -66,7 +60,7 @@ namespace Dresser.Structs {
 		//};
 
 		public bool IsDifferentGlam(InventoryItemSet set2, out InventoryItemSet diffLeft, out InventoryItemSet diffRight) {
-			var set1Items = this.Items;
+			var set1Items = Items;
 			var set2Items = set2.Items;
 
 			// diffLeft = items from set1 when there is a difference;
@@ -89,7 +83,7 @@ namespace Dresser.Structs {
 			return diffLeft.Items.Any() || diffRight.Items.Any();
 		}
 		public bool IsEmpty() {
-			return this.Items.Count == 0 || !this.Items.Any(i=>i.Value != null);
+			return Items.Count == 0 || !Items.Any(i => i.Value != null);
 		}
 
 

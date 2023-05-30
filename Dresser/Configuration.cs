@@ -1,24 +1,23 @@
-﻿using CriticalCommonLib.Models;
+﻿using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Models;
 
 using Dalamud.Configuration;
-using Dalamud.Plugin;
+using Dalamud.Logging;
 
-using Dresser.Structs.FFXIV;
+using Dresser.Structs.Dresser;
 using Dresser.Windows;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dresser.Data;
-using CriticalCommonLib.Enums;
-using Dalamud.Logging;
-using static Dresser.Windows.GearBrowser;
-using Dresser.Structs;
 using System.Numerics;
 
-namespace Dresser {
-	[Serializable]
+using static Dresser.Windows.GearBrowser;
+
+namespace Dresser
+{
+    [Serializable]
 	public class Configuration : IPluginConfiguration {
 		public Configuration() {
 			LoadFilterInventoryCategory();
@@ -62,7 +61,7 @@ namespace Dresser {
 		public Dictionary<InventoryType, bool> FilterInventoryType { get; set; } = new();
 		public void LoadAdditionaltems() {
 			//PluginLog.Debug($"FilterInventoryType: cc:{FilterInventoryType.Count} nc:{Storage.FilterNames.Sum(k => k.Value.Count)} dc:{this.FilterInventoryType.Select(i => i.Key).Except(Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count()}");
-			if (this.FilterInventoryType.Count != PluginServices.Storage.FilterNames.Sum(k=>k.Value.Count) || this.FilterInventoryType.Select(i => i.Key).Except(PluginServices.Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count() != 0) {
+			if (this.FilterInventoryType.Count != PluginServices.Storage.FilterNames.Sum(k => k.Value.Count) || this.FilterInventoryType.Select(i => i.Key).Except(PluginServices.Storage.FilterNames.SelectMany(v => v.Value.Keys)).Count() != 0) {
 				var oldFilterInventoryType = this.FilterInventoryType.Copy();
 				this.FilterInventoryType = PluginServices.Storage.FilterNames.SelectMany(v => v.Value.Keys).ToDictionary(it => it, it => {
 					if (oldFilterInventoryType != null && oldFilterInventoryType.TryGetValue(it, out bool d) && d)
@@ -111,7 +110,7 @@ namespace Dresser {
 
 			foreach ((var charId, var invs) in SavedInventories.Where(c => PluginServices.CharacterMonitor.BelongsToActiveCharacter(c.Key) && c.Key != PluginServices.CharacterMonitor.ActiveCharacterId)) {
 				PluginLog.Warning($"GetSavedInventoryLocalCharsRetainers: {charId}");
-				foreach((var invCat, var list) in invs) {
+				foreach ((var invCat, var list) in invs) {
 
 					List<InventoryItem> tmpList = new();
 					if (returnDic.TryGetValue(invCat, out var prevList) && prevList != null)
@@ -120,7 +119,7 @@ namespace Dresser {
 					returnDic[invCat] = tmpList;
 				}
 			}
-			PluginLog.Debug($"total: {string.Join(",",returnDic.Select(c=>c.Key))} => {string.Join(",", returnDic.Select(c => c.Value.Count))}");
+			PluginLog.Debug($"total: {string.Join(",", returnDic.Select(c => c.Key))} => {string.Join(",", returnDic.Select(c => c.Value.Count))}");
 			return returnDic;
 		}
 
