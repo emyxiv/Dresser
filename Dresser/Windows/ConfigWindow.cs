@@ -47,7 +47,7 @@ public class ConfigWindow : Window, IDisposable {
 	public void DrawCurrentGearConfigs() {
 
 		var dyeSize = ConfigurationManager.Config.DyePickerDyeSize.X;
-		if(ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 0.1f, 300f)) {
+		if (ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 0.1f, 300f)) {
 			ConfigurationManager.Config.DyePickerDyeSize = new Vector2(dyeSize);
 		}
 	}
@@ -76,7 +76,7 @@ public class ConfigWindow : Window, IDisposable {
 			ConfigurationManager.Config.GearBrowserSideBarSize = GearBrowserSideBarSize;
 
 		var GearBrowserDisplayMode = (int)ConfigurationManager.Config.GearBrowserDisplayMode;
-		var GearBrowserDisplayMode_items = Enum.GetValues<GearBrowser.DisplayMode>().Select(d=>d.ToString()).ToArray();
+		var GearBrowserDisplayMode_items = Enum.GetValues<GearBrowser.DisplayMode>().Select(d => d.ToString()).ToArray();
 		if (ImGui.Combo("Display mode##GearBrowserConfig", ref GearBrowserDisplayMode, GearBrowserDisplayMode_items, GearBrowserDisplayMode_items.Count())) {
 			ConfigurationManager.Config.GearBrowserDisplayMode = (GearBrowser.DisplayMode)GearBrowserDisplayMode;
 		}
@@ -89,7 +89,7 @@ public class ConfigWindow : Window, IDisposable {
 
 		if (!PluginServices.Context.IsGlamingAtDresser)
 			ImGui.BeginDisabled();
-		if(ImGui.Button("Forget portable plate changes")) {
+		if (ImGui.Button("Forget portable plate changes")) {
 			PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 		}
 		if (!PluginServices.Context.IsGlamingAtDresser) {
@@ -131,7 +131,7 @@ public class ConfigWindow : Window, IDisposable {
 
 				ImGui.TableNextColumn();
 				int itemCount = 0;
-				if(ConfigurationManager.Config.SavedInventories.TryGetValue(character.CharacterId, out var invs)){
+				if (ConfigurationManager.Config.SavedInventories.TryGetValue(character.CharacterId, out var invs)) {
 					itemCount = invs.Sum(c => c.Value.Count);
 				}
 

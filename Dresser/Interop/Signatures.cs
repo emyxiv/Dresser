@@ -4,8 +4,8 @@
 		// PlayerCharacter/Actor/GameObject(?) Appearance
 		// Thanks Chirp ♥
 		// https://github.com/ktisis-tools/Ktisis/blob/0ee4bf058833e118eaf384728814b64643a85b4b/Ktisis/Interop/Methods.cs#L37
-		internal const string ChangeEquip ="E8 ?? ?? ?? ?? 41 B5 01 FF C6";
-		internal const string ChangeWeapon ="E8 ?? ?? ?? ?? 80 7F 25 00";
+		internal const string ChangeEquip = "E8 ?? ?? ?? ?? 41 B5 01 FF C6";
+		internal const string ChangeWeapon = "E8 ?? ?? ?? ?? 80 7F 25 00";
 
 		// Glamour plates alter methods
 		// Thanks Anna ♥

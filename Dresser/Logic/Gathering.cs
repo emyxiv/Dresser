@@ -8,10 +8,9 @@ using Dresser.Structs.Dresser;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Dresser.Logic
-{
+namespace Dresser.Logic {
 
-    internal static class Gathering {
+	internal static class Gathering {
 		public static void Init() {
 			ParseGlamourPlates();
 		}

@@ -3,9 +3,8 @@ using Dresser.Structs.Dresser;
 
 using System;
 
-namespace Dresser.Extensions
-{
-    public static class SlotsEnumExtensions {
+namespace Dresser.Extensions {
+	public static class SlotsEnumExtensions {
 		public static EquipIndex? ToEquipIndex(this GlamourPlateSlot slot) {
 			return slot switch {
 				GlamourPlateSlot.Head => EquipIndex.Head,

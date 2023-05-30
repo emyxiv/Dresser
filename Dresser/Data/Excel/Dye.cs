@@ -19,8 +19,7 @@ namespace Dresser.Data.Excel {
 		public LazyRow<Stain> Stain { get; set; } = null!;
 
 		public bool IsValid() => Shade != 0;
-		public Vector4 ColorVector4
-		{
+		public Vector4 ColorVector4 {
 			get {
 				var c = ImGui.ColorConvertU32ToFloat4(Color);
 				return new Vector4(c.Z, c.Y, c.X, 1);

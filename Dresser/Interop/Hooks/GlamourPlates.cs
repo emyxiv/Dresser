@@ -26,9 +26,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Dresser.Interop.Hooks
-{
-    internal class GlamourPlates : IDisposable {
+namespace Dresser.Interop.Hooks {
+	internal class GlamourPlates : IDisposable {
 
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/branch/main/Glamaholic/GameFunctions.cs
 

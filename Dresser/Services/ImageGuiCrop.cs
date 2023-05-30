@@ -8,9 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace Dresser.Services
-{
-    internal class ImageGuiCrop : IDisposable {
+namespace Dresser.Services {
+	internal class ImageGuiCrop : IDisposable {
 		public Dictionary<string, TextureWrap> Textures = new();
 		public Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
 

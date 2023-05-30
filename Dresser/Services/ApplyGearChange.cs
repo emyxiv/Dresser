@@ -19,9 +19,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Dresser.Services
-{
-    public class ApplyGearChange : IDisposable {
+namespace Dresser.Services {
+	public class ApplyGearChange : IDisposable {
 		private Plugin Plugin;
 		public ApplyGearChange(Plugin plugin) {
 			Plugin = plugin;

@@ -12,9 +12,8 @@ using System.Linq;
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
 
-namespace Dresser.Extensions
-{
-    internal static class ItemExExtention {
+namespace Dresser.Extensions {
+	internal static class ItemExExtention {
 		public static GlamourPlateSlot? GlamourPlateSlot(this CriticalItemEx item) {
 			var slot = item.EquipSlotCategoryEx;
 			if (slot == null) return null;

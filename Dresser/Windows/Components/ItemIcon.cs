@@ -20,9 +20,8 @@ using System;
 using System.Linq;
 using System.Numerics;
 
-namespace Dresser.Windows.Components
-{
-    internal class ItemIcon {
+namespace Dresser.Windows.Components {
+	internal class ItemIcon {
 		public static Vector2 IconSize => new Vector2(120) * ConfigurationManager.Config.IconSizeMult;
 		public static Vector2 TooltipFramePadding => new Vector2(ImGui.GetFontSize() * 0.2f);
 		public static Vector2 TooltipItemSpacing => TooltipFramePadding;
@@ -48,7 +47,7 @@ namespace Dresser.Windows.Components
 			bool __ = false;
 			DrawIcon(item, ref _, ref __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem,GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
 
 			if (PluginServices.Context.LocalPlayer == null
 				|| PluginServices.Context.LocalPlayerRace == null
@@ -80,109 +79,109 @@ namespace Dresser.Windows.Components
 			var isTooltipActive2 = isTooltipActive;
 
 			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
-			GuiHelpers.Tooltip(() => {
-				if (isTooltipActive2) return;
+				GuiHelpers.Tooltip(() => {
+					if (isTooltipActive2) return;
 
-				ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, TooltipFramePadding);
-				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, TooltipItemSpacing);
+					ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, TooltipFramePadding);
+					ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, TooltipItemSpacing);
 
-				isTooltipActive2 = true;
-				try {
+					isTooltipActive2 = true;
+					try {
 
 
-					if(image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = PluginServices.IconStorage.Get(item);
-					DrawImage(image!, dye, isDyeable);
+						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = PluginServices.IconStorage.Get(item);
+						DrawImage(image!, dye, isDyeable);
 
-					var rarityColor = Storage.RarityColor(item.Item);
+						var rarityColor = Storage.RarityColor(item.Item);
 
-					// Side of the icon
-					ImGui.SameLine();
-					ImGui.BeginGroup();
-					ImGui.TextColored(rarityColor, $"{item.FormattedName}");
-					ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
-					ImGui.SameLine();
-					ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
-					ImGui.SameLine();
-					ImGui.TextColored(ColorGreyDark, $"]");
-					if (isDyeable) ImGui.TextColored(dye?.RowId != 0 ? ColorGoodLight : ColorGrey, $"{dye?.Name}");
-
-					ImGui.EndGroup();
-
-					// type of item (body, legs, etc) under the icon
-					ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
-					//PluginLog.Debug($"ui category: {item.ItemUICategory} {item.EquipSlotCategory!.RowId}");
-					ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, $"{item.SortedContainer.ToInventoryCategory()} ({item.Container})");
-
-					// Equip Conditions
-					ImGui.Separator();
-
-					ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.LevelEquip}");
-					ImGui.SameLine();
-					ImGui.Text($"ilvl: {item.Item.LevelItem.Row}");
-
-					ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.ClassJobCategory.Value?.Name}");
-
-					var genderRaceColor = isEquippableByGenderRace ? ColorBronze : ColorBad;
-					if (item.Item.EquippableByGender != CharacterSex.Both || item.Item.EquipRace != CharacterRace.Any) {
-						var fitGender = item.Item.EquippableByGender;
-						string fitGenderRace = "Fits: ";
-						fitGenderRace += item.Item.EquipRace.FormattedName();
-
-						ImGui.TextColored(genderRaceColor, fitGenderRace);
+						// Side of the icon
 						ImGui.SameLine();
-						GuiHelpers.Icon(fitGender == CharacterSex.Male ? FontAwesomeIcon.Mars : FontAwesomeIcon.Venus, true, genderRaceColor);
+						ImGui.BeginGroup();
+						ImGui.TextColored(rarityColor, $"{item.FormattedName}");
+						ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
+						ImGui.SameLine();
+						ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
+						ImGui.SameLine();
+						ImGui.TextColored(ColorGreyDark, $"]");
+						if (isDyeable) ImGui.TextColored(dye?.RowId != 0 ? ColorGoodLight : ColorGrey, $"{dye?.Name}");
 
-					} else
-						ImGui.TextColored(genderRaceColor, "Fits: Everyone");
+						ImGui.EndGroup();
 
-					// Acquisition
-					ImGui.Separator();
+						// type of item (body, legs, etc) under the icon
+						ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
+						//PluginLog.Debug($"ui category: {item.ItemUICategory} {item.EquipSlotCategory!.RowId}");
+						ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, $"{item.SortedContainer.ToInventoryCategory()} ({item.Container})");
 
-					// Other info
-					var sameModelItems = Service.ExcelCache.AllItems.Where(i =>
-						(i.Value.ModelMain == item.Item.ModelMain && i.Value.ModelMain != 0
-						//|| (i.Value.ModelSub == item.Item.ModelSub && i.Value.ModelSub != 0)
-						//|| (i.Value.ModelMain == item.Item.ModelSub && i.Value.ModelSub != 0)
-						//|| (i.Value.ModelSub == item.Item.ModelMain && i.Value.ModelSub != 0)
-						) && i.Value.RowId != item.Item.RowId
-						&& i.Value.EquipSlotCategory.Value == item.Item.EquipSlotCategory.Value
-					).Select(i => i.Value);
+						// Equip Conditions
+						ImGui.Separator();
 
-					if (sameModelItems != null && sameModelItems.Any()) {
-						ImGui.Text($"Same model [{item.Item.ModelMain} - {item.Item.ModelSub}]:");
+						ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.LevelEquip}");
+						ImGui.SameLine();
+						ImGui.Text($"ilvl: {item.Item.LevelItem.Row}");
 
-						foreach (var sameModelItem in sameModelItems.OrderBy(i => i.LevelEquip))
-							ImGui.TextColored(Storage.RarityColor(sameModelItem), sameModelItem.NameString);
+						ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.ClassJobCategory.Value?.Name}");
+
+						var genderRaceColor = isEquippableByGenderRace ? ColorBronze : ColorBad;
+						if (item.Item.EquippableByGender != CharacterSex.Both || item.Item.EquipRace != CharacterRace.Any) {
+							var fitGender = item.Item.EquippableByGender;
+							string fitGenderRace = "Fits: ";
+							fitGenderRace += item.Item.EquipRace.FormattedName();
+
+							ImGui.TextColored(genderRaceColor, fitGenderRace);
+							ImGui.SameLine();
+							GuiHelpers.Icon(fitGender == CharacterSex.Male ? FontAwesomeIcon.Mars : FontAwesomeIcon.Venus, true, genderRaceColor);
+
+						} else
+							ImGui.TextColored(genderRaceColor, "Fits: Everyone");
+
+						// Acquisition
+						ImGui.Separator();
+
+						// Other info
+						var sameModelItems = Service.ExcelCache.AllItems.Where(i =>
+							(i.Value.ModelMain == item.Item.ModelMain && i.Value.ModelMain != 0
+							//|| (i.Value.ModelSub == item.Item.ModelSub && i.Value.ModelSub != 0)
+							//|| (i.Value.ModelMain == item.Item.ModelSub && i.Value.ModelSub != 0)
+							//|| (i.Value.ModelSub == item.Item.ModelMain && i.Value.ModelSub != 0)
+							) && i.Value.RowId != item.Item.RowId
+							&& i.Value.EquipSlotCategory.Value == item.Item.EquipSlotCategory.Value
+						).Select(i => i.Value);
+
+						if (sameModelItems != null && sameModelItems.Any()) {
+							ImGui.Text($"Same model [{item.Item.ModelMain} - {item.Item.ModelSub}]:");
+
+							foreach (var sameModelItem in sameModelItems.OrderBy(i => i.LevelEquip))
+								ImGui.TextColored(Storage.RarityColor(sameModelItem), sameModelItem.NameString);
+						}
+						ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
+						var zz = item.Item.Vendors;
+						//var dd = zz.Select(shop => shop.Name).Distinct().ToList();
+						//var dd = zz.SelectMany(shop => shop.ENpcs.Select(n=>(n.Resident?.Singular ?? "Unknown",shop.Name)).Distinct()).Distinct().ToList();
+						//ImGui.Text($"Name: {string.Join(",",dd.Select(t=>$"{t.Item1}:{t.Name}"))}");
+						//if(Service.ExcelCache.ItemSpecialShopCostLookup.TryGetValue(item.Item.RowId, out var spsi)) {
+						//	foreach(var ddqsdq in spsi) {
+						//		ImGui.Text($"currency: {ddqsdq}");
+						//	}
+						//}
+
+						//var currencies
+						//foreach ((var it, var currencyIdOfInteres) in Storage.FilterCurrencyIds) {
+
+						//	if (item.Item.ObtainedWithSpecialShopCurrency(currencyIdOfInteres))
+						//		ImGui.Text($"currency");
+						//}
+						//var specialShopCost = item.Item._specialShopCosts.Select(s => $"{s.Item1?.Value?.Name}+({s.Item2})");
+						//ImGui.Text($"specialShopCost ({item.Item._specialShopCosts.Count()}): {string.Join(",", specialShopCost)}");
+						//zz.
+						// TODO: market price
+
+						ImGui.Text($"Sell for {item.SellToVendorPrice:n0} gil");
+					} catch (Exception ex) {
+						PluginLog.Warning($"Error when displaying item ToolTip\n{ex}");
 					}
-					ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
-					var zz = item.Item.Vendors;
-					//var dd = zz.Select(shop => shop.Name).Distinct().ToList();
-					//var dd = zz.SelectMany(shop => shop.ENpcs.Select(n=>(n.Resident?.Singular ?? "Unknown",shop.Name)).Distinct()).Distinct().ToList();
-					//ImGui.Text($"Name: {string.Join(",",dd.Select(t=>$"{t.Item1}:{t.Name}"))}");
-					//if(Service.ExcelCache.ItemSpecialShopCostLookup.TryGetValue(item.Item.RowId, out var spsi)) {
-					//	foreach(var ddqsdq in spsi) {
-					//		ImGui.Text($"currency: {ddqsdq}");
-					//	}
-					//}
-					
-					//var currencies
-					//foreach ((var it, var currencyIdOfInteres) in Storage.FilterCurrencyIds) {
 
-					//	if (item.Item.ObtainedWithSpecialShopCurrency(currencyIdOfInteres))
-					//		ImGui.Text($"currency");
-					//}
-					//var specialShopCost = item.Item._specialShopCosts.Select(s => $"{s.Item1?.Value?.Name}+({s.Item2})");
-					//ImGui.Text($"specialShopCost ({item.Item._specialShopCosts.Count()}): {string.Join(",", specialShopCost)}");
-					//zz.
-					// TODO: market price
-
-					ImGui.Text($"Sell for {item.SellToVendorPrice:n0} gil");
-				} catch (Exception ex) {
-					PluginLog.Warning($"Error when displaying item ToolTip\n{ex}");
-				}
-
-				ImGui.PopStyleVar(2);
-			});
+					ImGui.PopStyleVar(2);
+				});
 			isTooltipActive = isTooltipActive2;
 
 
@@ -191,7 +190,7 @@ namespace Dresser.Windows.Components
 		}
 		private static bool DrawImage(TextureWrap image, Dye? dye, bool isDyeable, IconImageFlag iconImageFlag = 0) {
 			bool _ = false;
-			return DrawImage( image,dye, isDyeable, ref _, iconImageFlag, out var _);
+			return DrawImage(image, dye, isDyeable, ref _, iconImageFlag, out var _);
 		}
 		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, out bool rightClicked, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
@@ -285,7 +284,7 @@ namespace Dresser.Windows.Components
 			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder * sizeMod);
 		}
 		public static void DrawContextMenu() {
-			if(ContexMenuItem != null && ContexMenuAction != null) {
+			if (ContexMenuItem != null && ContexMenuAction != null) {
 				if (ImGui.BeginPopupContextWindow("ContextMenuItemDresser")) {
 					ContexMenuAction?.Invoke(ContexMenuItem, ContexMenuItemSlot);
 					ImGui.EndPopup();

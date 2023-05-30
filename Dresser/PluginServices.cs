@@ -16,9 +16,8 @@ using Dalamud.Plugin;
 using Dresser.Interop.Addons;
 using Dresser.Services;
 
-namespace Dresser
-{
-    internal class PluginServices {
+namespace Dresser {
+	internal class PluginServices {
 		[PluginService] internal static DalamudPluginInterface PluginInterface { get; private set; } = null!;
 		[PluginService] internal static CommandManager CommandManager { get; private set; } = null!;
 		[PluginService] internal static ClientState ClientState { get; private set; } = null!;

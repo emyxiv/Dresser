@@ -22,9 +22,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Dresser.Services
-{
-    internal class Storage : IDisposable {
+namespace Dresser.Services {
+	internal class Storage : IDisposable {
 
 		public ExcelSheet<Dye>? Dyes = null;
 		public static string HighResolutionSufix = "_hr1";

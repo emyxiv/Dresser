@@ -18,9 +18,8 @@ using System.Numerics;
 
 using static Dresser.Services.Storage;
 
-namespace Dresser.Windows
-{
-    public class GearBrowser : Window, IDisposable {
+namespace Dresser.Windows {
+	public class GearBrowser : Window, IDisposable {
 		private Plugin Plugin;
 
 		public GearBrowser(Plugin plugin) : base(

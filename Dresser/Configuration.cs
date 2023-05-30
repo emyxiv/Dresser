@@ -15,9 +15,8 @@ using System.Numerics;
 
 using static Dresser.Windows.GearBrowser;
 
-namespace Dresser
-{
-    [Serializable]
+namespace Dresser {
+	[Serializable]
 	public class Configuration : IPluginConfiguration {
 		public Configuration() {
 			LoadFilterInventoryCategory();

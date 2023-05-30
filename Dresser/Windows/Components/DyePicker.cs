@@ -12,9 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace Dresser.Windows.Components
-{
-    internal class DyePicker {
+namespace Dresser.Windows.Components {
+	internal class DyePicker {
 
 		public static readonly IEnumerable<Dye> Dyes = Sheets.GetSheet<Dye>()
 			.Where(i => i.IsValid())
@@ -40,7 +39,7 @@ namespace Dresser.Windows.Components
 				DrawDyePickerItem,
 				(i) => { // on Select
 
-					PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, slot,(byte)i.RowId);
+					PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, slot, (byte)i.RowId);
 					//if (equipObj is WeaponEquip wep) {
 					//	wep.Dye = (byte)i.RowId;
 					//	Target->Equip((int)slot, wep);
@@ -83,7 +82,7 @@ namespace Dresser.Windows.Components
 			}
 			var selecting = false;
 			try {
-				selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4,ImGuiColorEditFlags.None, ConfigurationManager.Config.DyePickerDyeSize);
+				selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4, ImGuiColorEditFlags.None, ConfigurationManager.Config.DyePickerDyeSize);
 			} catch (Exception e) {
 				PluginLog.Error(e, "Error in DrawDyePickerItem");
 			}

@@ -51,7 +51,7 @@ public class CurrentGear : Window, IDisposable {
 
 	public static Vector4 CollectionColorTitle = (new Vector4(116, 123, 98, 255) / 255 * 0.3f) + new Vector4(0, 0, 0, 1);
 	public static float opacityRadio = 0.70f;
-	public static Vector4 CollectionColorRadio = ((new Vector4(116, 123, 98, 255) / 255 * 0.3f) * new Vector4(1, 1, 1, 0) ) + new Vector4(0, 0, 0, opacityRadio);
+	public static Vector4 CollectionColorRadio = ((new Vector4(116, 123, 98, 255) / 255 * 0.3f) * new Vector4(1, 1, 1, 0)) + new Vector4(0, 0, 0, opacityRadio);
 	private static ushort? PlateSlotButtonHovering = null;
 	public override void Draw() {
 		//if (Storage.DisplayPage == null) return;
@@ -83,7 +83,7 @@ public class CurrentGear : Window, IDisposable {
 		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
 		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
 		//ImGui.SameLine();
-		if (GuiHelpers.IconButtonTooltip(ConfigurationManager.Config.CurrentGearDisplayGear?FontAwesomeIcon.Church: FontAwesomeIcon.Peace, "Display Gear", default, "DisplayGear##CurrentGear")) {
+		if (GuiHelpers.IconButtonTooltip(ConfigurationManager.Config.CurrentGearDisplayGear ? FontAwesomeIcon.Church : FontAwesomeIcon.Peace, "Display Gear", default, "DisplayGear##CurrentGear")) {
 			ConfigurationManager.Config.CurrentGearDisplayGear = !ConfigurationManager.Config.CurrentGearDisplayGear;
 			PluginServices.ApplyGearChange.ToggleDisplayGear();
 		}
@@ -165,10 +165,9 @@ public class CurrentGear : Window, IDisposable {
 				plateItems = ConfigurationManager.Config.DisplayPlateItems;
 			} else {
 				CheckPendingPlateItems();
-				if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2)){
+				if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2)) {
 					plateItems = plateItems2;
-				}
-				else plateItems = Gathering.EmptyGlamourPlate();
+				} else plateItems = Gathering.EmptyGlamourPlate();
 			}
 			bool isTooltipActive = false;
 			int i = 0;
@@ -193,7 +192,7 @@ public class CurrentGear : Window, IDisposable {
 				i++;
 			}
 
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			PluginLog.Error(ex, "Error in DrawSlots");
 		}
 		ImGui.EndGroup();
@@ -215,7 +214,7 @@ public class CurrentGear : Window, IDisposable {
 	}
 
 	private static void CheckPendingPlateItems() {
-		if(ConfigurationManager.Config.PendingPlateItems == null || !ConfigurationManager.Config.PendingPlateItems.Any()) {
+		if (ConfigurationManager.Config.PendingPlateItems == null || !ConfigurationManager.Config.PendingPlateItems.Any()) {
 			ConfigurationManager.Config.PendingPlateItems = new();
 			for (ushort i = 0; i < Storage.PlateNumber; i++) {
 				ConfigurationManager.Config.PendingPlateItems[i] = new();
@@ -232,7 +231,7 @@ public class CurrentGear : Window, IDisposable {
 			try {
 				DyePicker.DrawDyePicker((GlamourPlateSlot)SlotSelectDye);
 
-			}catch (Exception ex) {
+			} catch (Exception ex) {
 				PluginLog.Error(ex, "Error in DrawDyePicker");
 			}
 		}
