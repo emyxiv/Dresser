@@ -101,9 +101,11 @@ public class CurrentGear : Window, IDisposable {
 		var radioActive = PluginServices.ImageGuiCrop.GetPart("mirage_prism_plate2", 6);
 		var radioInActive = PluginServices.ImageGuiCrop.GetPart("mirage_prism_plate2", 5);
 
-		var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
-		var fontSize = 28f;
-		var textPlacement = new Vector2(28f, -36f);
+		var radioOiriginalSize = radioInActive.Item4 * ConfigurationManager.Config.IconSizeMult;
+		var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
+		//var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
+		var fontSize = 28f * ConfigurationManager.Config.IconSizeMult;
+		var textPlacement = new Vector2(28f, -36f) * ConfigurationManager.Config.IconSizeMult;
 
 		Vector4 restColor = new(1, 1, 1, opacityRadio);
 		Vector4 hoverColor = new(1, 1, 1, 1);
@@ -140,7 +142,7 @@ public class CurrentGear : Window, IDisposable {
 
 		ImGui.PopStyleVar();
 		ImGui.EndGroup();
-		ImGui.SameLine(radioInActive.Item4.X);
+		ImGui.SameLine(radioOiriginalSize.X);
 	}
 
 	private static GlamourPlateSlot? HoveredSlot = null;
