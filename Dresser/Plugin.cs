@@ -69,7 +69,6 @@ namespace Dresser {
 
 
 
-			ImageGuiCrop.Init();
 			Gathering.Init();
 
 			Methods.Init();
@@ -115,7 +114,6 @@ namespace Dresser {
 
 
 			Interop.Hooks.AddonListeners.Dispose();
-			ImageGuiCrop.Dispose();
 			PluginServices.Dispose();
 		}
 

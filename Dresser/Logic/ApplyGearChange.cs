@@ -177,7 +177,7 @@ namespace Dresser.Logic {
 			Task.Run(async delegate {
 				Gathering.ParseGlamourPlates();
 				await Task.Delay(2500);
-				if (Storage.Pages == null) {
+				if (PluginServices.Storage.Pages == null) {
 					return;
 				}
 				foreach ((var plateNumber, var set) in Storage.PagesInv) {
@@ -337,7 +337,7 @@ namespace Dresser.Logic {
 						DifferencesToApply.Remove(previousPlateNumber2);
 					} else {
 						Gathering.ParseGlamourPlates();
-						var dd = Storage.Pages?[previousPlateNumber2];
+						var dd = PluginServices.Storage.Pages?[previousPlateNumber2];
 						if(dd != null) {
 							DifferencesToApply[previousPlateNumber2] = (InventoryItemSet)dd;
 						}
@@ -351,8 +351,8 @@ namespace Dresser.Logic {
 		}
 		private bool IsGlamPlateDifferentFromPending(ushort platelateNumber) {
 			Gathering.ParseGlamourPlates();
-			if(Storage.Pages != null && platelateNumber  >= 0 && platelateNumber < Storage.Pages.Length) {
-				var miragePlate = Storage.Pages[(int)platelateNumber];
+			if(PluginServices.Storage.Pages != null && platelateNumber  >= 0 && platelateNumber < PluginServices.Storage.Pages.Length) {
+				var miragePlate = PluginServices.Storage.Pages[(int)platelateNumber];
 				var ggg = (InventoryItemSet)miragePlate;
 				if(ConfigurationManager.Config.PendingPlateItems.TryGetValue((ushort)platelateNumber, out var pendingPlate)) {
 					return pendingPlate.IsDifferentGlam(ggg, out var _, out var _);

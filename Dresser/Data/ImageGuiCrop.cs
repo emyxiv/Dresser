@@ -10,11 +10,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Dresser.Data {
-	internal class ImageGuiCrop {
-		public static Dictionary<string, TextureWrap> Textures = new();
-		public static Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
+	internal class ImageGuiCrop : IDisposable {
+		public Dictionary<string, TextureWrap> Textures = new();
+		public Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
 
-		public static Dictionary<string, Dictionary<int, (Vector2, Vector2)>> TexturesParts = new() {
+		public Dictionary<string, Dictionary<int, (Vector2, Vector2)>> TexturesParts = new() {
 			{ "character", new(){
 
 				// main weapon: 17
@@ -76,7 +76,7 @@ namespace Dresser.Data {
 
 		};
 
-		public static Dictionary<GlamourPlateSlot, int> EmptyGlamourPlateSlot = new() {
+		public Dictionary<GlamourPlateSlot, int> EmptyGlamourPlateSlot = new() {
 				{ GlamourPlateSlot.MainHand, 17 }, // main weapon: 17
 				{ GlamourPlateSlot.OffHand, 18 }, // off weapon: 18
 				{ GlamourPlateSlot.Head, 19 }, // head: 19
@@ -91,7 +91,7 @@ namespace Dresser.Data {
 				{ GlamourPlateSlot.LeftRing, 28 }, // ring: 28
 			};
 
-		public static (IntPtr, Vector2, Vector2, Vector2) GetPart(string type, int part_id) {
+		public (IntPtr, Vector2, Vector2, Vector2) GetPart(string type, int part_id) {
 			if (Cache.TryGetValue((type, part_id), out var cachedInfo))
 				return cachedInfo;
 			if (Textures.TryGetValue(type, out var texture))
@@ -117,10 +117,10 @@ namespace Dresser.Data {
 			return (default, default, default, default);
 		}
 
-		public static (IntPtr, Vector2, Vector2, Vector2) GetPart(GlamourPlateSlot slot)
+		public (IntPtr, Vector2, Vector2, Vector2) GetPart(GlamourPlateSlot slot)
 			=> GetPart("character", EmptyGlamourPlateSlot[slot]);
 
-		public static void Init() {
+		public ImageGuiCrop() {
 			Dictionary<string, string> paths = new() {
 				{"character", $"ui/uld/Character{Storage.HighResolutionSufix}.tex"},
 				{"icon_a_frame", $"ui/uld/IconA_Frame{Storage.HighResolutionSufix}.tex"},
@@ -136,8 +136,12 @@ namespace Dresser.Data {
 
 				Textures.Add(handle, tex);
 			}
+
+			foreach ((var slot, var part_id) in EmptyGlamourPlateSlot)
+				GetPart("character", part_id);
+
 		}
-		public static void Dispose() {
+		public void Dispose() {
 			Cache.Clear();
 			foreach ((var handle, var texture) in Textures)
 				texture.Dispose();

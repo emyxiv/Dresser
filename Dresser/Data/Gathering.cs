@@ -12,21 +12,21 @@ using Dresser.Structs;
 
 namespace Dresser.Data {
 
-	internal class Gathering {
+	internal static class Gathering {
 		public static void Init() {
 			ParseGlamourPlates();
 		}
 		public static void ParseGlamourPlates() {
 			var tempPages = GetDataFromDresser();
 			if (tempPages == null) return;
-			Storage.Pages = GetDataFromDresser();
-			Storage.DisplayPage = Storage.Pages?.Last();
-			if (Storage.DisplayPage == null) return;
-			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(MiragePage)Storage.DisplayPage;
+			PluginServices.Storage.Pages = GetDataFromDresser();
+			PluginServices.Storage.DisplayPage = PluginServices.Storage.Pages?.Last();
+			if (PluginServices.Storage.DisplayPage == null) return;
+			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(MiragePage)PluginServices.Storage.DisplayPage;
 		}
 		public static InventoryItemSet EmptyGlamourPlate() {
 			return new() {
-				Items = Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
+				Items = PluginServices.Storage.SlotMirageItems.ToDictionary(p => p.Key, p =>
 				(InventoryItem?)EmptyItemSlot()
 			)};
 		}

@@ -394,9 +394,9 @@ namespace Dresser.Windows {
 
 
 				// textures
-				var texturePart = ImageGuiCrop.GetPart("character", 17);
+				var texturePart = PluginServices.ImageGuiCrop.GetPart("character", 17);
 				if (texturePart.Item1 != IntPtr.Zero) {
-					if (ImageGuiCrop.Textures.TryGetValue("character", out var tex)) {
+					if (PluginServices.ImageGuiCrop.Textures.TryGetValue("character", out var tex)) {
 						ImGui.Text($"s:{tex.Width}*{tex.Height}");
 						ImGui.Image(texturePart.Item1, new(tex.Width, tex.Height));
 					}

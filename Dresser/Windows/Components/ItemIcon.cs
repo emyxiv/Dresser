@@ -61,7 +61,7 @@ namespace Dresser.Windows.Components {
 			item ??= Gathering.EmptyItemSlot();
 
 			// item variables
-			var dye = Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
+			var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? PluginServices.IconStorage.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
 			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
@@ -216,7 +216,7 @@ namespace Dresser.Windows.Components {
 					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? GearBrowser.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
 					ImGui.Image(image.ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
 				} else if (emptySlot != null) {
-					var emptySlotInfo = ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
+					var emptySlotInfo = PluginServices.ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
 
 					// TODO: smaller icons in their slot
 					// draw.AddImage(emptySlotInfo.Item1, slotPos, slotPos + slotSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
@@ -232,10 +232,10 @@ namespace Dresser.Windows.Components {
 				ImGui.SetCursorPos(initialPosition);
 				ImGui.SetCursorPos(ImGui.GetCursorPos() - (difference / 2));
 
-				var itemCapInfo = ImageGuiCrop.GetPart("icon_a_frame", 1);
+				var itemCapInfo = PluginServices.ImageGuiCrop.GetPart("icon_a_frame", 1);
 
 				// item slot
-				var itemSlotInfo = ImageGuiCrop.GetPart("mirage_prism_box", 3);
+				var itemSlotInfo = PluginServices.ImageGuiCrop.GetPart("mirage_prism_box", 3);
 				var slotSize = capSize * (itemSlotInfo.Item4.X / itemCapInfo.Item4.X);
 				//difference = slotSize - iconSize;
 				var slotPos = ImGui.GetCursorScreenPos();
@@ -250,7 +250,7 @@ namespace Dresser.Windows.Components {
 
 				// Hover visual
 				if (wasHovered) {
-					var itemHoveredInfo = ImageGuiCrop.GetPart("icon_a_frame", 16);
+					var itemHoveredInfo = PluginServices.ImageGuiCrop.GetPart("icon_a_frame", 16);
 					ImGui.SetCursorPos(initialPosition);
 					var hoverSize = capSize * (itemHoveredInfo.Item4.X / itemCapInfo.Item4.X);
 					difference = hoverSize - iconSize;

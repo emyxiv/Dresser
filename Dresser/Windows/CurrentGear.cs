@@ -101,8 +101,8 @@ public class CurrentGear : Window, IDisposable {
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0));
 
-		var radioActive = ImageGuiCrop.GetPart("mirage_prism_plate2", 6);
-		var radioInActive = ImageGuiCrop.GetPart("mirage_prism_plate2", 5);
+		var radioActive = PluginServices.ImageGuiCrop.GetPart("mirage_prism_plate2", 6);
+		var radioInActive = PluginServices.ImageGuiCrop.GetPart("mirage_prism_plate2", 5);
 
 		var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
 		var fontSize = 28f;
@@ -158,13 +158,13 @@ public class CurrentGear : Window, IDisposable {
 
 	private void DrawSlots() {
 
-		if (Storage.DisplayPage != null && ConfigurationManager.Config.DisplayPlateItems.Items.Count == 0) return;
+		if (PluginServices.Storage.DisplayPage != null && ConfigurationManager.Config.DisplayPlateItems.Items.Count == 0) return;
 		ImGui.BeginGroup();
 
 		try {
 			InventoryItemSet plateItems = new(); ;
 
-			if (PluginServices.Context.IsGlamingAtDresser && Storage.DisplayPage != null) {
+			if (PluginServices.Context.IsGlamingAtDresser && PluginServices.Storage.DisplayPage != null) {
 				plateItems = ConfigurationManager.Config.DisplayPlateItems;
 			} else {
 				CheckPendingPlateItems();

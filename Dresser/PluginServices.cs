@@ -39,6 +39,7 @@ namespace Dresser {
 		//public static MarketCache MarketCache { get; private set; } = null!;
 		//public static Universalis Universalis { get; private set; } = null!;
 		public static IconStorage IconStorage { get; private set; } = null!;
+		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 
 
 		internal static Interop.Hooks.AddonManager AddonManager = null!;
@@ -64,6 +65,7 @@ namespace Dresser {
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			FrameworkService = new FrameworkService(Service.Framework);
 			IconStorage = new IconStorage();
+			ImageGuiCrop = new ImageGuiCrop();
 			Storage = new Storage();
 
 			ConfigurationManager.Load();
@@ -119,6 +121,7 @@ namespace Dresser {
 			//Universalis.Dispose();
 			GameInterface.Dispose();
 			IconStorage.Dispose();
+			ImageGuiCrop.Dispose();
 			ApplyGearChange.Dispose();
 			FrameworkService.Dispose();
 
@@ -139,6 +142,7 @@ namespace Dresser {
 			//Universalis = null!;
 			GameInterface = null!;
 			IconStorage = null!;
+			ImageGuiCrop = null!;
 			ApplyGearChange = null!;
 		}
 	}

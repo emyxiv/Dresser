@@ -26,15 +26,15 @@ using Lumina.Excel.GeneratedSheets;
 namespace Dresser.Data {
 	internal class Storage : IDisposable {
 
-		public static ExcelSheet<Dye>? Dyes = null;
+		public ExcelSheet<Dye>? Dyes = null;
 		public static string HighResolutionSufix = "_hr1";
 
 		public const int PlateNumber = 20;
-		public static Dictionary<GlamourPlateSlot, MirageItem> SlotMirageItems = new();
+		public Dictionary<GlamourPlateSlot, MirageItem> SlotMirageItems = new();
 		//public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
-		public static MiragePage[]? Pages = null;
-		public static MiragePage? DisplayPage = null;
-		public static Dictionary<byte, Vector4> RarityColors = new();
+		public MiragePage[]? Pages = null;
+		public MiragePage? DisplayPage = null;
+		public Dictionary<byte, Vector4> RarityColors = new();
 		public readonly GameFontHandle FontTitle =
 			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68));
 		public readonly GameFontHandle FontRadio =
@@ -66,8 +66,6 @@ namespace Dresser.Data {
 				{ 8, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 563)) },
 			};
 
-			foreach ((var slot, var part_id) in ImageGuiCrop.EmptyGlamourPlateSlot)
-				ImageGuiCrop.GetPart("character", part_id);
 
 			InitItemTypes();
 			LoadAdditionalItems();
@@ -84,12 +82,12 @@ namespace Dresser.Data {
 		}
 
 		public static Vector4 RarityColor(ItemEx itemEx) {
-			if (!RarityColors.TryGetValue(itemEx.Rarity, out var rarityColor))
+			if (!PluginServices.Storage.RarityColors.TryGetValue(itemEx.Rarity, out var rarityColor))
 				rarityColor = Vector4.One;
 			return rarityColor;
 		}
 		public static Dictionary<ushort, InventoryItemSet> PagesInv {
-			get => Pages?.Select((value, index) => new { value, index }).ToDictionary(p => (ushort)p.index, p => (InventoryItemSet)p.value) ?? new();
+			get => PluginServices.Storage.Pages?.Select((value, index) => new { value, index }).ToDictionary(p => (ushort)p.index, p => (InventoryItemSet)p.value) ?? new();
 		}
 
 
