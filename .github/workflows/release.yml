@@ -46,7 +46,7 @@ jobs:
 
       - name: Link dalamud to appdata
         run: |
-          ln -s $(DALAMUD_HOME) $(dalamud_appdata)
+          ln -s $DALAMUD_HOME $dalamud_appdata
 
       - name: Restore Dependencies
         run: dotnet restore
