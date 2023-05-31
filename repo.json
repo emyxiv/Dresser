@@ -1,0 +1,15 @@
+[
+	{
+		"Author": "Emyka",
+		"Name": "Dresser Anywhere",
+		"Punchline": "⚠ Early Alpha TEST ⚠. Attempts to improve dresser's experience.",
+		"Description": "Use dresser outside of inns. Search items in other inventories or cheap at vendors.",
+		"Tags": ["Glamour", "Dresser", "Organize", "Search", "Items"],
+		"InternalName": "Dresser",
+		"AssemblyVersion": "0.0.1.0",
+		"RepoUrl": "https://github.com/Emyka/Dresser",
+		"ApplicableVersion": "any",
+		"DalamudApiLevel": 8,
+		"DownloadLinkInstall": "https://github.com/emyka/Dresser/releases/download/v0.0.1.0/latest.zip"
+	}
+]
