@@ -24,6 +24,8 @@ jobs:
         working-directory: Dresser/
         shell: bash
     env:
+      appdata: /tmp/appdata
+      dalamud_appdata: /tmp/appdata/XIVLauncher/addon/Hooks/dev/
       DALAMUD_HOME: /tmp/dalamud
       IsCI: true
     steps:
@@ -41,6 +43,10 @@ jobs:
         run: |
           wget https://goatcorp.github.io/dalamud-distrib/latest.zip -O /tmp/dalamud.zip
           unzip /tmp/dalamud.zip -d /tmp/dalamud
+
+      - name: Link dalamud to appdata
+        run: |
+          ln -s $(DALAMUD_HOME) $(dalamud_appdata)
 
       - name: Restore Dependencies
         run: dotnet restore
