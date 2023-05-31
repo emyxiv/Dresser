@@ -25,7 +25,7 @@ jobs:
         shell: bash
     env:
       appdata: /tmp/appdata
-      dalamud_appdata: /tmp/appdata/XIVLauncher/addon/Hooks/dev/
+      dalamud_appdata: /tmp/appdata/XIVLauncher/addon/Hooks
       DALAMUD_HOME: /tmp/dalamud
       IsCI: true
     steps:
@@ -46,7 +46,8 @@ jobs:
 
       - name: Link dalamud to appdata
         run: |
-          ln -s $DALAMUD_HOME $dalamud_appdata
+          mkdir -p $dalamud_appdata
+          ln -s $DALAMUD_HOME ${dalamud_appdata}/dev
 
       - name: Restore Dependencies
         run: dotnet restore
