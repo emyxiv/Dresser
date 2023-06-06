@@ -321,6 +321,11 @@ namespace Dresser.Windows {
 			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
+
+			var selectedItemCurrentGear = CurrentGear.SelectedInventoryItem();
+			var selectedItem = Items?.Where(i => i.ItemId == selectedItemCurrentGear?.ItemId).FirstOrDefault();
+			var selectedItemHash = selectedItem?.GetHashCode();
+
 			if (Items != null && ItemsCount > 0)
 				try {
 
@@ -329,8 +334,10 @@ namespace Dresser.Windows {
 					foreach (var item in Items) {
 
 						// icon
-						bool isHovered = item.GetHashCode() == HoveredItem;
+						var itemHash = item.GetHashCode();
+						bool isHovered = itemHash == HoveredItem;
 						bool wasHovered = isHovered;
+						isHovered |= itemHash == selectedItemHash;
 						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
 						if (isHovered)
 							HoveredItem = item.GetHashCode();

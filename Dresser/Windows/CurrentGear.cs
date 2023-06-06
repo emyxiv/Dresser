@@ -223,6 +223,12 @@ public class CurrentGear : Window, IDisposable {
 			}
 		}
 	}
+	public static InventoryItem? SelectedInventoryItem() {
+		if(GearBrowser.SelectedSlot != null && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var set)) {
+			return set.GetSlot((GlamourPlateSlot)GearBrowser.SelectedSlot);
+		}
+		return null;
+	}
 	private static void DrawChildren() {
 		GearBrowser.PopStyleCollection();
 
