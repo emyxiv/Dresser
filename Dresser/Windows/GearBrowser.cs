@@ -351,7 +351,7 @@ namespace Dresser.Windows {
 						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
 						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
 						if (isHovered)
-							HoveredItem = item.GetHashCode();
+							HoveredItem = itemHash;
 						else if (!isHovered && wasHovered)
 							HoveredItem = null;
 
