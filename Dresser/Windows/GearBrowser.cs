@@ -264,6 +264,7 @@ namespace Dresser.Windows {
 
 		public static IEnumerable<InventoryItem>? Items = null;
 		private static int ItemsCount = 0;
+		private static bool JustRecomputed = false;
 		public static void RecomputeItems() {
 
 			IEnumerable<InventoryItem> items = new HashSet<InventoryItem>();
@@ -312,8 +313,17 @@ namespace Dresser.Windows {
 				;
 
 			ItemsCount = Items.Count();
+			JustRecomputed = true;
 		}
 
+
+		public static InventoryItem? SelectedInventoryItem {
+			get{
+				var selectedItemCurrentGear = CurrentGear.SelectedInventoryItem();
+				if (selectedItemCurrentGear == null) return null;
+				return Items?.Where(i => i.ItemId == selectedItemCurrentGear?.ItemId).FirstOrDefault();
+			}
+		}
 		public void DrawItems() {
 			PushStyleCollection();
 			Vector2 sideBarSize = new(ConfigurationManager.Config.GearBrowserSideBarSize, 0);
@@ -322,9 +332,7 @@ namespace Dresser.Windows {
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
 
-			var selectedItemCurrentGear = CurrentGear.SelectedInventoryItem();
-			var selectedItem = Items?.Where(i => i.ItemId == selectedItemCurrentGear?.ItemId).FirstOrDefault();
-			var selectedItemHash = selectedItem?.GetHashCode();
+			var selectedItemHash = SelectedInventoryItem?.GetHashCode();
 
 			if (Items != null && ItemsCount > 0)
 				try {
@@ -337,8 +345,11 @@ namespace Dresser.Windows {
 						var itemHash = item.GetHashCode();
 						bool isHovered = itemHash == HoveredItem;
 						bool wasHovered = isHovered;
-						isHovered |= itemHash == selectedItemHash;
+
+						var selectedInCurrentGear = itemHash == selectedItemHash;
+						isHovered |= selectedInCurrentGear;
 						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
+						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
 						if (isHovered)
 							HoveredItem = item.GetHashCode();
 						else if (!isHovered && wasHovered)
@@ -364,6 +375,8 @@ namespace Dresser.Windows {
 				ImGui.TextWrapped($"{message}");
 				ImGui.EndDisabled();
 			}
+
+			JustRecomputed = false;
 
 			ImGui.EndChildFrame();
 			PopStyleCollection();
