@@ -55,7 +55,7 @@ public class CurrentGear : Window, IDisposable {
 	private static ushort? PlateSlotButtonHovering = null;
 	public override void Draw() {
 
-		var draw = TitleBar.Draw();
+		var draw = TitleBar.Draw(this);
 
 		DrawPlateSelector(draw);
 		DrawSlots();

@@ -72,6 +72,14 @@ namespace Dresser.Windows.Components {
 			Icon(icon, enabled, color);
 			Tooltip(tooltip);
 		}
+		public static Vector4 ColorAddHSV(Vector4 color, float h_add, float s_add, float v_add) {
+			ImGui.ColorConvertRGBtoHSV(color.X, color.Y, color.Z, out var h, out var s, out var v);
+			h += h_add;
+			s += s_add;
+			v += v_add;
+			ImGui.ColorConvertHSVtoRGB(h, s, v, out var r, out var g, out var b);
+			return new(r, g, b, color.W);
+		}
 
 
 		public static void Tooltip(string text) {
