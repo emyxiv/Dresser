@@ -54,23 +54,8 @@ public class CurrentGear : Window, IDisposable {
 	public static Vector4 CollectionColorRadio = ((new Vector4(116, 123, 98, 255) / 255 * 0.3f) * new Vector4(1, 1, 1, 0)) + new Vector4(0, 0, 0, opacityRadio);
 	private static ushort? PlateSlotButtonHovering = null;
 	public override void Draw() {
-		//if (Storage.DisplayPage == null) return;
-		var draw = ImGui.GetWindowDrawList();
 
-		draw.AddText(
-			PluginServices.Storage.FontTitle.ImFont,
-			80 * ConfigurationManager.Config.IconSizeMult,
-			ImGui.GetCursorScreenPos() + new Vector2(0, -10),
-			ImGui.ColorConvertFloat4ToU32(CollectionColorTitle),
-			"Plate Creation");
-		ImGui.NewLine();
-		ImGui.Spacing();
-
-		var avail = ImGui.GetContentRegionAvail();
-		var start = ImGui.GetCursorScreenPos();
-		var end = new Vector2(start.X + avail.X, start.Y);
-		draw.AddLine(start, end, ImGui.ColorConvertFloat4ToU32(CollectionColorTitle), 5);
-		ImGui.Spacing();
+		var draw = TitleBar.Draw();
 
 		DrawPlateSelector(draw);
 		DrawSlots();
