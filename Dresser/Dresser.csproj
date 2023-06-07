@@ -68,11 +68,11 @@
   <ProjectExtensions>
     <DalamudPlugin>
       <ApiLevel>8</ApiLevel>
-      <Author>Emyka</Author>
+      <Author>emyxiv</Author>
       <Name>Dresser</Name>
       <Punchline>Make glamouring more enjoyable</Punchline>
       <Description></Description>
-      <PackageProjectUrl>https://github.com/Emyka/Dresser</PackageProjectUrl>
+      <PackageProjectUrl>https://github.com/emyxiv/Dresser</PackageProjectUrl>
       <Tags>
         <Tag>Inventory</Tag>
         <Tag>Glamour</Tag>

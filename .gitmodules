@@ -6,4 +6,4 @@
 	url = https://github.com/Critical-Impact/LuminaSupplemental
 [submodule "CriticalCommonLib"]
 	path = CriticalCommonLib
-	url = https://github.com/Emyka/CriticalCommonLib.git
+	url = https://github.com/emyxiv/CriticalCommonLib.git
