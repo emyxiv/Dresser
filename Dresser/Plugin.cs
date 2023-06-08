@@ -32,9 +32,9 @@ namespace Dresser {
 		private static Plugin? PluginInstance = null;
 		public static Plugin GetInstance() => PluginInstance!;
 
-		internal ConfigWindow? ConfigWindow = null;
-		internal GearBrowser? GearBrowser = null;
-		internal CurrentGear? CurrentGear = null;
+		internal ConfigWindow ConfigWindow { get; init; }
+		internal GearBrowser GearBrowser { get; init; }
+		internal CurrentGear CurrentGear { get; init; }
 		internal Dialogs? Dialogs = null;
 
 		public Plugin(
@@ -99,6 +99,11 @@ namespace Dresser {
 			PluginServices.ApplyGearChange.RestoreAppearance();
 
 
+			ConfigWindow.Dispose();
+			GearBrowser.Dispose();
+			CurrentGear.Dispose();
+			Dialogs?.Dispose();
+
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);
 
@@ -122,8 +127,8 @@ namespace Dresser {
 				case "config": DrawConfigUI(); break;
 				default:
 					// in response to the slash command, just display our main ui
-					WindowSystem.GetWindow("Gear Browser")!.IsOpen = true;
-					WindowSystem.GetWindow("Current Gear")!.IsOpen = true;
+					GearBrowser.IsOpen = true;
+					CurrentGear.IsOpen = true;
 					break;
 			}
 		}
@@ -133,28 +138,28 @@ namespace Dresser {
 		}
 
 		public void DrawConfigUI() {
-			WindowSystem.GetWindow("Dresser Settings")!.IsOpen = true;
+			ConfigWindow.IsOpen = true;
 		}
 		public void ToggleDresser() {
-			WindowSystem.GetWindow("Current Gear")!.IsOpen = !IsDresserVisible();
-			WindowSystem.GetWindow("Gear Browser")!.IsOpen = !IsDresserVisible();
+			CurrentGear.IsOpen = !IsDresserVisible();
+			GearBrowser.IsOpen = !IsDresserVisible();
 		}
 		public void OpenDresser() {
 			//PluginLog.Debug($"OpenDresser");
-			WindowSystem.GetWindow("Current Gear")!.IsOpen = true;
-			WindowSystem.GetWindow("Gear Browser")!.IsOpen = true;
+			CurrentGear.IsOpen = true;
+			GearBrowser.IsOpen = true;
 		}
 		public void CloseDresser() {
 			//PluginLog.Debug($"CloseDresser");
-			WindowSystem.GetWindow("Current Gear")!.IsOpen = false;
-			WindowSystem.GetWindow("Gear Browser")!.IsOpen = false;
+			CurrentGear.IsOpen = false;
+			GearBrowser.IsOpen = false;
 		}
 		public void CloseBrowser() {
-			WindowSystem.GetWindow("Gear Browser")!.IsOpen = false;
+			GearBrowser.IsOpen = false;
 		}
 		public void OpenGearBrowserIfClosed() {
-			if(!WindowSystem.GetWindow("Gear Browser")!.IsOpen) {
-				WindowSystem.GetWindow("Gear Browser")!.IsOpen = true;
+			if(!GearBrowser.IsOpen) {
+				GearBrowser.IsOpen = true;
 			}
 		}
 		public bool IsDresserVisible()
