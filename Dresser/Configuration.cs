@@ -29,7 +29,7 @@ namespace Dresser {
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearDisplayGear = false;
 
-		public Vector2 DyePickerDyeSize = new(0);
+		public Vector2 DyePickerDyeSize = new(30);
 
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;
