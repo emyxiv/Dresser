@@ -167,12 +167,12 @@ namespace Dresser {
 				GearBrowser.Collapsed = false;
 		}
 		public bool IsDresserVisible()
-			=> WindowSystem?.GetWindow("Current Gear")?.IsOpen ?? false;
+			=> CurrentGear.IsOpen;
 		public bool IsBrowserVisible()
-			=> WindowSystem?.GetWindow("Gear Browser")?.IsOpen ?? false;
+			=> GearBrowser.IsOpen;
 		public void OpenDialog(DialogInfo dialogInfo) {
 			Dialogs!.DialogInfo = dialogInfo;
-			WindowSystem.GetWindow("Dialogs")!.IsOpen = true;
+			Dialogs!.IsOpen = true;
 		}
 
 
