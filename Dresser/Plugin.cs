@@ -162,6 +162,10 @@ namespace Dresser {
 				GearBrowser.IsOpen = true;
 			}
 		}
+		public void UncollapseGearBrowserIfCollapsed() {
+			if(GearBrowser.Collapsed == null)
+				GearBrowser.Collapsed = false;
+		}
 		public bool IsDresserVisible()
 			=> WindowSystem?.GetWindow("Current Gear")?.IsOpen ?? false;
 		public bool IsBrowserVisible()

@@ -65,6 +65,7 @@ namespace Dresser.Services {
 			GearBrowser.SelectedSlot = slot;
 			GearBrowser.RecomputeItems();
 			Plugin.OpenGearBrowserIfClosed();
+			Plugin.UncollapseGearBrowserIfCollapsed();
 		}
 		public void ExecuteCurrentContextRemoveItem(InventoryItem item) {
 			item.Clear();

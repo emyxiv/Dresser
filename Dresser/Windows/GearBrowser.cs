@@ -65,6 +65,8 @@ namespace Dresser.Windows {
 
 		public override void Draw() {
 
+			if (this.Collapsed == false) this.Collapsed = null; // restore collapsed state after uncollapse
+
 			switch (ConfigurationManager.Config.GearBrowserDisplayMode) {
 				case DisplayMode.Vertical: DrawWithMode_Vertical(); break;
 				case DisplayMode.SidebarOnRight: DrawWithMode_SidebarOnRight(); break;
