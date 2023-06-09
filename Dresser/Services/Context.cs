@@ -28,7 +28,7 @@ namespace Dresser.Services {
 
 
 		public Context() {
-			Refresh();
+			//Refresh();
 		}
 		public void Dispose() {
 			LocalPlayer = null;
