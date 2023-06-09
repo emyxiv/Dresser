@@ -1,6 +1,9 @@
 ﻿using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Models;
 
 using Dresser.Services;
+
+using static Dresser.Services.Storage;
 
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
@@ -54,6 +57,36 @@ namespace Dresser.Extensions {
 		public static bool IsAppearanceDifferent(this CriticalInventoryItem item, CriticalInventoryItem? item2)
 			=> (item?.ItemId ?? 0) != (item2?.ItemId ?? 0) || (item?.Stain ?? 0) != (item2?.Stain ?? 0);
 
+		public static string FormattedInventoryCategoryType(this CriticalInventoryItem item) {
+			var cat = item.SortedCategory;
+			var catForm = cat.ToFriendlyName();
+			var type = item.SortedContainer;
+			var typeForm = type.ToFormattedName();
+			if ( cat == 0) {
+				if ((int)type >= (int)InventoryTypeExtra.AllItems)
+					catForm = "Not Owned";
+				else if (type == 0) {
+					catForm = "Location Not Found";
+					typeForm = "";
+				}
+			}
+
+			return cat switch {
+				InventoryCategory.GlamourChest or InventoryCategory.Armoire
+					=> catForm,
+				InventoryCategory.RetainerBags
+					=> $"{item.FormattedOwnerName()}  -  {typeForm}",
+				InventoryCategory.RetainerEquipped or InventoryCategory.RetainerMarket
+					=> $"{item.FormattedOwnerName()}  -  {cat.FormattedName()}",
+				_
+					=> $"{catForm}  -  {typeForm}".Trim("\r\n -".ToCharArray())
+			};
+		}
+		public static string FormattedOwnerName(this CriticalInventoryItem item) {
+			var id = item.InRetainer ? item.RetainerId : PluginServices.CharacterMonitor.ActiveCharacterId;
+			var character = PluginServices.CharacterMonitor.GetCharacterById(id);
+			return character?.FormattedName ?? "";
+		}
 
 		//public static bool IsSoldBy(this CriticalInventoryItem item, string VendorFilterName) {
 		//	if (PluginServices.Storage.VendorItems.TryGetValue(VendorFilterName, out var itemList))

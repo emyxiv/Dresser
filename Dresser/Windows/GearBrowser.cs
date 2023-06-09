@@ -131,7 +131,7 @@ namespace Dresser.Windows {
 
 					var willDisplayValue = willDisplay;
 					if (numberOfItems < 1) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * new Vector4(1, 1, 1, 0.5f));
-					if (filterChanged |= ImGui.Checkbox($"{cat} ({numberOfItems})##displayCategory", ref willDisplayValue))
+					if (filterChanged |= ImGui.Checkbox($"{cat.ToFriendlyName()} ({numberOfItems})##displayCategory", ref willDisplayValue))
 						ConfigurationManager.Config.FilterInventoryCategory[cat] = willDisplayValue;
 					if (numberOfItems < 1) {
 						ImGui.PopStyleColor();
@@ -183,7 +183,7 @@ namespace Dresser.Windows {
 							var itemSize = ImGui.GetCursorPosX() - savedPosX + ImGui.GetStyle().ItemSpacing.X;
 							if (ImGui.GetContentRegionAvail().X < itemSize) ImGui.NewLine();
 						} else
-							if (filterChanged |= ImGui.Checkbox($"{(InventoryTypeExtra)inventoryType} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
+							if (filterChanged |= ImGui.Checkbox($"{((InventoryTypeExtra)inventoryType).ToString().AddSpaceBeforeCapital()} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
 							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
 
 					}

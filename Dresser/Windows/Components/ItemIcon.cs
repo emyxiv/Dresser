@@ -110,7 +110,7 @@ namespace Dresser.Windows.Components {
 						// type of item (body, legs, etc) under the icon
 						ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
 						//PluginLog.Debug($"ui category: {item.ItemUICategory} {item.EquipSlotCategory!.RowId}");
-						ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, $"{item.SortedContainer.ToInventoryCategory()} ({item.Container})");
+						ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.FormattedInventoryCategoryType());
 
 						// Equip Conditions
 						ImGui.Separator();
