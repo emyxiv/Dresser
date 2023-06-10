@@ -68,11 +68,11 @@ namespace Dresser.Windows {
 			switch (hotkeyType) {
 				case HotkeyPurpose.Up:
 					HotkeyNextSelect = HoveredIncrement - RowSize;
-					if (HotkeyNextSelect < 0) HotkeyNextSelect = 0;
+					if (HotkeyNextSelect < 0) HotkeyNextSelect = HoveredIncrement;
 					return true;
 				case HotkeyPurpose.Down:
 					HotkeyNextSelect = HoveredIncrement + RowSize;
-					if (HotkeyNextSelect > ItemsCount) HotkeyNextSelect = ItemsCount - 1;
+					if (HotkeyNextSelect > ItemsCount) HotkeyNextSelect = HoveredIncrement;
 					return true;
 				case HotkeyPurpose.Left:
 					HotkeyNextSelect = HoveredIncrement - 1;
