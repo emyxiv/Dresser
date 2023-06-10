@@ -31,6 +31,9 @@ namespace Dresser {
 
 		public Vector2 DyePickerDyeSize = new(30);
 
+		public bool WindowsHotkeysAllowAfterLoosingFocus = false;
+		public bool WindowsHotkeysPasstoGame = false;
+
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;
 		public bool FadeIconsIfNotHiddingTooltip = false;

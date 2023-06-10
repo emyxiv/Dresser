@@ -22,6 +22,8 @@ public class HotkeyService : IDisposable {
 	public void AddHotkey(Hotkey hotkey) {
 		_hotKeys.Add(hotkey);
 	}
+	public void ClearHotkey()
+		=> _hotKeys.Clear();
 
 	private void FrameworkServiceOnUpdate(IFrameworkService framework) {
 
