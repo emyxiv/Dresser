@@ -172,6 +172,7 @@ namespace Dresser.Services {
 
 		public void OverwritePendingWithCurrentPlate() {
 			ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems.Copy().RemoveEmpty();
+			ReApplyAppearanceAfterEquipUpdate();
 		}
 		public void OverwritePendingWithActualPlates() {
 			Task.Run(async delegate {
