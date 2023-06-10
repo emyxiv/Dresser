@@ -14,6 +14,7 @@ using Dalamud.Logging;
 using Dalamud.Plugin;
 
 using Dresser.Interop.Addons;
+using Dresser.Logic;
 using Dresser.Services;
 
 namespace Dresser {
@@ -27,6 +28,7 @@ namespace Dresser {
 		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
 
 		public static FrameworkService FrameworkService { get; private set; } = null!;
+		public static HotkeyService HotkeyService { get; private set; } = null!;
 		public static OdrScanner OdrScanner { get; private set; } = null!;
 		public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
 		public static InventoryScanner InventoryScanner { get; private set; } = null!;
@@ -64,6 +66,8 @@ namespace Dresser {
 
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			FrameworkService = new FrameworkService(Service.Framework);
+			HotkeyService = new HotkeyService(FrameworkService, KeyState);
+			HotkeySetup.Init();
 			IconStorage = new IconStorage();
 			ImageGuiCrop = new ImageGuiCrop();
 			Storage = new Storage();
@@ -121,6 +125,7 @@ namespace Dresser {
 			//Universalis.Dispose();
 			GameInterface.Dispose();
 			IconStorage.Dispose();
+			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();
 			ApplyGearChange.Dispose();
 			FrameworkService.Dispose();
@@ -142,6 +147,7 @@ namespace Dresser {
 			//Universalis = null!;
 			GameInterface = null!;
 			IconStorage = null!;
+			HotkeyService = null!;
 			ImageGuiCrop = null!;
 			ApplyGearChange = null!;
 		}

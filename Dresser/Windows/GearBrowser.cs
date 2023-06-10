@@ -5,6 +5,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
 
 using Dresser.Extensions;
+using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
@@ -19,7 +20,7 @@ using System.Numerics;
 using static Dresser.Services.Storage;
 
 namespace Dresser.Windows {
-	public class GearBrowser : Window, IDisposable {
+	public class GearBrowser : Window, IWindowWithHotkey, IDisposable {
 		private Plugin Plugin;
 
 		public GearBrowser(Plugin plugin) : base(
@@ -61,6 +62,27 @@ namespace Dresser.Windows {
 
 		public override void OnOpen() {
 			RecomputeItems();
+		}
+
+		public bool OnHotkey(HotkeyPurpose hotkeyType) {
+			switch (hotkeyType) {
+				case HotkeyPurpose.Up:
+					HotkeyNextSelect = HoveredIncrement - RowSize;
+					if (HotkeyNextSelect < 0) HotkeyNextSelect = 0;
+					return true;
+				case HotkeyPurpose.Down:
+					HotkeyNextSelect = HoveredIncrement + RowSize;
+					if (HotkeyNextSelect > ItemsCount) HotkeyNextSelect = ItemsCount - 1;
+					return true;
+				case HotkeyPurpose.Left:
+					HotkeyNextSelect = HoveredIncrement - 1;
+					return true;
+				case HotkeyPurpose.Right:
+					HotkeyNextSelect = HoveredIncrement + 1;
+					return true;
+				default:
+					return false;
+			}
 		}
 
 		public override void Draw() {
@@ -326,6 +348,10 @@ namespace Dresser.Windows {
 				return Items?.Where(i => i.ItemId == selectedItemCurrentGear?.ItemId).FirstOrDefault();
 			}
 		}
+
+		public int RowSize = 1;
+		public int? HoveredIncrement = null;
+		public int? HotkeyNextSelect = null;
 		public void DrawItems() {
 			PushStyleCollection();
 			Vector2 sideBarSize = new(ConfigurationManager.Config.GearBrowserSideBarSize, 0);
@@ -340,6 +366,9 @@ namespace Dresser.Windows {
 				try {
 
 					bool isTooltipActive = false;
+					var i = 0;
+					bool rowSizeChecked = false;
+					bool hotkeySelected = false;
 
 					foreach (var item in Items) {
 
@@ -349,6 +378,7 @@ namespace Dresser.Windows {
 						bool wasHovered = isHovered;
 
 						var selectedInCurrentGear = itemHash == selectedItemHash;
+						if (selectedInCurrentGear) HoveredIncrement = i;
 						isHovered |= selectedInCurrentGear;
 						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
 						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
@@ -361,11 +391,24 @@ namespace Dresser.Windows {
 						if (iconClicked) {
 							PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
 						}
+						if(HotkeyNextSelect == i && !hotkeySelected) {
+							PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
+							hotkeySelected = true;
+							HotkeyNextSelect = null;
+							ImGui.SetScrollHereY();
+						}
 
 
 						ImGui.SameLine();
-						if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X)
+						if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X) {
+							if (!rowSizeChecked) {
+								rowSizeChecked = true;
+								RowSize = i + 1;
+							}
 							ImGui.NewLine();
+						}
+
+						i++;
 					}
 				} catch (Exception ex) {
 					PluginLog.Error(ex.ToString());

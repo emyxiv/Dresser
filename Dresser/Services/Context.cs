@@ -3,12 +3,14 @@ using CriticalCommonLib.Extensions;
 
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Interface.Windowing;
 
 using Dresser.Interop.Hooks;
 
 using Lumina.Excel.GeneratedSheets;
 
 using System;
+using System.Linq;
 
 namespace Dresser.Services {
 	internal class Context : IDisposable {
@@ -42,7 +44,7 @@ namespace Dresser.Services {
 		public delegate void OnChangeGlamingAtDresserDelegate(bool newIsGlamingAtDresser);
 		public static event OnChangeGlamingAtDresserDelegate? OnChangeGlamingAtDresser;
 
-
+		public Window? LastFocusedWindow = null;
 		public void Refresh() {
 			IsGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
 			if (IsGlamingAtDresser != _lastState_IsGlamingAtDresser) OnChangeGlamingAtDresser?.Invoke(IsGlamingAtDresser);
@@ -50,6 +52,14 @@ namespace Dresser.Services {
 
 			IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
 			IsBrowserWindowOpen = Plugin.GetInstance()?.IsBrowserVisible() ?? false;
+			if (IsCurrentGearWindowOpen) {
+				var windowSystem = Plugin.GetInstance().WindowSystem;
+				if (windowSystem.HasAnyFocus)
+					LastFocusedWindow = windowSystem.Windows.FirstOrDefault(w => w.IsFocused);
+			}
+			else
+				LastFocusedWindow = null;
+
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
 			if (LocalPlayer == null) return;
