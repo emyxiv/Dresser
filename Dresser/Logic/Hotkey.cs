@@ -1,6 +1,10 @@
 ﻿using Dalamud.Game.ClientState.Keys;
+using Dalamud.Interface.Windowing;
+
+using Dresser.Services;
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dresser.Logic {
 	public class Hotkey {
@@ -24,7 +28,15 @@ namespace Dresser.Logic {
 		}
 		private bool OnWindowFocusedHotkey() {
 
-			var focusedWindow = PluginServices.Context.LastFocusedWindow;
+			Window? focusedWindow = null;
+			if (!ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus) {
+				var windowSystem = Plugin.GetInstance().WindowSystem;
+				if (!windowSystem.HasAnyFocus) return false;
+				focusedWindow = windowSystem.Windows.FirstOrDefault(w => w.IsFocused);
+			} else {
+				focusedWindow = PluginServices.Context.LastFocusedWindow;
+			}
+
 			if (focusedWindow == null) return false;
 
 			// make sure this window is of isIWindowWithHotkey interface
@@ -45,14 +57,16 @@ namespace Dresser.Logic {
 
 	}
 	public static class HotkeySetup {
-		public static List<Hotkey> config = new() {
-			new Hotkey(HotkeyPurpose.Up   , new VirtualKey[]{VirtualKey.UP   }, false),
-			new Hotkey(HotkeyPurpose.Down , new VirtualKey[]{VirtualKey.DOWN }, false),
-			new Hotkey(HotkeyPurpose.Left , new VirtualKey[]{VirtualKey.LEFT }, false),
-			new Hotkey(HotkeyPurpose.Right, new VirtualKey[]{VirtualKey.RIGHT}, false),
-		};
 
 		public static void Init() {
+			List<Hotkey> config = new() {
+				new Hotkey(HotkeyPurpose.Up   , new VirtualKey[]{VirtualKey.UP   }, ConfigurationManager.Config.WindowsHotkeysPasstoGame),
+				new Hotkey(HotkeyPurpose.Down , new VirtualKey[]{VirtualKey.DOWN }, ConfigurationManager.Config.WindowsHotkeysPasstoGame),
+				new Hotkey(HotkeyPurpose.Left , new VirtualKey[]{VirtualKey.LEFT }, ConfigurationManager.Config.WindowsHotkeysPasstoGame),
+				new Hotkey(HotkeyPurpose.Right, new VirtualKey[]{VirtualKey.RIGHT}, ConfigurationManager.Config.WindowsHotkeysPasstoGame),
+			};
+
+			PluginServices.HotkeyService.ClearHotkey();
 			foreach (var key in config) {
 				PluginServices.HotkeyService.AddHotkey(key);
 			}

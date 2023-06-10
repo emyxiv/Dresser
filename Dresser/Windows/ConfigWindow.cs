@@ -1,5 +1,6 @@
 using Dalamud.Interface.Windowing;
 
+using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
@@ -31,6 +32,10 @@ public class ConfigWindow : Window, IDisposable {
 		//	//can save immediately on change, if you don't want to provide a "Save and Close" button
 		//	Configuration.Save();
 		//}
+		ImGui.Text($"Behaviors");
+		DrawBehaviourConfigs();
+
+		ImGui.Spacing();
 		ImGui.Text($"Plate Creation");
 		DrawCurrentGearConfigs();
 
@@ -41,6 +46,17 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Spacing();
 		ImGui.Text($"Inventory Memory");
 		DrawInventoryConfigs();
+
+	}
+
+	public void DrawBehaviourConfigs() {
+		ImGui.Checkbox($"(Experimental) Hotkeys after loosing window focus##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus);
+		GuiHelpers.Tooltip("For example, when loosing Gear Browser focus, the directional hotkeys will continue working until another window is focused or dresser is closed");
+
+		if(ImGui.Checkbox($"(Experimental) Pass Hotkeys to the game through window##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysPasstoGame))
+			HotkeySetup.Init();
+
+
 
 	}
 

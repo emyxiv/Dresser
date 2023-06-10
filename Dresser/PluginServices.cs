@@ -67,13 +67,14 @@ namespace Dresser {
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			FrameworkService = new FrameworkService(Service.Framework);
 			HotkeyService = new HotkeyService(FrameworkService, KeyState);
-			HotkeySetup.Init();
 			IconStorage = new IconStorage();
 			ImageGuiCrop = new ImageGuiCrop();
 			Storage = new Storage();
 
 			ConfigurationManager.Load();
 			GameInterface = new GameInterface();
+			HotkeySetup.Init();
+
 
 			//Universalis = new Universalis();
 			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
