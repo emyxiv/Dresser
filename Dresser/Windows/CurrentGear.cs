@@ -73,7 +73,7 @@ public class CurrentGear : Window, IDisposable {
 			PluginServices.ApplyGearChange.ToggleDisplayGear();
 		}
 		ImGui.SameLine();
-		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileExport, $"Overwrite pending plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with actual plate contents", default, "OverwritePendingWithCurrent##CurrentGear")) {
+		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileImport, $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill.", default, "OverwritePendingWithCurrent##CurrentGear")) {
 			PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
 		}
 	}
