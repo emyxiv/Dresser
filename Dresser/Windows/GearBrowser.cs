@@ -242,7 +242,7 @@ namespace Dresser.Windows {
 			if (ImGui.CollapsingHeader($"Sort##Source##GearBrowser", ConfigurationManager.Config.FilterAdditionalCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSortCollapse = true;
 
-				DrawSort();
+				filterChanged |= DrawSort();
 
 			} else
 				ConfigurationManager.Config.FilterSortCollapse = false;
@@ -250,20 +250,20 @@ namespace Dresser.Windows {
 
 			return filterChanged;
 		}
-		private unsafe static void DrawSort() {
+		private unsafe static bool DrawSort() {
+			bool recompute = false;
 			var sortMethods = Enum.GetNames<InventoryItemOrder.OrderMethod>();
 			var MethodsComboSize = ImGui.CalcTextSize(sortMethods.OrderByDescending(m => ImGui.CalcTextSize(m).X).First()).X + (ImGui.GetFontSize() * 2);
 
 			for (int j = 0; j < ConfigurationManager.Config.SortOrder.Count; j++) {
 
 
-				var method = ConfigurationManager.Config.SortOrder[j].Item1;
-
-				var direction = ConfigurationManager.Config.SortOrder[j].Item2;
 				var sorter = ConfigurationManager.Config.SortOrder[j];
+				var method = sorter.Method;
+				var direction = sorter.Direction;
+
 				var methodInt = (int)method;
 				var directionInt = (int)direction;
-				var number = j;
 				int* indexPtr = &j;
 
 				var text = $"{method.ToString().AddSpaceBeforeCapital()} {direction.ToString().AddSpaceBeforeCapital()}";
@@ -271,30 +271,32 @@ namespace Dresser.Windows {
 				ImGui.Selectable(text);
 
 
-				if (ImGui.BeginPopupContextItem($"ContextMenuGearBrowser##{number}")) {
+				if (ImGui.BeginPopupContextItem($"ContextMenuGearBrowser##{j}")) {
 
 					ImGui.Text($"Change {text}:");
 					ImGui.SetNextItemWidth(MethodsComboSize);
-					if(ImGui.Combo($"##ChangeMethodSort##{number}", ref methodInt, sortMethods, sortMethods.Length)) {
+					if(ImGui.Combo($"##ChangeMethodSort##{j}", ref methodInt, sortMethods, sortMethods.Length)) {
 						ConfigurationManager.Config.SortOrder[j] = new() {
 							Method = (InventoryItemOrder.OrderMethod)methodInt,
 							Direction = direction
 						};
-						//ImGui.CloseCurrentPopup();
+						recompute = true;
 					}
 
 					ImGui.SameLine();
-					if(GuiHelpers.IconButton(direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.ArrowUp : Dalamud.Interface.FontAwesomeIcon.ArrowDown, default, $"ChangeDirectionSorter##{number}")){
+					if(GuiHelpers.IconButton(direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.ArrowUp : Dalamud.Interface.FontAwesomeIcon.ArrowDown, default, $"ChangeDirectionSorter##{j}")){
 						ConfigurationManager.Config.SortOrder[j] = new() {
 							Method = method,
 							Direction = direction == InventoryItemOrder.OrderDirection.Ascending ? InventoryItemOrder.OrderDirection.Descending : InventoryItemOrder.OrderDirection.Ascending
 						};
-						//ImGui.CloseCurrentPopup();
+						recompute = true;
 					}
 
 					ImGui.SameLine();
-					if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{number}")) {
+					if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{j}")) {
 						ConfigurationManager.Config.SortOrder.Remove(sorter);
+						recompute = true;
+						ImGui.CloseCurrentPopup();
 					}
 					ImGui.EndPopup();
 
@@ -317,7 +319,7 @@ namespace Dresser.Windows {
 							var tmp = ConfigurationManager.Config.SortOrder[j];
 							ConfigurationManager.Config.SortOrder[j] = ConfigurationManager.Config.SortOrder[payload_j];
 							ConfigurationManager.Config.SortOrder[payload_j] = tmp;
-
+							recompute = true;
 						}
 
 					} catch (Exception e) {
@@ -336,6 +338,7 @@ namespace Dresser.Windows {
 			if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Recycle, "Ctrl + Shift + Click to reset sort oder to default", default, "CleanSorters")) {
 				ConfigurationManager.Config.SortOrder = InventoryItemOrder.Defaults();
 			}
+			return recompute;
 		}
 
 		private static Dictionary<InventoryCategory, int> SavedQuantityInventoryCategoryCache = new();
