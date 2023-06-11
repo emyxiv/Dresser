@@ -332,7 +332,11 @@ namespace Dresser.Windows {
 
 			}
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus, default, "AddSortSorter")) {
-				ConfigurationManager.Config.SortOrder.Add((InventoryItemOrder.OrderMethod.Level, InventoryItemOrder.OrderDirection.Descending));
+				var used = ConfigurationManager.Config.SortOrder.Select(s => s.Method);
+				var available = Enum.GetValues<InventoryItemOrder.OrderMethod>().ToHashSet();
+				var notUsed = available.Except(used).FirstOrDefault();
+
+				ConfigurationManager.Config.SortOrder.Add((notUsed, InventoryItemOrder.OrderDirection.Descending));
 			}
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Recycle, "Ctrl + Shift + Click to reset sort oder to default", default, "CleanSorters")) {
