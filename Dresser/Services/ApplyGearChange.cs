@@ -273,14 +273,7 @@ namespace Dresser.Services {
 
 				PluginServices.ApplyGearChange.DrawListOfItemsForDialogs();
 
-				if (ImGui.Button("Continue##Dialog##Dresser")) {
-					return 1;
-				}
-				ImGui.SameLine();
-				if (ImGui.Button("Stop##Dialog##Dresser")) {
-					return 2;
-				}
-				return -1;
+				return Dialogs.GenericButtonConfirmCancel("Continue", "Stop");
 
 			}, (choice) => {
 				if (choice == 1)
@@ -488,14 +481,11 @@ namespace Dresser.Services {
 					ImGui.TextWrapped($"\"Forget\" will copy the contents of the plates into portable plates.");
 					ImGui.EndDisabled();
 
-					if (ImGui.Button("Keep##Dialog##Dresser")) {
-						return 1;
-					}
-					ImGui.SameLine();
 					if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Trash, $"CTRL + Shift to \"Forget\".\nIt will copy the contents of the plates into portable plates.")) {
 						return 2;
 					}
-					return -1;
+					ImGui.SameLine();
+					return Dialogs.GenericButtonClose();
 
 				}, (choice) => {
 					if (choice == 1)

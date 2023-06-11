@@ -13,6 +13,7 @@ using ImGuiNET;
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 
@@ -68,12 +69,17 @@ public class CurrentGear : Window, IDisposable {
 		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
 		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
 		//ImGui.SameLine();
-		if (GuiHelpers.IconButtonTooltip(ConfigurationManager.Config.CurrentGearDisplayGear ? FontAwesomeIcon.Church : FontAwesomeIcon.Peace, "Display Gear", default, "DisplayGear##CurrentGear")) {
+
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.QuestionCircle, "OpenHelp##CurrentGear", $"Show helps and tricks")) {
+			Help.Open();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(ConfigurationManager.Config.CurrentGearDisplayGear ? FontAwesomeIcon.Church : FontAwesomeIcon.Peace, "DisplayGear##CurrentGear", "Display Gear")) {
 			ConfigurationManager.Config.CurrentGearDisplayGear = !ConfigurationManager.Config.CurrentGearDisplayGear;
 			PluginServices.ApplyGearChange.ToggleDisplayGear();
 		}
 		ImGui.SameLine();
-		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileImport, $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill.", default, "OverwritePendingWithCurrent##CurrentGear")) {
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileImport, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill")) {
 			PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
 		}
 	}

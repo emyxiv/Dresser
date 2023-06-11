@@ -4,6 +4,8 @@ using Dalamud.Utility;
 using ImGuiNET;
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Dresser.Windows.Components {
@@ -32,6 +34,28 @@ namespace Dresser.Windows.Components {
 			ImGui.PopFont();
 			return accepting;
 		}
+
+
+		private static readonly Vector4 invisible = new(1, 1, 1, 0);
+		private static readonly Vector4 hoveredAlpha = new(1, 1, 1, 0.7f);
+		private static readonly Dictionary<string, bool> IconButtonNoBgHovers = new();
+		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+			IconButtonNoBgHovers.TryGetValue(hiddenLabel, out bool wasHovered);
+
+			if (wasHovered) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * hoveredAlpha);
+			ImGui.PushStyleColor(ImGuiCol.Button, invisible);
+			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, invisible);
+			ImGui.PushStyleColor(ImGuiCol.ButtonActive, invisible);
+			bool accepting = IconButton(icon, size, hiddenLabel);
+			ImGui.PopStyleColor(3);
+			if (wasHovered) ImGui.PopStyleColor();
+
+			IconButtonNoBgHovers[hiddenLabel] = ImGui.IsItemHovered();
+			Tooltip(tooltip);
+			return accepting;
+		}
+
+
 		public static bool TextButtonTooltip(string label, string tooltip, Vector2 size = default) {
 			bool accepting = ImGui.Button(label, size);
 			Tooltip(tooltip);
@@ -98,5 +122,8 @@ namespace Dresser.Windows.Components {
 				ImGui.EndTooltip();
 			}
 		}
+
+		public static void OpenBrowser(string url)
+			=> Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
 	}
 }

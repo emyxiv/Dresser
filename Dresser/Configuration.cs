@@ -34,6 +34,16 @@ namespace Dresser {
 		public bool WindowsHotkeysAllowAfterLoosingFocus = false;
 		public bool WindowsHotkeysPasstoGame = false;
 
+		// Help popup
+		public bool CollapsibleIntroductionDisclaimer = true;
+		public bool CollapsibleStarterTips = true;
+		public bool CollapsibleGeneralInformation = true;
+		public bool CollapsibleOtherTips = true;
+		public bool CollapsibleKnownIssues = true;
+
+
+
+
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;
 		public bool FadeIconsIfNotHiddingTooltip = false;

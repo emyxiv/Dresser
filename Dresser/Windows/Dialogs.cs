@@ -51,6 +51,24 @@ namespace Dresser.Windows {
 				}
 			}
 		}
+
+		public static int GenericButtonClose(string? closeText = null) {
+			if (ImGui.Button($"{closeText ?? "Close"}##Dialog##Dresser")) {
+				return 1;
+			}
+			return -1;
+		}
+		public static int GenericButtonConfirmCancel(string? confirmText = null, string? cancelText = null) {
+
+			if (ImGui.Button($"{confirmText ?? "Confirm"}##Dialog##Dresser")) {
+				return 1;
+			}
+			ImGui.SameLine();
+			if (ImGui.Button($"{cancelText ?? "Cancel"}##Dialog##Dresser")) {
+				return 2;
+			}
+			return -1;
+		}
 	}
 
 	public class DialogInfo {
