@@ -121,7 +121,6 @@ namespace Dresser {
 			Dictionary<InventoryCategory, List<InventoryItem>> returnDic = new();
 
 			foreach ((var charId, var invs) in SavedInventories.Where(c => PluginServices.CharacterMonitor.BelongsToActiveCharacter(c.Key) && c.Key != PluginServices.CharacterMonitor.ActiveCharacterId)) {
-				PluginLog.Warning($"GetSavedInventoryLocalCharsRetainers: {charId}");
 				foreach ((var invCat, var list) in invs) {
 
 					List<InventoryItem> tmpList = new();
@@ -131,7 +130,6 @@ namespace Dresser {
 					returnDic[invCat] = tmpList;
 				}
 			}
-			PluginLog.Debug($"total: {string.Join(",", returnDic.Select(c => c.Key))} => {string.Join(",", returnDic.Select(c => c.Value.Count))}");
 			return returnDic;
 		}
 
