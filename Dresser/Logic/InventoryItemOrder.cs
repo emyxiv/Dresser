@@ -20,6 +20,7 @@ namespace Dresser.Logic {
 				Func<InventoryItem, uint>? sortMethod = kind switch {
 					OrderMethod.Level => Level,
 					OrderMethod.ItemLevel => ItemLevel,
+					OrderMethod.ItemId => ItemId,
 					_ => null,
 				};
 
@@ -59,11 +60,14 @@ namespace Dresser.Logic {
 		public enum OrderMethod {
 			Level,
 			ItemLevel,
+			ItemId,
 		}
 
 		private static uint Level(InventoryItem i)
 			=> i.Item.LevelEquip;
 		private static uint ItemLevel(InventoryItem i)
 			=> i.Item.LevelItem.Row;
+		private static uint ItemId(InventoryItem i)
+			=> i.ItemId;
 	}
 }
