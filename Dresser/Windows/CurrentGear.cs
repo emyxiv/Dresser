@@ -36,9 +36,9 @@ public class CurrentGear : Window, IDisposable {
 	}
 
 	public override void PreDraw()
-		=> GearBrowser.PushStyleCollection();
+		=> Styler.PushStyleCollection();
 	public override void PostDraw()
-		=> GearBrowser.PopStyleCollection();
+		=> Styler.PopStyleCollection();
 	public override void OnOpen() {
 		base.OnOpen();
 		PluginServices.ApplyGearChange.EnterBrowsingMode();
@@ -221,7 +221,7 @@ public class CurrentGear : Window, IDisposable {
 		return null;
 	}
 	private static void DrawChildren() {
-		GearBrowser.PopStyleCollection();
+		Styler.PopStyleCollection();
 
 		DrawBottomButtons();
 
@@ -235,6 +235,6 @@ public class CurrentGear : Window, IDisposable {
 			}
 		}
 
-		GearBrowser.PushStyleCollection();
+		Styler.PushStyleCollection();
 	}
 }

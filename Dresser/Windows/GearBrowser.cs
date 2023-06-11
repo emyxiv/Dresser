@@ -34,11 +34,6 @@ namespace Dresser.Windows {
 		public void Dispose() { }
 
 
-		public static Vector4 CollectionColorBackground = new Vector4(113, 98, 119, 200) / 255;
-		public static Vector4 CollectionColorBorder = (new Vector4(116, 123, 98, 255) / 255 * 0.4f) + new Vector4(0, 0, 0, 1);
-		public static Vector4 CollectionColorScrollbar = (new Vector4(116, 123, 98, 255) / 255 * 0.2f) + new Vector4(0, 0, 0, 1);
-		public static Vector4 ColorIconImageTintDisabled = new(1, 1, 1, 0.5f);
-		public static Vector4 ColorIconImageTintEnabled = Vector4.One;
 
 		private static int? HoveredItem = null;
 		private static string Search = "";
@@ -193,7 +188,7 @@ namespace Dresser.Windows {
 
 						if (AddItemKind == AdditionalItem.Currency && PluginServices.Storage.FilterCurrencyItemEx.TryGetValue(inventoryType, out var itex) && itex != null && PluginServices.Storage.FilterCurrencyIconTexture.TryGetValue(inventoryType, out var texWrap) && texWrap != null) {
 							var savedPosX = ImGui.GetCursorPosX();
-							if (ImGui.ImageButton(texWrap.ImGuiHandle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? ColorIconImageTintEnabled : ColorIconImageTintDisabled)) {
+							if (ImGui.ImageButton(texWrap.ImGuiHandle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? Styler.ColorIconImageTintEnabled : Styler.ColorIconImageTintDisabled)) {
 
 
 								filterChanged = true;
@@ -353,7 +348,7 @@ namespace Dresser.Windows {
 		public int? HoveredIncrement = null;
 		public int? HotkeyNextSelect = null;
 		public void DrawItems() {
-			PushStyleCollection();
+			Styler.PushStyleCollection();
 			Vector2 sideBarSize = new(ConfigurationManager.Config.GearBrowserSideBarSize, 0);
 			Vector2 available = ImGui.GetContentRegionAvail();
 			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
@@ -424,28 +419,7 @@ namespace Dresser.Windows {
 			JustRecomputed = false;
 
 			ImGui.EndChildFrame();
-			PopStyleCollection();
-		}
-
-		public static void PushStyleCollection() {
-			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 5f);
-			ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ItemIcon.IconSize / 8f);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 10 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 3 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 7 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleColor(ImGuiCol.FrameBg, ImGui.ColorConvertFloat4ToU32(CollectionColorBackground));
-			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(CollectionColorBorder));
-			ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, ImGui.ColorConvertFloat4ToU32(CollectionColorScrollbar));
-
-
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, ItemIcon.IconSize / 8f);
-			ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 3 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleColor(ImGuiCol.WindowBg, ImGui.ColorConvertFloat4ToU32(CollectionColorBackground));
-		}
-		public static void PopStyleCollection() {
-			ImGui.PopStyleColor(4);
-			ImGui.PopStyleVar(8);
+			Styler.PopStyleCollection();
 		}
 
 

@@ -210,7 +210,7 @@ namespace Dresser.Windows.Components {
 
 
 				if (image != null) {
-					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? GearBrowser.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
+					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? Styler.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
 					ImGui.Image(image.ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
 				} else if (emptySlot != null) {
 					var emptySlotInfo = PluginServices.ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);

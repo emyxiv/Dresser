@@ -19,7 +19,7 @@ namespace Dresser.Windows.Components {
 			var draw = ImGui.GetWindowDrawList();
 
 			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(CurrentGear.CollectionColorTitle);
-			var hoverTextColor = ImGui.ColorConvertFloat4ToU32(GuiHelpers.ColorAddHSV(GearBrowser.CollectionColorBackground * new Vector4(1, 1, 1, 0) + new Vector4(0.2f, 0.2f, 0.2f, 1),0, 0.2f,0.2f));
+			var hoverTextColor = ImGui.ColorConvertFloat4ToU32(GuiHelpers.ColorAddHSV(Styler.CollectionColorBackground * new Vector4(1, 1, 1, 0) + new Vector4(0.2f, 0.2f, 0.2f, 1),0, 0.2f,0.2f));
 
 			draw.AddText(
 				PluginServices.Storage.FontTitle.ImFont,
