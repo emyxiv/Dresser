@@ -5,6 +5,7 @@ using CriticalCommonLib.Models;
 using Dalamud.Configuration;
 using Dalamud.Logging;
 
+using Dresser.Logic;
 using Dresser.Structs.Dresser;
 using Dresser.Windows;
 
@@ -82,11 +83,12 @@ namespace Dresser {
 				});
 			}
 		}
-		public bool FilterSourceCollapse = false;
-		public bool FilterAdditionalCollapse = true;
+		public bool FilterSourceCollapse = true;
+		public bool FilterAdditionalCollapse = false;
 		public bool FilterAdvancedCollapse = true;
 		public bool FilterSortCollapse = true;
 
+		public List<(InventoryItemOrder.OrderMethod Method, InventoryItemOrder.OrderDirection Direction)> SortOrder = new();
 
 
 

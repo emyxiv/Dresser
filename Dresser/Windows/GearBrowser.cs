@@ -241,11 +241,101 @@ namespace Dresser.Windows {
 
 			if (ImGui.CollapsingHeader($"Sort##Source##GearBrowser", ConfigurationManager.Config.FilterAdditionalCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSortCollapse = true;
+
+				DrawSort();
+
 			} else
 				ConfigurationManager.Config.FilterSortCollapse = false;
 
 
 			return filterChanged;
+		}
+		private unsafe static void DrawSort() {
+			var sortMethods = Enum.GetNames<InventoryItemOrder.OrderMethod>();
+			var MethodsComboSize = ImGui.CalcTextSize(sortMethods.OrderByDescending(m => ImGui.CalcTextSize(m).X).First()).X + (ImGui.GetFontSize() * 2);
+
+			for (int j = 0; j < ConfigurationManager.Config.SortOrder.Count; j++) {
+
+
+				var method = ConfigurationManager.Config.SortOrder[j].Item1;
+
+				var direction = ConfigurationManager.Config.SortOrder[j].Item2;
+				var sorter = ConfigurationManager.Config.SortOrder[j];
+				var methodInt = (int)method;
+				var directionInt = (int)direction;
+				var number = j;
+				int* indexPtr = &j;
+
+				var text = $"{method.ToString().AddSpaceBeforeCapital()} {direction.ToString().AddSpaceBeforeCapital()}";
+
+				ImGui.Selectable(text);
+
+
+				if (ImGui.BeginPopupContextItem($"ContextMenuGearBrowser##{number}")) {
+
+					ImGui.Text($"Change {text}:");
+					ImGui.SetNextItemWidth(MethodsComboSize);
+					if(ImGui.Combo($"##ChangeMethodSort##{number}", ref methodInt, sortMethods, sortMethods.Length)) {
+						ConfigurationManager.Config.SortOrder[j] = new() {
+							Method = (InventoryItemOrder.OrderMethod)methodInt,
+							Direction = direction
+						};
+						//ImGui.CloseCurrentPopup();
+					}
+
+					ImGui.SameLine();
+					if(GuiHelpers.IconButton(direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.ArrowUp : Dalamud.Interface.FontAwesomeIcon.ArrowDown, default, $"ChangeDirectionSorter##{number}")){
+						ConfigurationManager.Config.SortOrder[j] = new() {
+							Method = method,
+							Direction = direction == InventoryItemOrder.OrderDirection.Ascending ? InventoryItemOrder.OrderDirection.Descending : InventoryItemOrder.OrderDirection.Ascending
+						};
+						//ImGui.CloseCurrentPopup();
+					}
+
+					ImGui.SameLine();
+					if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{number}")) {
+						ConfigurationManager.Config.SortOrder.Remove(sorter);
+					}
+					ImGui.EndPopup();
+
+				}
+
+				if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip)) {
+
+					ImGui.SetDragDropPayload("DND_ORDER_INDEX", (nint)indexPtr, sizeof(int));
+					ImGui.EndDragDropSource();
+				}
+				if (ImGui.BeginDragDropTarget()) {
+					var payload = ImGui.AcceptDragDropPayload("DND_ORDER_INDEX", ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip);
+
+					try {
+
+						if (payload.DataSize == sizeof(int)) {
+							int payload_j = *(int*)payload.Data;
+
+							// swap
+							var tmp = ConfigurationManager.Config.SortOrder[j];
+							ConfigurationManager.Config.SortOrder[j] = ConfigurationManager.Config.SortOrder[payload_j];
+							ConfigurationManager.Config.SortOrder[payload_j] = tmp;
+
+						}
+
+					} catch (Exception e) {
+						// TODO: fix error on payload sizeof when it's not delivery
+						//PluginLog.Warning(e, "Exception during Drag and Drop");
+					}
+
+					ImGui.EndDragDropTarget();
+				}
+
+			}
+			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus, default, "AddSortSorter")) {
+				ConfigurationManager.Config.SortOrder.Add((InventoryItemOrder.OrderMethod.Level, InventoryItemOrder.OrderDirection.Descending));
+			}
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Recycle, "Ctrl + Shift + Click to reset sort oder to default", default, "CleanSorters")) {
+				ConfigurationManager.Config.SortOrder = InventoryItemOrder.Defaults();
+			}
 		}
 
 		private static Dictionary<InventoryCategory, int> SavedQuantityInventoryCategoryCache = new();
@@ -319,17 +409,10 @@ namespace Dresser.Windows {
 
 					);
 
+			// remove duplicates
+			var uniqueItems = items.GroupBy(i => i.GetHashCode()).Select(i => i.First());
 
-			Items = items
-				// remove duplicates
-				.GroupBy(i => i.GetHashCode()).Select(i => i.First())
-
-				// sort the items
-				//.OrderBy(i => i.Item.EquipSlotCategoryEx)
-				.OrderByDescending(i => i.Item.LevelEquip)
-				//.OrderBy(i => i.Item.LevelItem)
-				.ToList()
-				;
+			Items = InventoryItemOrder.OrderItems(uniqueItems);
 
 			ItemsCount = Items.Count();
 			JustRecomputed = true;

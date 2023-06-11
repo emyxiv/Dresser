@@ -6,6 +6,7 @@ using Dalamud.Logging;
 
 using Dispatch;
 
+using Dresser.Logic;
 using Dresser.Windows;
 
 using Newtonsoft.Json;
@@ -43,6 +44,7 @@ namespace Dresser.Services {
 
 			if (!File.Exists(ConfigurationFile)) {
 				Config = new Configuration();
+				Config.SortOrder = InventoryItemOrder.Defaults();
 				Config.MarkReloaded();
 				return;
 			}
