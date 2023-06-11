@@ -294,7 +294,7 @@ namespace Dresser.Windows {
 
 					ImGui.SameLine();
 					if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{j}")) {
-						ConfigurationManager.Config.SortOrder.Remove(sorter);
+						ConfigurationManager.Config.SortOrder.RemoveAt(j);
 						recompute = true;
 						ImGui.CloseCurrentPopup();
 					}
