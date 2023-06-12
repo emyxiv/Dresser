@@ -89,6 +89,7 @@ namespace Dresser {
 		public bool FilterSortCollapse = true;
 
 		public List<(InventoryItemOrder.OrderMethod Method, InventoryItemOrder.OrderDirection Direction)> SortOrder = new();
+		public Dictionary<string, List<(InventoryItemOrder.OrderMethod Method, InventoryItemOrder.OrderDirection Direction)>>? SavedSortOrders = null;
 
 
 
