@@ -90,7 +90,7 @@ namespace Dresser.Services {
 		}
 
 		public void OpenGlamourDresser() {
-			if (!ConfigurationManager.Config.PendingPlateItems.Any()) {
+			if (!ConfigurationManager.Config.PendingPlateItems.Any(s=>!s.Value.IsEmpty())) {
 				PluginLog.Verbose($"Found found no portable plates, populating them with current");
 				PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 			}
