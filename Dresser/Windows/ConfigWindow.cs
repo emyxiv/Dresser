@@ -1,5 +1,6 @@
 using Dalamud.Interface.Windowing;
 
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
@@ -103,12 +104,12 @@ public class ConfigWindow : Window, IDisposable {
 		}
 		DrawInventoryStatusTable();
 
-		if (!PluginServices.Context.IsGlamingAtDresser)
+		if (!GlamourPlates.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
 		if (ImGui.Button("Forget portable plate changes")) {
 			PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 		}
-		if (!PluginServices.Context.IsGlamingAtDresser) {
+		if (!GlamourPlates.IsAnyPlateSelectionOpen()) {
 			ImGui.EndDisabled();
 			GuiHelpers.Tooltip("The dresser must be opened to copy the plates");
 		}

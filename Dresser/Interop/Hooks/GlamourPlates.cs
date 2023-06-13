@@ -65,6 +65,9 @@ namespace Dresser.Interop.Hooks {
 
 			return isLocked && isActiveMiragePrismMiragePlate && (isActiveMiragePrismPrismBox || isActiveCabinet);
 		}
+		internal unsafe static bool IsAnyPlateSelectionOpen() {
+			return MiragePrismMiragePlateAgent->IsAgentActive();
+		}
 
 		internal unsafe void SetGlamourPlateSlot(MirageSource container, int containerIndex, uint itemId, byte stainId) {
 			this._setGlamourPlateSlot(
