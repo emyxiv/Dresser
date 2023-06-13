@@ -49,6 +49,10 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Text($"Inventory Memory");
 		DrawInventoryConfigs();
 
+		ImGui.Spacing();
+		ImGui.Text($"Plates");
+		DrawPlatesConfig();
+
 	}
 
 	public void DrawBehaviourConfigs() {
@@ -101,7 +105,9 @@ public class ConfigWindow : Window, IDisposable {
 	}
 	public void DrawInventoryConfigs() {
 		DrawInventoryStatusTable();
+	}
 
+	public void DrawPlatesConfig() {
 		if (!GlamourPlates.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
 		var posBefore = ImGui.GetCursorPos();
