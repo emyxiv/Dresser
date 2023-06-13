@@ -38,6 +38,8 @@ namespace Dresser.Services {
 			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68));
 		public readonly GameFontHandle FontRadio =
 			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis36));
+		public readonly GameFontHandle FontConfigHeaders =
+			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic23));
 
 		public Storage() {
 			Dyes = Sheets.GetSheet<Dye>();

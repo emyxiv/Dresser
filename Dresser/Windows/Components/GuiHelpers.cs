@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using Dalamud.Interface.GameFonts;
 using Dalamud.Utility;
 
 using ImGuiNET;
@@ -85,6 +86,36 @@ namespace Dresser.Windows.Components {
 			if (num > 0) {
 				ImGui.PopStyleColor(num);
 			}
+		}
+		public enum Font {
+			Default,
+			Icon,
+			Axis_36,
+			TrumpGothic_184,
+			TrumpGothic_23,
+			TrumpGothic_34,
+			TrumpGothic_68,
+
+			// alias
+			None = Default,
+			Title = TrumpGothic_68,
+			Radio = Axis_36,
+		}
+		public static void TextWithFont(string text, Font font) {
+			ImFontPtr fontPtr = font switch {
+				//Font.Title => PluginServices.Storage.FontTitle.ImFont,
+				Font.Radio => PluginServices.Storage.FontRadio.ImFont,
+				Font.TrumpGothic_68 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68)).ImFont,
+				Font.TrumpGothic_184 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic184)).ImFont,
+				Font.TrumpGothic_23 => PluginServices.Storage.FontConfigHeaders.ImFont,
+				Font.TrumpGothic_34 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic34)).ImFont,
+				Font.Icon => UiBuilder.IconFont,
+				_ => UiBuilder.DefaultFont,
+			};
+
+			ImGui.PushFont(fontPtr);
+			ImGui.Text(text);
+			ImGui.PopFont();
 		}
 		public static Vector2 CalcIconSize(FontAwesomeIcon icon) {
 			ImGui.PushFont(UiBuilder.IconFont);

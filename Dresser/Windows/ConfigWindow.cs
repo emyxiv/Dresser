@@ -1,6 +1,7 @@
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 
+using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
@@ -9,6 +10,7 @@ using Dresser.Windows.Components;
 using ImGuiNET;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -22,7 +24,16 @@ public class ConfigWindow : Window, IDisposable {
 		this.Size = new Vector2(232, 75);
 		this.SizeCondition = ImGuiCond.FirstUseEver;
 
+		sections = new() {
+			{ "Portable Plates", DrawPlatesConfig },
+			{ "Windows & sizing", DrawWindowsAndSizingConfigs },
+			{ "Icons", DrawIconsConfigs },
+			{ "Behaviors", DrawBehaviourConfigs },
+			{ "Inventory Memory", DrawInventoryConfigs },
+		};
 	}
+
+	private Dictionary<string, Action> sections;
 
 	public void Dispose() { }
 
@@ -34,80 +45,83 @@ public class ConfigWindow : Window, IDisposable {
 		//	//can save immediately on change, if you don't want to provide a "Save and Close" button
 		//	Configuration.Save();
 		//}
-		ImGui.Text($"Behaviors");
-		DrawBehaviourConfigs();
 
-		ImGui.Spacing();
-		ImGui.Text($"Plate Creation");
-		DrawCurrentGearConfigs();
+		var draw = ImGui.GetWindowDrawList();
+		var fontSize = ImGui.GetFontSize();
+		var textColor = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]);
+		foreach ((var title, var contents) in sections) {
 
-		ImGui.Spacing();
-		ImGui.Text($"Browser");
-		DrawBrowserConfigs();
+			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize * 0.5f);
 
-		ImGui.Spacing();
-		ImGui.Text($"Inventory Memory");
-		DrawInventoryConfigs();
+			GuiHelpers.TextWithFont(title, GuiHelpers.Font.TrumpGothic_23);
+			var start = ImGui.GetCursorScreenPos();
+			//start += new Vector2(0, fontSize * 0.1f);
+			var titelRectSize = ImGui.GetItemRectSize();
+			var end = start + new Vector2(titelRectSize.X, 0);
+			draw.AddLine(start, end, textColor, fontSize * 0.15f);
+			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize*1.5f);
 
-		ImGui.Spacing();
-		ImGui.Text($"Plates");
-		DrawPlatesConfig();
+			contents();
+			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize * 1.5f);
 
+
+		}
 	}
 
-	public void DrawBehaviourConfigs() {
+	private void DrawBehaviourConfigs() {
 		ImGui.Checkbox($"(Experimental) Hotkeys after loosing window focus##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus);
 		GuiHelpers.Tooltip("For example, when loosing Gear Browser focus, the directional hotkeys will continue working until another window is focused or dresser is closed");
 
 		if(ImGui.Checkbox($"(Experimental) Pass Hotkeys to the game through window##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysPasstoGame))
 			HotkeySetup.Init();
 
+	}
+	private void DrawIconsConfigs() {
 
+		ImGui.Checkbox($"Show items icons##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowImagesInBrowser);
+		ImGui.Checkbox($"Fade unavailable items when hidding tooltips (Hold Alt)##Images##GearBrowserConfig", ref ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip);
 
 	}
 
-	public void DrawCurrentGearConfigs() {
+	private void DrawWindowsAndSizingConfigs() {
 
-		var dyeSize = ConfigurationManager.Config.DyePickerDyeSize.X;
-		if (ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 0.1f, 300f)) {
-			ConfigurationManager.Config.DyePickerDyeSize = new Vector2(dyeSize);
-		}
-	}
-	public void DrawBrowserConfigs() {
 		//ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
 		var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
 		if (ImGui.DragFloat("Icon Size##IconSize##slider", ref iconSizeMult, 0.001f, 0.001f, 4f, "%.3f %")) {
 			ConfigurationManager.Config.IconSizeMult = iconSizeMult;
 			ConfigurationManager.SaveAsync();
 		}
-		ImGui.SameLine();
-		ImGui.Text("%");
-		ImGui.Checkbox($"Show items icons##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowImagesInBrowser);
-		ImGui.Checkbox($"Fade unavailable items when hidding tooltips (Hold Alt)##Images##GearBrowserConfig", ref ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip);
-		//var FilterInventoryCategoryColumnDistribution = ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution;
-		//if(ImGui.DragFloat("Source - column distribution##GearBrowserConfig", ref FilterInventoryCategoryColumnDistribution, 0.005f, -5f, 15f))
-		//	ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution = FilterInventoryCategoryColumnDistribution;
-		var FilterInventoryCategoryColumnNumber = ConfigurationManager.Config.FilterInventoryCategoryColumnNumber;
-		if (ImGui.DragInt("Col # — Source##GearBrowserConfig", ref FilterInventoryCategoryColumnNumber, 0.05f, 1, 5))
-			ConfigurationManager.Config.FilterInventoryCategoryColumnNumber = FilterInventoryCategoryColumnNumber;
-		var FilterInventoryTypeColumnNumber = ConfigurationManager.Config.FilterInventoryTypeColumnNumber;
-		if (ImGui.DragInt("Col # — Unobtained##GearBrowserConfig", ref FilterInventoryTypeColumnNumber, 0.05f, 1, 5))
-			ConfigurationManager.Config.FilterInventoryTypeColumnNumber = FilterInventoryTypeColumnNumber;
-		var GearBrowserSideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
-		if (ImGui.DragFloat("size — Sidebar##GearBrowserConfig", ref GearBrowserSideBarSize, 10f, 20, 2000))
-			ConfigurationManager.Config.GearBrowserSideBarSize = GearBrowserSideBarSize;
 
+		var dyeSize = ConfigurationManager.Config.DyePickerDyeSize.X;
+		if (ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 0.1f, 300f)) {
+			ConfigurationManager.Config.DyePickerDyeSize = new Vector2(dyeSize);
+		}
+
+		ImGui.Spacing();
 		var GearBrowserDisplayMode = (int)ConfigurationManager.Config.GearBrowserDisplayMode;
 		var GearBrowserDisplayMode_items = Enum.GetValues<GearBrowser.DisplayMode>().Select(d => d.ToString()).ToArray();
 		if (ImGui.Combo("Display mode##GearBrowserConfig", ref GearBrowserDisplayMode, GearBrowserDisplayMode_items, GearBrowserDisplayMode_items.Count())) {
 			ConfigurationManager.Config.GearBrowserDisplayMode = (GearBrowser.DisplayMode)GearBrowserDisplayMode;
 		}
+		var GearBrowserSideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
+		if (ImGui.DragFloat("size — Sidebar##GearBrowserConfig", ref GearBrowserSideBarSize, 10f, 20, 2000))
+			ConfigurationManager.Config.GearBrowserSideBarSize = GearBrowserSideBarSize;
+		//var FilterInventoryCategoryColumnDistribution = ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution;
+		//if(ImGui.DragFloat("Source - column distribution##GearBrowserConfig", ref FilterInventoryCategoryColumnDistribution, 0.005f, -5f, 15f))
+		//	ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution = FilterInventoryCategoryColumnDistribution;
+		var FilterInventoryCategoryColumnNumber = ConfigurationManager.Config.FilterInventoryCategoryColumnNumber;
+		if (ImGui.DragInt("Col # — Source##GearBrowserConfig", ref FilterInventoryCategoryColumnNumber, 0.05f, 1, 5))
+		ConfigurationManager.Config.FilterInventoryCategoryColumnNumber = FilterInventoryCategoryColumnNumber;
+		var FilterInventoryTypeColumnNumber = ConfigurationManager.Config.FilterInventoryTypeColumnNumber;
+		if (ImGui.DragInt("Col # — Unobtained##GearBrowserConfig", ref FilterInventoryTypeColumnNumber, 0.05f, 1, 5))
+		ConfigurationManager.Config.FilterInventoryTypeColumnNumber = FilterInventoryTypeColumnNumber;
+
 	}
-	public void DrawInventoryConfigs() {
+	private void DrawInventoryConfigs() {
 		DrawInventoryStatusTable();
 	}
 
-	public void DrawPlatesConfig() {
+	private void DrawPlatesConfig() {
 		if (!GlamourPlates.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
 		var posBefore = ImGui.GetCursorPos();
@@ -126,15 +140,16 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawInventoryStatusTable() {
 
 
-		if (ImGui.BeginTable("CharacterTable", 3, ImGuiTableFlags.BordersV |
+		if (ImGui.BeginTable("CharacterTable", 4, ImGuiTableFlags.BordersV |
 											 ImGuiTableFlags.BordersOuterV |
 											 ImGuiTableFlags.BordersInnerV |
 											 ImGuiTableFlags.BordersH |
 											 ImGuiTableFlags.BordersOuterH |
 											 ImGuiTableFlags.BordersInnerH)) {
-			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)0);
-			ImGui.TableSetupColumn("Items", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)1);
-			ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)2);
+			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 100.0f, 0);
+			ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthStretch, 100.0f, 1);
+			ImGui.TableSetupColumn("Items", ImGuiTableColumnFlags.WidthStretch, 50.0f, 2);
+			ImGui.TableSetupColumn("Actions", ImGuiTableColumnFlags.WidthStretch, 100.0f, 3);
 			ImGui.TableHeadersRow();
 
 			var characters = PluginServices.CharacterMonitor.Characters.Where(c=>c.Value.HouseId == 0).ToArray();
@@ -152,6 +167,9 @@ public class ConfigWindow : Window, IDisposable {
 					ImGui.Text(character.FormattedName);
 					ImGui.SameLine();
 				}
+
+				ImGui.TableNextColumn();
+				ImGui.Text(character.CharacterType.ToString().AddSpaceBeforeCapital());
 
 				ImGui.TableNextColumn();
 				int itemCount = 0;
