@@ -106,12 +106,15 @@ public class ConfigWindow : Window, IDisposable {
 
 		if (!GlamourPlates.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
-		if (ImGui.Button("Forget portable plate changes")) {
+		var posBefore = ImGui.GetCursorPos();
+		if (ImGui.Button("Re-import Glamour Plates and erase pending plates"))
 			PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
-		}
+		var size = ImGui.GetItemRectSize();
 		if (!GlamourPlates.IsAnyPlateSelectionOpen()) {
 			ImGui.EndDisabled();
-			GuiHelpers.Tooltip("The dresser must be opened to copy the plates");
+			ImGui.SetCursorPos(posBefore);
+			ImGui.InvisibleButton($"reimportDisabledTooltim", size);
+			GuiHelpers.Tooltip("The Glamour Dresser or Plate Selection must be opened to copy the plates");
 		}
 
 	}
