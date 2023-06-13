@@ -1,4 +1,5 @@
 using Dalamud.Interface.Windowing;
+using Dalamud.Utility;
 
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
@@ -133,7 +134,7 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch, 100.0f, (uint)2);
 			ImGui.TableHeadersRow();
 
-			var characters = PluginServices.CharacterMonitor.GetPlayerCharacters();
+			var characters = PluginServices.CharacterMonitor.Characters.Where(c=>c.Value.HouseId == 0).ToArray();
 			if (characters.Length == 0) {
 				ImGui.TableNextRow();
 				ImGui.Text("No characters available.");
@@ -144,8 +145,8 @@ public class ConfigWindow : Window, IDisposable {
 				ImGui.TableNextRow();
 				var character = characters[index].Value;
 				ImGui.TableNextColumn();
-				if (character.Name != "") {
-					ImGui.Text(character.Name);
+				if (!character.FormattedName.IsNullOrWhitespace()) {
+					ImGui.Text(character.FormattedName);
 					ImGui.SameLine();
 				}
 
