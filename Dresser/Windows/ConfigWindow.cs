@@ -100,9 +100,6 @@ public class ConfigWindow : Window, IDisposable {
 		}
 	}
 	public void DrawInventoryConfigs() {
-		if (ImGui.Button("Force Save All configs and inventories")) {
-			ConfigurationManager.Save();
-		}
 		DrawInventoryStatusTable();
 
 		if (!GlamourPlates.IsAnyPlateSelectionOpen())
