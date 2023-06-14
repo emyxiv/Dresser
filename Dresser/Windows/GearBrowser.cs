@@ -536,7 +536,7 @@ namespace Dresser.Windows {
 						var selectedInCurrentGear = itemHash == selectedItemHash;
 						if (selectedInCurrentGear) HoveredIncrement = i;
 						isHovered |= selectedInCurrentGear;
-						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive);
+						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, null, ContextMenuBrowser);
 						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
 						if (isHovered)
 							HoveredItem = itemHash;
@@ -583,6 +583,9 @@ namespace Dresser.Windows {
 			Styler.PopStyleCollection();
 		}
 
+		public static void ContextMenuBrowser(InventoryItem item, GlamourPlateSlot? slot) {
+			ImGui.Selectable("Placeholder");
+		}
 
 		private void TestWindow() {
 			if (ImGui.Begin("Test Window")) {

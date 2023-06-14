@@ -225,7 +225,6 @@ public class CurrentGear : Window, IDisposable {
 
 		DrawBottomButtons();
 
-		ItemIcon.DrawContextMenu();
 		if (SlotSelectDye != null) {
 			try {
 				DyePicker.DrawDyePicker((GlamourPlateSlot)SlotSelectDye);
