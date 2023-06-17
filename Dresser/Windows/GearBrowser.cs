@@ -259,101 +259,107 @@ namespace Dresser.Windows {
 			var sortMethods = Enum.GetNames<InventoryItemOrder.OrderMethod>();
 			var MethodsComboSize = ImGui.CalcTextSize(sortMethods.OrderByDescending(m => ImGui.CalcTextSize(m).X).First()).X + (ImGui.GetFontSize() * 2);
 
-			for (int j = 0; j < ConfigurationManager.Config.SortOrder.Count; j++) {
+			if(ConfigurationManager.Config.SortOrder == null)
+				ConfigurationManager.Config.SortOrder = InventoryItemOrder.Defaults();
+			if (ConfigurationManager.Config.SortOrder != null && ConfigurationManager.Config.SortOrder.Count > 0) {
+				for (int j = 0; j < ConfigurationManager.Config.SortOrder.Count; j++) {
 
 
-				var sorter = ConfigurationManager.Config.SortOrder[j];
-				var method = sorter.Method;
-				var direction = sorter.Direction;
+					var sorter = ConfigurationManager.Config.SortOrder[j];
+					var method = sorter.Method;
+					var direction = sorter.Direction;
 
-				var methodInt = (int)method;
-				var directionInt = (int)direction;
-				int* indexPtr = &j;
-
-
-				var text = $"{method.ToString().AddSpaceBeforeCapital()}";
-				var iconDirection = direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.ArrowUp : Dalamud.Interface.FontAwesomeIcon.ArrowDown;
-
-				ImGui.AlignTextToFramePadding();
-				GuiHelpers.Icon(iconDirection);
-				ImGui.SameLine();
-				ImGui.Selectable(text);
+					var methodInt = (int)method;
+					var directionInt = (int)direction;
+					int* indexPtr = &j;
 
 
-				if (ImGui.BeginPopupContextItem($"ContextMenuGearBrowser##{j}")) {
+					var text = $"{method.ToString().AddSpaceBeforeCapital()}";
+					var iconDirection = direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.ArrowUp : Dalamud.Interface.FontAwesomeIcon.ArrowDown;
 
 					ImGui.AlignTextToFramePadding();
 					GuiHelpers.Icon(iconDirection);
 					ImGui.SameLine();
-					ImGui.Text(text);
+					ImGui.Selectable(text);
 
-					ImGui.SetNextItemWidth(MethodsComboSize);
-					if(ImGui.Combo($"##ChangeMethodSort##{j}", ref methodInt, sortMethods, sortMethods.Length)) {
-						ConfigurationManager.Config.SortOrder[j] = new() {
-							Method = (InventoryItemOrder.OrderMethod)methodInt,
-							Direction = direction
-						};
-						recompute = true;
-					}
 
-					ImGui.SameLine();
-					if(GuiHelpers.IconButton(iconDirection, default, $"ChangeDirectionSorter##{j}")){
-						ConfigurationManager.Config.SortOrder[j] = new() {
-							Method = method,
-							Direction = direction == InventoryItemOrder.OrderDirection.Ascending ? InventoryItemOrder.OrderDirection.Descending : InventoryItemOrder.OrderDirection.Ascending
-						};
-						recompute = true;
-					}
+					if (ImGui.BeginPopupContextItem($"ContextMenuGearBrowser##{j}")) {
 
-					ImGui.SameLine();
-					if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{j}")) {
-						ConfigurationManager.Config.SortOrder.RemoveAt(j);
-						recompute = true;
-						ImGui.CloseCurrentPopup();
-					}
-					ImGui.EndPopup();
+						ImGui.AlignTextToFramePadding();
+						GuiHelpers.Icon(iconDirection);
+						ImGui.SameLine();
+						ImGui.Text(text);
 
-				}
-
-				if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip)) {
-
-					ImGui.SetDragDropPayload("DND_ORDER_INDEX", (nint)indexPtr, sizeof(int));
-					ImGui.EndDragDropSource();
-				}
-				if (ImGui.BeginDragDropTarget()) {
-					var payload = ImGui.AcceptDragDropPayload("DND_ORDER_INDEX", ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip);
-
-					try {
-
-						if (payload.DataSize == sizeof(int)) {
-							int payload_j = *(int*)payload.Data;
-
-							// swap
-							var tmp = ConfigurationManager.Config.SortOrder[j];
-							ConfigurationManager.Config.SortOrder[j] = ConfigurationManager.Config.SortOrder[payload_j];
-							ConfigurationManager.Config.SortOrder[payload_j] = tmp;
+						ImGui.SetNextItemWidth(MethodsComboSize);
+						if (ImGui.Combo($"##ChangeMethodSort##{j}", ref methodInt, sortMethods, sortMethods.Length)) {
+							ConfigurationManager.Config.SortOrder[j] = new() {
+								Method = (InventoryItemOrder.OrderMethod)methodInt,
+								Direction = direction
+							};
 							recompute = true;
 						}
 
-					} catch (Exception e) {
-						// TODO: fix error on payload sizeof when it's not delivery
-						//PluginLog.Warning(e, "Exception during Drag and Drop");
+						ImGui.SameLine();
+						if (GuiHelpers.IconButton(iconDirection, default, $"ChangeDirectionSorter##{j}")) {
+							ConfigurationManager.Config.SortOrder[j] = new() {
+								Method = method,
+								Direction = direction == InventoryItemOrder.OrderDirection.Ascending ? InventoryItemOrder.OrderDirection.Descending : InventoryItemOrder.OrderDirection.Ascending
+							};
+							recompute = true;
+						}
+
+						ImGui.SameLine();
+						if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{j}")) {
+							ConfigurationManager.Config.SortOrder.RemoveAt(j);
+							recompute = true;
+							ImGui.CloseCurrentPopup();
+						}
+						ImGui.EndPopup();
+
 					}
 
-					ImGui.EndDragDropTarget();
-				}
+					if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip)) {
 
+						ImGui.SetDragDropPayload("DND_ORDER_INDEX", (nint)indexPtr, sizeof(int));
+						ImGui.EndDragDropSource();
+					}
+					if (ImGui.BeginDragDropTarget()) {
+						var payload = ImGui.AcceptDragDropPayload("DND_ORDER_INDEX", ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip);
+
+						try {
+
+							if (payload.DataSize == sizeof(int)) {
+								int payload_j = *(int*)payload.Data;
+
+								// swap
+								var tmp = ConfigurationManager.Config.SortOrder[j];
+								ConfigurationManager.Config.SortOrder[j] = ConfigurationManager.Config.SortOrder[payload_j];
+								ConfigurationManager.Config.SortOrder[payload_j] = tmp;
+								recompute = true;
+							}
+
+						} catch (Exception) {
+							// TODO: fix error on payload sizeof when it's not delivery
+							//PluginLog.Warning(e, "Exception during Drag and Drop");
+						}
+
+						ImGui.EndDragDropTarget();
+					}
+
+				}
 			}
 
 			ImGui.Separator();
 			ImGui.Spacing();
 
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus, default, "AddSortSorter")) {
-				var used = ConfigurationManager.Config.SortOrder.Select(s => s.Method);
-				var available = Enum.GetValues<InventoryItemOrder.OrderMethod>().ToHashSet();
-				var notUsed = available.Except(used).FirstOrDefault();
+				if (ConfigurationManager.Config.SortOrder != null) {
+					var used = ConfigurationManager.Config.SortOrder.Select(s => s.Method);
+					var available = Enum.GetValues<InventoryItemOrder.OrderMethod>().ToHashSet();
+					var notUsed = available.Except(used).FirstOrDefault();
 
-				ConfigurationManager.Config.SortOrder.Add((notUsed, InventoryItemOrder.OrderDirection.Descending));
+					ConfigurationManager.Config.SortOrder?.Add((notUsed, InventoryItemOrder.OrderDirection.Descending));
+				}
 			}
 			ImGui.SameLine();
 			if (ConfigurationManager.Config.SavedSortOrders == null) ConfigurationManager.Config.SavedSortOrders = new();
@@ -365,7 +371,7 @@ namespace Dresser.Windows {
 				do {
 					newKey = new string(Enumerable.Repeat(chars, 3).Select(s => s[random.Next(s.Length)]).ToArray());
 				} while (ConfigurationManager.Config.SavedSortOrders.ContainsKey(newKey));
-				ConfigurationManager.Config.SavedSortOrders.Add(newKey, ConfigurationManager.Config.SortOrder);
+				ConfigurationManager.Config.SavedSortOrders.Add(newKey, ConfigurationManager.Config.SortOrder!);
 			}
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Recycle, "Hold Ctrl + Shift and Click to reset sort oder to default", default, "CleanSorters")) {

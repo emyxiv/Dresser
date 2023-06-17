@@ -15,7 +15,7 @@ namespace Dresser.Logic {
 		public static IEnumerable<InventoryItem> OrderItems(IEnumerable<InventoryItem> items) {
 			IOrderedEnumerable<InventoryItem>? orderedItems = null;
 
-			foreach((var kind, var direction) in ConfigurationManager.Config.SortOrder) {
+			foreach((var kind, var direction) in ConfigurationManager.Config.SortOrder!) {
 
 				Func<InventoryItem, uint>? sortMethod = kind switch {
 					OrderMethod.Level => Level,
