@@ -1,19 +1,9 @@
-﻿using Dalamud.Interface.Components;
-
+﻿using Dresser.Extensions;
 using Dresser.Services;
-
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 using ImGuiNET;
 
-using Lumina.Data.Parsing;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dresser.Windows.Components {
 	internal class Help {
@@ -58,7 +48,7 @@ namespace Dresser.Windows.Components {
 
 				ImGui.PushStyleColor(ImGuiCol.Button, DiscordColor);
 				if (ImGui.Button("Discord"))
-					GuiHelpers.OpenBrowser("https://discord.gg/kXwKDFjXBd");
+					"https://discord.gg/kXwKDFjXBd".OpenBrowser();
 				ImGui.PopStyleColor();
 
 			} else

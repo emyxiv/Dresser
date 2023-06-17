@@ -27,6 +27,7 @@ namespace Dresser {
 		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
 		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
 
+		public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static FrameworkService FrameworkService { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
 		public static OdrScanner OdrScanner { get; private set; } = null!;
@@ -70,6 +71,7 @@ namespace Dresser {
 			IconStorage = new IconStorage();
 			ImageGuiCrop = new ImageGuiCrop();
 			Storage = new Storage();
+			ChatUtilities = new ChatUtilities();
 
 			ConfigurationManager.Load();
 			GameInterface = new GameInterface();
@@ -136,6 +138,7 @@ namespace Dresser {
 			InventoryMonitor = null!;
 			InventoryScanner = null!;
 			CharacterMonitor = null!;
+			ChatUtilities = null!;
 			Context = null!;
 			GameUi = null!;
 			TryOn = null!;

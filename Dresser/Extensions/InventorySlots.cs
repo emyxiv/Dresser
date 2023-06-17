@@ -4,7 +4,6 @@ using Dresser.Structs.Actor;
 using Dresser.Structs.Dresser;
 
 using System;
-using System.Text.RegularExpressions;
 
 using static Dresser.Services.Storage;
 
@@ -58,11 +57,6 @@ namespace Dresser.Extensions {
 				_ => throw new NotImplementedException()
 			};
 		}
-
-
-		private static Regex AddSpaceBeforeCapitalRegex = new(@"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", RegexOptions.Compiled);
-		public static string AddSpaceBeforeCapital(this string str)
-			=> AddSpaceBeforeCapitalRegex.Replace(str, " $0");
 
 		public static string ToFormattedName(this CriticalInventoryType type) {
 			if ((InventoryTypeExtra)type >= InventoryTypeExtra.AllItems) return ((InventoryTypeExtra)type).ToString().AddSpaceBeforeCapital();

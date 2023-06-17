@@ -153,8 +153,5 @@ namespace Dresser.Windows.Components {
 				ImGui.EndTooltip();
 			}
 		}
-
-		public static void OpenBrowser(string url)
-			=> Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
 	}
 }

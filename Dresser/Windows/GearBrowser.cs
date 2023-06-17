@@ -583,8 +583,28 @@ namespace Dresser.Windows {
 			Styler.PopStyleCollection();
 		}
 
-		public static void ContextMenuBrowser(InventoryItem item, GlamourPlateSlot? slot) {
-			ImGui.Selectable("Placeholder");
+		public static void ContextMenuBrowser(InventoryItem itemInv, GlamourPlateSlot? slot) {
+
+			var item = itemInv.Item;
+			if (ImGui.Selectable("Open in Garland Tools"))
+				item.OpenInGarlandTools();
+			if (ImGui.Selectable("Open in Teamcraft"))
+				item.OpenInTeamcraft();
+			if (ImGui.Selectable("Open in Gamer Escape"))
+				item.OpenInGamerEscape();
+
+			if (ImGui.Selectable("Open in Universalis"))
+				item.OpenInUniversalis();
+			if (ImGui.Selectable("Copy Name"))
+				item.CopyNameToClipboard();
+			if (ImGui.Selectable("Link"))
+				item.LinkInChatHistory();
+
+			if (item.CanTryOn && ImGui.Selectable("Try On") && PluginServices.TryOn.CanUseTryOn)
+				PluginServices.TryOn.TryOnItem(item);
+			if (item.CanOpenCraftLog && ImGui.Selectable("Open Crafting Log"))
+				PluginServices.GameInterface.OpenCraftingLog(item.RowId);
+
 		}
 
 		private void TestWindow() {

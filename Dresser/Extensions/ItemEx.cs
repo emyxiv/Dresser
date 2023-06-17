@@ -7,6 +7,9 @@ using Dresser.Structs.Dresser;
 
 using ImGuiScene;
 
+using Lumina.Data;
+
+using System;
 using System.Linq;
 
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
@@ -79,5 +82,31 @@ namespace Dresser.Extensions {
 			return PluginServices.IconStorage.Get(itemEx);
 		}
 
+
+
+		public static void OpenInGarlandTools(this CriticalItemEx item)
+			=> $"https://www.garlandtools.org/db/#item/{item.RowId}".OpenBrowser();
+		public static void OpenInTeamcraft(this CriticalItemEx item)
+			=> $"https://ffxivteamcraft.com/db/en/item/{item.RowId}".OpenBrowser();
+
+		public static void OpenInGamerEscape(this CriticalItemEx item) {
+			var enItem = Service.Data.Excel.GetSheet<CriticalItemEx>(Language.English)?.GetRow(item.RowId);
+			if (enItem != null)
+				$"https://ffxiv.gamerescape.com/w/index.php?search={Uri.EscapeDataString(enItem.NameString)}".OpenBrowser();
+		}
+		public static void OpenInUniversalis(this CriticalItemEx item)
+			=> $"https://universalis.app/market/{item.RowId}".OpenBrowser();
+		public static void CopyNameToClipboard(this CriticalItemEx item)
+			=> item.NameString.ToClipboard();
+		public static void LinkInChatHistory(this CriticalItemEx item)
+			=> PluginServices.ChatUtilities.LinkItem(item);
+		public static void TryOn(this CriticalItemEx item) {
+			if (item.CanTryOn && PluginServices.TryOn.CanUseTryOn)
+				PluginServices.TryOn.TryOnItem(item);
+		}
+		public static void OpenCraftingLog(this CriticalItemEx item) {
+			if (item.CanOpenCraftLog)
+				PluginServices.GameInterface.OpenCraftingLog(item.RowId);
+		}
 	}
 }
