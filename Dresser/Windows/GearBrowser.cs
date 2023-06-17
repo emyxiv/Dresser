@@ -374,8 +374,10 @@ namespace Dresser.Windows {
 				ConfigurationManager.Config.SavedSortOrders.Add(newKey, ConfigurationManager.Config.SortOrder!);
 			}
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Recycle, "Hold Ctrl + Shift and Click to reset sort oder to default", default, "CleanSorters")) {
-				ConfigurationManager.Config.SortOrder = InventoryItemOrder.Defaults();
+			if (GuiHelpers.IconButtonTooltip(Dalamud.Interface.FontAwesomeIcon.Recycle, "Restore default order sets", default, "RestoreDefaultSorters")) {
+				if (ConfigurationManager.Config.SavedSortOrders == null)
+					ConfigurationManager.Config.SavedSortOrders = new();
+				ConfigurationManager.Config.SavedSortOrders = ConfigurationManager.Config.SavedSortOrders.Concat(InventoryItemOrder.DefaultSets()).ToLookup(pair => pair.Key, pair => pair.Value).ToDictionary(group=>group.Key,group=>group.First());
 			}
 
 			return recompute;

@@ -49,6 +49,16 @@ namespace Dresser.Logic {
 					(OrderMethod.ItemLevel, OrderDirection.Descending),
 					(OrderMethod.Level, OrderDirection.Descending),
 				};
+		public static Dictionary<string, List<(OrderMethod Method, OrderDirection Direction)>> DefaultSets()
+		=> new() {
+			{"Ilvl, Lvl", new() {
+					(OrderMethod.ItemLevel, OrderDirection.Descending),
+					(OrderMethod.Level, OrderDirection.Descending),
+				} },
+			{"item id", new() {
+					(OrderMethod.ItemId, OrderDirection.Descending),
+				} },
+		};
 
 
 
