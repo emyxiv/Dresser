@@ -112,40 +112,56 @@ namespace Dresser.Windows {
 			ImGui.BeginGroup();
 			DrawItems();
 			ImGui.EndGroup();
-			ImGui.SameLine();
+			if (!ConfigurationManager.Config.GearBrowserSideBarHide) {
+				ImGui.SameLine();
 
-			ImGui.BeginGroup();
-			ImGui.BeginChildFrame(84, ImGui.GetContentRegionAvail() - new Vector2(0, 0));
-			if (DrawFilters()) RecomputeItems();
-			ImGui.EndChildFrame();
-			ImGui.EndGroup();
+				ImGui.BeginGroup();
+				ImGui.BeginChildFrame(84, ImGui.GetContentRegionAvail() - new Vector2(0, 0));
+				if (DrawFilters()) RecomputeItems();
+				ImGui.EndChildFrame();
+				ImGui.EndGroup();
+			}
 
 		}
 		private void DrawSearchBar() {
 
+			ImGui.AlignTextToFramePadding();
 			var available = ImGui.GetContentRegionAvail().X;
 			float sideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
 
-			var isSidebarTooBig = available > sideBarSize;
-			var size = isSidebarTooBig ? available - sideBarSize : available;
-
+			var isSidebarFitting = available > sideBarSize;
+			float searchFrameMult = isSidebarFitting ? 2.5f : 1f;
+			if (ConfigurationManager.Config.GearBrowserSideBarHide) isSidebarFitting = false;
+			var size = isSidebarFitting ? available - sideBarSize : available;
+			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding * searchFrameMult);
 			ImGui.SetNextItemWidth(size);
 			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
 				RecomputeItems();
-			if(isSidebarTooBig) ImGui.SameLine();
+
+			if(isSidebarFitting) ImGui.SameLine();
 			ImGui.Text($"Found: {ItemsCount}");
 
 			ImGui.SameLine();
 
+			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? Dalamud.Interface.FontAwesomeIcon.Columns : Dalamud.Interface.FontAwesomeIcon.Expand;
+
 			var spacing = ImGui.GetContentRegionAvail().X
+				- GuiHelpers.CalcIconSize(sidebarShowHideIcon).X // setting icon
 				- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.Cog).X // setting icon
-				- ImGui.GetStyle().ItemInnerSpacing.X // * by number of icon, cause it's between them (and left end item)
-				- (ImGui.GetStyle().FramePadding.X * 2); // * by number of icons x2, cause on each sides of the icon
+				- ImGui.GetStyle().ItemInnerSpacing.X * 2 // * by number of icon, cause it's between them (and left end item)
+				- (ImGui.GetStyle().FramePadding.X * 4); // * by number of icons x2, cause on each sides of the icon
 			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
+
+
+			if (GuiHelpers.IconButton(sidebarShowHideIcon)) {
+				ConfigurationManager.Config.GearBrowserSideBarHide = !ConfigurationManager.Config.GearBrowserSideBarHide;
+			}
+			ImGui.SameLine();
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
-				this.Plugin.DrawConfigUI();
+				this.Plugin.ToggleConfigUI();
 			}
 
+			ImGui.PopStyleVar();
 
 		}
 		private static bool DrawFilters() {
@@ -535,7 +551,9 @@ namespace Dresser.Windows {
 			Styler.PushStyleCollection();
 			Vector2 sideBarSize = new(ConfigurationManager.Config.GearBrowserSideBarSize, 0);
 			Vector2 available = ImGui.GetContentRegionAvail();
-			var size = available.X > sideBarSize.X ? available - sideBarSize : available;
+			var isSidebarFitting = available.X > sideBarSize.X;
+			if (ConfigurationManager.Config.GearBrowserSideBarHide) isSidebarFitting = false;
+			var size = isSidebarFitting ? available - sideBarSize : available;
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
 

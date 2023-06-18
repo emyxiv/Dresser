@@ -59,6 +59,7 @@ namespace Dresser {
 		public int FilterInventoryCategoryColumnNumber { get; set; } = 1;
 		public int FilterInventoryTypeColumnNumber { get; set; } = 1;
 		public float GearBrowserSideBarSize { get; set; } = 300f;
+		public bool GearBrowserSideBarHide = false;
 		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnRight;
 
 		public void LoadFilterInventoryCategory() {

@@ -136,6 +136,9 @@ namespace Dresser {
 		private void DrawUI() {
 			this.WindowSystem.Draw();
 		}
+		public void ToggleConfigUI() {
+			ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
+		}
 
 		public void DrawConfigUI() {
 			ConfigWindow.IsOpen = true;
