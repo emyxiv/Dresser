@@ -105,6 +105,7 @@ public class CurrentGear : Window, IDisposable {
 		ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates);
 		bool anythingHovered = false;
 		for (ushort plateNumber = 0; plateNumber < maxPlates; plateNumber++) {
+			var isFreePlate = plateNumber + 1 > Storage.PlateNumber;
 			var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
 			var imageInfo = isActive ? radioActive : radioInActive;
 
@@ -113,9 +114,8 @@ public class CurrentGear : Window, IDisposable {
 			ImGui.Image(imageInfo.Item1, radioSize, imageInfo.Item2, imageInfo.Item3, tint);
 			var clicked = ImGui.IsItemClicked();
 			var hovering = ImGui.IsItemHovered();
-
-			GuiHelpers.Tooltip(() => {
-				var plateName  = plateNumber > Storage.PlateNumber ? $"Free Plate {plateNumber + 1 - Storage.PlateNumber}" : $"Plate {plateNumber + 1}";
+			if(!isFreePlate) GuiHelpers.Tooltip(() => {
+				var plateName = isFreePlate ? $"Free Plate {plateNumber + 1 - Storage.PlateNumber}" : $"Plate {plateNumber + 1}";
 				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.TrumpGothic_184);
 				GearSets.FetchGearSets();
 				GearSets.RelatedGearSetNamesImgui(plateNumber);
