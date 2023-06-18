@@ -21,6 +21,7 @@ namespace Dresser.Logic {
 					OrderMethod.Level => Level,
 					OrderMethod.ItemLevel => ItemLevel,
 					OrderMethod.ItemId => ItemId,
+					OrderMethod.ItemPatch => ItemPatch,
 					_ => null,
 				};
 
@@ -51,11 +52,12 @@ namespace Dresser.Logic {
 				};
 		public static Dictionary<string, List<(OrderMethod Method, OrderDirection Direction)>> DefaultSets()
 		=> new() {
-			{"Ilvl, Lvl", new() {
+			{"Ilvl & Lvl", new() {
 					(OrderMethod.ItemLevel, OrderDirection.Descending),
 					(OrderMethod.Level, OrderDirection.Descending),
 				} },
-			{"item id", new() {
+			{"Newer first", new() {
+					(OrderMethod.ItemPatch, OrderDirection.Descending),
 					(OrderMethod.ItemId, OrderDirection.Descending),
 				} },
 		};
@@ -71,6 +73,7 @@ namespace Dresser.Logic {
 			Level,
 			ItemLevel,
 			ItemId,
+			ItemPatch,
 		}
 
 		private static uint Level(InventoryItem i)
@@ -79,5 +82,7 @@ namespace Dresser.Logic {
 			=> i.Item.LevelItem.Row;
 		private static uint ItemId(InventoryItem i)
 			=> i.ItemId;
+		private static uint ItemPatch(InventoryItem i)
+			=> (uint)(i.Item.GetPatch() * 100);
 	}
 }
