@@ -18,6 +18,7 @@ namespace Dresser.Services {
 		public bool IsGlamingAtDresser = false;
 		public bool IsCurrentGearWindowOpen = false;
 		public bool IsBrowserWindowOpen = false;
+		public bool IsAnyPlateSelectionOpen => GlamourPlates.IsAnyPlateSelectionOpen();
 		public ushort? SelectedPlate = null;
 
 		public PlayerCharacter? LocalPlayer = null;
