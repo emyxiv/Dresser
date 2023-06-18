@@ -92,11 +92,14 @@ namespace Dresser.Windows.Components {
 						ImGui.SameLine();
 						ImGui.BeginGroup();
 						ImGui.TextColored(rarityColor, $"{item.FormattedName}");
-						ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
-						ImGui.SameLine();
-						ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
-						ImGui.SameLine();
-						ImGui.TextColored(ColorGreyDark, $"]");
+						if (ConfigurationManager.Config.IconTooltipShowDev) {
+							ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
+							ImGui.SameLine();
+							ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
+							ImGui.SameLine();
+							ImGui.TextColored(ColorGreyDark, $"]");
+						}
+						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.GetPatch()}]");
 						if (isDyeable) ImGui.TextColored(dye?.RowId != 0 ? ColorGoodLight : ColorGrey, $"{dye?.Name}");
 
 						ImGui.EndGroup();

@@ -48,6 +48,7 @@ namespace Dresser {
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;
 		public bool FadeIconsIfNotHiddingTooltip = false;
+		public bool IconTooltipShowDev = false;
 		public bool ShowImagesInBrowser = true;
 		public bool filterCurrentJob = true;
 		public bool filterCurrentRace = true;
