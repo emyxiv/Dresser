@@ -90,7 +90,11 @@ namespace Dresser.Windows.Components {
 		public enum Font {
 			Default,
 			Icon,
+			Axis_12,
+			Axis_14,
+			Axis_18,
 			Axis_36,
+			Axis_96,
 			TrumpGothic_184,
 			TrumpGothic_23,
 			TrumpGothic_34,
@@ -105,6 +109,10 @@ namespace Dresser.Windows.Components {
 			ImFontPtr fontPtr = font switch {
 				//Font.Title => PluginServices.Storage.FontTitle.ImFont,
 				Font.Radio => PluginServices.Storage.FontRadio.ImFont,
+				Font.Axis_12 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis12)).ImFont,
+				Font.Axis_14 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis14)).ImFont,
+				Font.Axis_18 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis18)).ImFont,
+				Font.Axis_96 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis96)).ImFont,
 				Font.TrumpGothic_68 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68)).ImFont,
 				Font.TrumpGothic_184 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic184)).ImFont,
 				Font.TrumpGothic_23 => PluginServices.Storage.FontConfigHeaders.ImFont,
@@ -137,21 +145,26 @@ namespace Dresser.Windows.Components {
 		}
 
 
+		public static bool AnyItemTooltiping = false;
 		public static void Tooltip(string text) {
-			if (!text.IsNullOrWhitespace() && ImGui.IsItemHovered()) {
+			if (!AnyItemTooltiping && !text.IsNullOrWhitespace() && ImGui.IsItemHovered()) {
+				AnyItemTooltiping = true;
 				ImGui.BeginTooltip();
 				ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);
 				ImGui.TextUnformatted(text);
 				ImGui.PopTextWrapPos();
 				ImGui.EndTooltip();
-			}
+			} else
+				AnyItemTooltiping = false;
 		}
 		public static void Tooltip(Action action) {
-			if (ImGui.IsItemHovered()) {
+			if (!AnyItemTooltiping && ImGui.IsItemHovered()) {
+				AnyItemTooltiping = true;
 				ImGui.BeginTooltip();
 				action();
 				ImGui.EndTooltip();
-			}
+			} else
+				AnyItemTooltiping = false;
 		}
 	}
 }

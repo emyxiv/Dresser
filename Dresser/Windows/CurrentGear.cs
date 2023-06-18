@@ -114,6 +114,14 @@ public class CurrentGear : Window, IDisposable {
 			var clicked = ImGui.IsItemClicked();
 			var hovering = ImGui.IsItemHovered();
 
+			GuiHelpers.Tooltip(() => {
+				var plateName  = plateNumber > Storage.PlateNumber ? $"Free Plate {plateNumber + 1 - Storage.PlateNumber}" : $"Plate {plateNumber + 1}";
+				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.TrumpGothic_184);
+				GearSets.FetchGearSets();
+				GearSets.RelatedGearSetNamesImgui(plateNumber);
+				ImGui.Spacing();
+			});
+
 			if (plateNumber < Storage.PlateNumber) {
 				var spacer = plateNumber < 9 ? " " : "";
 				draw.AddText(
