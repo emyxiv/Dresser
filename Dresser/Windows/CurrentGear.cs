@@ -100,23 +100,29 @@ public class CurrentGear : Window, IDisposable {
 
 		Vector4 restColor = new(1, 1, 1, opacityRadio);
 		Vector4 hoverColor = new(1, 1, 1, 1);
+		Vector4 ActiveColor = new(1, 0.95f, 0.8f, 1);
 
+		ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates);
 		bool anythingHovered = false;
-		for (ushort plateNumber = 0; plateNumber < Storage.PlateNumber; plateNumber++) {
-			var imageInfo = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber ? radioActive : radioInActive;
+		for (ushort plateNumber = 0; plateNumber < maxPlates; plateNumber++) {
+			var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
+			var imageInfo = isActive ? radioActive : radioInActive;
 
 			var tint = PlateSlotButtonHovering == plateNumber ? hoverColor : restColor;
+			if (isActive) tint = ActiveColor;
 			ImGui.Image(imageInfo.Item1, radioSize, imageInfo.Item2, imageInfo.Item3, tint);
 			var clicked = ImGui.IsItemClicked();
 			var hovering = ImGui.IsItemHovered();
 
-			var spacer = plateNumber < 9 ? " " : "";
-			draw.AddText(
-				PluginServices.Storage.FontRadio.ImFont,
-				fontSize,
-				ImGui.GetCursorScreenPos() + textPlacement,
-				ImGui.ColorConvertFloat4ToU32(CollectionColorRadio),
-				$"{spacer}{plateNumber + 1}");
+			if (plateNumber < Storage.PlateNumber) {
+				var spacer = plateNumber < 9 ? " " : "";
+				draw.AddText(
+					PluginServices.Storage.FontRadio.ImFont,
+					fontSize,
+					ImGui.GetCursorScreenPos() + textPlacement,
+					ImGui.ColorConvertFloat4ToU32(CollectionColorRadio),
+					$"{spacer}{plateNumber + 1}");
+			}
 
 			if (clicked) {
 				// Change selected plate
@@ -128,12 +134,22 @@ public class CurrentGear : Window, IDisposable {
 				anythingHovered |= true;
 				PlateSlotButtonHovering = plateNumber;
 			}
+			if ((plateNumber + 1) % ConfigurationManager.Config.NumberofPendingPlateNextColumn == 0 && plateNumber + 1 != maxPlates) {
+				ImGui.EndGroup();
+				ImGui.SameLine();
+
+				var cp = ImGui.GetCursorPos();
+				ImGui.SetCursorPosX(cp.X - (radioSize.X * 0.2f));
+				ImGui.SetCursorPosY(cp.Y + (radioSize.Y * 0.22f));
+				ImGui.BeginGroup();
+			}
+
 		}
 		if (!anythingHovered) PlateSlotButtonHovering = null;
 
 		ImGui.PopStyleVar();
 		ImGui.EndGroup();
-		ImGui.SameLine(radioOiriginalSize.X);
+		ImGui.SameLine();
 	}
 
 	private static GlamourPlateSlot? HoveredSlot = null;

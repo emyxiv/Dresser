@@ -55,7 +55,11 @@ namespace Dresser.Services {
 
 			var slot = item.Item.GlamourPlateSlot();
 
-			if (slot != null && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) {
+			if (slot != null) {
+				if(!ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
+					plate = new();
+					ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
+				}
 				plate.SetSlot((GlamourPlateSlot)slot, item.Copy());
 			}
 

@@ -123,6 +123,25 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void DrawPlatesConfig() {
+
+		int numFreePlates = ConfigurationManager.Config.NumberOfFreePendingPlates;
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 2);
+		if (ImGui.DragInt("Number of free portable plates",ref numFreePlates,1,0,20)) {
+			if (numFreePlates > 20) numFreePlates = 20;
+			if (numFreePlates < 0) numFreePlates = 0;
+			ConfigurationManager.Config.NumberOfFreePendingPlates = (ushort)numFreePlates;
+		}
+		GuiHelpers.Tooltip("These are plates detached to vanilla's plates.\nTheir purpose is to try and mess around with glamours, or be used as temporary store.");
+		int breakAtPlateButton = ConfigurationManager.Config.NumberofPendingPlateNextColumn;
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 2);
+		if (ImGui.DragInt("Plate selection column length",ref breakAtPlateButton,1,1,20)) {
+			if (breakAtPlateButton > 20) breakAtPlateButton = 20;
+			if (breakAtPlateButton < 1) breakAtPlateButton = 1;
+
+			ConfigurationManager.Config.NumberofPendingPlateNextColumn = (ushort)breakAtPlateButton;
+		}
+		GuiHelpers.Tooltip("Plate buttons column will break after this plate number");
+
 		if (!GlamourPlates.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
 		var posBefore = ImGui.GetCursorPos();

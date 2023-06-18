@@ -27,6 +27,8 @@ namespace Dresser {
 
 		public InventoryItemSet DisplayPlateItems { get; set; } = new();
 		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();
+		public ushort NumberOfFreePendingPlates { get; set; } = 19;
+		public ushort NumberofPendingPlateNextColumn { get; set; } = 20;
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearDisplayGear = false;
 
