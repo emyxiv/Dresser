@@ -1,5 +1,6 @@
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
+using CriticalCommonLib.Sheets;
 
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
@@ -613,6 +614,43 @@ namespace Dresser.Windows {
 			if (item.CanOpenCraftLog && ImGui.Selectable("Open Crafting Log"))
 				PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 
+			DrawSameModels(itemInv);
+
+		}
+		public static void DrawSameModels(InventoryItem item) {
+
+			var sharedModels = item.Item.GetSharedModels();
+			if (sharedModels != null && sharedModels.Any()) {
+				ImGui.Spacing();
+				ImGui.Text("Shared model:");
+				DrawListOfItemIcons(sharedModels);
+			}
+		}
+
+		private static int DrawListOfItemIconsHoveredIcon = -1;
+		public static void DrawListOfItemIcons(List<ItemEx> items)
+			=> DrawListOfItemIcons(items.Select(i => InventoryItemExtensions.New(i.RowId, 0)).ToList());
+		public static void DrawListOfItemIcons(List<InventoryItem> items) {
+			if (!items.Any()) return;
+			bool isAnotherTooltipActive = false;
+			int iconKey = 0;
+			var sizeMod = 0.45f;
+
+			var slot = items.First().Item.GlamourPlateSlot();
+			foreach (var item in items) {
+				bool isHovering = iconKey == DrawListOfItemIconsHoveredIcon;
+				if(ItemIcon.DrawIcon(item, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod)) {
+					PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
+				}
+				if (isHovering) DrawListOfItemIconsHoveredIcon = iconKey;
+				iconKey++;
+				ImGui.SameLine();
+				if(iconKey % 5 == 0) {
+					ImGui.NewLine();
+				}
+			}
+
+			if (!isAnotherTooltipActive) DrawListOfItemIconsHoveredIcon = -1;
 		}
 
 		private void TestWindow() {
