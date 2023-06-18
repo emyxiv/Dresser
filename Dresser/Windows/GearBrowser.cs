@@ -122,12 +122,26 @@ namespace Dresser.Windows {
 
 		}
 		private void DrawSearchBar() {
+
+			var available = ImGui.GetContentRegionAvail().X;
+			float sideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
+
+			var isSidebarTooBig = available > sideBarSize;
+			var size = isSidebarTooBig ? available - sideBarSize : available;
+
+			ImGui.SetNextItemWidth(size);
 			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
 				RecomputeItems();
-			ImGui.SameLine();
+			if(isSidebarTooBig) ImGui.SameLine();
 			ImGui.Text($"Found: {ItemsCount}");
 
 			ImGui.SameLine();
+
+			var spacing = ImGui.GetContentRegionAvail().X
+				- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.Cog).X // setting icon
+				- ImGui.GetStyle().ItemInnerSpacing.X // * by number of icon, cause it's between them (and left end item)
+				- (ImGui.GetStyle().FramePadding.X * 2); // * by number of icons x2, cause on each sides of the icon
+			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
 				this.Plugin.DrawConfigUI();
 			}
