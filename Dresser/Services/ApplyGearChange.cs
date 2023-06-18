@@ -111,6 +111,8 @@ namespace Dresser.Services {
 				foreach ((var index, var item) in AppearanceBackupEquip) {
 					PluginServices.Context.LocalPlayer?.Equip(index, item);
 				}
+			AppearanceBackupEquip = null;
+
 		}
 		public void ApplyCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
