@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
       <LangVersion>10</LangVersion>
-      <Version>0.0.1.21</Version>
+      <Version>0.0.1.22</Version>
       <AssemblyName>Dresser</AssemblyName>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
