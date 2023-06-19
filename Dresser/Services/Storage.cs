@@ -98,15 +98,15 @@ namespace Dresser.Services {
 		public enum AdditionalItem {
 			None = 0,
 			All = 1,
-			Vendor = 2,
+			ObtainedAt = 2,
 			Currency = 3,
 		}
 		// InventoryTypeExtra must match AdditionalItem * 1000000 + (currency item id OR other)
 		public enum InventoryTypeExtra {
 			AllItems = 1000000,
 
-			CalamityVendor = 2000001,
-			RelicVendor = 2000002,
+			CalamityVendors = 2000001,
+			RelicVendors = 2000002,
 			SquareStore = 2000003,
 
 			//StormSeal = 3000020,
@@ -171,9 +171,9 @@ namespace Dresser.Services {
 		// all items
 		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems };
 		// vendor
-		public static Dictionary<InventoryType, Func<ItemEx, bool>> FilterVendorAllowedNames = new() {
-			{ (InventoryType) InventoryTypeExtra.CalamityVendor , (i) => {return i.IsSoldByAnyVendor(new string[] {"Calamity salvager", "journeyman salvager"}); } },
-			{ (InventoryType) InventoryTypeExtra.RelicVendor , (i) => {return i.IsSoldByAnyVendor(new string[] {"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor"}); } },
+		public static Dictionary<InventoryType, Func<ItemEx, bool>> FilterUnobtainedFromCustomSource = new() {
+			{ (InventoryType) InventoryTypeExtra.CalamityVendors , (i) => {return i.IsSoldByAnyVendor(new string[] {"Calamity salvager", "journeyman salvager"}); } },
+			{ (InventoryType) InventoryTypeExtra.RelicVendors , (i) => {return i.IsSoldByAnyVendor(new string[] {"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor"}); } },
 			{ (InventoryType) InventoryTypeExtra.SquareStore , i => i.PurchasedSQStore },
 		};
 		// currency
@@ -196,14 +196,14 @@ namespace Dresser.Services {
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.All][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
 		}
-		private void LoadAdditional_Vendor() {
+		private void LoadAdditional_Custom() {
 
-			foreach ((var inventoryType, var filterFunction) in FilterVendorAllowedNames) {
+			foreach ((var inventoryType, var filterFunction) in FilterUnobtainedFromCustomSource) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems.Where((itemPair) => {
 					return itemPair.Value.ModelMain != 0 && filterFunction(itemPair.Value);
 				}).Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
 
-				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Vendor][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
+				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.ObtainedAt][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
 		}
 		private void LoadAdditional_Currency() {
@@ -219,7 +219,7 @@ namespace Dresser.Services {
 		public void LoadAdditionalItems() {
 			Task.Run(async delegate {
 				await Task.Run(() => LoadAdditional_All());
-				await Task.Run(() => LoadAdditional_Vendor());
+				await Task.Run(() => LoadAdditional_Custom());
 				await Task.Run(() => LoadAdditional_Currency());
 			});
 		}

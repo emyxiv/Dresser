@@ -210,7 +210,7 @@ namespace Dresser.Windows {
 				ImGui.BeginGroup();
 				int i = 0;
 				foreach ((var AddItemKind, var option) in PluginServices.Storage.FilterNames) {
-					ImGui.TextDisabled(AddItemKind.ToString());
+					ImGui.TextDisabled(AddItemKind.ToString().AddSpaceBeforeCapital());
 					foreach ((var inventoryType, var addItemTitle) in option) {
 						var numberOfItems = SavedQuantityCacheGet(inventoryType);
 
