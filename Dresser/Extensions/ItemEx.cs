@@ -10,6 +10,7 @@ using ImGuiScene;
 using Lumina.Data;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
@@ -108,5 +109,8 @@ namespace Dresser.Extensions {
 			if (item.CanOpenCraftLog)
 				PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 		}
+
+		public static bool IsSoldByAnyVendor(this CriticalItemEx item, IEnumerable<string> vendorNames)
+			=> Service.ExcelCache.ShopCollection.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular)));
 	}
 }

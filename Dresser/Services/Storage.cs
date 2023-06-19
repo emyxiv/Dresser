@@ -170,9 +170,9 @@ namespace Dresser.Services {
 		// all items
 		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems };
 		// vendor
-		public static Dictionary<InventoryType, HashSet<string>> FilterVendorAllowedNames = new() {
-			{ (InventoryType) InventoryTypeExtra.CalamityVendor , new(){"Calamity salvager", "journeyman salvager"} },
-			{ (InventoryType) InventoryTypeExtra.RelicVendor , new(){"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor", } },
+		public static Dictionary<InventoryType, Func<ItemEx, bool>> FilterVendorAllowedNames = new() {
+			{ (InventoryType) InventoryTypeExtra.CalamityVendor , (i) => {return i.IsSoldByAnyVendor(new string[] {"Calamity salvager", "journeyman salvager"}); } },
+			{ (InventoryType) InventoryTypeExtra.RelicVendor , (i) => {return i.IsSoldByAnyVendor(new string[] {"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor"}); } },
 		};
 		// currency
 		public Dictionary<InventoryType, uint> FilterCurrencyIds;
@@ -196,10 +196,11 @@ namespace Dresser.Services {
 		}
 		private void LoadAdditional_Vendor() {
 
-			foreach ((var inventoryType, var allowedVendorsForType) in FilterVendorAllowedNames) {
+			foreach ((var inventoryType, var filterFunction) in FilterVendorAllowedNames) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems.Where((itemPair) => {
-					return itemPair.Value.ModelMain != 0 && Service.ExcelCache.ShopCollection.GetShops(itemPair.Key).Any(s => s.ENpcs.Any(n => allowedVendorsForType.Any(av => av == n.Resident!.Singular)));
+					return itemPair.Value.ModelMain != 0 && filterFunction(itemPair.Value);
 				}).Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
+
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Vendor][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
 		}
