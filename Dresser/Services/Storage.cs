@@ -107,6 +107,7 @@ namespace Dresser.Services {
 
 			CalamityVendor = 2000001,
 			RelicVendor = 2000002,
+			SquareStore = 2000003,
 
 			//StormSeal = 3000020,
 			//SerpentSeal = 3000021,
@@ -173,6 +174,7 @@ namespace Dresser.Services {
 		public static Dictionary<InventoryType, Func<ItemEx, bool>> FilterVendorAllowedNames = new() {
 			{ (InventoryType) InventoryTypeExtra.CalamityVendor , (i) => {return i.IsSoldByAnyVendor(new string[] {"Calamity salvager", "journeyman salvager"}); } },
 			{ (InventoryType) InventoryTypeExtra.RelicVendor , (i) => {return i.IsSoldByAnyVendor(new string[] {"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor"}); } },
+			{ (InventoryType) InventoryTypeExtra.SquareStore , i => i.PurchasedSQStore },
 		};
 		// currency
 		public Dictionary<InventoryType, uint> FilterCurrencyIds;
