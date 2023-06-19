@@ -125,6 +125,18 @@ namespace Dresser.Windows.Components {
 			ImGui.Text(text);
 			ImGui.PopFont();
 		}
+		public static void TextRight(string text, float offset = 0) {
+			// Careful: use of ImGui.GetContentRegionAvail().X without - WidthMargin()
+			offset = ImGui.GetContentRegionAvail().X - offset - ImGui.CalcTextSize(text).X;
+			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
+			ImGui.TextUnformatted(text);
+		}
+		public static void TextCenter(string text, float offset = 0) {
+			// Careful: use of ImGui.GetContentRegionAvail().X without - WidthMargin()
+			offset = ImGui.GetContentRegionAvail().X * 0.5f - offset - ImGui.CalcTextSize(text).X * 0.5f;
+			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
+			ImGui.TextUnformatted(text);
+		}
 		public static Vector2 CalcIconSize(FontAwesomeIcon icon) {
 			ImGui.PushFont(UiBuilder.IconFont);
 			var size = ImGui.CalcTextSize(icon.ToIconString());

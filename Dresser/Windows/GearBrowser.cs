@@ -262,9 +262,70 @@ namespace Dresser.Windows {
 				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
+				var numberInputFrameWidth = ImGui.GetFontSize() * 2;
 				// todo: level
+				ImGui.SetNextItemWidth(numberInputFrameWidth);
+				if (filterChanged |= ImGui.DragFloat($"##Min##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.X, 1, 1, 90, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+					if (ConfigurationManager.Config.filterEquipLevel.Y < ConfigurationManager.Config.filterEquipLevel.X) ConfigurationManager.Config.filterEquipLevel.Y = ConfigurationManager.Config.filterEquipLevel.X;
+				}
+				ImGui.SameLine();
+				ImGui.SetNextItemWidth(numberInputFrameWidth);
+				if(filterChanged |= ImGui.DragFloat($"##Max##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.Y, 1, 1, 90, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+					if (ConfigurationManager.Config.filterEquipLevel.X > ConfigurationManager.Config.filterEquipLevel.Y) ConfigurationManager.Config.filterEquipLevel.X = ConfigurationManager.Config.filterEquipLevel.Y;
+				}
+				ImGui.SameLine();
+				ImGui.Text("Equip Level");
 				// todo: ilvl
+				ImGui.SetNextItemWidth(numberInputFrameWidth);
+				if (filterChanged |= ImGui.DragFloat($"##Min##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.X, 1, 1, 665, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+					if (ConfigurationManager.Config.filterItemLevel.Y < ConfigurationManager.Config.filterItemLevel.X) ConfigurationManager.Config.filterItemLevel.Y = ConfigurationManager.Config.filterItemLevel.X;
+				}
+				ImGui.SameLine();
+				ImGui.SetNextItemWidth(numberInputFrameWidth);
+				if (filterChanged |= ImGui.DragFloat($"##Max##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.Y, 1, 1, 665, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+					if (ConfigurationManager.Config.filterItemLevel.X > ConfigurationManager.Config.filterItemLevel.Y) ConfigurationManager.Config.filterItemLevel.X = ConfigurationManager.Config.filterItemLevel.Y;
+				}
+				ImGui.SameLine();
+				ImGui.Text("Item Level");
+
 				// todo: rarity
+				Vector4? selectedRarityColor = null;
+				var hoveredAlphaMod = new Vector4(1, 1, 1, 0.5f);
+				if (ConfigurationManager.Config.filterRarity.HasValue && ConfigurationManager.Config.filterRarity.Value < PluginServices.Storage.RarityColors.Count)
+					if (PluginServices.Storage.RarityColors.TryGetValue(ConfigurationManager.Config.filterRarity.Value, out var selectedRarityColor2))
+						selectedRarityColor = selectedRarityColor2;
+
+				if (selectedRarityColor.HasValue) {
+					ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered]);
+					ImGui.PushStyleColor(ImGuiCol.FrameBg, selectedRarityColor.Value * hoveredAlphaMod);
+					ImGui.PushStyleColor(ImGuiCol.Button, selectedRarityColor.Value * hoveredAlphaMod);
+				}
+
+				ImGui.SetNextItemWidth(numberInputFrameWidth * 2 + ImGui.GetStyle().ItemSpacing.X);
+				if (ImGui.BeginCombo("Rarity##Filters##GearBrowser", selectedRarityColor.HasValue ? "" : "Any")) {
+					var newItemSpacing = new Vector2(ImGui.GetFontSize() * 0.2f);
+					ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, newItemSpacing);
+					if (filterChanged |= ImGui.Selectable($"##Any##Rarity##Filters##GearBrowser"))
+						ConfigurationManager.Config.filterRarity = null;
+					ImGui.SameLine();
+					GuiHelpers.TextCenter("Any", newItemSpacing.X);
+
+					var buttonSize = new Vector2(ImGui.GetContentRegionAvail().X,ImGui.GetTextLineHeightWithSpacing());
+					foreach ((var rarityValue, var rarityCol) in PluginServices.Storage.RarityColors) {
+						if (!PluginServices.Storage.RarityAllowed.Contains(rarityValue)) continue;
+						ImGui.PushStyleColor(ImGuiCol.Button, rarityCol * hoveredAlphaMod);
+						ImGui.PushStyleColor(ImGuiCol.ButtonHovered, rarityCol);
+						if (!filterChanged && (filterChanged |= ImGui.Button($"##{rarityValue}##Rarity##Filters##GearBrowser", buttonSize))) {
+							ConfigurationManager.Config.filterRarity = rarityValue;
+							ImGui.CloseCurrentPopup();
+						}
+						ImGui.PopStyleColor(2);
+
+					}
+					ImGui.PopStyleVar();
+					ImGui.EndCombo();
+				}
+				if (selectedRarityColor.HasValue) ImGui.PopStyleColor(3);
 				// todo: dyeable only / not dyeable / all
 				// todo: dyed with
 			} else
@@ -518,6 +579,8 @@ namespace Dresser.Windows {
 					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
 					&& SelectedSlot == i.Item.GlamourPlateSlot()
 					&& i.IsFilterDisplayable()
+					&& i.IsInFilterLevelRanges()
+					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Rarity == ConfigurationManager.Config.filterRarity)
 					&& i.Item.CanBeEquipedByPlayedRaceGender()
 					&& (
 						//!Search.IsNullOrWhitespace() &&

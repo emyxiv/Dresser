@@ -54,6 +54,10 @@ namespace Dresser {
 		public bool ShowImagesInBrowser = true;
 		public bool filterCurrentJob = true;
 		public bool filterCurrentRace = true;
+		public Vector2 filterEquipLevel = new(1, 90);
+		public Vector2 filterItemLevel = new(1, 665);
+		public byte? filterRarity = null;
+
 		public Dictionary<InventoryCategory, bool> FilterInventoryCategory { get; set; } = new();
 		public float FilterInventoryCategoryColumnDistribution { get; set; } = 1.5f;
 		public int FilterInventoryCategoryColumnNumber { get; set; } = 1;

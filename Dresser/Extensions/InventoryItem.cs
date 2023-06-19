@@ -56,6 +56,16 @@ namespace Dresser.Extensions {
 
 		public static bool IsAppearanceDifferent(this CriticalInventoryItem item, CriticalInventoryItem? item2)
 			=> (item?.ItemId ?? 0) != (item2?.ItemId ?? 0) || (item?.Stain ?? 0) != (item2?.Stain ?? 0);
+		public static bool IsInFilterLevelRanges(this CriticalInventoryItem item) {
+			var elmin = ConfigurationManager.Config.filterEquipLevel.X;
+			var elmax = ConfigurationManager.Config.filterEquipLevel.Y;
+			var el = item.Item.LevelEquip;
+			var ilmin = ConfigurationManager.Config.filterItemLevel.X;
+			var ilmax = ConfigurationManager.Config.filterItemLevel.Y;
+			var il = item.Item.LevelItem.Row;
+
+			return elmin <= el && el <= elmax && ilmin <= il && il <= ilmax;
+		}
 
 		public static string FormattedInventoryCategoryType(this CriticalInventoryItem item) {
 			var cat = item.SortedCategory;

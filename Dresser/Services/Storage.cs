@@ -34,6 +34,7 @@ namespace Dresser.Services {
 		public MiragePage[]? Pages = null;
 		public MiragePage? DisplayPage = null;
 		public Dictionary<byte, Vector4> RarityColors = new();
+		public HashSet<byte> RarityAllowed = new() { 1, 2, 3, 4, 7 };
 		public readonly GameFontHandle FontTitle =
 			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68));
 		public readonly GameFontHandle FontRadio =
