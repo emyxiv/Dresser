@@ -26,7 +26,7 @@ namespace Dresser.Windows.Components {
 
 		private static int DyeLastSubOrder = -1;
 		private const int DyePickerWidth = 485;
-		public static unsafe void DrawDyePicker(GlamourPlateSlot slot) {
+		public static void DrawDyePicker(GlamourPlateSlot slot) {
 			PopupSelect.HoverPopupWindow(
 				PopupSelect.HoverPopupWindowFlags.SearchBar
 				| PopupSelect.HoverPopupWindowFlags.TwoDimenssion
@@ -38,15 +38,7 @@ namespace Dresser.Windows.Components {
 				DrawDyePickerHeader,
 				DrawDyePickerItem,
 				(i) => { // on Select
-
 					PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, slot, (byte)i.RowId);
-					//if (equipObj is WeaponEquip wep) {
-					//	wep.Dye = (byte)i.RowId;
-					//	Target->Equip((int)slot, wep);
-					//} else if (equipObj is ItemEquip item) {
-					//	item.Dye = (byte)i.RowId;
-					//	Target->Equip(SlotToIndex(slot), item);
-					//}
 				},
 				CloseDyePicker, // on close
 				ref DyeSearch,

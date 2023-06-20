@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Interop.Hooks;
+using Dresser.Windows;
 
 using Lumina.Excel.GeneratedSheets;
 
@@ -18,6 +19,7 @@ namespace Dresser.Services {
 		public bool IsGlamingAtDresser = false;
 		public bool IsCurrentGearWindowOpen = false;
 		public bool IsBrowserWindowOpen = false;
+		public bool IsDyePickerPopupOpen = false;
 		public bool IsAnyPlateSelectionOpen => GlamourPlates.IsAnyPlateSelectionOpen();
 		public ushort? SelectedPlate = null;
 
@@ -52,24 +54,29 @@ namespace Dresser.Services {
 			_lastState_IsGlamingAtDresser = IsGlamingAtDresser;
 
 			IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
-			IsBrowserWindowOpen = Plugin.GetInstance()?.IsBrowserVisible() ?? false;
+
 			if (IsCurrentGearWindowOpen) {
+				IsBrowserWindowOpen = Plugin.GetInstance()?.IsBrowserVisible() ?? false;
+				IsDyePickerPopupOpen = CurrentGear.SlotSelectDye != null;
 				var windowSystem = Plugin.GetInstance().WindowSystem;
 				if (windowSystem.HasAnyFocus)
 					LastFocusedWindow = windowSystem.Windows.FirstOrDefault(w => w.IsFocused);
-			}
-			else
+			} else {
 				LastFocusedWindow = null;
+				IsBrowserWindowOpen = false;
+				IsDyePickerPopupOpen = false;
+			}
 
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
-			if (LocalPlayer == null) return;
+			if (LocalPlayer != null) {
+				LocalPlayerCharacterId = PluginServices.CharacterMonitor?.ActiveCharacterId ?? 0;
+				LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];
+				LocalPlayerGender = LocalPlayer.Customize[(int)CustomizeIndex.Gender] == 0 ? CharacterSex.Male : CharacterSex.Female;
+				LocalPlayerClass = LocalPlayer.ClassJob.GameData;
+				LocalPlayerLevel = LocalPlayer.Level;
+			}
 
-			LocalPlayerCharacterId = PluginServices.CharacterMonitor?.ActiveCharacterId ?? 0;
-			LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];
-			LocalPlayerGender = LocalPlayer.Customize[(int)CustomizeIndex.Gender] == 0 ? CharacterSex.Male : CharacterSex.Female;
-			LocalPlayerClass = LocalPlayer.ClassJob.GameData;
-			LocalPlayerLevel = LocalPlayer.Level;
 		}
 	}
 }
