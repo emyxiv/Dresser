@@ -202,7 +202,6 @@ public class CurrentGear : Window, IDisposable {
 				else if (!isHovered && wasHovered)
 					HoveredSlot = null;
 				if (iconClicked) {
-					if (SlotSelectDye != null) SlotSelectDye = slot;
 					PluginServices.ApplyGearChange.ExecuteCurrentItem(slot);
 				}
 
@@ -217,13 +216,12 @@ public class CurrentGear : Window, IDisposable {
 		ImGui.EndGroup();
 	}
 
-	public static GlamourPlateSlot? SlotSelectDye = null;
 	private static void ContextMenuCurrent(InventoryItem item, GlamourPlateSlot? slot) {
 		if (ImGui.Selectable("Remove Item Image from Plate"))
 			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item);
 
 		if (ImGui.Selectable("Dye")) {
-			SlotSelectDye = slot;
+			Plugin.GetInstance().DyePicker.IsOpen = true;
 			//PluginServices.ApplyGearChange.ExecuteCurrentContextDye(item);
 		}
 
@@ -251,14 +249,7 @@ public class CurrentGear : Window, IDisposable {
 
 		DrawBottomButtons();
 
-		if (SlotSelectDye != null) {
-			try {
-				DyePicker.DrawDyePicker((GlamourPlateSlot)SlotSelectDye);
-
-			} catch (Exception ex) {
-				PluginLog.Error(ex, "Error in DrawDyePicker");
-			}
-		}
+		if (!Plugin.GetInstance().DyePicker.IsOpen && Plugin.GetInstance().DyePicker.MustDraw) Plugin.GetInstance().DyePicker.IsOpen = true;
 
 		Styler.PushStyleCollection();
 	}
