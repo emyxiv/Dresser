@@ -118,7 +118,6 @@ namespace Dresser {
 			TryOn.Dispose();
 			GameUi.Dispose();
 			CharacterMonitor.Dispose();
-			PluginLog.Debug("leaving dresserrrrrrrrrrrrrrrrrrrrrrrr");
 
 			Context.Dispose();
 

@@ -33,6 +33,7 @@ namespace Dresser {
 		public bool CurrentGearDisplayGear = false;
 
 		public Vector2 DyePickerDyeSize = new(30);
+		public bool DyePickerKeepApplyOnNewItem = false;
 
 		public bool WindowsHotkeysAllowAfterLoosingFocus = false;
 		public bool WindowsHotkeysPasstoGame = false;

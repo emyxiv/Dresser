@@ -221,8 +221,10 @@ public class CurrentGear : Window, IDisposable {
 			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item);
 
 		if (ImGui.Selectable("Dye")) {
+
+
+			if (slot.HasValue) PluginServices.ApplyGearChange.SelectCurrentSlot(slot.Value);
 			Plugin.GetInstance().DyePicker.IsOpen = true;
-			//PluginServices.ApplyGearChange.ExecuteCurrentContextDye(item);
 		}
 
 		if (ImGui.Selectable("Remove Dye"))

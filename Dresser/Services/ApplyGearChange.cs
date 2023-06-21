@@ -53,21 +53,30 @@ namespace Dresser.Services {
 			//		);
 			//}
 
-			var slot = item.Item.GlamourPlateSlot();
+
+			var clonedItem = item.Clone();
+			if (Plugin.DyePicker.IsOpen && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem && DyePicker.CurrentDye != null) {
+				clonedItem.Stain = (byte)DyePicker.CurrentDye.RowId;
+			}
+
+			var slot = clonedItem.Item.GlamourPlateSlot();
 
 			if (slot != null) {
 				if(!ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
 					plate = new();
 					ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
 				}
-				plate.SetSlot((GlamourPlateSlot)slot, item.Copy());
+				plate.SetSlot((GlamourPlateSlot)slot, clonedItem);
 			}
 
-			Service.ClientState.LocalPlayer?.Equip(item);
+			Service.ClientState.LocalPlayer?.Equip(clonedItem);
 		}
-		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
+		public void SelectCurrentSlot(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
 			GearBrowser.RecomputeItems();
+		}
+		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
+			SelectCurrentSlot(slot);
 			Plugin.OpenGearBrowserIfClosed();
 			Plugin.UncollapseGearBrowserIfCollapsed();
 		}

@@ -641,6 +641,8 @@ namespace Dresser.Windows {
 						if (selectedInCurrentGear) HoveredIncrement = i;
 						isHovered |= selectedInCurrentGear;
 						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, null, ContextMenuBrowser);
+						var hoverDown = !selectedInCurrentGear && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
+
 						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
 						if (isHovered)
 							HoveredItem = itemHash;
@@ -648,7 +650,7 @@ namespace Dresser.Windows {
 							HoveredItem = null;
 
 						// execute when clicked
-						if (iconClicked) {
+						if (iconClicked || hoverDown) {
 							PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
 						}
 						if(HotkeyNextSelect == i && !hotkeySelected) {

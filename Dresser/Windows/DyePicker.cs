@@ -35,18 +35,13 @@ public class DyePicker :  Window, IDisposable {
 
 	public override void Draw() {
 		DrawLogic();
+		if(ImGui.IsKeyPressed(ImGuiKey.Escape)) this.IsOpen = false;
 	}
-
 
 	public bool MustDraw = false;
 	public override bool DrawConditions() {
 		return PluginServices.Context.IsCurrentGearWindowOpen;
 	}
-	//public override void PreOpenCheck() {
-	//	if (MustDraw && !this.IsOpen) this.IsOpen = true;
-	//	if (!MustDraw && this.IsOpen) this.IsOpen = false;
-	//	base.PreOpenCheck();
-	//}
 
 	public override void OnClose() {
 		MustDraw = false;
@@ -54,10 +49,6 @@ public class DyePicker :  Window, IDisposable {
 		base.OnClose();
 	}
 
-	//public override void Update() {
-	//	//if(this.)
-	//	base.Update();
-	//}
 
 	//  Method
 	// Constants
@@ -70,16 +61,14 @@ public class DyePicker :  Window, IDisposable {
 	private const int FastScrollLineJump = 8; // number of lines on the screen?
 
 	// Properties
-	private static bool Focus = false;
 	private static bool SearchBarValidated = false;
-	public static int LastSelectedItemKey = 0;
-	public static int Columns = 12;
-	public static int IndexKey = 0;
-	public static Dye? ItemForHeader = null;
-	public float MinWidth = 400f;
-	public string SearchBarLabel = $"##dye_search";
-	public string SearchBarHint = "Search...";
-	public string DyeNameSearch = "";
+	private static int LastSelectedItemKey = 0;
+	private static int Columns = 12;
+	private static int IndexKey = 0;
+	public static Dye? CurrentDye = null;
+	private string SearchBarLabel = $"##dye_search";
+	private string SearchBarHint = "Search...";
+	private string DyeNameSearch = "";
 
 	private static int RowFromKey(int key) => (int)Math.Floor((double)(key / Columns));
 	private static int ColFromKey(int key) => key % Columns;
@@ -89,9 +78,7 @@ public class DyePicker :  Window, IDisposable {
 
 	private void DrawLogic() {
 
-		Focus = ImGui.IsWindowFocused() || ImGui.IsWindowHovered();
-
-		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - (ImGui.GetStyle().FramePadding.X * 2));
+		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - (ImGui.GetFontSize() *0.15f));
 		SearchBarValidated = ImGui.InputTextWithHint(SearchBarLabel, SearchBarHint, ref DyeNameSearch, 32, ImGuiInputTextFlags.EnterReturnsTrue);
 
 		if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) && !ImGui.IsAnyItemActive() && !ImGui.IsMouseClicked(ImGuiMouseButton.Left))
@@ -107,54 +94,54 @@ public class DyePicker :  Window, IDisposable {
 			dyesFiltered = Dyes.Where(i => i.Name.Contains(DyeNameSearch2, StringComparison.OrdinalIgnoreCase));
 		}
 
-		IndexKey = 0;
-		bool isOneSelected = false; // allows one selection per foreach
+		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ConfigurationManager.Config.DyePickerDyeSize * 0.15f);
+		ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 100);
+		try {
 
-		foreach (var i in dyesFiltered) {
-			bool selecting = false;
-			bool isCurrentActive = IndexKey == LastSelectedItemKey;
+			IndexKey = 0;
+			bool isOneSelected = false; // allows one selection per foreach
 
-			var drawnLineTurpe = DrawDyePickerItem(i, isCurrentActive);
-			Focus |= ImGui.IsItemFocused();
-			selecting |= drawnLineTurpe.Item1;
-			Focus |= drawnLineTurpe.Item2;
+			foreach (var i in dyesFiltered) {
+				bool selecting = false;
+				bool isCurrentActive = IndexKey == LastSelectedItemKey;
 
-			if (!isOneSelected) {
-				selecting |= ImGui.IsKeyPressed(KeyBindBrowseUp) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) - 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-				selecting |= ImGui.IsKeyPressed(KeyBindBrowseDown) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) + 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-				selecting |= ImGui.IsKeyPressed(KeyBindBrowseUpFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) - FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-				selecting |= ImGui.IsKeyPressed(KeyBindBrowseDownFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) + FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-				selecting |= ImGui.IsKeyPressed(KeyBindBrowseLeft) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey) - 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey);
-				selecting |= ImGui.IsKeyPressed(KeyBindBrowseRight) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey) + 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey);
-				selecting |= SearchBarValidated;
+				var drawnLineTurpe = DrawDyePickerItem(i, isCurrentActive);
+				selecting |= drawnLineTurpe.Item1;
+
+				if (!isOneSelected) {
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseUp) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) - 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseDown) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) + 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseUpFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) - FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseDownFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) + FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseLeft) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey) - 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseRight) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey) + 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey);
+					selecting |= SearchBarValidated;
+				}
+
+				if (selecting) {
+					if (ImGui.IsKeyPressed(KeyBindBrowseUp) || ImGui.IsKeyPressed(KeyBindBrowseDown) || ImGui.IsKeyPressed(KeyBindBrowseUpFast) || ImGui.IsKeyPressed(KeyBindBrowseDownFast))
+						ImGui.SetScrollY(ImGui.GetCursorPosY() - (ImGui.GetWindowHeight() / 2));
+
+					if (GearBrowser.SelectedSlot.HasValue)
+						PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, GearBrowser.SelectedSlot.Value, (byte)i.RowId);
+
+					// assigning cache vars
+					LastSelectedItemKey = IndexKey;
+					isOneSelected = true;
+					CurrentDye = i;
+				}
+				IndexKey++;
 			}
 
-			if (selecting) {
-				if (ImGui.IsKeyPressed(KeyBindBrowseUp) || ImGui.IsKeyPressed(KeyBindBrowseDown) || ImGui.IsKeyPressed(KeyBindBrowseUpFast) || ImGui.IsKeyPressed(KeyBindBrowseDownFast))
-					ImGui.SetScrollY(ImGui.GetCursorPosY() - (ImGui.GetWindowHeight() / 2));
-
-				if (GearBrowser.SelectedSlot.HasValue)
-					PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, GearBrowser.SelectedSlot.Value, (byte)i.RowId);
-
-				// assigning cache vars
-				LastSelectedItemKey = IndexKey;
-				isOneSelected = true;
-				ItemForHeader = i;
-			}
-			Focus |= ImGui.IsItemFocused();
-			IndexKey++;
+		} catch (Exception ex) {
+			PluginLog.Warning(ex, "Error in Dye Picker color square rendering.");
 		}
 
-
-		// box has ended
-		Focus |= ImGui.IsItemActive();
-
+		ImGui.PopStyleVar(2);
 	}
 
 
 	private static int DyeLastSubOrder = -1;
-	private const int DyePickerWidth = 485;
-
 
 	private static (bool, bool) DrawDyePickerItem(Dye i, bool isActive) {
 		bool isThisRealNewLine = IndexKey % Columns == 0;
@@ -167,7 +154,7 @@ public class DyePicker :  Window, IDisposable {
 		} else if (!isThisRealNewLine && !isThisANewShade)
 			ImGui.SameLine();
 		if (isThisANewShade)
-			ImGui.Spacing();
+			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ConfigurationManager.Config.DyePickerDyeSize.Y * 0.33f) ;
 
 		DyeLastSubOrder = i.SubOrder;
 
@@ -180,7 +167,9 @@ public class DyePicker :  Window, IDisposable {
 		}
 		var selecting = false;
 		try {
-			selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4, ImGuiColorEditFlags.None, ConfigurationManager.Config.DyePickerDyeSize);
+			selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4, ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
+			selecting |= i != CurrentDye && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
+
 		} catch (Exception e) {
 			PluginLog.Error(e, "Error in DrawDyePickerItem");
 		}
@@ -214,27 +203,28 @@ public class DyePicker :  Window, IDisposable {
 	}
 
 	private static void DrawDyePickerHeader() {
-		var i = ItemForHeader;
+		var i = CurrentDye;
 
-		if (i == null) {
-			//ImGui.BeginDisabled();
-			ImGui.ColorButton($"##notselected##selected1", new Vector4(0, 0, 0, 0), ImGuiColorEditFlags.NoPicker | ImGuiColorEditFlags.AlphaPreview, ConfigurationManager.Config.DyePickerDyeSize);
-			//ImGui.EndDisabled();
-			ImGui.SameLine();
-			ImGui.Text("");
-			return;
-		}
+		var colorLabel = $"{i?.Name ?? ""}##{i?.RowId ?? 0}##selected1";
+		var colorVec4 = i?.ColorVector4 ?? new Vector4(0, 0, 0, 0);
+		var colorFlags = ImGuiColorEditFlags.NoDragDrop;
+		if(i == null) colorFlags |= ImGuiColorEditFlags.NoPicker | ImGuiColorEditFlags.AlphaPreview;
+		ImGui.ColorButton(colorLabel, colorVec4, colorFlags, ConfigurationManager.Config.DyePickerDyeSize);
 
-		// TODO: configuration to not show this
-		//var textSize = ImGui.CalcTextSize(i.Name);
-		//float dyeShowcaseWidth = (DyePickerWidth - textSize.X - (ImGui.GetStyle().ItemSpacing.X * 2)) / 2;
-		//ImGui.ColorButton($"{i.Name}##{i.RowId}##selected1", i.ColorVector4, ImGuiColorEditFlags.None, new Vector2(dyeShowcaseWidth, textSize.Y));
-		ImGui.ColorButton($"{i.Name}##{i.RowId}##selected1", i.ColorVector4, ImGuiColorEditFlags.None, ConfigurationManager.Config.DyePickerDyeSize);
 		ImGui.SameLine();
 		//ImGui.AlignTextToFramePadding();
 		//GuiHelpers.TextWithFont(i.Name, GuiHelpers.Font.TrumpGothic_23);
-		ImGui.Text(i.Name);
-		//ImGui.SameLine();
-		//ImGui.ColorButton($"{i.Name}##{i.RowId}##selected2", i.ColorVector4, ImGuiColorEditFlags.None, new Vector2(dyeShowcaseWidth, textSize.Y));
+		ImGui.Text(i?.Name ?? "");
+
+		ImGui.SameLine();
+		var spacing = ImGui.GetContentRegionAvail().X
+			- ConfigurationManager.Config.DyePickerDyeSize.X
+			//- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.PaintRoller).X // setting icon
+			//- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.Cog).X // setting icon
+			- ImGui.GetStyle().ItemInnerSpacing.X * 1 // * by number of icon, cause it's between them (and left end item)
+			- (ImGui.GetStyle().FramePadding.X * 2); // * by number of icons x2, cause on each sides of the icon
+		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
+
+		GuiHelpers.IconToggleButtonNoBg(Dalamud.Interface.FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
 	}
 }

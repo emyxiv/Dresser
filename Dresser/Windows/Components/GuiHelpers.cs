@@ -40,9 +40,9 @@ namespace Dresser.Windows.Components {
 		private static readonly Vector4 invisible = new(1, 1, 1, 0);
 		private static readonly Vector4 hoveredAlpha = new(1, 1, 1, 0.7f);
 		private static readonly Dictionary<string, bool> IconButtonNoBgHovers = new();
-		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? textColor = null) {
 			IconButtonNoBgHovers.TryGetValue(hiddenLabel, out bool wasHovered);
-
+			if(textColor.HasValue) ImGui.PushStyleColor(ImGuiCol.Text, textColor.Value);
 			if (wasHovered) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * hoveredAlpha);
 			ImGui.PushStyleColor(ImGuiCol.Button, invisible);
 			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, invisible);
@@ -50,11 +50,21 @@ namespace Dresser.Windows.Components {
 			bool accepting = IconButton(icon, size, hiddenLabel);
 			ImGui.PopStyleColor(3);
 			if (wasHovered) ImGui.PopStyleColor();
+			if (textColor.HasValue) ImGui.PopStyleColor();
 
 			IconButtonNoBgHovers[hiddenLabel] = ImGui.IsItemHovered();
 			Tooltip(tooltip);
 			return accepting;
 		}
+		public static bool IconToggleButtonNoBg(FontAwesomeIcon icon, ref bool valueToggled, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+			var textColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
+			if (!valueToggled) textColor *= new Vector4(1, 1, 1, 0.5f);
+
+			var toggled = IconButtonNoBg(icon, hiddenLabel, tooltip, size, textColor);
+			if (toggled) valueToggled = !valueToggled;
+			return toggled;
+		}
+
 
 
 		public static bool TextButtonTooltip(string label, string tooltip, Vector2 size = default) {
@@ -127,7 +137,7 @@ namespace Dresser.Windows.Components {
 		}
 		public static void TextRight(string text, float offset = 0) {
 			// Careful: use of ImGui.GetContentRegionAvail().X without - WidthMargin()
-			offset = ImGui.GetContentRegionAvail().X - offset - ImGui.CalcTextSize(text).X;
+			offset = ImGui.GetContentRegionAvail().X - offset - ImGui.CalcTextSize(text).X - ImGui.GetStyle().ItemSpacing.X ;
 			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
 			ImGui.TextUnformatted(text);
 		}
