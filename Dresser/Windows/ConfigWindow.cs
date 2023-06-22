@@ -88,13 +88,13 @@ public class ConfigWindow : Window, IDisposable {
 
 		//ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
 		var iconSizeMult = ConfigurationManager.Config.IconSizeMult;
-		if (ImGui.DragFloat("Icon Size##IconSize##slider", ref iconSizeMult, 0.001f, 0.001f, 4f, "%.3f %")) {
+		if (ImGui.DragFloat("Icon Size##IconSize##slider", ref iconSizeMult, 0.001f, 0.001f, 4f, "%.3f", ImGuiSliderFlags.AlwaysClamp)) {
 			ConfigurationManager.Config.IconSizeMult = iconSizeMult;
 			ConfigurationManager.SaveAsync();
 		}
 
 		var dyeSize = ConfigurationManager.Config.DyePickerDyeSize.X;
-		if (ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 0.1f, 300f)) {
+		if (ImGui.DragFloat("dye size", ref dyeSize, 0.1f, 1f, 100f,"%.2f",ImGuiSliderFlags.AlwaysClamp)) {
 			ConfigurationManager.Config.DyePickerDyeSize = new Vector2(dyeSize);
 		}
 
@@ -105,16 +105,16 @@ public class ConfigWindow : Window, IDisposable {
 			ConfigurationManager.Config.GearBrowserDisplayMode = (GearBrowser.DisplayMode)GearBrowserDisplayMode;
 		}
 		var GearBrowserSideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
-		if (ImGui.DragFloat("size — Sidebar##GearBrowserConfig", ref GearBrowserSideBarSize, 10f, 20, 2000))
+		if (ImGui.DragFloat("size - Sidebar##GearBrowserConfig", ref GearBrowserSideBarSize, 10f, 20, 2000,"%.1f", ImGuiSliderFlags.AlwaysClamp))
 			ConfigurationManager.Config.GearBrowserSideBarSize = GearBrowserSideBarSize;
 		//var FilterInventoryCategoryColumnDistribution = ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution;
 		//if(ImGui.DragFloat("Source - column distribution##GearBrowserConfig", ref FilterInventoryCategoryColumnDistribution, 0.005f, -5f, 15f))
 		//	ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution = FilterInventoryCategoryColumnDistribution;
 		var FilterInventoryCategoryColumnNumber = ConfigurationManager.Config.FilterInventoryCategoryColumnNumber;
-		if (ImGui.DragInt("Col # — Source##GearBrowserConfig", ref FilterInventoryCategoryColumnNumber, 0.05f, 1, 5))
+		if (ImGui.DragInt("Col # - Source##GearBrowserConfig", ref FilterInventoryCategoryColumnNumber, 0.05f, 1, 5, "%.0f", ImGuiSliderFlags.AlwaysClamp))
 		ConfigurationManager.Config.FilterInventoryCategoryColumnNumber = FilterInventoryCategoryColumnNumber;
 		var FilterInventoryTypeColumnNumber = ConfigurationManager.Config.FilterInventoryTypeColumnNumber;
-		if (ImGui.DragInt("Col # — Unobtained##GearBrowserConfig", ref FilterInventoryTypeColumnNumber, 0.05f, 1, 5))
+		if (ImGui.DragInt("Col # - Unobtained##GearBrowserConfig", ref FilterInventoryTypeColumnNumber, 0.05f, 1, 5, "%.0f", ImGuiSliderFlags.AlwaysClamp))
 		ConfigurationManager.Config.FilterInventoryTypeColumnNumber = FilterInventoryTypeColumnNumber;
 
 	}
@@ -126,7 +126,7 @@ public class ConfigWindow : Window, IDisposable {
 
 		int numFreePlates = ConfigurationManager.Config.NumberOfFreePendingPlates;
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 2);
-		if (ImGui.DragInt("Number of free portable plates",ref numFreePlates,1,0,20)) {
+		if (ImGui.DragInt("Number of free portable plates",ref numFreePlates,1,0,20, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 			if (numFreePlates > 20) numFreePlates = 20;
 			if (numFreePlates < 0) numFreePlates = 0;
 			ConfigurationManager.Config.NumberOfFreePendingPlates = (ushort)numFreePlates;
@@ -134,7 +134,7 @@ public class ConfigWindow : Window, IDisposable {
 		GuiHelpers.Tooltip("These are plates detached to vanilla's plates.\nTheir purpose is to try and mess around with glamours, or be used as temporary store.");
 		int breakAtPlateButton = ConfigurationManager.Config.NumberofPendingPlateNextColumn;
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 2);
-		if (ImGui.DragInt("Plate selection column length",ref breakAtPlateButton,1,1,20)) {
+		if (ImGui.DragInt("Plate selection column length",ref breakAtPlateButton,1,1,20, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 			if (breakAtPlateButton > 20) breakAtPlateButton = 20;
 			if (breakAtPlateButton < 1) breakAtPlateButton = 1;
 
