@@ -139,7 +139,8 @@ namespace Dresser.Windows {
 				RecomputeItems();
 
 			if(isSidebarFitting) ImGui.SameLine();
-			ImGui.Text($"Found: {ItemsCount}");
+			ImGui.Text($"{ItemsCount}");
+			GuiHelpers.Tooltip($"{ItemsCount} items found with the selected filters");
 
 			ImGui.SameLine();
 
