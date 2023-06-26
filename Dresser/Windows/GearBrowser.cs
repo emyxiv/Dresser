@@ -368,7 +368,7 @@ namespace Dresser.Windows {
 
 
 					var text = $"{method.ToString().AddSpaceBeforeCapital()}";
-					var iconDirection = direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.ArrowUp : Dalamud.Interface.FontAwesomeIcon.ArrowDown;
+					var iconDirection = direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.SortAlphaUp : Dalamud.Interface.FontAwesomeIcon.SortAlphaDown;
 
 					ImGui.AlignTextToFramePadding();
 					GuiHelpers.Icon(iconDirection);
