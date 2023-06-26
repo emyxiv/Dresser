@@ -116,6 +116,10 @@ public class CurrentGear : Window, IDisposable {
 			ImGui.Image(imageInfo.Item1, radioSize, imageInfo.Item2, imageInfo.Item3, tint);
 			var clicked = ImGui.IsItemClicked();
 			var hovering = ImGui.IsItemHovered();
+			if (ImGui.BeginPopupContextItem($"{plateNumber}##PlateSelector##ContextMenu##CurrentGear")) {
+				ContextMenuPlateSelector(plateNumber);
+				ImGui.EndPopup();
+			}
 			if(!isFreePlate) GuiHelpers.Tooltip(() => {
 				var plateName = isFreePlate ? $"Free Plate {plateNumber + 1 - Storage.PlateNumber}" : $"Plate {plateNumber + 1}";
 				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.TrumpGothic_184);
@@ -230,6 +234,31 @@ public class CurrentGear : Window, IDisposable {
 		if (ImGui.Selectable("Remove Dye"))
 			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveDye(item);
 
+	}
+	private bool IsCurrentFreePlate = ConfigurationManager.Config.SelectedCurrentPlate + 1 > Storage.PlateNumber;
+	private string FormattedNameCurrentPlate()
+		=> FormattedPlateName(ConfigurationManager.Config.SelectedCurrentPlate);
+	private static string FormattedPlateName(ushort plateNumber) {
+		var isTargetFreePlate = plateNumber + 1 > Storage.PlateNumber;
+		var prefix = isTargetFreePlate ? "Free p" : "P";
+		var number = isTargetFreePlate ? plateNumber - Storage.PlateNumber : plateNumber;
+		return $"{prefix}late #{number}";
+
+	}
+	private void ContextMenuPlateSelector(ushort plateNumber) {
+		ImGui.TextDisabled($"{FormattedPlateName(plateNumber)}");
+		ImGui.Spacing();
+		if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Broom, $"Remove every items from this plate ({FormattedPlateName(plateNumber)})", default, $"##{plateNumber}##clear##PlateSelector##CurrentGear")) {
+			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(plateNumber, out var set))
+				set.EmptyAllItemsToNull();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowRightArrowLeft, $"Swap contents of current ({FormattedNameCurrentPlate()}) with contents of {FormattedPlateName(plateNumber)}", default, $"##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear")) {
+			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(plateNumber, out var targetPlateInvItems) && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlateInvItems)) {
+				ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems;
+				ConfigurationManager.Config.PendingPlateItems[plateNumber] = currentPlateInvItems;
+			}
+		}
 	}
 
 	private static void CheckPendingPlateItems() {

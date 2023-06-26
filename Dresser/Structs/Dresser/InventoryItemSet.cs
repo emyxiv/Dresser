@@ -85,6 +85,10 @@ namespace Dresser.Structs.Dresser {
 		public bool IsEmpty() {
 			return Items.Count == 0 || !Items.Any(i => i.Value != null);
 		}
+		public void EmptyAllItemsToNull() {
+			InventoryItem? nullItem = null;
+			Items = Enum.GetValues<GlamourPlateSlot>().ToDictionary(s => s, s => nullItem);
+		}
 
 
 	}
