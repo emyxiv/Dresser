@@ -87,6 +87,9 @@ jobs:
           release_version=$(echo ${{ github.ref_name }} | sed 's/^v//')
           repo_url=$(echo ${{ github.server_url }}/${{ github.repository }} | sed 's/#/\\#/g')
 
+          latest_api_url=$(echo ${{ github.api_url }}/${{ github.repository }}/releases/latest)
+          echo $latest_api_url
+
           prev_download_count=$( curl -s ${{ github.api_url }}/${{ github.repository }}/releases/latest | jq '.assets[1].download_count' )
           total_minus_prev_download_count=$( cat repo.json | jq '.[0].DownloadCount' )
           total_download_count=$(($prev_download_count + $total_minus_prev_download_count))
