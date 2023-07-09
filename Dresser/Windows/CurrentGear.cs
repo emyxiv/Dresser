@@ -185,14 +185,17 @@ public class CurrentGear : Window, IDisposable {
 		try {
 			InventoryItemSet plateItems = new(); ;
 
-			if (PluginServices.Context.IsGlamingAtDresser && PluginServices.Storage.DisplayPage != null) {
-				plateItems = ConfigurationManager.Config.DisplayPlateItems;
-			} else {
-				CheckPendingPlateItems();
+
+			//if (PluginServices.Context.IsGlamingAtDresser && PluginServices.Storage.DisplayPage != null) {
+			//	This would be the case where CurrentGear window reflects the changes on actuall dresser, it is only visual and not useful
+			//	plateItems = ConfigurationManager.Config.DisplayPlateItems;
+			//} else {
+			CheckPendingPlateItems();
 				if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2)) {
 					plateItems = plateItems2;
 				} else plateItems = Gathering.EmptyGlamourPlate();
-			}
+			//}
+
 			bool isTooltipActive = false;
 			int i = 0;
 			foreach (var slot in SlotOrder) {
