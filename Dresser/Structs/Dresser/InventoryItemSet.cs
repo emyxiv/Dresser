@@ -2,6 +2,7 @@
 
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
+using Dresser.Services;
 
 using System;
 using System.Collections.Generic;
@@ -88,6 +89,26 @@ namespace Dresser.Structs.Dresser {
 		public void EmptyAllItemsToNull() {
 			InventoryItem? nullItem = null;
 			Items = Enum.GetValues<GlamourPlateSlot>().ToDictionary(s => s, s => nullItem);
+		}
+		public void UpdateSourcesForOwnedItems() {
+			var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).SelectMany(c => c.Value);
+			foreach ((var slot, var item) in Items) {
+				if (item == null) continue;
+				var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+				if(!foundMatchingItem.Any())
+					foundMatchingItem = ownedItems.Where(i=>i.ItemId == item.ItemId);
+					
+				if(foundMatchingItem.Any()) {
+					var matchingItem = foundMatchingItem.First();
+					if(matchingItem != null) {
+						var matchingItemToProcess = matchingItem.Clone();
+						if (matchingItemToProcess.Stain != item.Stain)
+							matchingItemToProcess.Stain = item.Stain;
+
+						Items[slot] = matchingItemToProcess;
+					}
+				}
+			}
 		}
 
 

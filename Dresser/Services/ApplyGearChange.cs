@@ -129,6 +129,7 @@ namespace Dresser.Services {
 		}
 		public void ApplyCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
+				currentPlate.UpdateSourcesForOwnedItems();
 				foreach ((var s, var item) in currentPlate.Items) {
 					if (item != null) PluginServices.Context.LocalPlayer?.Equip(item);
 				}

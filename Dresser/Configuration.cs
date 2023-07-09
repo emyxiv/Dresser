@@ -129,10 +129,10 @@ namespace Dresser {
 				return inventories;
 			return new();
 		}
-		public Dictionary<InventoryCategory, List<InventoryItem>> GetSavedInventoryLocalCharsRetainers() {
+		public Dictionary<InventoryCategory, List<InventoryItem>> GetSavedInventoryLocalCharsRetainers(bool includeActiveCharacter = false) {
 			Dictionary<InventoryCategory, List<InventoryItem>> returnDic = new();
 
-			foreach ((var charId, var invs) in SavedInventories.Where(c => PluginServices.CharacterMonitor.BelongsToActiveCharacter(c.Key) && c.Key != PluginServices.CharacterMonitor.ActiveCharacterId)) {
+			foreach ((var charId, var invs) in SavedInventories.Where(c => PluginServices.CharacterMonitor.BelongsToActiveCharacter(c.Key) && (includeActiveCharacter || c.Key != PluginServices.CharacterMonitor.ActiveCharacterId))) {
 				foreach ((var invCat, var list) in invs) {
 
 					List<InventoryItem> tmpList = new();
