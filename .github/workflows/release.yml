@@ -106,8 +106,8 @@ jobs:
           repo_url=$(echo ${{ github.server_url }}/${{ github.repository }} | sed 's/#/\\#/g')
 
 
-          echo "releases_json: ${{fromJson(steps.releases_json.outputs.packageJson)."
-          echo "prev_repo_json: ${{fromJson(steps.prev_repo_json.outputs.packageJson)."
+          echo "releases_json: ${{fromJson(steps.releases_json.outputs.packageJson).}}"
+          echo "prev_repo_json: ${{fromJson(steps.prev_repo_json.outputs.packageJson).}}"
           prev_download_count=$(echo "${{fromJson(steps.releases_json.outputs.packageJson).assets[1].download_count}}")
           total_minus_prev_download_count=$(echo "${{fromJson(steps.prev_repo_json.outputs.packageJson).[0].DownloadCount}}")
           total_download_count=$(($prev_download_count + $total_minus_prev_download_count))
