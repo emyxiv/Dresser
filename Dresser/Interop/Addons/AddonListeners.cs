@@ -106,6 +106,10 @@ namespace Dresser.Interop.Addons {
 		}
 		private static void OnPlateChanged(ushort? newPlateIndex, ushort? oldPlateIndex) {
 			PluginLog.Warning($"OnPlateChanged >>{newPlateIndex ?? -1}<< OnPlateChanged OnPlateChanged");
+
+			// close the failed popup on changing plate
+			var dialogs = Plugin.GetInstance().Dialogs;
+			if (dialogs != null && dialogs.DialogInfo?.Label == "FailedSomeAskWhatToDo") dialogs.IsOpen = false;
 			PluginServices.ApplyGearChange.CheckIfLeavingPlateWasApplied(oldPlateIndex);
 			PluginServices.ApplyGearChange.ExecuteChangesOnSelectedPlate();
 		}
