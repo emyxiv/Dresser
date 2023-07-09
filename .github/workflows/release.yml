@@ -89,9 +89,6 @@ jobs:
 
           prev_download_count=$( curl -s ${{ github.server_url }}/${{ github.repository }}/releases/latest | jq '.assets[1].download_count' )
           total_minus_prev_download_count=$( cat repo.json | jq '.[0].DownloadCount' )
-
-          prev_download_count=$(echo "${{fromJson(steps.releases_json.outputs.packageJson).assets[1].download_count}}")
-          total_minus_prev_download_count=$(echo "${{fromJson(steps.prev_repo_json.outputs.packageJson).[0].DownloadCount}}")
           total_download_count=$(($prev_download_count + $total_minus_prev_download_count))
 
           echo "prev_download_count: $prev_download_count"
