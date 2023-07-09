@@ -88,11 +88,8 @@ jobs:
           repo_url=$(echo ${{ github.server_url }}/${{ github.repository }} | sed 's/#/\\#/g')
 
 
-          prev_release_url=$(echo ${{ github.api_url }}/repos/${{ github.repository }}/releases/latest)
-          echo $prev_release_url
-          curl -s $prev_release_url
-
-          prev_download_count=$( curl -s $prev_release_url | jq '.assets[1].download_count' )
+          # As new release is already pushed, we want the before-last release, thus the [-2]
+          prev_download_count=$( curl -s ${{ github.api_url }}/repos/${{ github.repository }}/releases | jq '.[-2].assets[1].download_count' )
           total_minus_prev_download_count=$( cat repo.json | jq '.[0].DownloadCount' )
           total_download_count=$(($prev_download_count + $total_minus_prev_download_count))
 
