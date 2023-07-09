@@ -33,6 +33,7 @@ namespace Dresser.Windows {
 
 		public override void OnClose() {
 			base.OnClose();
+			if (DialogInfo?.Choice == -1) DialogInfo.Choice = DialogInfo.ChoiceWhenForceClose;
 			DialogInfo?.Quit(DialogInfo.Choice);
 			DialogInfo = null;
 		}
@@ -72,12 +73,16 @@ namespace Dresser.Windows {
 	}
 
 	public class DialogInfo {
+		public string Label = "";
 		public Func<int> Contents;
 		public Action<int> Quit;
 		public int Choice = -1;
-		public DialogInfo(Func<int> contents, Action<int> onClose) {
+		public int ChoiceWhenForceClose;
+		public DialogInfo(string label, Func<int> contents, Action<int> onClose, int choiceWhenForceClose = -1) {
+			this.Label = label;
 			this.Contents = contents;
 			this.Quit = onClose;
+			this.ChoiceWhenForceClose = choiceWhenForceClose;
 		}
 	}
 }

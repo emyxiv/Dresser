@@ -9,7 +9,8 @@ namespace Dresser.Windows.Components {
 	internal class Help {
 
 		public static void Open() {
-			var dialog = new DialogInfo(() => {
+			var dialog = new DialogInfo("Help",
+				() => {
 
 				Draw();
 				return Dialogs.GenericButtonClose();

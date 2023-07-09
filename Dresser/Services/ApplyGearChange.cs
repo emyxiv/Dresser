@@ -283,7 +283,8 @@ namespace Dresser.Services {
 
 		}
 		public void Popup_AskApplyOnPlates() {
-			var dialog = new DialogInfo(() => {
+			var dialog = new DialogInfo("AskApplyOnPlates",
+			() => {
 				ImGui.Text($"Glamour plate changes detected, would you like to apply them?");
 				ImGui.Text($"{DifferencesToApply.Count} Glamour plate affected");
 
@@ -297,7 +298,9 @@ namespace Dresser.Services {
 				else
 					ClearApplyDresser();
 
-			});
+			},
+			2
+			);
 
 			Plugin.OpenDialog(dialog);
 
@@ -442,18 +445,17 @@ namespace Dresser.Services {
 		}
 		public HashSet<ushort> PlatesFailed = new();
 		public void Popup_FailedSomeAskWhatToDo(ushort plateIndex) {
-			var dialog = new DialogInfo(() => {
+			var dialog = new DialogInfo("FailedSomeAskWhatToDo",
+				() => {
 				ImGui.Text($"The following items could could not be applied to the plate.");
 
 				PluginServices.ApplyGearChange.DrawListOfItemsForDialogs(plateIndex);
 
-				if (ImGui.Button("Ignore and Continue##Dialog##Dresser")) {
-					return 1;
-				}
+				if (ImGui.Button("Retry##Dialog##Dresser")) return 3;
 				ImGui.SameLine();
-				if (ImGui.Button("Stop All##Dialog##Dresser")) {
-					return 2;
-				}
+				if (ImGui.Button("Ignore##Dialog##Dresser")) return 1;
+				ImGui.SameLine();
+				if (ImGui.Button("Stop All##Dialog##Dresser")) return 2;
 				return -1;
 
 			}, (choice) => {
@@ -466,8 +468,12 @@ namespace Dresser.Services {
 
 				} else if (choice == 2) { // stop all
 					PluginServices.ApplyGearChange.ClearApplyDresser();
+				} else if (choice == 3) { // stop all
+					PluginServices.ApplyGearChange.ExecuteChangesOnSelectedPlate();
 				}
-			});
+			},
+			1 // if closed with escape, pick choice 1
+			);
 
 			Plugin.OpenDialog(dialog);
 
@@ -486,9 +492,11 @@ namespace Dresser.Services {
 			}
 		}
 		public void Popup_AllDone() {
+			CleanOverlayColors();
 			if (DifferencesToApply.Any()) {
 
-				var dialog = new DialogInfo(() => {
+				var dialog = new DialogInfo("AllDone",
+				() => {
 					ImGui.Text($"Some change were not saved.");
 
 					PluginServices.ApplyGearChange.DrawListOfItemsForDialogs();
@@ -510,7 +518,9 @@ namespace Dresser.Services {
 						PluginServices.ApplyGearChange.ClearApplyDresser();
 						PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 					}
-				});
+				},
+				1
+				);
 
 				Plugin.OpenDialog(dialog);
 			} else {
@@ -518,13 +528,17 @@ namespace Dresser.Services {
 			}
 
 		}
-		public void ClearApplyDresser() {
-			PluginLog.Debug(" -- Clean apply dresser -- ");
+		public void CleanOverlayColors() {
 			Vector4? n = null;
 			HighlightPlatesRadio = HighlightPlatesRadio.ToDictionary(h => h.Key, h => n);
 			HighlightSaveButton = null;
 			PluginServices.OverlayService.RefreshOverlayStates();
 			HighlightPlatesRadio.Clear();
+
+		}
+		public void ClearApplyDresser() {
+			PluginLog.Debug(" -- Clean apply dresser -- ");
+			CleanOverlayColors();
 			DifferencesToApply.Clear();
 			DifferencesToReplace.Clear();
 			PlatesFailed.Clear();
