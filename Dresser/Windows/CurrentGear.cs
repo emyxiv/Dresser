@@ -1,3 +1,4 @@
+using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
 using Dalamud.Interface;
@@ -255,8 +256,8 @@ public class CurrentGear : Window, IDisposable {
 		ImGui.SameLine();
 		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowRightArrowLeft, $"Swap contents of current ({FormattedNameCurrentPlate()}) with contents of {FormattedPlateName(plateNumber)}", default, $"##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear")) {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(plateNumber, out var targetPlateInvItems) && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlateInvItems)) {
-				ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems;
-				ConfigurationManager.Config.PendingPlateItems[plateNumber] = currentPlateInvItems;
+				ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems.Copy();
+				ConfigurationManager.Config.PendingPlateItems[plateNumber] = currentPlateInvItems.Copy();
 			}
 		}
 	}
