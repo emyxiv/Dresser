@@ -103,7 +103,7 @@ jobs:
               -e 's#"DownloadLinkInstall": "[^"]*"#"DownloadLinkInstall": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g' \
               -e 's#"DownloadLinkTesting": "[^"]*"#"DownloadLinkTesting": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g' \
               -e 's#"DownloadLinkUpdate": "[^"]*"#"DownloadLinkUpdate": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g' \
-              -e 's#"DownloadCount": [0-9]*#"DownloadCount": $total_download_count#g'
+              -e 's#"DownloadCount": [0-9]*#"DownloadCount": '$total_download_count'#g'
 
           git add repo.json
           git config --local user.name "github-actions [bot]"
