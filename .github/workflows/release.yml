@@ -80,6 +80,24 @@ jobs:
             Dresser/bin/Release/Dresser/latest.zip
             Dresser/bin/Release/Dresser/checksums.sha512
 
+      - id: releases_json
+        run: |
+          # the following lines are only required for multi line json
+          content=$(curl -s ${{ github.server_url }}/${{ github.repository }}/releases/latest)
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=packageJson::$content"
+
+      - id: prev_repo_json
+        run: |
+          content=$(cat ./repo.json)
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=packageJson::$content"
+
       - name: Update repo.json
         run: |
           cd ../
@@ -87,12 +105,24 @@ jobs:
           release_version=$(echo ${{ github.ref_name }} | sed 's/^v//')
           repo_url=$(echo ${{ github.server_url }}/${{ github.repository }} | sed 's/#/\\#/g')
 
+
+          echo "releases_json: ${{fromJson(steps.releases_json.outputs.packageJson)."
+          echo "prev_repo_json: ${{fromJson(steps.prev_repo_json.outputs.packageJson)."
+          prev_download_count=$(echo "${{fromJson(steps.releases_json.outputs.packageJson).assets[1].download_count}}")
+          total_minus_prev_download_count=$(echo "${{fromJson(steps.prev_repo_json.outputs.packageJson).[0].DownloadCount}}")
+          total_download_count=$(($prev_download_count + $total_minus_prev_download_count))
+
+          echo "prev_download_count: $prev_download_count"
+          echo "total_minus_prev_download_count: $total_minus_prev_download_count"
+          echo "total_download_count: $total_download_count"
+
           sed -i repo.json -E \
               -e 's#"AssemblyVersion": "([0-9]*\.){2,3}[0-9]*"#"AssemblyVersion": "'"$release_version"'"#g' \
               -e 's#"TestingAssemblyVersion": "([0-9]*\.){2,3}[0-9]*"#"TestingAssemblyVersion": "'"$release_version"'"#' \
               -e 's#"DownloadLinkInstall": "[^"]*"#"DownloadLinkInstall": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g' \
               -e 's#"DownloadLinkTesting": "[^"]*"#"DownloadLinkTesting": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g' \
-              -e 's#"DownloadLinkUpdate": "[^"]*"#"DownloadLinkUpdate": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g'
+              -e 's#"DownloadLinkUpdate": "[^"]*"#"DownloadLinkUpdate": "'"$repo_url/releases/download/${{ github.ref_name }}/latest.zip"'"#g' \
+              -e 's#"DownloadCount": [0-9]*#"DownloadCount": $total_download_count#g'
 
           git add repo.json
           git config --local user.name "github-actions [bot]"
