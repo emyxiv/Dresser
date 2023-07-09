@@ -80,24 +80,6 @@ jobs:
             Dresser/bin/Release/Dresser/latest.zip
             Dresser/bin/Release/Dresser/checksums.sha512
 
-      - id: releases_json
-        run: |
-          # the following lines are only required for multi line json
-          content=$(curl -s ${{ github.server_url }}/${{ github.repository }}/releases/latest)
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          # end of optional handling for multi line json
-          echo "::set-output name=packageJson::$content"
-
-      - id: prev_repo_json
-        run: |
-          content=$(cat ./repo.json)
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=packageJson::$content"
-
       - name: Update repo.json
         run: |
           cd ../
@@ -105,9 +87,9 @@ jobs:
           release_version=$(echo ${{ github.ref_name }} | sed 's/^v//')
           repo_url=$(echo ${{ github.server_url }}/${{ github.repository }} | sed 's/#/\\#/g')
 
+          prev_download_count=$( curl -s ${{ github.server_url }}/${{ github.repository }}/releases/latest | jq '.assets[1].download_count' )
+          total_minus_prev_download_count=$( cat repo.json | jq '.[0].DownloadCount' )
 
-          echo "releases_json: ${{steps.releases_json.outputs.packageJson}}"
-          echo "prev_repo_json: ${{steps.prev_repo_json.outputs.packageJson}}"
           prev_download_count=$(echo "${{fromJson(steps.releases_json.outputs.packageJson).assets[1].download_count}}")
           total_minus_prev_download_count=$(echo "${{fromJson(steps.prev_repo_json.outputs.packageJson).[0].DownloadCount}}")
           total_download_count=$(($prev_download_count + $total_minus_prev_download_count))
