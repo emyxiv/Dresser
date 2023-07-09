@@ -100,6 +100,8 @@ namespace Dresser {
 
 		public void Dispose() {
 			PluginServices.ApplyGearChange.RestoreAppearance();
+			PluginServices.ApplyGearChange.ClearApplyDresser();
+
 
 
 			ConfigWindow.Dispose();
