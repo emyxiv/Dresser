@@ -261,6 +261,7 @@ public class CurrentGear : Window, IDisposable {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(plateNumber, out var targetPlateInvItems) && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlateInvItems)) {
 				ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems.Copy();
 				ConfigurationManager.Config.PendingPlateItems[plateNumber] = currentPlateInvItems.Copy();
+				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
 			}
 		}
 	}
