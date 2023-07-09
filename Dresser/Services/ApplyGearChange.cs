@@ -219,6 +219,7 @@ namespace Dresser.Services {
 			Dictionary<ushort, InventoryItemSet> differencesToApply = new();
 
 			foreach ((var plateIndex, var pendingInvSet) in pendingPlates) {
+				if (plateIndex >= Storage.PlateNumber) continue;
 				if (actualPlates.TryGetValue(plateIndex, out var actualInvSet)) {
 					if (pendingInvSet.IsEmpty()) continue; // (todo: maybe offer them the option to also clean untouched plates)
 
