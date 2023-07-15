@@ -8,6 +8,12 @@
         "resolved": "2.1.12",
         "contentHash": "Sc0PVxvgg4NQjcI8n10/VfUQBAS4O+Fw2pZrAqBdRMbthYGeogzu5+xmIGCGmsEZ/ukMOBuAqiNiB5qA3MRalg=="
       },
+      "Penumbra.Api": {
+        "type": "Direct",
+        "requested": "[1.0.8, )",
+        "resolved": "1.0.8",
+        "contentHash": "lnpFGOuiyvKMRAUYtiA/oLBDYvnr+KPm6FMrAjLrfKCGFJpVMZlT4S8tAomhVCnYmGz2ada8wENwG06NJDvPpg=="
+      },
       "CSVFile": {
         "type": "Transitive",
         "resolved": "3.1.0",
