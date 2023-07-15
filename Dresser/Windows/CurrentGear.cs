@@ -5,6 +5,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
 
+using Dresser.Extensions;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
@@ -62,7 +63,7 @@ public class CurrentGear : Window, IDisposable {
 		DrawPlateSelector(draw);
 		DrawSlots();
 
-
+		DrawTasks();
 		DrawChildren();
 	}
 
@@ -280,10 +281,21 @@ public class CurrentGear : Window, IDisposable {
 		}
 		return null;
 	}
+
+	public void DrawTasks() {
+		if(PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)){
+			foreach(var taskedItem in taskedItems) {
+				ImGui.Text($"{taskedItem.FormattedName}");
+				ImGui.SameLine();
+				ImGui.Text($"{taskedItem.FormattedInventoryCategoryType()}");
+			}
+		}
+	}
 	private static void DrawChildren() {
 		Styler.PopStyleCollection();
 
 		DrawBottomButtons();
+
 
 		if (!Plugin.GetInstance().DyePicker.IsOpen && Plugin.GetInstance().DyePicker.MustDraw) Plugin.GetInstance().DyePicker.IsOpen = true;
 

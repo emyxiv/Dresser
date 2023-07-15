@@ -110,6 +110,28 @@ namespace Dresser.Structs.Dresser {
 				}
 			}
 		}
+		public List<InventoryItem> FindNotOwned() {
+			var list = new List<InventoryItem>();
+			var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).SelectMany(c => c.Value);
+
+			foreach ((var slot, var item) in Items) {
+				if (item == null) continue;
+				var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+				if (!foundMatchingItem.Any()) {
+					foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
+					if( foundMatchingItem.Any()) {
+						// todo search for dye
+
+					}
+				}
+				if(!foundMatchingItem.Any()) {
+					// todo add item to list
+					list.Add(item.Clone());
+				}
+
+			}
+			return list;
+		}
 
 
 	}

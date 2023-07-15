@@ -70,6 +70,7 @@ namespace Dresser.Services {
 			}
 
 			Service.ClientState.LocalPlayer?.Equip(clonedItem);
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
 		public void SelectCurrentSlot(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
@@ -127,9 +128,20 @@ namespace Dresser.Services {
 			AppearanceBackupEquip = null;
 
 		}
+
+
+
+		public Dictionary<ushort, List<InventoryItem>> TasksOnCurrentPlate = new();
+		public void CompileTodoTasks(ushort? plateNumber = null) {
+			foreach((var plateN, var set) in ConfigurationManager.Config.PendingPlateItems) {
+				if (plateNumber != null && plateN != plateNumber) continue;
+				TasksOnCurrentPlate[plateN] = set.FindNotOwned();
+			}
+		}
 		public void ApplyCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				currentPlate.UpdateSourcesForOwnedItems();
+				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 				foreach ((var s, var item) in currentPlate.Items) {
 					if (item != null) PluginServices.Context.LocalPlayer?.Equip(item);
 				}
