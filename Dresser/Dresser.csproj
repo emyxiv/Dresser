@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <PackageReference Include="DalamudPackager" Version="2.1.12" />
+    <PackageReference Include="Penumbra.Api" Version="1.0.8" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
     <ProjectReference Include="..\DalaMock\DalaMock.Shared\DalaMock.Shared.csproj" />
     <Reference Include="FFXIVClientStructs">
