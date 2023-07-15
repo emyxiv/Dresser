@@ -112,7 +112,7 @@ namespace Dresser.Structs.Dresser {
 		}
 		public List<InventoryItem> FindNotOwned() {
 			var list = new List<InventoryItem>();
-			var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).SelectMany(c => c.Value);
+			var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).Where(i=>i.Key == InventoryCategory.Armoire || i.Key == InventoryCategory.GlamourChest).SelectMany(c => c.Value);
 
 			foreach ((var slot, var item) in Items) {
 				if (item == null) continue;

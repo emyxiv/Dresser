@@ -63,7 +63,6 @@ public class CurrentGear : Window, IDisposable {
 		DrawPlateSelector(draw);
 		DrawSlots();
 
-		DrawTasks();
 		DrawChildren();
 	}
 
@@ -86,6 +85,9 @@ public class CurrentGear : Window, IDisposable {
 				PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
 			}
 		}
+
+		ImGui.SameLine();
+		DrawTasks();
 	}
 
 	private void DrawPlateSelector(ImDrawListPtr draw) {
@@ -282,12 +284,41 @@ public class CurrentGear : Window, IDisposable {
 		return null;
 	}
 
-	public void DrawTasks() {
-		if(PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)){
-			foreach(var taskedItem in taskedItems) {
-				ImGui.Text($"{taskedItem.FormattedName}");
+	public static void DrawTasks() {
+		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
+			if (taskedItems.Any()) {
+				ImGui.BeginGroup();
+				ImGui.PushStyleColor(ImGuiCol.Text, ItemIcon.ColorBad);
+				GuiHelpers.Icon(FontAwesomeIcon.ExclamationTriangle);
 				ImGui.SameLine();
-				ImGui.Text($"{taskedItem.FormattedInventoryCategoryType()}");
+				ImGui.Text($"{taskedItems.Count} Tasks");
+				ImGui.PopStyleColor();
+				ImGui.EndGroup();
+				GuiHelpers.Tooltip(DrawTasksTooltip);
+			}
+		}
+
+	}
+	private static void DrawTasksTooltip() {
+		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
+			if(taskedItems.Any()) {
+				ImGui.TextDisabled($"Some items are neither in {InventoryCategory.GlamourChest.FormattedName()} or {InventoryCategory.Armoire.FormattedName()}");
+				ImGui.Spacing();
+				if(ImGui.BeginTable("TaskTooltip##CurrentGear", 2)) {
+
+					ImGui.TableSetupColumn("Item Name", ImGuiTableColumnFlags.WidthStretch, 100.0f, 0);
+					ImGui.TableSetupColumn("Where", ImGuiTableColumnFlags.WidthStretch, 100.0f, 1);
+					ImGui.TableHeadersRow();
+
+					foreach (var taskedItem in taskedItems) {
+						ImGui.TableNextRow();
+						ImGui.TableNextColumn();
+						ImGui.Text($"{taskedItem.FormattedName}");
+						ImGui.TableNextColumn();
+						ImGui.Text($"{taskedItem.FormattedInventoryCategoryType()}");
+					}
+					ImGui.EndTable();
+				}
 			}
 		}
 	}

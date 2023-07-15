@@ -86,6 +86,7 @@ namespace Dresser.Windows.Components {
 				ImGui.Spacing();
 				ImGui.BulletText($"Icon size can be changed to fit your screen size");
 				ImGui.BulletText($"Dye picker size can be changed to fit your screen size");
+				ImGui.BulletText($"Changing plate will refresh its items locations");
 			} else
 				ConfigurationManager.Config.CollapsibleOtherTips = false;
 
