@@ -5,7 +5,7 @@ using Dresser.Services;
 
 using static Dresser.Services.Storage;
 
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {
@@ -49,7 +49,7 @@ namespace Dresser.Extensions {
 			return returnVal;
 		}
 		public static CriticalInventoryItem Clone(this CriticalInventoryItem item)
-			=> new(item);
+			=> item.Copy()!;
 
 		public static CriticalInventoryItem New(uint itemId, byte stain)
 			=> new(0, 0, itemId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, stain, 0);

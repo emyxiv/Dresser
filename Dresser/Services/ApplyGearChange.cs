@@ -19,6 +19,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
 namespace Dresser.Services {
 	public class ApplyGearChange : IDisposable {
 		private Plugin Plugin;

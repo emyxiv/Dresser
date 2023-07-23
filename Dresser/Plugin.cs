@@ -21,6 +21,10 @@ using Dresser.Windows;
 using System;
 using System.Collections.Generic;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+
+
 namespace Dresser {
 	public sealed class Plugin : IDalamudPlugin {
 		public string Name => "Dresser";
@@ -221,7 +225,7 @@ namespace Dresser {
 
 
 		private Dictionary<uint, InventoryMonitor.ItemChangesItem> _recentlyAddedSeen = new();
-		private void InventoryMonitorOnOnInventoryChanged(Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> inventories, InventoryMonitor.ItemChanges itemChanges) {
+		private void InventoryMonitorOnOnInventoryChanged(Dictionary<ulong, Dictionary<InventoryCategory, List<CriticalInventoryItem>>> inventories, InventoryMonitor.ItemChanges itemChanges) {
 			//PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
 			//PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
 			_clearCachedLines = true;

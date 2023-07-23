@@ -1,4 +1,5 @@
-﻿using CriticalCommonLib.Models;
+﻿using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Models;
 
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
@@ -7,6 +8,10 @@ using Dresser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
 
 namespace Dresser.Structs.Dresser {
 	public struct InventoryItemSet {
@@ -91,24 +96,28 @@ namespace Dresser.Structs.Dresser {
 			Items = Enum.GetValues<GlamourPlateSlot>().ToDictionary(s => s, s => nullItem);
 		}
 		public void UpdateSourcesForOwnedItems() {
-			var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).SelectMany(c => c.Value);
-			foreach ((var slot, var item) in Items) {
-				if (item == null) continue;
-				var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
-				if(!foundMatchingItem.Any())
-					foundMatchingItem = ownedItems.Where(i=>i.ItemId == item.ItemId);
-					
-				if(foundMatchingItem.Any()) {
-					var matchingItem = foundMatchingItem.First();
-					if(matchingItem != null) {
-						var matchingItemToProcess = matchingItem.Clone();
-						if (matchingItemToProcess.Stain != item.Stain)
-							matchingItemToProcess.Stain = item.Stain;
+			var set = this;
+			Task.Run(()=>{
+				var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).SelectMany(c => c.Value.Copy()!);
+				foreach ((var slot, var item) in set.Items) {
+					if (item == null) continue;
+					if (item.IsModded()) continue;
+					var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+					if (!foundMatchingItem.Any())
+						foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
 
-						Items[slot] = matchingItemToProcess;
+					if (foundMatchingItem.Any()) {
+						var matchingItem = foundMatchingItem.First();
+						if (matchingItem != null) {
+							var matchingItemToProcess = matchingItem.Copy()!;
+							if (matchingItemToProcess.Stain != item.Stain)
+								matchingItemToProcess.Stain = item.Stain;
+
+							set.Items[slot] = matchingItemToProcess;
+						}
 					}
 				}
-			}
+			});
 		}
 		public List<InventoryItem> FindNotOwned() {
 			var list = new List<InventoryItem>();

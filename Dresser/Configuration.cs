@@ -14,6 +14,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+
+
 using static Dresser.Windows.GearBrowser;
 
 namespace Dresser {
@@ -121,8 +125,8 @@ namespace Dresser {
 			get => _acquiredItems ?? new Dictionary<ulong, HashSet<uint>>();
 			set => _acquiredItems = value;
 		}
-		public Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> GetSavedInventory() {
-			return SavedInventories;
+		public Dictionary<ulong, Dictionary<InventoryCategory, List<CriticalInventoryItem>>> GetSavedInventory() {
+			return SavedInventories.ToDictionary(v=>v.Key,v=>v.Value.ToDictionary(w=>w.Key,w=>w.Value.Select(x=> InventoryItem.ToCritical(x)).ToList()));
 		}
 		public Dictionary<InventoryCategory, List<InventoryItem>> GetSavedInventoryLocalChar() {
 			if (SavedInventories.TryGetValue(PluginServices.Context.LocalPlayerCharacterId, out var inventories))

@@ -1,5 +1,6 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Enums;
+using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Sheets;
 
@@ -21,6 +22,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
 
 namespace Dresser.Services {
 	internal class Storage : IDisposable {
@@ -155,19 +159,12 @@ namespace Dresser.Services {
 				}
 			}
 
-			AdditionalItems = FilterNames.SelectMany(a => a.Value.Keys).ToDictionary(itn => itn, itn => new HashSet<InventoryItem>());
+			AdditionalItems = FilterNames.SelectMany(a => a.Value.Keys).ToDictionary(itn => itn, itn => new List<InventoryItem>());
 
 		}
 		public Dictionary<AdditionalItem, Dictionary<InventoryType, string>> FilterNames;
-		public Dictionary<InventoryType, HashSet<InventoryItem>> AdditionalItems;
+		public Dictionary<InventoryType, List<InventoryItem>> AdditionalItems;
 		//public Dictionary<AdditionalItem, Dictionary<InventoryType, HashSet<InventoryItem>>> AdditionalItems = FilterNames.ToDictionary(fn=>fn.Key,fn=>fn.Value.ToDictionary(itn=>itn.Key,itn=> new HashSet<InventoryItem>()));
-
-		public static InventoryItem NewInventoryItem(InventoryType inventoryType, uint itemId) {
-
-			var invIt = new InventoryItem(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			invIt.SortedContainer = inventoryType;
-			return invIt;
-		}
 
 		// all items
 		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems };
@@ -189,7 +186,7 @@ namespace Dresser.Services {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
 					//.DistinctBy(i=>i.Value.GetSharedModels())
 					.Where((itemPair) => itemPair.Value.ModelMain != 0)
-					.Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
+					.Select(i => new InventoryItem(inventoryType, i.Key)).ToList();
 
 
 				var a = FilterNames[AdditionalItem.All][inventoryType];
@@ -202,7 +199,7 @@ namespace Dresser.Services {
 			foreach ((var inventoryType, var filterFunction) in FilterUnobtainedFromCustomSource) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems.Where((itemPair) => {
 					return itemPair.Value.ModelMain != 0 && filterFunction(itemPair.Value);
-				}).Select(i => NewInventoryItem(inventoryType, i.Key)).ToHashSet();
+				}).Select(i => new InventoryItem(inventoryType, i.Key)).ToList();
 
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.ObtainedAt][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
@@ -211,8 +208,8 @@ namespace Dresser.Services {
 			foreach ((var inventoryType, var currencyId) in FilterCurrencyIds) {
 				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
 					.Where((itemPair) => itemPair.Value.ModelMain != 0 && itemPair.Value.ObtainedWithSpecialShopCurrency2(currencyId))
-					.Select(i => NewInventoryItem(inventoryType, i.Key))
-					.ToHashSet();
+					.Select(i => new InventoryItem(inventoryType, i.Key))
+					.ToList();
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Currency][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
 		}

@@ -8,6 +8,9 @@ using Dresser.Structs.Dresser;
 using System.Linq;
 using System.Threading.Tasks;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
+
 namespace Dresser.Logic {
 
 	internal static class Gathering {

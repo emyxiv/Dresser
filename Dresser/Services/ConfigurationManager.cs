@@ -19,6 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
+
 namespace Dresser.Services {
 	public static class ConfigurationManager {
 		public static Configuration Config {
@@ -50,6 +53,7 @@ namespace Dresser.Services {
 			}
 
 			string jsonText = File.ReadAllText(ConfigurationFile);
+			jsonText = jsonText.Replace("\"$type\":\"CriticalCommonLib.Models.InventoryItem, CriticalCommonLib\"", "\"$type\":\"Dresser.Structs.Dresser.InventoryItem, Dresser\"");
 			var inventoryToolsConfiguration = JsonConvert.DeserializeObject<Configuration>(jsonText, new JsonSerializerSettings() {
 				DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
 				ContractResolver = MinifyResolver

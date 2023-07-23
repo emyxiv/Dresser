@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 namespace Dresser.Logic {
 	public class InventoryItemOrder {

@@ -10,6 +10,7 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 using ImGuiNET;
 
@@ -36,7 +37,7 @@ namespace Dresser.Windows {
 
 
 
-		private static int? HoveredItem = null;
+		private static BrowserIndex? HoveredItem = null;
 		private static string Search = "";
 		public static List<InventoryCategory> AllowedCategories = new() {
 			InventoryCategory.GlamourChest,
@@ -230,7 +231,7 @@ namespace Dresser.Windows {
 
 							ImGui.SameLine();
 							var itemSize = ImGui.GetCursorPosX() - savedPosX + ImGui.GetStyle().ItemSpacing.X;
-							if (ImGui.GetContentRegionAvail().X < itemSize) ImGui.NewLine();
+							if (ImGui.GetContentRegionAvail().X < itemSize || option.Last().Key == inventoryType) ImGui.NewLine();
 						} else
 							if (filterChanged |= ImGui.Checkbox($"{((InventoryTypeExtra)inventoryType).ToString().AddSpaceBeforeCapital()} ({numberOfItems})##displayInventoryTypeAdditionalItem", ref isChecked))
 							ConfigurationManager.Config.FilterInventoryType[inventoryType] = isChecked;
@@ -604,7 +605,7 @@ namespace Dresser.Windows {
 			get{
 				var selectedItemCurrentGear = CurrentGear.SelectedInventoryItem();
 				if (selectedItemCurrentGear == null) return null;
-				return Items?.Where(i => i.ItemId == selectedItemCurrentGear?.ItemId).FirstOrDefault();
+				return Items?.Where(i => (BrowserIndex)i == (BrowserIndex)selectedItemCurrentGear).FirstOrDefault();
 			}
 		}
 
@@ -621,8 +622,7 @@ namespace Dresser.Windows {
 			ImGui.BeginChildFrame(76, size);
 			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
 
-			var selectedItemHash = SelectedInventoryItem?.GetHashCode();
-
+			BrowserIndex? selectedItemHash = SelectedInventoryItem == null ? null : (BrowserIndex)SelectedInventoryItem;
 			if (Items != null && ItemsCount > 0)
 				try {
 
@@ -634,7 +634,7 @@ namespace Dresser.Windows {
 					foreach (var item in Items) {
 
 						// icon
-						var itemHash = item.GetHashCode();
+						var itemHash = (BrowserIndex)item;
 						bool isHovered = itemHash == HoveredItem;
 						bool wasHovered = isHovered;
 

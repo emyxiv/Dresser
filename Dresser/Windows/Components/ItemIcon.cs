@@ -20,6 +20,9 @@ using System;
 using System.Linq;
 using System.Numerics;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
+
 namespace Dresser.Windows.Components {
 	internal class ItemIcon {
 		public static Vector2 IconSize => new Vector2(120) * ConfigurationManager.Config.IconSizeMult;
@@ -204,7 +207,7 @@ namespace Dresser.Windows.Components {
 
 				clicked = ImGui.IsItemClicked();
 				hovering = ImGui.IsItemHovered();
-				if (ImGui.BeginPopupContextItem($"ContextMenuItemIcon##{item.GetHashCode()}##{emptySlot.GetHashCode()}")) {
+				if (ImGui.BeginPopupContextItem($"ContextMenuItemIcon##{((BrowserIndex)item)}##{emptySlot.GetHashCode()}")) {
 					contextAction?.Invoke(item, emptySlot);
 					ImGui.EndPopup();
 				}

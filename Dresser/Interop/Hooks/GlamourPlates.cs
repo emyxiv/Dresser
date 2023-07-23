@@ -26,6 +26,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
+
 namespace Dresser.Interop.Hooks {
 	internal class GlamourPlates : IDisposable {
 

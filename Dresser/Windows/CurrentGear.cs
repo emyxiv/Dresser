@@ -19,6 +19,9 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
+
 namespace Dresser.Windows;
 
 public class CurrentGear : Window, IDisposable {
