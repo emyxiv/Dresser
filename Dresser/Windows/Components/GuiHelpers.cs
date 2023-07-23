@@ -1,7 +1,6 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.GameFonts;
 using Dalamud.Utility;
-
 using ImGuiNET;
 
 using System;
@@ -116,7 +115,13 @@ namespace Dresser.Windows.Components {
 			Radio = Axis_36,
 		}
 		public static void TextWithFont(string text, Font font) {
-			ImFontPtr fontPtr = font switch {
+			ImGui.PushFont(FontToImFontPtr(font));
+			ImGui.Text(text);
+			ImGui.PopFont();
+		}
+
+		private static ImFontPtr FontToImFontPtr(Font font) {
+			return font switch {
 				//Font.Title => PluginServices.Storage.FontTitle.ImFont,
 				Font.Radio => PluginServices.Storage.FontRadio.ImFont,
 				Font.Axis_12 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis12)).ImFont,
@@ -130,10 +135,18 @@ namespace Dresser.Windows.Components {
 				Font.Icon => UiBuilder.IconFont,
 				_ => UiBuilder.DefaultFont,
 			};
+		}
+		public static ImDrawListPtr TextWithFontDrawlist(string text, Font font, Vector4? color = null, float size = 1.0f, ImDrawListPtr? draw = null) {
+			draw ??= ImGui.GetWindowDrawList();
 
-			ImGui.PushFont(fontPtr);
-			ImGui.Text(text);
-			ImGui.PopFont();
+			draw.Value.AddText(
+				FontToImFontPtr(font),
+				ImGui.GetFontSize() * size,
+				ImGui.GetCursorScreenPos(),
+				ImGui.ColorConvertFloat4ToU32(color ?? ImGui.GetStyle().Colors[(int)ImGuiCol.Text]),
+				text);
+
+			return (ImDrawListPtr)draw;
 		}
 		public static void TextRight(string text, float offset = 0) {
 			// Careful: use of ImGui.GetContentRegionAvail().X without - WidthMargin()
