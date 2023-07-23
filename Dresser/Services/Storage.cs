@@ -18,6 +18,8 @@ using Dresser.Structs.Dresser;
 using Lumina.Data.Files;
 using Lumina.Excel;
 
+using Penumbra.Api.Enums;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,6 +108,7 @@ namespace Dresser.Services {
 			All = 1,
 			ObtainedAt = 2,
 			Currency = 3,
+			Modded = 7,
 		}
 		// InventoryTypeExtra must match AdditionalItem * 1000000 + (currency item id OR other)
 		public enum InventoryTypeExtra {
@@ -131,6 +134,8 @@ namespace Dresser.Services {
 			PurpleGatherersScripts = 3033914,
 			TrophyCrystal = 3036656,
 			SeafarersCowrie = 3037549,
+
+			ModdedItems = 7000000,
 
 		}
 
@@ -215,11 +220,89 @@ namespace Dresser.Services {
 			}
 		}
 
+		public static string PenumbraCollectionModList = "Dresser Mod List";
+		private void LoadAdditional_Modded() {
+			if (PluginServices.Penumbra.GetEnabledState() == false) return;
+
+			_isReloadingMods = true;
+
+			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
+			PluginLog.Debug($"--------------- PENUMBRA --- v {penumbraVersions.Breaking} - {penumbraVersions.Features} ----------------");
+
+
+			List<InventoryItem> tmpItemList = new();
+			Dictionary<(string Path, string Name),(bool EnabledState, int Priority, IDictionary<string, IList<string>> EnabledOptions, bool Inherited)> DaCollModsSettings = new();
+
+			PluginLog.Debug($"Penumbra mods:");
+			foreach (var mod1 in PluginServices.Penumbra.GetMods()) {
+				PluginLog.Debug($"Checking {mod1.Name}||{mod1.Path}");
+				var modSettings = PluginServices.Penumbra.GetCurrentModSettings(PenumbraCollectionModList, mod1.Path, mod1.Name, true);
+				if(modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue && modSettings.Item2.Value.EnabledState) {
+					ModsReloadingMax++;
+					PluginLog.Debug($"Found ACTIVE mod {mod1.Name} || {mod1.Path}");
+
+					DaCollModsSettings.Add(mod1, modSettings.Item2.Value);
+				}
+			}
+
+			PluginLog.Debug($"Found {DaCollModsSettings.Count} enabled mod in collection {PenumbraCollectionModList}");
+
+
+			foreach ((var mod3, var modSettings) in DaCollModsSettings) {
+
+				foreach(var i in PluginServices.Penumbra.GetChangedItemIdsForMod(mod3.Path, mod3.Name)) {
+					var item = new InventoryItem((InventoryType)InventoryTypeExtra.ModdedItems, i.ItemId.Copy(), mod3.Name.Copy()!, mod3.Path.Copy()!, i.ModModelPath.Copy()!);
+					// todo: add icon path
+					tmpItemList.Add(item);
+					PluginLog.Debug($"Added item {item.ItemId} [{item.FormattedName}] for mod {item.ModName} || {item.ModDirectory}");
+				}
+				ModsReloadingCur++;
+			}
+
+
+
+			PluginLog.Debug($"------------ CHECK  PENUMBRA --------------------------");
+			foreach(var i in tmpItemList) {
+				PluginLog.Debug($"Checking tmpItemList item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
+			}
+			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = tmpItemList;
+			foreach (var i in AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems]) {
+				PluginLog.Debug($"Checking item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
+			}
+			PluginLog.Debug($"------------ END - PENUMBRA --------------------------");
+			_isReloadingMods = false;
+		}
+
+
+		private bool _isReloadingMods = false;
+		public bool IsReloadingMods {
+			get {
+				return _isReloadingMods;
+			}
+			private set {
+				_isReloadingMods = value;
+				ModsReloadingCur = 0;
+				ModsReloadingMax = 0;
+
+			}
+		}
+		public int ModsReloadingCur = 0;
+		public int ModsReloadingMax = 0;
+
+		public void ReloadMods() {
+			Task.Run(async delegate {
+				await Task.Run(() => {
+					this.LoadAdditional_Modded();
+				});
+			});
+
+		}
 		public void LoadAdditionalItems() {
 			Task.Run(async delegate {
 				await Task.Run(() => LoadAdditional_All());
 				await Task.Run(() => LoadAdditional_Custom());
 				await Task.Run(() => LoadAdditional_Currency());
+				await Task.Run(() => LoadAdditional_Modded());
 			});
 		}
 	}

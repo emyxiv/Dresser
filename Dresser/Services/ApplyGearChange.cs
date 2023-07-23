@@ -1,4 +1,5 @@
 ﻿using CriticalCommonLib;
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
 using Dresser.Extensions;
@@ -68,8 +69,105 @@ namespace Dresser.Services {
 				plate.SetSlot((GlamourPlateSlot)slot, clonedItem);
 			}
 
-			Service.ClientState.LocalPlayer?.Equip(clonedItem);
+			PrepareModsAndDo(clonedItem, ApplyItemAppearanceOnPlayer);
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+		}
+		private void ApplyItemAppearanceOnPlayer(InventoryItem item)
+			=> Service.ClientState.LocalPlayer?.Equip(item);
+
+
+		private void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
+			//foreach ((var s, var item) in set.Items)
+			//	if (item != null) PrepareModsAndDo(item);
+
+			//foreach ((var s, var item) in set.Items)
+			//	if (item != null) ApplyItemAppearanceOnPlayer(item);
+
+
+			var numberOfMods = set.Items.Where(i => i.Value?.IsModded() ?? false).DistinctBy(i => i.Value?.ModDirectory).Count();
+			bool isModInstant = numberOfMods <= 1;
+			PluginLog.Debug($"numberOfMods: {numberOfMods} => {(isModInstant ? "instant" : "notinstant")}");
+			Dictionary<string, List<InventoryItem>> itemsByMods = new();
+			foreach ((var s, var item) in set.Items)
+				if (item != null) {
+					if(item.IsModded() && !isModInstant && item.ModDirectory != null) {
+						PluginLog.Warning($"putting in queue {item.FormattedName} => {item.ModDirectory}");
+						itemsByMods.TryAdd(item.ModDirectory, new());
+						itemsByMods[item.ModDirectory].Add(item);
+						ApplyItemAppearanceOnPlayer(InventoryItem.Zero);
+					} else {
+						PrepareModsAndDo(item, ApplyItemAppearanceOnPlayer);
+					}
+				}
+
+
+			if (!isModInstant) {
+				foreach((var modDir, var itemsForThisMod) in itemsByMods)
+					AddToApplyAppearanceQueue(itemsForThisMod);
+				ApplyAppearanceQueueTick(true);
+			}
+		}
+
+		private void PrepareModsAndDo(InventoryItem item, Action<InventoryItem>? callback = null, bool ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance = false) {
+
+			PluginLog.Debug($"PenumbraWrap item container {item.Container}");
+			PluginLog.Debug($"item.ModName: {item.ModName}");
+			PluginLog.Debug($"item.ModDirectory: {item.ModDirectory}");
+			PluginLog.Debug($"item.ModModelPath: {item.ModModelPath}");
+
+			if (item.Container == (InventoryType)Storage.InventoryTypeExtra.ModdedItems && item.ModDirectory != "") {
+				PluginLog.Debug($"applying modded item: {item.ModName}, {item.ModDirectory}");
+
+				var modSettings = PluginServices.Penumbra.GetCurrentModSettings(ConfigurationManager.Config.PenumbraCollectionModList, item.ModDirectory!, item.ModName!, true);
+				PluginLog.Debug($"GetCurrentModSettings: {modSettings.Item1} | {item.ModName}");
+
+				if (modSettings.Item1 == Penumbra.Api.Enums.PenumbraApiEc.Success && modSettings.Item2.HasValue) {
+					foreach ((var optionGroup, var options) in modSettings.Item2.Value.EnabledOptions) {
+						var res1 = PluginServices.Penumbra.TrySetModSettings(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, optionGroup, options.ToList());
+						PluginLog.Debug($"TrySetModSettings: {res1} | {item.ModName}");
+					}
+
+					var res2 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, true);
+					PluginLog.Debug($"TrySetMod TRUE: {res2} | {item.ModName}");
+
+					var tast = Task.Run(async delegate {
+						// delay before apply
+						if(!ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance)
+							await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
+						PluginLog.Warning($"Applying appearance...");
+						callback?.Invoke(item);
+						await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
+						var res3 = PluginServices.Penumbra.TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, true);
+						PluginLog.Debug($"TrySetMod FALSE: {res3} | {item.ModName}");
+						await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop);
+						if (ApplyAppearanceQueue.Any()) {
+							ApplyAppearanceQueueTick();
+						}
+					});
+
+
+
+				}
+			} else {
+				callback?.Invoke(item);
+			}
+		}
+
+		private Queue<List<InventoryItem>> ApplyAppearanceQueue = new();
+		private void AddToApplyAppearanceQueue(List<InventoryItem> items) => ApplyAppearanceQueue.Enqueue(items);
+		public void ClearApplyAppearanceQueue() => ApplyAppearanceQueue.Clear();
+		private void ApplyAppearanceQueueTick(bool ignoreFirstDelay = false) {
+			if (ApplyAppearanceQueue.Count > 0) {
+				var list = ApplyAppearanceQueue.Dequeue();
+				PrepareModsAndDo(list.First(), (i)=> {
+
+					foreach (var item in list) {
+						PluginLog.Error($"Process ApplyAppearanceQueue... item {item.ModDirectory} ===> {item.FormattedName}");
+						ApplyItemAppearanceOnPlayer(item);
+					}
+
+				}, ignoreFirstDelay);
+			}
 		}
 
 		public void FrameworkUpdate() {
@@ -145,9 +243,7 @@ namespace Dresser.Services {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				currentPlate.UpdateSourcesForOwnedItems();
 				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
-				foreach ((var s, var item) in currentPlate.Items) {
-					if (item != null) PluginServices.Context.LocalPlayer?.Equip(item);
-				}
+				ApplyItemsAppearancesOnPlayer(currentPlate);
 			}
 			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
 			else ShowStrippedSlots();

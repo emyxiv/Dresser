@@ -110,7 +110,13 @@ namespace Dresser {
 		public Dictionary<string, List<(InventoryItemOrder.OrderMethod Method, InventoryItemOrder.OrderDirection Direction)>>? SavedSortOrders = null;
 
 
+		// Penumbra
 
+		public string PenumbraCollectionModList = "Dresser Mod List";
+		public string PenumbraCollectionApply = "Dresser Apply";
+		public int PenumbraDelayAfterModEnableBeforeApplyAppearance = 60;
+		public int PenumbraDelayAfterApplyAppearanceBeforeModDisable = 500;
+		public int PenumbraDelayAfterModDisableBeforeNextModLoop = 100;
 
 
 		// inventory tool stuff

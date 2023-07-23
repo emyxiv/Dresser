@@ -29,6 +29,7 @@ namespace Dresser {
 		[PluginService] internal static IGameGui DalamudGameGui { get; private set; } = null!;
 		[PluginService] internal static IPluginLog PluginLog { get; private set; } = null!;
 
+		public static PenumbraIpc Penumbra { get; private set; } = null!;
 		public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
 		public static OdrScanner OdrScanner { get; private set; } = null!;
@@ -70,6 +71,7 @@ namespace Dresser {
 			Service.ExcelCache.PreCacheItemData();
 			HotkeyService = new HotkeyService(Service.Framework, KeyState);
 			ImageGuiCrop = new ImageGuiCrop();
+			Penumbra = new PenumbraIpc();
 			Storage = new Storage();
 			ChatUtilities = new ChatUtilities();
 
@@ -129,6 +131,7 @@ namespace Dresser {
 			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();
 			ApplyGearChange.Dispose();
+			Penumbra.Dispose();
 
 			GlamourPlates.Dispose();
 
@@ -151,6 +154,7 @@ namespace Dresser {
 			HotkeyService = null!;
 			ImageGuiCrop = null!;
 			ApplyGearChange = null!;
+			Penumbra = null!;
 		}
 	}
 

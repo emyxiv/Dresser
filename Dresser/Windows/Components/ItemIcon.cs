@@ -34,6 +34,8 @@ namespace Dresser.Windows.Components {
 		public static Vector4 ColorGrey = new Vector4(199, 198, 197, 255) / 255;
 		public static Vector4 ColorGreyDark = ColorGrey / 1.1f;
 		public static Vector4 ColorBronze = new Vector4(240, 223, 191, 255) / 255;
+		public static Vector4 ModdedItemWatermarkColor = new Vector4(240, 161, 223, 15) / 255;
+		public static Vector4 ModdedItemColor = new Vector4(223, 101, 240, 255) / 255;
 
 		public static InventoryItem? ContexMenuItem = null;
 		public static Action<InventoryItem, GlamourPlateSlot?>? ContexMenuAction = null;
@@ -82,7 +84,8 @@ namespace Dresser.Windows.Components {
 
 					isTooltipActive2 = true;
 					try {
-
+						var isModdedItem = item.IsModded();
+						if(isModdedItem) GuiHelpers.TextWithFont2("MODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM", GuiHelpers.Font.Title, ModdedItemWatermarkColor, 7f);
 
 						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = IconWrapper.Get(item);
 						DrawImage(image!, dye, isDyeable, item);
@@ -92,7 +95,24 @@ namespace Dresser.Windows.Components {
 						// Side of the icon
 						ImGui.SameLine();
 						ImGui.BeginGroup();
+						Vector2 textInitPos = ImGui.GetCursorScreenPos();
 						ImGui.TextColored(rarityColor, $"{item.FormattedName}");
+						// Modded
+						if (isModdedItem) {
+							var nameSize = ImGui.GetItemRectSize();
+							var verticalNameMid = nameSize.Y * 0.55f;
+
+							var draw = ImGui.GetWindowDrawList();
+							//-new Vector2(0, nameSize.Y / 2)
+							//
+							draw.AddLine(textInitPos+ new Vector2(0,verticalNameMid), textInitPos + new Vector2(nameSize.X, verticalNameMid), ImGui.ColorConvertFloat4ToU32(ModdedItemColor * new Vector4(1,1,1,0.75f)), ImGui.GetFontSize() * 0.15f);
+
+							ImGui.TextColored(ModdedItemColor, $"{item.ModName}");
+							ImGui.SameLine();
+							ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");
+						}
+
+
 						if (ConfigurationManager.Config.IconTooltipShowDev) {
 							ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
 							ImGui.SameLine();

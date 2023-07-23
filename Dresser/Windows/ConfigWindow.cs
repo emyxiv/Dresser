@@ -30,6 +30,7 @@ public class ConfigWindow : Window, IDisposable {
 			{ "Icons", DrawIconsConfigs },
 			{ "Behaviors", DrawBehaviourConfigs },
 			{ "Inventory Memory", DrawInventoryConfigs },
+			{ "Penumbra", DrawPenumbraConfigs },
 		};
 	}
 
@@ -230,5 +231,27 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.EndTable();
 		}
 
+	}
+
+	private void DrawPenumbraConfigs() {
+		//ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		//ImGui.InputText($"Mod List Penumbra collection##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionModList, 100);
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		ImGui.InputText($"Penumbra collection to apply##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionApply, 100);
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		ImGui.DragInt($"Delay 1##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance, 10, 0, int.MaxValue,"%.0f",ImGuiSliderFlags.AlwaysClamp);
+		GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was enabled\nBefore apply appearance");
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		ImGui.DragInt($"Delay 2##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable, 10, 0, int.MaxValue,"%.0f",ImGuiSliderFlags.AlwaysClamp);
+		GuiHelpers.Tooltip($"Penumbra delay\nAfter apply appearance\nBefore disabling the mod");
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		ImGui.DragInt($"Delay 3##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop, 10, 0, int.MaxValue,"%.0f",ImGuiSliderFlags.AlwaysClamp);
+		GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
+		if (PluginServices.Storage.IsReloadingMods) ImGui.BeginDisabled();
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		if(ImGui.Button($"Reload modded items{(PluginServices.Storage.IsReloadingMods?$" ({PluginServices.Storage.ModsReloadingCur}/{PluginServices.Storage.ModsReloadingMax})":"")}##ConfigWindow")) {
+			PluginServices.Storage.ReloadMods();
+		}
+		if (PluginServices.Storage.IsReloadingMods) ImGui.EndDisabled();
 	}
 }
