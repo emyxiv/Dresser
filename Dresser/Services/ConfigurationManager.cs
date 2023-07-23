@@ -55,7 +55,7 @@ namespace Dresser.Services {
 			string jsonText = File.ReadAllText(ConfigurationFile);
 			jsonText = jsonText.Replace("\"$type\":\"CriticalCommonLib.Models.InventoryItem, CriticalCommonLib\"", "\"$type\":\"Dresser.Structs.Dresser.InventoryItem, Dresser\"");
 			var inventoryToolsConfiguration = JsonConvert.DeserializeObject<Configuration>(jsonText, new JsonSerializerSettings() {
-				DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+				//DefaultValueHandling = DefaultValueHandling,
 				ContractResolver = MinifyResolver
 			});
 			if (inventoryToolsConfiguration == null) {
