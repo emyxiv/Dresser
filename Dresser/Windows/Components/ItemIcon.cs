@@ -85,7 +85,7 @@ namespace Dresser.Windows.Components {
 					isTooltipActive2 = true;
 					try {
 						var isModdedItem = item.IsModded();
-						if(isModdedItem) GuiHelpers.TextWithFont2("MODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM", GuiHelpers.Font.Title, ModdedItemWatermarkColor, 7f);
+						if(isModdedItem) GuiHelpers.TextWithFontDrawlist("MODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM", GuiHelpers.Font.Title, ModdedItemWatermarkColor, 7f);
 
 						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = IconWrapper.Get(item);
 						DrawImage(image!, dye, isDyeable, item);
