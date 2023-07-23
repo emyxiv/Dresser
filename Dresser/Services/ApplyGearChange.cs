@@ -164,7 +164,7 @@ namespace Dresser.Services {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
 				foreach (var g in glamourPlates) {
-					if (currentPlate.Items.TryGetValue(g, out var item) && item != null && item.ItemId != 0) {
+					if (!(!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0)) {
 						var indexW = g.ToWeaponIndex();
 						if (indexW != null)
 							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, new WeaponEquip() { Base = 0, Dye = 0, Set = 0, Variant = 0 });
@@ -181,7 +181,7 @@ namespace Dresser.Services {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
 				foreach (var g in glamourPlates) {
-					if (!currentPlate.Items.TryGetValue(g, out var item) && item != null && item.ItemId != 0) {
+					if (!(!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0)) {
 						var indexW = g.ToWeaponIndex();
 						if (indexW == WeaponIndex.MainHand)
 							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponMain);
