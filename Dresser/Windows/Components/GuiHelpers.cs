@@ -40,13 +40,40 @@ namespace Dresser.Windows.Components {
 		private static readonly Vector4 hoveredAlpha = new(1, 1, 1, 0.7f);
 		private static readonly Dictionary<string, bool> IconButtonNoBgHovers = new();
 		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? textColor = null) {
+			return ButtonNoBg((label,h) => IconButton(icon, size, label), hiddenLabel, tooltip, textColor);
+		}
+		public static bool GameButton(string cropPath, int cropItemId, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null) {
+			var tint = color?? Vector4.One;
+			return ButtonNoBg((label, hovered) => {
+				var z = PluginServices.ImageGuiCrop.GetPart(cropPath, cropItemId);
+				var pos = ImGui.GetCursorScreenPos();
+				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, z.uv0, z.uv1,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint * 0.9f));
+				return ImGui.InvisibleButton(hiddenLabel, size);
+			}, hiddenLabel, tooltip, Vector4.Zero);
+		}
+		public static bool GameButtonCircleToggle(int cropCircleBUttonItemId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+
+			if (value) {
+				var z = PluginServices.ImageGuiCrop.GetPart("circle_buttons_4", 28);
+				var pos = ImGui.GetCursorScreenPos();
+				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, z.uv0, z.uv1);
+			}
+			var accepting = GameButton("circle_buttons_4", cropCircleBUttonItemId, hiddenLabel, tooltip, size);
+			if (accepting) {
+				value = !value;
+			}
+
+			return accepting;
+		}
+
+		public static bool ButtonNoBg(Func<string,bool, bool> buttonFunc, string hiddenLabel, string tooltip = "", Vector4? textColor = null) {
 			IconButtonNoBgHovers.TryGetValue(hiddenLabel, out bool wasHovered);
 			if(textColor.HasValue) ImGui.PushStyleColor(ImGuiCol.Text, textColor.Value);
 			if (wasHovered) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * hoveredAlpha);
 			ImGui.PushStyleColor(ImGuiCol.Button, invisible);
 			ImGui.PushStyleColor(ImGuiCol.ButtonHovered, invisible);
 			ImGui.PushStyleColor(ImGuiCol.ButtonActive, invisible);
-			bool accepting = IconButton(icon, size, hiddenLabel);
+			bool accepting = buttonFunc.Invoke(hiddenLabel, wasHovered);
 			ImGui.PopStyleColor(3);
 			if (wasHovered) ImGui.PopStyleColor();
 			if (textColor.HasValue) ImGui.PopStyleColor();
@@ -136,17 +163,13 @@ namespace Dresser.Windows.Components {
 				_ => UiBuilder.DefaultFont,
 			};
 		}
-		public static ImDrawListPtr TextWithFontDrawlist(string text, Font font, Vector4? color = null, float size = 1.0f, ImDrawListPtr? draw = null) {
-			draw ??= ImGui.GetWindowDrawList();
-
-			draw.Value.AddText(
+		public static void TextWithFontDrawlist(string text, Font font, Vector4? color = null, float size = 1.0f) {
+			ImGui.GetWindowDrawList().AddText(
 				FontToImFontPtr(font),
-				ImGui.GetFontSize() * size,
+				size,
 				ImGui.GetCursorScreenPos(),
 				ImGui.ColorConvertFloat4ToU32(color ?? ImGui.GetStyle().Colors[(int)ImGuiCol.Text]),
 				text);
-
-			return (ImDrawListPtr)draw;
 		}
 		public static void TextRight(string text, float offset = 0) {
 			// Careful: use of ImGui.GetContentRegionAvail().X without - WidthMargin()
@@ -201,5 +224,6 @@ namespace Dresser.Windows.Components {
 			} else
 				AnyItemTooltiping = false;
 		}
+
 	}
 }

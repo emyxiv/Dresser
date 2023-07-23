@@ -69,27 +69,32 @@ public class CurrentGear : Window, IDisposable {
 		DrawChildren();
 	}
 
+	private static Vector2 SizeGameCircleIcons => Vector2.One * 65 * ConfigurationManager.Config.IconSizeMult;
 	private static void DrawBottomButtons() {
+		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+
 		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
 		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
 		//ImGui.SameLine();
 
-		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.QuestionCircle, "OpenHelp##CurrentGear", $"Show helps and tricks")) {
+
+		if (GuiHelpers.GameButton("circle_buttons_4", 4, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
 			Help.Open();
 		}
 		ImGui.SameLine();
-		if (GuiHelpers.IconButtonNoBg(ConfigurationManager.Config.CurrentGearDisplayGear ? FontAwesomeIcon.Church : FontAwesomeIcon.Peace, "DisplayGear##CurrentGear", "Display Gear")) {
-			ConfigurationManager.Config.CurrentGearDisplayGear = !ConfigurationManager.Config.CurrentGearDisplayGear;
+		if (GuiHelpers.GameButtonCircleToggle(38, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {
 			PluginServices.ApplyGearChange.ToggleDisplayGear();
 		}
 		if (PluginServices.Context.IsAnyPlateSelectionOpen) {
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileImport, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill")) {
+			if (GuiHelpers.GameButton("circle_buttons_4", 27, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill", SizeGameCircleIcons)) {
 				PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
 			}
 		}
 
+
 		ImGui.SameLine();
+		ImGui.PopStyleVar();
 		DrawTasks();
 	}
 
@@ -291,11 +296,16 @@ public class CurrentGear : Window, IDisposable {
 		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
 			if (taskedItems.Any()) {
 				ImGui.BeginGroup();
-				ImGui.PushStyleColor(ImGuiCol.Text, ItemIcon.ColorBad);
-				GuiHelpers.Icon(FontAwesomeIcon.ExclamationTriangle);
+				var tint = ItemIcon.ColorBad * new Vector4(1.75f, 1.75f, 1.75f, 1);
+				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(-5* ConfigurationManager.Config.IconSizeMult, 0));
+
+				GuiHelpers.GameButton("circle_buttons_4", 29, "OverwritePendingWithCurrent##CurrentGear", "", SizeGameCircleIcons, tint);
 				ImGui.SameLine();
-				ImGui.Text($"{taskedItems.Count} Tasks");
-				ImGui.PopStyleColor();
+
+				var tasksText = $"{taskedItems.Count} Tasks";
+				GuiHelpers.TextWithFontDrawlist(tasksText, GuiHelpers.Font.Title, ItemIcon.ColorBad, SizeGameCircleIcons.Y);
+
+				ImGui.PopStyleVar();
 				ImGui.EndGroup();
 				GuiHelpers.Tooltip(DrawTasksTooltip);
 			}

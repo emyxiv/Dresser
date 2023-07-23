@@ -72,6 +72,36 @@ namespace Dresser.Services {
 				// button currently selected plate (radio)
 				{ 6, (new(56*2, 56), new(56*2, 48) ) },
 			}},
+			{ "circle_buttons_4", new(){
+				// cog
+				{ 1, (new(56*0, 56*0), new(56, 56) ) },
+				// question mark
+				{ 4, (new(56*3, 56*0), new(56, 56) ) },
+				// refresh
+				{ 5, (new(56*4, 56*0), new(56, 56) ) },
+				// reroll
+				{ 27, (new(56*2, 56*3), new(56, 56) ) },
+				// highlight
+				{ 28, (new(56*3, 56*3), new(56, 56) ) },
+				// exclamation mark
+				{ 29, (new(56*4, 56*3), new(56, 56) ) },
+
+				// smaller
+				//magnify lense
+				{ 32, (new(48*0, 56*4 + 48*0), new(48, 48) ) },
+				// hat
+				{ 35, (new(48*3, 56*4 + 48*0), new(48, 48) ) },
+				// weapon
+				{ 36, (new(48*4, 56*4 + 48*0), new(48, 48) ) },
+				// visor
+				{ 37, (new(48*5, 56*4 + 48*0), new(48, 48) ) },
+				// display gear
+				{ 38, (new(48*6, 56*4 + 48*0), new(48, 48) ) },
+				// dye pot
+				{ 39, (new(48*0, 56*4 + 48*1), new(48, 48) ) },
+				// save pin
+				{ 42, (new(48*3, 56*4 + 48*1), new(48, 48) ) },
+			}},
 
 		};
 
@@ -90,7 +120,7 @@ namespace Dresser.Services {
 				{ GlamourPlateSlot.LeftRing, 28 }, // ring: 28
 			};
 
-		public (IntPtr, Vector2, Vector2, Vector2) GetPart(string type, int part_id) {
+		public (IntPtr ImGuiHandle, Vector2 uv0, Vector2 uv1, Vector2 size) GetPart(string type, int part_id) {
 			if (Cache.TryGetValue((type, part_id), out var cachedInfo))
 				return cachedInfo;
 			if (Textures.TryGetValue(type, out var texture))
@@ -125,6 +155,7 @@ namespace Dresser.Services {
 				{"icon_a_frame", $"ui/uld/IconA_Frame{Storage.HighResolutionSufix}.tex"},
 				{"mirage_prism_box", $"ui/uld/MiragePrismBoxIcon{Storage.HighResolutionSufix}.tex"},
 				{"mirage_prism_plate2", $"ui/uld/MiragePrismPlate2{Storage.HighResolutionSufix}.tex"}, // plate number tabs
+				{"circle_buttons_4", $"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex"},
 			};
 			foreach ((var handle, var path) in paths) {
 
