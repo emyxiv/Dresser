@@ -74,6 +74,9 @@ namespace Dresser.Services {
 			Service.ClientState.LocalPlayer?.Equip(clonedItem);
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
+
+		public void FrameworkUpdate() {
+		}
 		public void SelectCurrentSlot(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
 			GearBrowser.RecomputeItems();

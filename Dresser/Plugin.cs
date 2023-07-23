@@ -213,6 +213,7 @@ namespace Dresser {
 				}
 			}
 			PluginServices.Context.Refresh();
+			PluginServices.ApplyGearChange.FrameworkUpdate();
 
 		}
 		private void ConfigOnConfigurationChanged() {
