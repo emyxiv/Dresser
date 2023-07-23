@@ -201,5 +201,24 @@ namespace Dresser.Windows.Components {
 			} else
 				AnyItemTooltiping = false;
 		}
+
+
+
+		public static bool GameButton(string cropPath, int cropItem, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? textColor = null) {
+			IconButtonNoBgHovers.TryGetValue(hiddenLabel, out bool wasHovered);
+			//if (textColor.HasValue) ImGui.PushStyleColor(ImGuiCol.Text, textColor.Value);
+			var col = new Vector4(0,0,0,0);
+			if (wasHovered) col = new Vector4(0.15f, 0.15f, 0.15f, 0.15f);
+
+			var z = PluginServices.ImageGuiCrop.GetPart(cropPath, cropItem);
+			bool accepting = ImGui.ImageButton(z.ImGuiHandle, size, z.uv0, z.uv1,0,Vector4.Zero, col);
+
+			//bool accepting = IconButton(icon, size, hiddenLabel);
+			//if (textColor.HasValue) ImGui.PopStyleColor();
+
+			IconButtonNoBgHovers[hiddenLabel] = ImGui.IsItemHovered();
+			Tooltip(tooltip);
+			return accepting;
+		}
 	}
 }
