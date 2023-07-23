@@ -164,14 +164,14 @@ namespace Dresser.Services {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
 				foreach (var g in glamourPlates) {
-					if (!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0) {
+					if (currentPlate.Items.TryGetValue(g, out var item) && item != null && item.ItemId != 0) {
+						var indexW = g.ToWeaponIndex();
+						if (indexW != null)
+							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, new WeaponEquip() { Base = 0, Dye = 0, Set = 0, Variant = 0 });
+					} else {
 						var index = g.ToEquipIndex();
 						if (index != null) {
 							PluginServices.Context.LocalPlayer?.Equip((EquipIndex)index, new ItemEquip() { Id = 0, Variant = 0, Dye = 0 });
-						} else {
-							var indexW = g.ToWeaponIndex();
-							if (indexW != null)
-								PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, new WeaponEquip() { Base = 0, Dye = 0, Set = 0, Variant = 0 });
 						}
 					}
 				}
@@ -181,16 +181,16 @@ namespace Dresser.Services {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
 				foreach (var g in glamourPlates) {
-					if (!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0) {
+					if (!currentPlate.Items.TryGetValue(g, out var item) && item != null && item.ItemId != 0) {
+						var indexW = g.ToWeaponIndex();
+						if (indexW == WeaponIndex.MainHand)
+							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponMain);
+						else if (indexW == WeaponIndex.OffHand)
+							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponOff);
+					} else {
 						var index = g.ToEquipIndex();
 						if (index != null && AppearanceBackupEquip!.TryGetValue((EquipIndex)index, out var equip)) {
 							PluginServices.Context.LocalPlayer?.Equip((EquipIndex)index, equip);
-						} else {
-							var indexW = g.ToWeaponIndex();
-							if (indexW == WeaponIndex.MainHand)
-								PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponMain);
-							else if (indexW == WeaponIndex.OffHand)
-								PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponOff);
 						}
 					}
 				}
