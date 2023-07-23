@@ -79,8 +79,12 @@ namespace Dresser.Services {
 				{ 4, (new(56*3, 56*0), new(56, 56) ) },
 				// refresh
 				{ 5, (new(56*4, 56*0), new(56, 56) ) },
+				// reroll
+				{ 27, (new(56*2, 56*3), new(56, 56) ) },
 				// highlight
 				{ 28, (new(56*3, 56*3), new(56, 56) ) },
+				// exclamation mark
+				{ 29, (new(56*4, 56*3), new(56, 56) ) },
 
 				// smaller
 				//magnify lense
