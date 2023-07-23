@@ -4,6 +4,7 @@ using CriticalCommonLib.Sheets;
 
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
+using Dalamud.Utility;
 
 using Dresser.Extensions;
 using Dresser.Logic;
@@ -562,7 +563,6 @@ namespace Dresser.Windows {
 				if (ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out var isEnabled) && isEnabled) {
 					items = items.Concat(itemsToAdd);
 					//PluginLog.Debug($"included {inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => p.SortedContainer).Distinct())}");
-					if (inventoryType == (InventoryType)InventoryTypeExtra.AllItems) break;
 				}
 			}
 
@@ -584,19 +584,33 @@ namespace Dresser.Windows {
 					&& i.IsInFilterLevelRanges()
 					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Rarity == ConfigurationManager.Config.filterRarity)
 					&& i.Item.CanBeEquipedByPlayedRaceGender()
-					&& (
-						//!Search.IsNullOrWhitespace() &&
-						i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase)
-						)
+				);
 
+
+			if (!Search.IsNullOrWhitespace())
+				items = items.Where(i =>
+					i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase) // search for item name
+					|| i.StainName().Contains(Search, StringComparison.OrdinalIgnoreCase) // search for stain name
 					);
 
+			if (!items.Any()) { Items = new List<InventoryItem>(); FinishRecomputeItems(); return; }
+
 			// remove duplicates
-			var uniqueItems = items.GroupBy(i => i.GetHashCode()).Select(i => i.First());
+			IEnumerable< InventoryItem> uniqueItems;
+			if (items.Any(i => i.IsModded())){
+				uniqueItems = items;
+			} else {
+				uniqueItems = items.GroupBy(i => i.GetHashCode()).Select(i => i.First());
+			}
 
 			Items = InventoryItemOrder.OrderItems(uniqueItems);
 
-			ItemsCount = Items.Count();
+			FinishRecomputeItems();
+
+		}
+		private static void FinishRecomputeItems() {
+
+			ItemsCount = Items?.Count() ?? 0;
 			JustRecomputed = true;
 		}
 

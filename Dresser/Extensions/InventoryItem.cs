@@ -1,6 +1,8 @@
 ﻿using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
+using Dalamud.Utility;
+
 using Dresser.Services;
 
 using static Dresser.Services.Storage;
@@ -107,5 +109,10 @@ namespace Dresser.Extensions {
 		//	return PluginServices.Storage.VendorItems.Where(v => ConfigurationManager.Config.FilterVendors.TryGetValue(v.Key, out bool b) && b).Any(v=>v.Value.Contains(item.ItemId));
 		//}
 
+		public static string StainName(this CriticalInventoryItem item) {
+			var stainEntry = item.StainEntry;
+			if (stainEntry == null) return "";
+			return stainEntry.Name.ToDalamudString().ToString();
+		}
 	}
 }
