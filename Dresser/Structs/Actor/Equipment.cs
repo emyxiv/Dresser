@@ -31,6 +31,19 @@ namespace Dresser.Structs.Actor {
 				{EquipIndex.RingLeft,this.RingLeft},
 			};
 		}
+		public ItemEquip this[EquipIndex index] => index switch {
+			EquipIndex.Head => this.Head,
+			EquipIndex.Chest => this.Chest,
+			EquipIndex.Hands => this.Hands,
+			EquipIndex.Legs => this.Legs,
+			EquipIndex.Feet => this.Feet,
+			EquipIndex.Earring => this.Earring,
+			EquipIndex.Necklace => this.Necklace,
+			EquipIndex.Bracelet => this.Bracelet,
+			EquipIndex.RingRight => this.RingRight,
+			EquipIndex.RingLeft => this.RingLeft,
+			_ => throw new System.Exception($"Unknown index {index}")
+		};
 	}
 
 	[StructLayout(LayoutKind.Explicit, Size = 0x4)]

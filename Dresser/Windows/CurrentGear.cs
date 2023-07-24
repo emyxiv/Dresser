@@ -71,6 +71,8 @@ public class CurrentGear : Window, IDisposable {
 
 	private static Vector2 SizeGameCircleIcons => Vector2.One * 65 * ConfigurationManager.Config.IconSizeMult;
 	private static void DrawBottomButtons() {
+		if (PluginServices.Context.LocalPlayer == null) return;
+
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
 		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
@@ -80,6 +82,18 @@ public class CurrentGear : Window, IDisposable {
 
 		if (GuiHelpers.GameButton("circle_buttons_4", 4, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
 			Help.Open();
+		}
+		//ImGui.SameLine();
+		//if (GuiHelpers.GameButtonCircleToggle(36, ref ConfigurationManager.Config.CurrentGearDisplayWeapon, "Display Sheathed Arms##CurrentGear", "Display Sheathed Arms", SizeGameCircleIcons)) {
+		//	PluginServices.Context.LocalPlayer.RedrawWeapon();
+		//}
+		ImGui.SameLine();
+		if (GuiHelpers.GameButtonCircleToggle(35, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
+			PluginServices.Context.LocalPlayer.RedrawHeadGear();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.GameButtonCircleToggle(37, ref ConfigurationManager.Config.CurrentGearDisplayVisor, "Manually adjust visor##CurrentGear", "Manually adjust visor", SizeGameCircleIcons)) {
+			PluginServices.Context.LocalPlayer.RedrawHeadGear();
 		}
 		ImGui.SameLine();
 		if (GuiHelpers.GameButtonCircleToggle(38, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {
@@ -93,7 +107,6 @@ public class CurrentGear : Window, IDisposable {
 		}
 
 
-		ImGui.SameLine();
 		ImGui.PopStyleVar();
 		DrawTasks();
 	}

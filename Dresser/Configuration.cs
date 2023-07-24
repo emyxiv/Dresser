@@ -35,6 +35,9 @@ namespace Dresser {
 		public ushort NumberofPendingPlateNextColumn { get; set; } = 20;
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearDisplayGear = false;
+		public bool CurrentGearDisplayHat = true;
+		public bool CurrentGearDisplayWeapon = true;
+		public bool CurrentGearDisplayVisor = true;
 
 		public Vector2 DyePickerDyeSize = new(30);
 		public bool DyePickerKeepApplyOnNewItem = false;
