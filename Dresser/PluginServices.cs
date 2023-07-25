@@ -132,6 +132,7 @@ namespace Dresser {
 			ApplyGearChange.Dispose();
 			FrameworkService.Dispose();
 
+			GlamourPlates.Dispose();
 
 			FrameworkService = null!;
 			InventoryMonitor = null!;
@@ -145,6 +146,7 @@ namespace Dresser {
 			//FilterService = null!;
 			OverlayService = null!;
 			CraftMonitor = null!;
+			GlamourPlates = null!;
 			//PluginInterface = null!;
 			//MarketCache = null!;
 			//Universalis = null!;

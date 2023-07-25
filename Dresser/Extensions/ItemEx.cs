@@ -2,6 +2,7 @@
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
+using Dresser.Structs;
 using Dresser.Structs.Actor;
 using Dresser.Structs.Dresser;
 
@@ -13,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
 
 namespace Dresser.Extensions {
@@ -53,6 +54,15 @@ namespace Dresser.Extensions {
 			if (slot.FingerL == 1) return Structs.Actor.EquipIndex.RingLeft;
 			return null;
 		}
+
+		private static ItemModel ItemModelFromUlong(this CriticalItemEx item, ulong model, bool isWeapon)
+			=> new(model, isWeapon);
+		public static ItemModel ModelMainItemModel(this CriticalItemEx item)
+			=> item.ItemModelFromUlong(item.ModelMain, item.IsWeapon());
+		public static ItemModel ModelSubItemModel(this CriticalItemEx item)
+			=> item.ItemModelFromUlong(item.ModelSub, item.IsWeapon());
+
+
 		public static bool IsWeapon(this CriticalItemEx item)
 			=> item.EquipSlotCategoryEx?.MainHand == 1 || item.EquipSlotCategoryEx?.OffHand == 1;
 		public static bool CanBeEquipedByPlayedRaceGender(this CriticalItemEx item) {

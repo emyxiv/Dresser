@@ -4,60 +4,25 @@ using Dresser.Structs.Actor;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using DresserInventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter;
 
 namespace Dresser.Extensions {
 	public static class PlayerCharacterExtention {
 
-		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, CriticalInventoryItem item) {
+		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, DresserInventoryItem item) {
+
 			var index = item.Item.EquipIndex();
-
 			if (index != null) {
+				playerCharacter.Equip((EquipIndex)index, item.ToItemEquip());
 
-				var equipment = playerCharacter.EquipmentModels();
-				ItemEquip? itemEquipNullable = index switch {
-					EquipIndex.Head => equipment.Head,
-					EquipIndex.Chest => equipment.Chest,
-					EquipIndex.Hands => equipment.Hands,
-					EquipIndex.Legs => equipment.Legs,
-					EquipIndex.Feet => equipment.Feet,
-					EquipIndex.Earring => equipment.Earring,
-					EquipIndex.Necklace => equipment.Necklace,
-					EquipIndex.Bracelet => equipment.Bracelet,
-					EquipIndex.RingLeft => equipment.RingLeft,
-					EquipIndex.RingRight => equipment.RingRight,
-					_ => null
-				};
-				if (itemEquipNullable == null) return;
-				var itemEquip = (ItemEquip)itemEquipNullable;
-
-				itemEquip.Id = (ushort)item.Item.ModelMain;
-				itemEquip.Variant = (byte)(item.Item.ModelMain >> 16);
-				itemEquip.Dye = item.Item.IsDyeable ? item.Stain : (byte)0;
-
-				playerCharacter.Equip((EquipIndex)index, itemEquip);
 			} else if (item.Item.IsWeapon()) {
 
-				var model = item.Item.ModelSub != 0 ? item.Item.ModelSub : item.Item.ModelMain;
+				var weaponIndex = item.Item.EquipSlotCategoryEx?.OffHand == 1 ? WeaponIndex.OffHand : WeaponIndex.MainHand;
+				playerCharacter.Equip(weaponIndex, item.ToWeaponEquip(weaponIndex));
 
-				var weaponSet = (ushort)item.Item.ModelMain;
-				var weaponBase = (ushort)(model >> 16);
-				var weaponVariant = (ushort)(model >> 32);
-				var weaponDye = item.Item.IsDyeable ? item.Stain : (byte)0;
-
-				if (item.Item.EquipSlotCategoryEx?.MainHand == 1) {
-					var weapon = playerCharacter.MainHandModels().Equip;
-					weapon.Set = weaponSet; weapon.Base = weaponBase; weapon.Variant = weaponVariant; weapon.Dye = weaponDye;
-
-					playerCharacter.Equip(WeaponIndex.MainHand, weapon);
-				} else if (item.Item.EquipSlotCategoryEx?.OffHand == 1) {
-					var weapon = playerCharacter.OffHandModels().Equip;
-					weapon.Set = weaponSet; weapon.Base = weaponBase; weapon.Variant = weaponVariant; weapon.Dye = weaponDye;
-
-					playerCharacter.Equip(WeaponIndex.OffHand, weapon);
-				} else return;
-
+				if (weaponIndex == WeaponIndex.MainHand && item.Item.ModelSub != 0)
+					playerCharacter.Equip(WeaponIndex.OffHand, item.ToWeaponEquip(WeaponIndex.OffHand));
 			}
 		}
 
@@ -65,10 +30,12 @@ namespace Dresser.Extensions {
 			=> *(Equipment*)(playerCharacter.Address + Offsets.Equipment);
 		public unsafe static ItemEquip EquipmentModel(this SubKindsPlayerCharacter playerCharacter, EquipIndex index)
 			=> playerCharacter.EquipmentModels()[index];
-		public unsafe static Weapon MainHandModels(this SubKindsPlayerCharacter playerCharacter)
-			=> *(Weapon*)(playerCharacter.Address + Offsets.WeaponMainHand);
-		public unsafe static Weapon OffHandModels(this SubKindsPlayerCharacter playerCharacter)
-			=> *(Weapon*)(playerCharacter.Address + Offsets.WeaponOffHand);
+		public unsafe static Weapon WeaponModels(this SubKindsPlayerCharacter playerCharacter, WeaponIndex index)
+			=> *(Weapon*)(playerCharacter.Address + (index == WeaponIndex.OffHand ? Offsets.WeaponOffHand : Offsets.WeaponMainHand));
+		public static Weapon MainHandModels(this SubKindsPlayerCharacter playerCharacter)
+			=> playerCharacter.WeaponModels(WeaponIndex.MainHand);
+		public static Weapon OffHandModels(this SubKindsPlayerCharacter playerCharacter)
+			=> playerCharacter.WeaponModels(WeaponIndex.OffHand);
 
 		public static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
 			if (Methods.ActorChangeEquip == null) return;

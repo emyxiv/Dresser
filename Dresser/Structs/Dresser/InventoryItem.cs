@@ -1,16 +1,12 @@
 ﻿using CriticalCommonLib.Enums;
-using CriticalCommonLib.Extensions;
 
 using Dalamud.Logging;
 using Dalamud.Utility;
 
 using Dresser.Extensions;
+using Dresser.Structs.Actor;
 
-using Lumina.Excel.GeneratedSheets;
-using System.ComponentModel;
 using System.Text.Json.Serialization;
-
-using static Dresser.Services.Storage;
 
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
@@ -68,6 +64,30 @@ namespace Dresser.Structs.Dresser {
 				&& this.ModDirectory == item2?.ModDirectory
 				&& this.ModModelPath == item2?.ModModelPath;
 		}
+
+
+		public ItemEquip ToItemEquip() {
+			var itemModelMain = this.Item.ModelMainItemModel();
+
+			return new() {
+				Id = itemModelMain.Id,
+				Variant = (byte)itemModelMain.Variant,
+				Dye = this.Item.IsDyeable ? this.Stain : (byte)0,
+			};
+		}
+		public WeaponEquip ToWeaponEquip(WeaponIndex index) {
+			var itemModel = index == WeaponIndex.OffHand ? Item.ModelSubItemModel() : Item.ModelMainItemModel();
+			return new() {
+				Set = (ushort)this.Item.ModelMain,
+				Base = itemModel.Base,
+				Variant = itemModel.Variant,
+				Dye = this.Item.IsDyeable ? this.Stain : (byte)0,
+			};
+		}
+		public WeaponEquip ToWeaponEquipMain()
+			=> ToWeaponEquip(WeaponIndex.MainHand);
+		public WeaponEquip ToWeaponEquipSub()
+			=> ToWeaponEquip(WeaponIndex.OffHand);
 
 
 	}
