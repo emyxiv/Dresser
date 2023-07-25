@@ -315,7 +315,7 @@ public class CurrentGear : Window, IDisposable {
 				GuiHelpers.GameButton("circle_buttons_4", 29, "OverwritePendingWithCurrent##CurrentGear", "", SizeGameCircleIcons, tint);
 				ImGui.SameLine();
 
-				var tasksText = $"{taskedItems.Count} Tasks";
+				var tasksText = $"{taskedItems.Count} Task{(taskedItems.Count > 1 ? "s" : "")}";
 				GuiHelpers.TextWithFontDrawlist(tasksText, GuiHelpers.Font.Title, ItemIcon.ColorBad, SizeGameCircleIcons.Y);
 
 				ImGui.PopStyleVar();
