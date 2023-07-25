@@ -21,7 +21,7 @@ namespace Dresser.Extensions {
 				var weaponIndex = item.Item.EquipSlotCategoryEx?.OffHand == 1 ? WeaponIndex.OffHand : WeaponIndex.MainHand;
 				playerCharacter.Equip(weaponIndex, item.ToWeaponEquip(weaponIndex));
 
-				if (weaponIndex == WeaponIndex.MainHand && item.Item.ModelSub != 0)
+				if (weaponIndex == WeaponIndex.MainHand)
 					playerCharacter.Equip(WeaponIndex.OffHand, item.ToWeaponEquip(WeaponIndex.OffHand));
 			}
 		}

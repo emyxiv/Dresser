@@ -78,7 +78,7 @@ namespace Dresser.Structs.Dresser {
 		public WeaponEquip ToWeaponEquip(WeaponIndex index) {
 			var itemModel = index == WeaponIndex.OffHand ? Item.ModelSubItemModel() : Item.ModelMainItemModel();
 			return new() {
-				Set = (ushort)this.Item.ModelMain,
+				Set = (ushort)(index == WeaponIndex.OffHand ? Item.ModelSub : Item.ModelMain),
 				Base = itemModel.Base,
 				Variant = itemModel.Variant,
 				Dye = this.Item.IsDyeable ? this.Stain : (byte)0,
