@@ -1,3 +1,5 @@
+using CriticalCommonLib.Extensions;
+
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 
@@ -247,10 +249,19 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 		ImGui.DragInt($"Delay 3##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop, 10, 0, int.MaxValue,"%.0f",ImGuiSliderFlags.AlwaysClamp);
 		GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
+
+		ImGui.Spacing();
+		ImGui.Text($"{ConfigurationManager.Config.ModdedItems.Count} modded items in Config, {PluginServices.Storage.AdditionalItems[(CriticalCommonLib.Enums.InventoryType)Storage.InventoryTypeExtra.ModdedItems].Count} in memory");
+
 		if (PluginServices.Storage.IsReloadingMods) ImGui.BeginDisabled();
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-		if(ImGui.Button($"Reload modded items{(PluginServices.Storage.IsReloadingMods?$" ({PluginServices.Storage.ModsReloadingCur}/{PluginServices.Storage.ModsReloadingMax})":"")}##ConfigWindow")) {
+		if(ImGui.Button($"Reload modded items {(PluginServices.Storage.IsReloadingMods?$" ({PluginServices.Storage.ModsReloadingCur}/{PluginServices.Storage.ModsReloadingMax})":"")}##PenumbraConfig##ConfigWindow")) {
 			PluginServices.Storage.ReloadMods();
+		}
+		ImGui.SameLine();
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		if (ImGui.Button($"Clear modded items##PenumbraConfig##ConfigWindow")) {
+			PluginServices.Storage.ClearMods();
 		}
 		if (PluginServices.Storage.IsReloadingMods) ImGui.EndDisabled();
 	}

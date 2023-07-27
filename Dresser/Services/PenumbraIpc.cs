@@ -16,6 +16,9 @@ using System.Collections;
 using CriticalCommonLib.Extensions;
 using ImGuizmoNET;
 using System.Threading.Tasks;
+using Dresser.Structs.Dresser;
+using static Dresser.Services.Storage;
+using CriticalCommonLib.Enums;
 
 namespace Dresser.Services;
 
@@ -136,6 +139,34 @@ internal class PenumbraIpc : IDisposable {
 		PluginLog.Debug($"Re-enable mod {modPath}: {res6}");
 
 		return items;
+	}
+
+	internal List<(string Path, string Name)> GetEnabledModsForCollection(string collection, bool allowInheritance) {
+		List<(string Path, string Name)> DaCollModsSettings = new();
+		foreach (var mod in PluginServices.Penumbra.GetMods()) {
+			var modSettings = PluginServices.Penumbra.GetCurrentModSettings(collection, mod.Path, mod.Name, allowInheritance);
+			if (modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue && modSettings.Item2.Value.EnabledState) {
+				PluginServices.Storage.ModsReloadingMax++;
+				PluginLog.Debug($"Found ACTIVE mod {mod.Name} || {mod.Path}");
+
+				DaCollModsSettings.Add(mod);
+			}
+		}
+		return DaCollModsSettings;
+	}
+	internal List<InventoryItem> GetChangedInventoryItemForMods(List<(string Path, string Name)> mods) {
+		List<InventoryItem> tmpItemList = new();
+		foreach (var mod3 in mods) {
+
+			foreach (var i in PluginServices.Penumbra.GetChangedItemIdsForMod(mod3.Path, mod3.Name)) {
+				var item = new InventoryItem((InventoryType)InventoryTypeExtra.ModdedItems, i.ItemId.Copy(), mod3.Name.Copy()!, mod3.Path.Copy()!, i.ModModelPath.Copy()!);
+				// todo: add icon path
+				tmpItemList.Add(item);
+				//PluginLog.Debug($"Added item {item.ItemId} [{item.FormattedName}] for mod {item.ModName} || {item.ModDirectory}");
+			}
+			PluginServices.Storage.ModsReloadingCur++;
+		}
+		return tmpItemList;
 	}
 
 	internal IEnumerable<EquipItem> GetChangedEquipItemsForCollection(string collectionName) {

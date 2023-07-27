@@ -77,7 +77,7 @@ namespace Dresser.Services {
 
 
 			InitItemTypes();
-			LoadAdditionalItems();
+			PluginServices.OnPluginLoaded += LoadAdditionalItems;
 		}
 		public void Dispose() {
 			Dyes = null;
@@ -220,57 +220,37 @@ namespace Dresser.Services {
 			}
 		}
 
-		public static string PenumbraCollectionModList = "Dresser Mod List";
 		private void LoadAdditional_Modded() {
+			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = ConfigurationManager.Config.ModdedItems.Copy()!;
+		}
+
+		public static string PenumbraCollectionModList = "Dresser Mod List";
+		private void RecomputeModdedItemsList() {
 			if (PluginServices.Penumbra.GetEnabledState() == false) return;
 
-			_isReloadingMods = true;
+			IsReloadingMods = true;
 
 			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
 			PluginLog.Debug($"--------------- PENUMBRA --- v {penumbraVersions.Breaking} - {penumbraVersions.Features} ----------------");
 
-
-			List<InventoryItem> tmpItemList = new();
-			Dictionary<(string Path, string Name),(bool EnabledState, int Priority, IDictionary<string, IList<string>> EnabledOptions, bool Inherited)> DaCollModsSettings = new();
-
-			PluginLog.Debug($"Penumbra mods:");
-			foreach (var mod1 in PluginServices.Penumbra.GetMods()) {
-				PluginLog.Debug($"Checking {mod1.Name}||{mod1.Path}");
-				var modSettings = PluginServices.Penumbra.GetCurrentModSettings(PenumbraCollectionModList, mod1.Path, mod1.Name, true);
-				if(modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue && modSettings.Item2.Value.EnabledState) {
-					ModsReloadingMax++;
-					PluginLog.Debug($"Found ACTIVE mod {mod1.Name} || {mod1.Path}");
-
-					DaCollModsSettings.Add(mod1, modSettings.Item2.Value);
-				}
-			}
+			// make a list of enabled mods
+			var DaCollModsSettings = PluginServices.Penumbra.GetEnabledModsForCollection(PenumbraCollectionModList, true);
 
 			PluginLog.Debug($"Found {DaCollModsSettings.Count} enabled mod in collection {PenumbraCollectionModList}");
+			// make list of inventoryItems
+			List<InventoryItem> inventoryItems = PluginServices.Penumbra.GetChangedInventoryItemForMods(DaCollModsSettings);
 
-
-			foreach ((var mod3, var modSettings) in DaCollModsSettings) {
-
-				foreach(var i in PluginServices.Penumbra.GetChangedItemIdsForMod(mod3.Path, mod3.Name)) {
-					var item = new InventoryItem((InventoryType)InventoryTypeExtra.ModdedItems, i.ItemId.Copy(), mod3.Name.Copy()!, mod3.Path.Copy()!, i.ModModelPath.Copy()!);
-					// todo: add icon path
-					tmpItemList.Add(item);
-					PluginLog.Debug($"Added item {item.ItemId} [{item.FormattedName}] for mod {item.ModName} || {item.ModDirectory}");
-				}
-				ModsReloadingCur++;
-			}
-
-
-
-			PluginLog.Debug($"------------ CHECK  PENUMBRA --------------------------");
-			foreach(var i in tmpItemList) {
-				PluginLog.Debug($"Checking tmpItemList item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
-			}
-			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = tmpItemList;
-			foreach (var i in AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems]) {
-				PluginLog.Debug($"Checking item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
-			}
+			//PluginLog.Debug($"------------ CHECK  PENUMBRA --------------------------");
+			//foreach(var i in tmpItemList) {
+			//	PluginLog.Debug($"Checking tmpItemList item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
+			//}
+			ConfigurationManager.Config.ModdedItems = inventoryItems;
+			LoadAdditional_Modded();
+			//foreach (var i in AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems]) {
+			//	PluginLog.Debug($"Checking item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
+			//}
 			PluginLog.Debug($"------------ END - PENUMBRA --------------------------");
-			_isReloadingMods = false;
+			IsReloadingMods = false;
 		}
 
 
@@ -289,15 +269,20 @@ namespace Dresser.Services {
 		public int ModsReloadingCur = 0;
 		public int ModsReloadingMax = 0;
 
+		public void ClearMods() {
+			ConfigurationManager.Config.ModdedItems.Clear();
+			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems].Clear();
+		}
 		public void ReloadMods() {
 			Task.Run(async delegate {
 				await Task.Run(() => {
-					this.LoadAdditional_Modded();
+					this.RecomputeModdedItemsList();
 				});
 			});
 
 		}
 		public void LoadAdditionalItems() {
+			PluginServices.OnPluginLoaded -= LoadAdditionalItems;
 			Task.Run(async delegate {
 				await Task.Run(() => LoadAdditional_All());
 				await Task.Run(() => LoadAdditional_Custom());

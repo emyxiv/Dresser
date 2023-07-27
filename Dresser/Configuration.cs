@@ -118,6 +118,7 @@ namespace Dresser {
 		public int PenumbraDelayAfterApplyAppearanceBeforeModDisable = 500;
 		public int PenumbraDelayAfterModDisableBeforeNextModLoop = 100;
 
+		public List<InventoryItem> ModdedItems = new List<InventoryItem>();
 
 		// inventory tool stuff
 		public bool AutoSave { get; set; } = true;
