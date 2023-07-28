@@ -221,7 +221,7 @@ namespace Dresser.Services {
 		}
 
 		private void LoadAdditional_Modded() {
-			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = ConfigurationManager.Config.ModdedItems.Copy()!;
+			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = ConfigurationManager.Config.PenumbraModdedItems.Copy()!;
 		}
 
 		public static string PenumbraCollectionModList = "Dresser Mod List";
@@ -244,7 +244,7 @@ namespace Dresser.Services {
 			//foreach(var i in tmpItemList) {
 			//	PluginLog.Debug($"Checking tmpItemList item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
 			//}
-			ConfigurationManager.Config.ModdedItems = inventoryItems;
+			ConfigurationManager.Config.PenumbraModdedItems = inventoryItems;
 			LoadAdditional_Modded();
 			//foreach (var i in AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems]) {
 			//	PluginLog.Debug($"Checking item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
@@ -270,7 +270,7 @@ namespace Dresser.Services {
 		public int ModsReloadingMax = 0;
 
 		public void ClearMods() {
-			ConfigurationManager.Config.ModdedItems.Clear();
+			ConfigurationManager.Config.PenumbraModdedItems.Clear();
 			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems].Clear();
 		}
 		public void ReloadMods() {

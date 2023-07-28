@@ -236,8 +236,13 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void DrawPenumbraConfigs() {
-		//ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-		//ImGui.InputText($"Mod List Penumbra collection##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionModList, 100);
+		ImGui.Checkbox($"Use collection Mod List##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraUseModListCollection);
+		GuiHelpers.Tooltip($"If checked, only mods enabled on [{ConfigurationManager.Config.PenumbraCollectionModList}] will be scanned\nIf unchecked, ALL installed mods will be scanned for changed items");
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		if(!ConfigurationManager.Config.PenumbraUseModListCollection) ImGui.BeginDisabled();
+		ImGui.InputText($"Mod List Penumbra collection##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionModList, 100);
+		if (!ConfigurationManager.Config.PenumbraUseModListCollection) ImGui.EndDisabled();
+		GuiHelpers.Tooltip($"When enabled, the mods of this collection will be scanned.\nMods can be enabled regardless of conflicts, as mods sharing the same items can be displayed at the same time");
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 		ImGui.InputText($"Penumbra collection to apply##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionApply, 100);
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
@@ -251,7 +256,7 @@ public class ConfigWindow : Window, IDisposable {
 		GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
 
 		ImGui.Spacing();
-		ImGui.Text($"{ConfigurationManager.Config.ModdedItems.Count} modded items in Config, {PluginServices.Storage.AdditionalItems[(CriticalCommonLib.Enums.InventoryType)Storage.InventoryTypeExtra.ModdedItems].Count} in memory");
+		ImGui.Text($"{ConfigurationManager.Config.PenumbraModdedItems.Count} modded items in Config, {PluginServices.Storage.AdditionalItems[(CriticalCommonLib.Enums.InventoryType)Storage.InventoryTypeExtra.ModdedItems].Count} in memory");
 
 		if (PluginServices.Storage.IsReloadingMods) ImGui.BeginDisabled();
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
@@ -264,5 +269,71 @@ public class ConfigWindow : Window, IDisposable {
 			PluginServices.Storage.ClearMods();
 		}
 		if (PluginServices.Storage.IsReloadingMods) ImGui.EndDisabled();
+
+
+		ImGui.Spacing();
+		ImGui.AlignTextToFramePadding();
+		ImGui.Text("Blacklisted mods");
+		GuiHelpers.Tooltip($"Mods listed here will be ignored when creating the list of modded items");
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Plus, "PlusButton##AddToBlackList##PenumbraConfig##ConfigWindow", ""))
+			ModsBlackListSearchOpen = true;
+
+		if (ImGui.BeginChildFrame(411141, new Vector2(ImGui.GetContentRegionAvail().X,ImGui.GetTextLineHeightWithSpacing() * 5))) {
+			for (int i = ConfigurationManager.Config.PenumbraModsBlacklist.Count - 1; i >= 0; i--) {
+				var mod = ConfigurationManager.Config.PenumbraModsBlacklist[i];
+				if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Trash, $"{mod.Path}##TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Remove from blacklist")) {
+					ConfigurationManager.Config.PenumbraModsBlacklist.RemoveAt(i);
+				}
+				ImGui.SameLine();
+				ImGui.Text($"{mod.Name}");
+				GuiHelpers.Tooltip($"{mod.Path}");
+
+			}
+
+
+			ImGui.EndChildFrame();
+		}
+
+
+
+
+		// put that at the end
+		DrawModBlacklistSelector();
 	}
+	private static List<(string Path, string Name)>? ModsAvailableToBlacklist = null;
+	private static string ModsBlackListSearch = "";
+	private static bool ModsBlackListSearchOpen = false;
+	public static void AddModToBlacklist((string Path, string Name) mod) {
+		ConfigurationManager.Config.PenumbraModsBlacklist.Add(mod);
+		ModsAvailableToBlacklist = null;
+		if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+	}
+	private void DrawModBlacklistSelector() {
+		ModsAvailableToBlacklist ??= PluginServices.Penumbra.GetNotBlacklistedMods().ToList();
+		if (ModsBlackListSearchOpen)
+			PopupSelect.HoverPopupWindow(
+				PopupSelect.HoverPopupWindowFlags.SelectorList
+				| PopupSelect.HoverPopupWindowFlags.SearchBar,
+				ModsAvailableToBlacklist,
+				(e, input) => e.Where(t => t.Name.Contains(input, StringComparison.OrdinalIgnoreCase)),
+				(mod, a) => {
+					bool selected = ImGui.Selectable($"{mod.Name}##{mod.Name}##{mod.Path}##BlacklistSelect##PenumbraConfig##ConfigWindow", a);
+					bool focus = ImGui.IsItemFocused();
+					GuiHelpers.Tooltip(() => {
+						ImGui.Text($"{mod.Name}");
+						ImGui.TextDisabled($"{mod.Path}");
+					});
+					return (selected, focus);
+				},
+				AddModToBlacklist, // on select
+				() => { ModsBlackListSearchOpen = false; }, // on close
+				ref ModsBlackListSearch,
+				"Blacklist Mod",
+				"##blacklist_mod",
+				"##blacklist_mod2");
+	}
+
+
+
 }

@@ -97,6 +97,8 @@ internal class PenumbraIpc : IDisposable {
 			return new List<(string, string)>();
 		}
 	}
+	internal IList<(string Path, string Name)> GetNotBlacklistedMods()
+		=> GetMods().Where(m => !ConfigurationManager.Config.PenumbraModsBlacklist.Contains(m)).ToList();
 
 	/// <returns>A dictionary of affected items in <paramref name="collectionName"/> via name and known objects or null.</returns>
 	internal IReadOnlyDictionary<string, dynamic?> GetChangedItemsForCollection(string collectionName) {
