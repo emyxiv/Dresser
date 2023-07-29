@@ -589,6 +589,7 @@ namespace Dresser.Windows {
 					&& i.IsInFilterLevelRanges()
 					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Rarity == ConfigurationManager.Config.filterRarity)
 					&& i.Item.CanBeEquipedByPlayedRaceGender()
+					&& i.IsNotInBlackList()
 				);
 
 
@@ -597,6 +598,7 @@ namespace Dresser.Windows {
 					i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase) // search for item name
 					|| i.StainName().Contains(Search, StringComparison.OrdinalIgnoreCase) // search for stain name
 					|| (i.ModName?.Contains(Search, StringComparison.OrdinalIgnoreCase)??false) // search for mod name
+					|| (i.ModAuthor?.Contains(Search, StringComparison.OrdinalIgnoreCase)??false) // search for mod author
 					);
 
 			if (!items.Any()) { Items = new List<InventoryItem>(); FinishRecomputeItems(); return; }
@@ -724,8 +726,20 @@ namespace Dresser.Windows {
 				item.OpenInUniversalis();
 			if (ImGui.Selectable("Copy Name"))
 				item.CopyNameToClipboard();
+			if (itemInv.IsModded() && ImGui.Selectable("Copy Mod Name"))
+				itemInv.ModName?.ToClipboard();
+			if (itemInv.IsModded()) {
+
+				if (itemInv.ModWebsite.IsNullOrWhitespace()) ImGui.BeginDisabled();
+				if(ImGui.Selectable("Go to mod site") && !itemInv.ModWebsite.IsNullOrWhitespace())
+					itemInv.ModWebsite?.OpenBrowser();
+				if (itemInv.ModWebsite.IsNullOrWhitespace()) ImGui.EndDisabled();
+
+			}
 			if (ImGui.Selectable("Link"))
 				item.LinkInChatHistory();
+			if (!ConfigurationManager.Config.PenumbraUseModListCollection && itemInv.IsModded() && ImGui.Selectable("Blacklist this Mod"))
+				ConfigWindow.AddModToBlacklist((itemInv.ModDirectory, itemInv.ModName)!);
 
 			if (item.CanTryOn && ImGui.Selectable("Try On") && PluginServices.TryOn.CanUseTryOn)
 				PluginServices.TryOn.TryOnItem(item);

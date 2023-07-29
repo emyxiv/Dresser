@@ -221,7 +221,7 @@ namespace Dresser.Services {
 		}
 
 		private void LoadAdditional_Modded() {
-			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = ConfigurationManager.Config.PenumbraModdedItems.Copy()!;
+			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = ConfigurationManager.Config.PenumbraModdedItems;
 		}
 
 		public static string PenumbraCollectionModList = "Dresser Mod List";
@@ -234,7 +234,13 @@ namespace Dresser.Services {
 			PluginLog.Debug($"--------------- PENUMBRA --- v {penumbraVersions.Breaking} - {penumbraVersions.Features} ----------------");
 
 			// make a list of enabled mods
-			var DaCollModsSettings = PluginServices.Penumbra.GetEnabledModsForCollection(PenumbraCollectionModList, true);
+
+			List<(string Path, string Name)> DaCollModsSettings;
+			if (ConfigurationManager.Config.PenumbraUseModListCollection) DaCollModsSettings = PluginServices.Penumbra.GetEnabledModsForCollection(PenumbraCollectionModList, true);
+			else {
+				DaCollModsSettings = PluginServices.Penumbra.GetNotBlacklistedMods().ToList();
+				ModsReloadingMax = DaCollModsSettings.Count;
+			}
 
 			PluginLog.Debug($"Found {DaCollModsSettings.Count} enabled mod in collection {PenumbraCollectionModList}");
 			// make list of inventoryItems
@@ -251,6 +257,8 @@ namespace Dresser.Services {
 			//}
 			PluginLog.Debug($"------------ END - PENUMBRA --------------------------");
 			IsReloadingMods = false;
+
+			if(Plugin.GetInstance().GearBrowser.IsOpen) Windows.GearBrowser.RecomputeItems();
 		}
 
 

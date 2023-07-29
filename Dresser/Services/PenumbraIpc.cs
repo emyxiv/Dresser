@@ -1,24 +1,26 @@
-using Dalamud.Logging;
+using CriticalCommonLib.Enums;
+using CriticalCommonLib.Extensions;
+
+using Dalamud.Utility;
+
+using Dresser.Structs.Dresser;
+
+using Newtonsoft.Json.Linq;
 
 using Penumbra.Api.Enums;
 using Penumbra.Api.Helpers;
-using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-
-using PseudoEquipItem = System.ValueTuple<string, ulong, ushort, ushort, ushort, byte, byte>;
-using CurrentSettings = System.ValueTuple<Penumbra.Api.Enums.PenumbraApiEc, (bool EnabledState, int Priority, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<string>> EnabledOptions, bool Inherited)?>;
-using Lumina.Excel.GeneratedSheets;
-using System.Collections;
-using CriticalCommonLib.Extensions;
-using ImGuizmoNET;
 using System.Threading.Tasks;
-using Dresser.Structs.Dresser;
+
 using static Dresser.Services.Storage;
-using CriticalCommonLib.Enums;
+
+using CurrentSettings = System.ValueTuple<Penumbra.Api.Enums.PenumbraApiEc, (bool EnabledState, int Priority, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<string>> EnabledOptions, bool Inherited)?>;
+using PseudoEquipItem = System.ValueTuple<string, ulong, ushort, ushort, ushort, byte, byte>;
 
 namespace Dresser.Services;
 
@@ -39,6 +41,8 @@ internal class PenumbraIpc : IDisposable {
 	private FuncSubscriber<(int Breaking, int Features)> ApiVersionsSubscriber { get; }
 	private FuncSubscriber<bool> GetEnabledStateSubscriber { get; }
 
+	private FuncSubscriber<string, (string, bool)> GetCharacterCollectionNameSubscriber { get; }
+	private FuncSubscriber<ApiCollectionType, string> GetCollectionForTypeSubscriber { get; }
 
 	private FuncSubscriber<string> GetModDirectorySubscriber { get; }
 	private FuncSubscriber<string, PenumbraApiEc> AddModSubscriber { get; }
@@ -67,6 +71,10 @@ internal class PenumbraIpc : IDisposable {
 
 		ApiVersionsSubscriber = Penumbra.Api.Ipc.ApiVersions.Subscriber(PluginServices.PluginInterface);
 		GetEnabledStateSubscriber = Penumbra.Api.Ipc.GetEnabledState.Subscriber(PluginServices.PluginInterface);
+
+
+		GetCharacterCollectionNameSubscriber = Penumbra.Api.Ipc.GetCharacterCollectionName.Subscriber(PluginServices.PluginInterface);
+		GetCollectionForTypeSubscriber = Penumbra.Api.Ipc.GetCollectionForType.Subscriber(PluginServices.PluginInterface);
 
 		GetModDirectorySubscriber = Penumbra.Api.Ipc.GetModDirectory.Subscriber(PluginServices.PluginInterface);
 		AddModSubscriber = Penumbra.Api.Ipc.AddMod.Subscriber(PluginServices.PluginInterface);
@@ -114,7 +122,7 @@ internal class PenumbraIpc : IDisposable {
 		List<(uint ItemId, string ModModelPath)> items = new();
 
 		var res5 = PluginServices.Penumbra.TrySetMod(PenumbraCollectionTmp, modPath, true);
-		PluginLog.Warning($"Enable mod (path:){modPath}: {res5}");
+		//PluginLog.Warning($"Enable mod (path:){modPath}: {res5}");
 
 		//var tempCollection = $"DaCol_{modCount}";
 		//PluginLog.Debug($"Mod enabled, creating temp collection {tempCollection}");
@@ -138,7 +146,7 @@ internal class PenumbraIpc : IDisposable {
 		//PluginLog.Debug($"{tempCollection} {(ddd == PenumbraApiEc.Success ? "removed" : "NOT REMOVED")}");
 		//}
 		var res6 = PluginServices.Penumbra.TrySetMod(PenumbraCollectionTmp, modPath, false);
-		PluginLog.Debug($"Re-enable mod {modPath}: {res6}");
+		//PluginLog.Debug($"Re-enable mod {modPath}: {res6}");
 
 		return items;
 	}
@@ -149,7 +157,7 @@ internal class PenumbraIpc : IDisposable {
 			var modSettings = PluginServices.Penumbra.GetCurrentModSettings(collection, mod.Path, mod.Name, allowInheritance);
 			if (modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue && modSettings.Item2.Value.EnabledState) {
 				PluginServices.Storage.ModsReloadingMax++;
-				PluginLog.Debug($"Found ACTIVE mod {mod.Name} || {mod.Path}");
+				//PluginLog.Debug($"Found ACTIVE mod {mod.Name} || {mod.Path}");
 
 				DaCollModsSettings.Add(mod);
 			}
@@ -160,9 +168,20 @@ internal class PenumbraIpc : IDisposable {
 		List<InventoryItem> tmpItemList = new();
 		foreach (var mod3 in mods) {
 
-			foreach (var i in PluginServices.Penumbra.GetChangedItemIdsForMod(mod3.Path, mod3.Name)) {
+			var meta = GetModMeta(mod3.Path);
+			var configTexts = GetConfigFileTexts(mod3.Path);
+			var items = PluginServices.Penumbra.GetChangedItemIdsForMod(mod3.Path, mod3.Name);
+			foreach (var i in items) {
 				var item = new InventoryItem((InventoryType)InventoryTypeExtra.ModdedItems, i.ItemId.Copy(), mod3.Name.Copy()!, mod3.Path.Copy()!, i.ModModelPath.Copy()!);
 				// todo: add icon path
+
+				if (meta != null && meta.HasValues) {
+					item.ModAuthor = meta.GetValue("Author")?.ToString();
+					item.ModVersion = meta.GetValue("Version")?.ToString();
+					item.ModWebsite = meta.GetValue("Website")?.ToString();
+					item.ModIconPath = FindIconForItem(item.Icon, configTexts)?.ModdedIconFilePath;
+				}
+
 				tmpItemList.Add(item);
 				//PluginLog.Debug($"Added item {item.ItemId} [{item.FormattedName}] for mod {item.ModName} || {item.ModDirectory}");
 			}
@@ -170,6 +189,52 @@ internal class PenumbraIpc : IDisposable {
 		}
 		return tmpItemList;
 	}
+	internal static (string FoundIconGamePath, string ModdedIconFilePath)? FindIconForItem(uint iconId, Dictionary<string, string> configTexts) {
+		List<string> possibleIconPaths = IconStorage.PossibleIconPaths(iconId);
+
+		foreach ((var configFile, var configContents) in configTexts) {
+			foreach (var possibleIconPath in possibleIconPaths) {
+				if (configContents.Contains(possibleIconPath)) {
+
+					var moddedIconPath = JObject.Parse(configContents) // parse the contents
+						.SelectTokens($"Options[*].Files.['{possibleIconPath}']") // find the possible values
+						.Where(v => !v.ToString().IsNullOrEmpty())
+						.FirstOrDefault() // get the best result
+						?.ToString(); // as a string or null
+
+					if (moddedIconPath != null)
+						return (possibleIconPath, moddedIconPath);
+				}
+			}
+		}
+		return null;
+	}
+	internal JObject? GetModMeta(string modDirectory) {
+		string? bp = GetModDirectoryCached();
+		if (bp != null) {
+			var metaPath = Path.Combine(bp, modDirectory, "meta.json");
+			if (File.Exists(metaPath)) {
+				//PluginLog.Debug($"metaPath: {metaPath}");
+				var metaJson = File.ReadAllText(metaPath);
+				if (metaJson != null) {
+					return JObject.Parse(metaJson);
+				}
+			}
+		}
+		return null;
+	}
+	internal Dictionary<string, string> GetConfigFileTexts(string modDirectory) {
+		string? bp = GetModDirectoryCached();
+		if (bp != null) {
+
+			var jsonsPath = Path.Combine(bp, modDirectory);
+
+			string[] files = Directory.GetFiles(jsonsPath, "*.json");
+			return files.ToDictionary(n => n, File.ReadAllText);
+		}
+		return new();
+	}
+
 
 	internal IEnumerable<EquipItem> GetChangedEquipItemsForCollection(string collectionName) {
 		return this.GetChangedItemsForCollection(collectionName).Where(o => {
@@ -182,7 +247,7 @@ internal class PenumbraIpc : IDisposable {
 		}).Select(i => {
 			var qsd = (EquipItem)(PseudoEquipItem)i.Value;
 
-			PluginLog.Debug($"changed equip item: {qsd.Name} || {qsd.Id} || {i.Key}");
+			//PluginLog.Debug($"changed equip item: {qsd.Name} || {qsd.Id} || {i.Key}");
 			return qsd;
 		});
 	}
@@ -195,6 +260,10 @@ internal class PenumbraIpc : IDisposable {
 		}
 	}
 
+	private string? ModDirectoryCache = null;
+	internal string? GetModDirectoryCached()
+		=> ModDirectoryCache ??= GetModDirectory();
+	
 	internal bool AddMod(string path) {
 		try {
 			return AddModSubscriber.Invoke(path) == PenumbraApiEc.Success;
@@ -322,6 +391,28 @@ internal class PenumbraIpc : IDisposable {
 			return PenumbraApiEc.UnknownError;
 		}
 	}
+
+	/// <returns>A dictionary of affected items in <paramref name="collectionName"/> via name and known objects or null.</returns>
+	internal string? GetCharacterCollectionName(string characterName) {
+		try {
+			var (collectionName, success) = GetCharacterCollectionNameSubscriber.Invoke(characterName);
+			return success ? collectionName : null;
+		} catch (Exception) {
+			return null;
+		}
+	}
+	/// <returns>The name of the collection assigned to the given <paramref name="type"/> or an empty string if none is assigned or type is invalid.</returns>
+	internal string GetCollectionForType(ApiCollectionType type) {
+		try {
+			return GetCollectionForTypeSubscriber.Invoke(type);
+		} catch (Exception) {
+			return "";
+		}
+	}
+	internal string GetCollectionForLocalPlayerCharacter() {
+		return GetCollectionForType(ApiCollectionType.Yourself);
+	}
+
 
 
 	/// <summary>

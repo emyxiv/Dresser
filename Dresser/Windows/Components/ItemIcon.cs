@@ -4,6 +4,7 @@ using CriticalCommonLib.Extensions;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using Dalamud.Interface.Internal;
+using Dalamud.Utility;
 
 using Dresser.Data.Excel;
 using Dresser.Extensions;
@@ -109,7 +110,15 @@ namespace Dresser.Windows.Components {
 
 							ImGui.TextColored(ModdedItemColor, $"{item.ModName}");
 							ImGui.SameLine();
-							ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");
+							ImGui.TextColored(ColorGreyDark, $"{item.ModVersion}");
+							if (!item.ModWebsite.IsNullOrWhitespace()) {
+								ImGui.SameLine();
+								GuiHelpers.Icon(FontAwesomeIcon.Globe, true, ColorGood);
+							}
+							ImGui.TextColored(ModdedItemColor, $"by {item.ModAuthor}");
+							if (ConfigurationManager.Config.IconTooltipShowDev) {
+								ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");
+							}
 						}
 
 

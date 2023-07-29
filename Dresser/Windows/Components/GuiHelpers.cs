@@ -117,7 +117,7 @@ namespace Dresser.Windows.Components {
 			string iconText = icon.ToIconString() ?? "";
 			int num = 0;
 			if (color.HasValue) {
-				ImGui.PushStyleColor(ImGuiCol.Button, color.Value);
+				ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
 				num++;
 			}
 

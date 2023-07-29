@@ -7,6 +7,7 @@ using Dalamud.Utility;
 
 using Dresser.Extensions;
 using Dresser.Services;
+using Dresser.Services;
 using Dresser.Structs.Actor;
 
 using Lumina.Excel.GeneratedSheets;
@@ -22,9 +23,13 @@ using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 namespace Dresser.Structs.Dresser {
 	public class InventoryItem : CriticalInventoryItem {
 
-		public string? ModName = "";
-		public string? ModDirectory = "";
-		public string? ModModelPath = "";
+		public string? ModName = null;
+		public string? ModDirectory = null;
+		public string? ModModelPath = null;
+		public string? ModAuthor = null;
+		public string? ModVersion = null;
+		public string? ModWebsite = null;
+		public string? ModIconPath = null;
 		public uint QuantityNeeded = 1;
 
 
@@ -37,11 +42,7 @@ namespace Dresser.Structs.Dresser {
 			if (inventoryItem.IsModded()) PluginLog.Warning($"A Copy InventoryItem {this.ModDirectory}");
 		}
 
-		public InventoryItem(InventoryType container, short slot, uint itemId, uint quantity, ushort spiritbond, ushort condition, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem.ItemFlags flags, ushort materia0, ushort materia1, ushort materia2, ushort materia3, ushort materia4, byte materiaLevel0, byte materiaLevel1, byte materiaLevel2, byte materiaLevel3, byte materiaLevel4, byte stain, uint glamourId) : base(container, slot, itemId, quantity, spiritbond, condition, flags, materia0, materia1, materia2, materia3, materia4, materiaLevel0, materiaLevel1, materiaLevel2, materiaLevel3, materiaLevel4, stain, glamourId) {
-			this.ModName = "";
-			this.ModDirectory = "";
-			this.ModModelPath = "";
-		}
+		public InventoryItem(InventoryType container, short slot, uint itemId, uint quantity, ushort spiritbond, ushort condition, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem.ItemFlags flags, ushort materia0, ushort materia1, ushort materia2, ushort materia3, ushort materia4, byte materiaLevel0, byte materiaLevel1, byte materiaLevel2, byte materiaLevel3, byte materiaLevel4, byte stain, uint glamourId) : base(container, slot, itemId, quantity, spiritbond, condition, flags, materia0, materia1, materia2, materia3, materia4, materiaLevel0, materiaLevel1, materiaLevel2, materiaLevel3, materiaLevel4, stain, glamourId) { }
 		public InventoryItem(InventoryType inventoryType, uint itemId) : this(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
 			this.SortedContainer = inventoryType;
 		}
@@ -117,6 +118,13 @@ namespace Dresser.Structs.Dresser {
 
 			return foundDyes.Select(i=>i.Copy()!);
 		}
+		public bool IsNotInBlackList() {
+			if (!IsModded()) return true;
+			if (ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == this.ModDirectory))
+				return false;
+			return true;
+		}
+
 
 	}
 }

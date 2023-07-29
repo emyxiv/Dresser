@@ -110,44 +110,39 @@ namespace Dresser.Services {
 
 		private void PrepareModsAndDo(InventoryItem item, Action<InventoryItem>? callback = null, bool ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance = false) {
 
-			PluginLog.Debug($"PenumbraWrap item container {item.Container}");
-			PluginLog.Debug($"item.ModName: {item.ModName}");
-			PluginLog.Debug($"item.ModDirectory: {item.ModDirectory}");
-			PluginLog.Debug($"item.ModModelPath: {item.ModModelPath}");
+			if (item.Container == (InventoryType)Storage.InventoryTypeExtra.ModdedItems && item.IsModded() && PluginServices.Penumbra.GetEnabledState()) {
+				PluginLog.Verbose($"applying modded item: {item.FormattedName} => {item.ModName}");
 
-			if (item.Container == (InventoryType)Storage.InventoryTypeExtra.ModdedItems && item.ModDirectory != "") {
-				PluginLog.Debug($"applying modded item: {item.ModName}, {item.ModDirectory}");
-
-				var modSettings = PluginServices.Penumbra.GetCurrentModSettings(ConfigurationManager.Config.PenumbraCollectionModList, item.ModDirectory!, item.ModName!, true);
-				PluginLog.Debug($"GetCurrentModSettings: {modSettings.Item1} | {item.ModName}");
+				var personalCollection = PluginServices.Penumbra.GetCollectionForLocalPlayerCharacter();
+				//PluginLog.Debug($"PENUMBRA YOURSELF COLLECTION: {personalCollection}");
+				var modSettings = PluginServices.Penumbra.GetCurrentModSettings(personalCollection, item.ModDirectory ?? "", item.ModName ?? "", true);
+				//PluginLog.Debug($"GetCurrentModSettings: {modSettings.Item1} | {item.ModName}");
 
 				if (modSettings.Item1 == Penumbra.Api.Enums.PenumbraApiEc.Success && modSettings.Item2.HasValue) {
 					foreach ((var optionGroup, var options) in modSettings.Item2.Value.EnabledOptions) {
 						var res1 = PluginServices.Penumbra.TrySetModSettings(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, optionGroup, options.ToList());
-						PluginLog.Debug($"TrySetModSettings: {res1} | {item.ModName}");
+						//PluginLog.Debug($"TrySetModSettings: {res1} | {item.ModName}");
 					}
-
-					var res2 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, true);
-					PluginLog.Debug($"TrySetMod TRUE: {res2} | {item.ModName}");
-
-					var tast = Task.Run(async delegate {
-						// delay before apply
-						if(!ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance)
-							await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-						PluginLog.Warning($"Applying appearance...");
-						callback?.Invoke(item);
-						await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
-						var res3 = PluginServices.Penumbra.TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, true);
-						PluginLog.Debug($"TrySetMod FALSE: {res3} | {item.ModName}");
-						await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop);
-						if (ApplyAppearanceQueue.Any()) {
-							ApplyAppearanceQueueTick();
-						}
-					});
-
-
-
 				}
+
+				var res2 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, true);
+				//PluginLog.Debug($"TrySetMod TRUE: {res2} | {item.ModName}");
+
+				var tast = Task.Run(async delegate {
+					// delay before apply
+					if(!ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance)
+						await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
+					PluginLog.Warning($"Applying appearance...");
+					callback?.Invoke(item);
+					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
+					var res3 = PluginServices.Penumbra.TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, true);
+					PluginLog.Debug($"Disable mod after apply {res3} | {item.ModName}");
+					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop);
+					if (ApplyAppearanceQueue.Any()) {
+						ApplyAppearanceQueueTick();
+					}
+				});
+
 			} else {
 				callback?.Invoke(item);
 			}
