@@ -72,11 +72,17 @@ namespace Dresser.Extensions {
 
 			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
 		}
-		public static bool CanBeEquipedByPlayedJob(this CriticalItemEx item) {
+		public static bool CanBeEquipedByPlayedJob(this CriticalItemEx item, bool strict = false) {
 			var job = PluginServices.Context.LocalPlayerClass;
 			if (job == null) return false;
+			var categoryId = item.ClassJobCategory.Row;
 
-			return Service.ExcelCache.IsItemEquippableBy(item.ClassJobCategory.Row, job.RowId);
+
+			var isEquipable = Service.ExcelCache.IsItemEquippableBy(categoryId, job.RowId);
+			if(!strict || !isEquipable) return isEquipable;
+
+			// ensure there there is only one category
+			return Service.ExcelCache.ClassJobCategoryLookup[categoryId].Count == 1;
 		}
 		public static CriticalInventoryItem ToInventoryItem(this CriticalItemEx itemEx, InventoryType inventoryType) {
 			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

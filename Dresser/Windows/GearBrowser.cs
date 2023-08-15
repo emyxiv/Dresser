@@ -262,6 +262,11 @@ namespace Dresser.Windows {
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
 				filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
+				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.BeginDisabled();
+				ImGui.SameLine();
+				filterChanged |= ImGui.Checkbox($"##Current Job Strict##displayCategory", ref ConfigurationManager.Config.filterCurrentJobStrict);
+				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.EndDisabled();
+				GuiHelpers.Tooltip($"Strict\nOnly show items of current job\nHandy to find job gear");
 				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
@@ -578,7 +583,7 @@ namespace Dresser.Windows {
 
 			items = items.Where(i =>
 					(!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
-					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob())
+					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob(ConfigurationManager.Config.filterCurrentJobStrict))
 					&& SelectedSlot == i.Item.GlamourPlateSlot()
 					&& i.IsFilterDisplayable()
 					&& i.IsInFilterLevelRanges()
