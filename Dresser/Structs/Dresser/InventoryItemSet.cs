@@ -129,17 +129,39 @@ namespace Dresser.Structs.Dresser {
 				if (!foundMatchingItem.Any()) {
 					foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
 					if( foundMatchingItem.Any()) {
-						// todo search for dye
+						// found items with unmatching dye
+						// check for dyes
+						// get only the first item found
+						list.Add(item.GetDyesInInventories().First());
 
 					}
 				}
 				if(!foundMatchingItem.Any()) {
-					// todo add item to list
 					list.Add(item.Clone());
+					if (item.Item.IsDyeable && item.Stain != 0) // also add needed dye in the list
+						list.Add(item.GetDyesInInventories().First());
 				}
 
 			}
-			return list;
+
+			return FindDuplicatesAndIncreaseQuantity(list)
+				.OrderBy(i=>i.SortedContainer)
+				.ToList();
+		}
+
+		public static IEnumerable<InventoryItem> FindDuplicatesAndIncreaseQuantity(IEnumerable<InventoryItem> items) {
+			var itemGroups = items
+				.GroupBy(item => item) // Group items by their values
+				.ToList(); // Convert to list to avoid re-evaluation of the grouping
+
+			foreach (var group in itemGroups) {
+				var occurrences = (uint)group.Count();
+				var item = group.Key; // get lead item
+				item.QuantityNeeded = occurrences; // set needed quantity in lead item
+			}
+
+			return itemGroups
+				.Select(group => group.Key); // Include all items from each group
 		}
 
 

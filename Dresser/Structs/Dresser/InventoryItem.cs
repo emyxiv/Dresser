@@ -1,12 +1,21 @@
-﻿using CriticalCommonLib.Enums;
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Enums;
+using CriticalCommonLib.Extensions;
 
 using Dalamud.Logging;
 using Dalamud.Utility;
 
 using Dresser.Extensions;
+using Dresser.Services;
 using Dresser.Structs.Actor;
 
+using Lumina.Excel.GeneratedSheets;
+
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
+
+using static Dresser.Services.Storage;
 
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
@@ -16,6 +25,7 @@ namespace Dresser.Structs.Dresser {
 		public string? ModName = "";
 		public string? ModDirectory = "";
 		public string? ModModelPath = "";
+		public uint QuantityNeeded = 1;
 
 
 		public InventoryItem(InventoryItem inventoryItem) : base(inventoryItem) {
@@ -88,7 +98,25 @@ namespace Dresser.Structs.Dresser {
 			=> ToWeaponEquip(WeaponIndex.MainHand);
 		public WeaponEquip ToWeaponEquipSub()
 			=> ToWeaponEquip(WeaponIndex.OffHand);
+		public IEnumerable<InventoryItem> GetDyesInInventories() {
+			var stainTransient = Service.ExcelCache.GetSheet<StainTransient>().FirstOrDefault(st => st.RowId == this.Stain);
 
+			var inventories = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true);
+			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient?.Item1.Value?.RowId || v.ItemId == stainTransient?.Item2.Value?.RowId)).Where(i=>i.ItemId != 0);
+
+			if(!foundDyes.Any()) {
+				var defaultStainRowId = stainTransient?.Item1.Value?.RowId;
+				if(defaultStainRowId != null) {
+					var unobtainedDye = new InventoryItem((InventoryType)InventoryTypeExtra.AllItems, (uint)defaultStainRowId);
+
+					foundDyes = new List<InventoryItem>() { unobtainedDye };
+				}
+			}
+			//if(excludeBags)
+			//	return foundDyes.Where(i=>i.SortedCategory != CriticalCommonLib.Models.InventoryCategory.CharacterBags);
+
+			return foundDyes.Select(i=>i.Copy()!);
+		}
 
 	}
 }

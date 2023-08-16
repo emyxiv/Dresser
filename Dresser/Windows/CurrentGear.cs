@@ -339,7 +339,17 @@ public class CurrentGear : Window, IDisposable {
 					foreach (var taskedItem in taskedItems) {
 						ImGui.TableNextRow();
 						ImGui.TableNextColumn();
+						ImGui.AlignTextToFramePadding();
 						ImGui.Text($"{taskedItem.FormattedName}");
+
+						if(taskedItem.ItemSortCategory?.RowId == 11) { // sort category 11 seems to be dyes
+							ImGui.SameLine();
+							ImGui.Text($" ( {taskedItem.Quantity}");
+							ImGui.SameLine();
+							ImGui.TextColored(ItemIcon.ColorBad, $"- {taskedItem.QuantityNeeded}");
+							ImGui.SameLine();
+							ImGui.Text($")");
+						}
 						ImGui.TableNextColumn();
 						ImGui.Text($"{taskedItem.FormattedInventoryCategoryType()}");
 					}
