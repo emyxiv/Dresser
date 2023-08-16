@@ -106,6 +106,7 @@ namespace Dresser.Services {
 					PluginServices.Context.LocalPlayer?.Equip(item);
 				}
 			}
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
 
 		public void OpenGlamourDresser() {
