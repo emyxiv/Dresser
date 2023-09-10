@@ -142,6 +142,9 @@ public class ConfigWindow : Window, IDisposable {
 		}
 		GuiHelpers.Tooltip("Plate buttons column will break after this plate number");
 
+		ImGui.Checkbox($"Show job icons on plate buttons", ref ConfigurationManager.Config.CurrentGearPortablePlateJobIcons);
+		ImGui.Checkbox($"Show job background colors on plate buttons", ref ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors);
+
 		if (!GlamourPlates.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
 		var posBefore = ImGui.GetCursorPos();

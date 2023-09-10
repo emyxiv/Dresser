@@ -125,7 +125,9 @@ public class CurrentGear : Window, IDisposable {
 		var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
 		//var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
 		var fontSize = 28f * ConfigurationManager.Config.IconSizeMult;
-		var textPlacement = new Vector2(18f, -36f) * ConfigurationManager.Config.IconSizeMult;
+		var textOffset = new Vector2(28f, -36f);
+		if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) textOffset += new Vector2(-10f, 0);
+		var textPlacement = textOffset * ConfigurationManager.Config.IconSizeMult;
 
 		Vector4 restColor = new(1, 1, 1, opacityRadio);
 		Vector4 hoverColor = new(1, 1, 1, 1);
@@ -138,8 +140,12 @@ public class CurrentGear : Window, IDisposable {
 			var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
 			var imageInfo = isActive ? radioActive : radioInActive;
 
-			var roleColor = GearSets.RelatedGearSetClassJobCategoryColor(plateNumber);
-			if (roleColor != null) roleColor = roleColor + new Vector4(0.6f, 0.6f, 0.6f, -0.1f);
+			Vector4? roleColor = null;
+			Vector4? roleColor1 = null;
+			if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors || ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) {
+				roleColor1 = GearSets.RelatedGearSetClassJobCategoryColor(plateNumber);
+				if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors && roleColor1 != null) roleColor = roleColor1 + new Vector4(0.6f, 0.6f, 0.6f, -0.1f);
+			}
 
 			var tint = PlateSlotButtonHovering == plateNumber ? hoverColor : roleColor??restColor;
 			if (isActive) tint = ActiveColor;
@@ -158,12 +164,14 @@ public class CurrentGear : Window, IDisposable {
 			});
 
 			var classJobTexture = GearSets.GetClassJobIconTextureForPlate(plateNumber);
-			if (classJobTexture != null) {
+			if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons && classJobTexture != null) {
 				var cjt_ratio = 0.8f;
 				var cjt_p_min = ImGui.GetCursorScreenPos() + new Vector2(radioSize.X - (radioSize.Y * 1.0f), - radioSize.Y + (radioSize.Y * ((1 - cjt_ratio)/2)));
 				var cjt_p_max = cjt_p_min + new Vector2(radioSize.Y * cjt_ratio);
 
-				draw.AddImage(classJobTexture.ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.85f)));
+				var jobIconColor1 = !ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors ? roleColor1 ?? new Vector4(0, 0, 0, 1) : new Vector4(1, 1, 1, 1);
+				var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.25f);
+				draw.AddImage(classJobTexture.ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
 			}
 
 			if (!isFreePlate) {

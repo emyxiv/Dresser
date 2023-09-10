@@ -34,6 +34,9 @@ namespace Dresser {
 		public ushort NumberOfFreePendingPlates { get; set; } = 19;
 		public ushort NumberofPendingPlateNextColumn { get; set; } = 20;
 		public ushort SelectedCurrentPlate { get; set; } = 0;
+		public bool CurrentGearPortablePlateJobIcons = true;
+		public bool CurrentGearPortablePlateJobBgColors = false;
+
 		public bool CurrentGearDisplayGear = false;
 		public bool CurrentGearDisplayHat = true;
 		public bool CurrentGearDisplayWeapon = true;
