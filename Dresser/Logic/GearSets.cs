@@ -1,7 +1,10 @@
-﻿using CsvHelper;
+﻿using CriticalCommonLib;
+
+using CsvHelper;
 
 using Dalamud.Game.ClientState.JobGauge.Enums;
 
+using Dresser.Structs;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
@@ -9,9 +12,12 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 using ImGuiNET;
 
+using ImGuiScene;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,6 +66,38 @@ namespace Dresser.Logic {
 				//{ (char)0xE033}
 				return $"{id}. {name} {ilvl}";
 			});
+		public unsafe static IEnumerable<byte> RelatedGearSetClassJob(ushort plateNumber)
+			=> RelatedGearSets(plateNumber).Select(g => g.ClassJob);
+		public unsafe static int? GetClassJobIconForPlate(ushort plateNumber) {
+			var gearsets = RelatedGearSets(plateNumber);
+			if(gearsets.Count == 0) return null;
+			var gearset = gearsets.First();
+			return RaptureGearsetModule.Instance()->GetClassJobIconForGearset(gearset.ID);
+		}
+		public static ClassJobRole? RelatedGearSetRole(ushort plateNumber) {
+			var gearsets = RelatedGearSetClassJob(plateNumber);
+			if (gearsets.Count() == 0) return null;
+			var classjobByte = gearsets.First();
+			var classJob = Service.ExcelCache.GetClassJobSheet().GetRow(classjobByte);
+			if (classJob == null) return null;
+			return (ClassJobRole)classJob.Role;
+		}
+		public static Vector4? RelatedGearSetClassJobCategoryColor(ushort plateNumber)
+			=> RelatedGearSetRole(plateNumber) switch {
+				ClassJobRole.Tank => new(new Vector3(42, 93, 149) / 255, 1),
+				ClassJobRole.Healer => new(new Vector3(67, 149, 84) / 255, 1),
+				ClassJobRole.RangeDps => new(new Vector3(135,30,35) / 255, 1),
+				ClassJobRole.MeleeDps => new(new Vector3(135,30,35) / 255, 1),
+				_ => null
+			};
+
+		public static TextureWrap? GetClassJobIconTextureForPlate(ushort plateNumber) {
+			var iconId = GetClassJobIconForPlate(plateNumber);
+			if(!iconId.HasValue) return null;
+			return PluginServices.IconStorage[iconId.Value];
+		}
+
+
 		public unsafe static void RelatedGearSetNamesImgui(ushort plateNumber) {
 			var gearsets = RelatedGearSets(plateNumber);
 			if (gearsets.Count == 0) {

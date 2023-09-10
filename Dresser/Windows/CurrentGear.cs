@@ -112,6 +112,8 @@ public class CurrentGear : Window, IDisposable {
 	}
 
 	private void DrawPlateSelector(ImDrawListPtr draw) {
+		GearSets.FetchGearSets();
+
 		ImGui.BeginGroup();
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0));
@@ -123,7 +125,7 @@ public class CurrentGear : Window, IDisposable {
 		var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
 		//var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
 		var fontSize = 28f * ConfigurationManager.Config.IconSizeMult;
-		var textPlacement = new Vector2(28f, -36f) * ConfigurationManager.Config.IconSizeMult;
+		var textPlacement = new Vector2(18f, -36f) * ConfigurationManager.Config.IconSizeMult;
 
 		Vector4 restColor = new(1, 1, 1, opacityRadio);
 		Vector4 hoverColor = new(1, 1, 1, 1);
@@ -136,7 +138,10 @@ public class CurrentGear : Window, IDisposable {
 			var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
 			var imageInfo = isActive ? radioActive : radioInActive;
 
-			var tint = PlateSlotButtonHovering == plateNumber ? hoverColor : restColor;
+			var roleColor = GearSets.RelatedGearSetClassJobCategoryColor(plateNumber);
+			if (roleColor != null) roleColor = roleColor + new Vector4(0.6f, 0.6f, 0.6f, -0.1f);
+
+			var tint = PlateSlotButtonHovering == plateNumber ? hoverColor : roleColor??restColor;
 			if (isActive) tint = ActiveColor;
 			ImGui.Image(imageInfo.Item1, radioSize, imageInfo.Item2, imageInfo.Item3, tint);
 			var clicked = ImGui.IsItemClicked();
@@ -145,15 +150,23 @@ public class CurrentGear : Window, IDisposable {
 				ContextMenuPlateSelector(plateNumber);
 				ImGui.EndPopup();
 			}
-			if(!isFreePlate) GuiHelpers.Tooltip(() => {
+			if (!isFreePlate) GuiHelpers.Tooltip(() => {
 				var plateName = isFreePlate ? $"Free Plate {plateNumber + 1 - Storage.PlateNumber}" : $"Plate {plateNumber + 1}";
 				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.TrumpGothic_184);
-				GearSets.FetchGearSets();
 				GearSets.RelatedGearSetNamesImgui(plateNumber);
 				ImGui.Spacing();
 			});
 
-			if (plateNumber < Storage.PlateNumber) {
+			var classJobTexture = GearSets.GetClassJobIconTextureForPlate(plateNumber);
+			if (classJobTexture != null) {
+				var cjt_ratio = 0.8f;
+				var cjt_p_min = ImGui.GetCursorScreenPos() + new Vector2(radioSize.X - (radioSize.Y * 1.0f), - radioSize.Y + (radioSize.Y * ((1 - cjt_ratio)/2)));
+				var cjt_p_max = cjt_p_min + new Vector2(radioSize.Y * cjt_ratio);
+
+				draw.AddImage(classJobTexture.ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(new(1, 1, 1, 0.85f)));
+			}
+
+			if (!isFreePlate) {
 				var spacer = plateNumber < 9 ? " " : "";
 				draw.AddText(
 					PluginServices.Storage.FontRadio.ImFont,
