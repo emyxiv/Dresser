@@ -19,6 +19,7 @@ using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
 
 using static Dresser.Windows.GearBrowser;
+using System.Diagnostics;
 
 namespace Dresser {
 	[Serializable]

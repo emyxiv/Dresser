@@ -22,7 +22,7 @@ namespace Dresser.Interop.Addons {
 
 		internal unsafe static AgentInterface* AgentInterface = Framework.Instance()->UIModule->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
 		public MiragePrismMiragePlateAddon() {
-			receiveEventHook ??= Hook<AgentReceiveEvent>.FromAddress(new IntPtr(AgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
+			receiveEventHook ??= PluginServices.GameInterop.HookFromAddress<AgentReceiveEvent>(new IntPtr(AgentInterface->VTable->ReceiveEvent), OnReceiveEvent);
 			//showEventHook ??= Hook<AgentShow>.FromAddress(new IntPtr(AgentInterface->VTable->Show), OnShowEvent);
 
 			receiveEventHook?.Enable();

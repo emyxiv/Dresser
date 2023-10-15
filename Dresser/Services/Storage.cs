@@ -5,6 +5,7 @@ using CriticalCommonLib.Models;
 using CriticalCommonLib.Sheets;
 
 using Dalamud.Interface.GameFonts;
+using Dalamud.Interface.Internal;
 using Dalamud.Logging;
 
 using Dresser.Data;
@@ -12,7 +13,7 @@ using Dresser.Data.Excel;
 using Dresser.Extensions;
 using Dresser.Structs.Dresser;
 
-using ImGuiScene;
+
 
 using Lumina.Data.Files;
 using Lumina.Excel;
@@ -177,7 +178,7 @@ namespace Dresser.Services {
 		// currency
 		public Dictionary<InventoryType, uint> FilterCurrencyIds;
 		public Dictionary<InventoryType, ItemEx> FilterCurrencyItemEx;
-		public Dictionary<InventoryType, TextureWrap> FilterCurrencyIconTexture;
+		public Dictionary<InventoryType, IDalamudTextureWrap> FilterCurrencyIconTexture;
 		private void LoadAdditional_All() {
 			foreach (var inventoryType in FilterAll) {
 				// at least filter glam items

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
 
 namespace Dresser.Services {
@@ -66,20 +67,20 @@ namespace Dresser.Services {
 
 			loadConfigStopwatch.Stop();
 			// inventory migration
-			if (inventoryToolsConfiguration.InventoriesMigrated < 0) {
-				PluginLog.Verbose("Migrating inventories");
-				var temp = JObject.Parse(jsonText);
-				if (temp.ContainsKey("SavedInventories")) {
-					var inventories = temp["SavedInventories"]?.ToObject<Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>>>();
-					inventoryToolsConfiguration.SavedInventories = inventories ??
-																   new Dictionary<ulong, Dictionary<InventoryCategory,
-																	   List<InventoryItem>>>();
-				}
+			//if (inventoryToolsConfiguration.InventoriesMigrated < 0) {
+			//	PluginLog.Verbose("Migrating inventories");
+			//	var temp = JObject.Parse(jsonText);
+			//	if (temp.ContainsKey("SavedInventories")) {
+			//		var inventories = temp["SavedInventories"]?.ToObject<Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>>>();
+			//		inventoryToolsConfiguration.SavedInventories = inventories ??
+			//													   new Dictionary<ulong, Dictionary<InventoryCategory,
+			//														   List<InventoryItem>>>();
+			//	}
 
-				inventoryToolsConfiguration.InventoriesMigrated = 0;
-			} else {
-				inventoryToolsConfiguration.SavedInventories = LoadSavedInventories() ?? new();
-			}
+			//	inventoryToolsConfiguration.InventoriesMigrated = 0;
+			//} else {
+			//	inventoryToolsConfiguration.SavedInventories = LoadSavedInventories() ?? new();
+			//}
 
 			loadConfigStopwatch.Stop();
 			PluginLog.Verbose("Took " + loadConfigStopwatch.Elapsed.TotalSeconds + " to load inventories.");
@@ -173,6 +174,19 @@ namespace Dresser.Services {
 			} catch (Exception e) {
 				PluginLog.Error($"Failed to save inventories due to {e.Message}");
 			}
+		}
+
+		public static List<CriticalInventoryItem> LoadInventory() {
+			var inventories = new List<CriticalInventoryItem>();
+			var parsedInventories = LoadSavedInventories() ?? new();
+			foreach (var parsedInventory in parsedInventories.ToDictionary(v => v.Key, v => v.Value.ToDictionary(w => w.Key, w => w.Value.Select(x => InventoryItem.ToCritical(x)).ToList()))) {
+				foreach (var category in parsedInventory.Value) {
+					foreach (var item in category.Value) {
+						inventories.Add(item);
+					}
+				}
+			}
+			return inventories;
 		}
 	}
 }

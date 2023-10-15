@@ -1,6 +1,6 @@
 ﻿using Dresser.Structs.Dresser;
 
-using ImGuiScene;
+using Dalamud.Interface.Internal;
 
 using Lumina.Data.Files;
 
@@ -10,7 +10,7 @@ using System.Numerics;
 
 namespace Dresser.Services {
 	internal class ImageGuiCrop : IDisposable {
-		public Dictionary<string, TextureWrap> Textures = new();
+		public Dictionary<string, IDalamudTextureWrap> Textures = new();
 		public Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
 
 		public Dictionary<string, Dictionary<int, (Vector2, Vector2)>> TexturesParts = new() {
@@ -161,7 +161,7 @@ namespace Dresser.Services {
 
 				var image = PluginServices.DataManager.GetFile<TexFile>(path);
 				if (image == null) continue;
-				var tex = PluginServices.DataManager.GetImGuiTexture(path);
+				var tex = PluginServices.TextureProvider.GetTextureFromGame(path);
 				if (tex == null) continue;
 
 				Textures.Add(handle, tex);

@@ -3,6 +3,7 @@
 using CsvHelper;
 
 using Dalamud.Game.ClientState.JobGauge.Enums;
+using Dalamud.Interface.Internal;
 
 using Dresser.Structs;
 using Dresser.Structs.Dresser;
@@ -12,7 +13,6 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 using ImGuiNET;
 
-using ImGuiScene;
 
 using System;
 using System.Collections.Generic;
@@ -34,9 +34,8 @@ namespace Dresser.Logic {
 
 		public static unsafe void FetchGearSets() {
 			PlateLinks.Clear();
-			var gearsets = Instance()->Gearset;
 			for (var i = 0; i < 100; i++) {
-				var gearset = *gearsets[i];
+				var gearset = *(Instance()->GetGearset(i));
 				if (!gearset.Flags.HasFlag(GearsetFlag.Exists)) continue;
 
 				var glamLink = gearset.GlamourSetLink;
@@ -91,7 +90,7 @@ namespace Dresser.Logic {
 				_ => null
 			};
 
-		public static TextureWrap? GetClassJobIconTextureForPlate(ushort plateNumber) {
+		public static IDalamudTextureWrap? GetClassJobIconTextureForPlate(ushort plateNumber) {
 			var iconId = GetClassJobIconForPlate(plateNumber);
 			if(!iconId.HasValue) return null;
 			return PluginServices.IconStorage[iconId.Value];

@@ -11,6 +11,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 using Dresser.Interop;
 using Dresser.Interop.Addons;
@@ -44,7 +45,7 @@ namespace Dresser {
 
 		public Plugin(
 			[RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-			[RequiredVersion("1.0")] CommandManager commandManager) {
+			[RequiredVersion("1.0")] ICommandManager commandManager) {
 			PluginInstance = this;
 			PluginServices.Init(pluginInterface, this);
 
@@ -54,7 +55,7 @@ namespace Dresser {
 			PluginServices.CharacterMonitor.OnCharacterUpdated += CharacterMonitorOnOnCharacterUpdated;
 			Service.Framework.Update += FrameworkOnUpdate;
 
-			PluginServices.InventoryMonitor.LoadExistingData(ConfigurationManager.Config.GetSavedInventory());
+			PluginServices.InventoryMonitor.LoadExistingData(ConfigurationManager.LoadInventory());
 			PluginServices.CharacterMonitor.LoadExistingRetainers(ConfigurationManager.Config.GetSavedRetainers());
 
 
@@ -200,7 +201,7 @@ namespace Dresser {
 		}
 		public DateTime? NextSaveTime => _nextSaveTime;
 
-		private void FrameworkOnUpdate(Framework framework) {
+		private void FrameworkOnUpdate(IFramework framework) {
 			if (ConfigurationManager.Config.AutoSave) {
 				if (NextSaveTime == null && ConfigurationManager.Config.AutoSaveMinutes != 0) {
 					_nextSaveTime = DateTime.Now.AddMinutes(ConfigurationManager.Config.AutoSaveMinutes);
@@ -226,14 +227,14 @@ namespace Dresser {
 
 
 		private Dictionary<uint, InventoryMonitor.ItemChangesItem> _recentlyAddedSeen = new();
-		private void InventoryMonitorOnOnInventoryChanged(Dictionary<ulong, Dictionary<InventoryCategory, List<CriticalInventoryItem>>> inventories, InventoryMonitor.ItemChanges itemChanges) {
+		private void InventoryMonitorOnOnInventoryChanged(List<InventoryChange> inventoryChanges, InventoryMonitor.ItemChanges? itemChanges) {
 			//PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
 			//PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
 			_clearCachedLines = true;
 			//ConfigurationManager.Config.SavedInventories = inventories;
 			//PluginConfiguration.SavedInventories = inventories;
 			//PluginLog.Debug($"====== inv updated {ConfigurationManager.Config.SavedInventories.Select(t=>t.Value.Count).Sum()}");
-
+			if (itemChanges != null)
 			foreach (var item in itemChanges.NewItems) {
 				if (_recentlyAddedSeen.ContainsKey(item.ItemId)) {
 					_recentlyAddedSeen.Remove(item.ItemId);

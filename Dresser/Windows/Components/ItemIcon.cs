@@ -4,6 +4,7 @@ using CriticalCommonLib.Models;
 
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
+using Dalamud.Interface.Internal;
 using Dalamud.Logging;
 
 using Dresser.Data.Excel;
@@ -14,7 +15,6 @@ using Dresser.Structs.Dresser;
 
 using ImGuiNET;
 
-using ImGuiScene;
 
 using System;
 using System.Linq;
@@ -42,7 +42,7 @@ namespace Dresser.Windows.Components {
 		public static GlamourPlateSlot? ContexMenuItemSlot = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
-		//public static bool DrawIcon(TextureWrap image, Dye? dye, InventoryItem item, bool isDyeable)
+		//public static bool DrawIcon(IDalamudTextureWrap image, Dye? dye, InventoryItem item, bool isDyeable)
 		//	=> DrawIcon(image, dye, isDyeable, item, out bool _);
 
 		public static void DrawIcon(InventoryItem? item) {
@@ -173,11 +173,11 @@ namespace Dresser.Windows.Components {
 
 			return clicked;
 		}
-		private static bool DrawImage(TextureWrap image, Dye? dye, bool isDyeable, InventoryItem item, IconImageFlag iconImageFlag = 0) {
+		private static bool DrawImage(IDalamudTextureWrap image, Dye? dye, bool isDyeable, InventoryItem item, IconImageFlag iconImageFlag = 0) {
 			bool _ = false;
 			return DrawImage(image, dye, isDyeable, ref _, iconImageFlag, item);
 		}
-		private static bool DrawImage(TextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
+		private static bool DrawImage(IDalamudTextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
 
 			var iconSize = IconSize * sizeMod;

@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -454,13 +455,13 @@ namespace Dresser.Interop.Hooks {
 
 
 		private static void Wait(int ms) {
-			Task.Run(async delegate { await Task.Delay(ms); }).Wait();
+			System.Threading.Tasks.Task.Run(async delegate { await System.Threading.Tasks.Task.Delay(ms); }).Wait();
 		}
 
 
 		internal GlamourPlates() {
 
-			SignatureHelper.Initialise(this);
+			Service.GameInteropProvider.InitializeFromAttributes(this);
 
 		}
 

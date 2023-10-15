@@ -5,14 +5,15 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Logging;
 using System.Linq;
 using Dresser.Logic;
+using Dalamud.Plugin.Services;
 
 namespace Dresser.Services;
 
 public class HotkeyService : IDisposable {
-	private IFrameworkService _frameworkService;
-	private KeyState _keyStateService;
+	private IFramework _frameworkService;
+	private IKeyState _keyStateService;
 	private List<Hotkey> _hotKeys;
-	public HotkeyService(IFrameworkService framework, KeyState keyState) {
+	public HotkeyService(IFramework framework, IKeyState keyState) {
 		_hotKeys = new List<Hotkey>();
 		_frameworkService = framework;
 		_keyStateService = keyState;
@@ -25,7 +26,7 @@ public class HotkeyService : IDisposable {
 	public void ClearHotkey()
 		=> _hotKeys.Clear();
 
-	private void FrameworkServiceOnUpdate(IFrameworkService framework) {
+	private void FrameworkServiceOnUpdate(IFramework framework) {
 
 		foreach (var hotkey in _hotKeys) {
 			var hotkeyVirtualKeys = hotkey.VirtualKeys;

@@ -44,9 +44,9 @@ namespace Dresser.Interop.GameUi {
 				if (newColour.HasValue) {
 					PluginLog.Debug($"Coloring tab {tab} into color {newColour * 255f}");
 					atkResNode->Color.A = (byte)(newColour.Value.W * 255.0f);
-					atkResNode->AddBlue = (ushort)(newColour.Value.Z * 255.0f);
-					atkResNode->AddRed = (ushort)(newColour.Value.X * 255.0f);
-					atkResNode->AddGreen = (ushort)(newColour.Value.Y * 255.0f);
+					atkResNode->AddBlue = (short)(newColour.Value.Z * 255.0f);
+					atkResNode->AddRed = (short)(newColour.Value.X * 255.0f);
+					atkResNode->AddGreen = (short)(newColour.Value.Y * 255.0f);
 					atkResNode->MultiplyRed = 30;
 					atkResNode->MultiplyGreen = 30;
 					atkResNode->MultiplyBlue = 30;

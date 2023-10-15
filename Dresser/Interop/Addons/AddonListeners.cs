@@ -9,8 +9,8 @@ namespace Dresser.Interop.Addons {
 	public class AddonListeners {
 		public static void Init() {
 			PluginServices.AddonManager = new AddonManager();
-			PluginServices.ClientState.Login += OnLogin;
-			PluginServices.ClientState.Logout += OnLogout;
+			//PluginServices.ClientState.Login += OnLogin;
+			//PluginServices.ClientState.Logout += OnLogout;
 
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent += OnGlamourPlatesReceiveEvent;
@@ -26,8 +26,8 @@ namespace Dresser.Interop.Addons {
 
 		public static void Dispose() {
 			PluginServices.AddonManager.Dispose();
-			PluginServices.ClientState.Logout -= OnLogout;
-			PluginServices.ClientState.Login -= OnLogin;
+			//PluginServices.ClientState.Logout -= OnLogout;
+			//PluginServices.ClientState.Login -= OnLogin;
 
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent -= OnGlamourPlatesReceiveEvent;

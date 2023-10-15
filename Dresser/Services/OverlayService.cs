@@ -3,6 +3,7 @@ using CriticalCommonLib.Services.Ui;
 
 using Dalamud.Game;
 using Dalamud.Logging;
+using Dalamud.Plugin.Services;
 
 using Dresser.Interop.GameUi;
 
@@ -39,7 +40,7 @@ namespace Dresser.Services {
 			}
 		}
 
-		private void FrameworkOnUpdate(Framework framework) {
+		private void FrameworkOnUpdate(IFramework framework) {
 			foreach (var overlay in _overlays) {
 				if (overlay.Value.NeedsStateRefresh) {
 					overlay.Value.UpdateState(_lastState);

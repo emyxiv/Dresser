@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CriticalCommonLib", "Critic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuminaSupplemental.Excel", "LuminaSupplemental\src\LuminaSupplemental.Excel\LuminaSupplemental.Excel.csproj", "{11DA126E-E3E2-4D80-90F9-162F46F0AC5E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalaMock.Shared", "DalaMock\DalaMock.Shared\DalaMock.Shared.csproj", "{42CC946C-6497-4897-A39B-C6D6E1FE89C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{11DA126E-E3E2-4D80-90F9-162F46F0AC5E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11DA126E-E3E2-4D80-90F9-162F46F0AC5E}.Release|x64.ActiveCfg = Release|Any CPU
 		{11DA126E-E3E2-4D80-90F9-162F46F0AC5E}.Release|x64.Build.0 = Release|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Debug|x64.Build.0 = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.FullDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.FullDebug|Any CPU.Build.0 = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.FullDebug|x64.ActiveCfg = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.FullDebug|x64.Build.0 = Debug|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Release|x64.ActiveCfg = Release|Any CPU
+		{42CC946C-6497-4897-A39B-C6D6E1FE89C0}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

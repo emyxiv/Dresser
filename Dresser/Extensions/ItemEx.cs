@@ -2,11 +2,12 @@
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
+using Dalamud.Interface.Internal;
+
 using Dresser.Structs;
 using Dresser.Structs.Actor;
 using Dresser.Structs.Dresser;
 
-using ImGuiScene;
 
 using Lumina.Data;
 
@@ -95,7 +96,7 @@ namespace Dresser.Extensions {
 
 			return false;
 		}
-		public static TextureWrap IconTextureWrap(this CriticalItemEx itemEx) {
+		public static IDalamudTextureWrap IconTextureWrap(this CriticalItemEx itemEx) {
 			return PluginServices.IconStorage.Get(itemEx);
 		}
 

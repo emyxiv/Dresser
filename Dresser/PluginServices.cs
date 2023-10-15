@@ -3,6 +3,8 @@ using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 
+using DalaMock.Shared.Classes;
+
 using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
@@ -12,6 +14,7 @@ using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 using Dresser.Interop.Addons;
 using Dresser.Logic;
@@ -20,15 +23,16 @@ using Dresser.Services;
 namespace Dresser {
 	internal class PluginServices {
 		[PluginService] internal static DalamudPluginInterface PluginInterface { get; private set; } = null!;
-		[PluginService] internal static CommandManager CommandManager { get; private set; } = null!;
-		[PluginService] internal static ClientState ClientState { get; private set; } = null!;
-		[PluginService] internal static DataManager DataManager { get; private set; } = null!;
-		[PluginService] internal static TargetManager TargetManager { get; private set; } = null!;
-		[PluginService] internal static SigScanner SigScanner { get; private set; } = null!;
-		[PluginService] internal static KeyState KeyState { get; private set; } = null!;
+		[PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
+		[PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+		[PluginService] internal static IClientState ClientState { get; private set; } = null!;
+		[PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+		[PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
+		[PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
+		[PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
+		[PluginService] internal static IKeyState KeyState { get; private set; } = null!;
 
 		public static IChatUtilities ChatUtilities { get; private set; } = null!;
-		public static FrameworkService FrameworkService { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
 		public static OdrScanner OdrScanner { get; private set; } = null!;
 		public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
@@ -65,31 +69,32 @@ namespace Dresser {
 
 			//PluginLog.Debug($"data ready {Service.Data.IsDataReady == true}");
 
+			Service.Interface = new PluginInterfaceService(dalamud);
 			Service.ExcelCache = new ExcelCache(Service.Data);
-			FrameworkService = new FrameworkService(Service.Framework);
-			HotkeyService = new HotkeyService(FrameworkService, KeyState);
+			Service.ExcelCache.PreCacheItemData();
+			HotkeyService = new HotkeyService(Service.Framework, KeyState);
 			IconStorage = new IconStorage();
 			ImageGuiCrop = new ImageGuiCrop();
 			Storage = new Storage();
 			ChatUtilities = new ChatUtilities();
 
 			ConfigurationManager.Load();
-			GameInterface = new GameInterface();
+			GameInterface = new GameInterface(Service.GameInteropProvider);
 			HotkeySetup.Init();
 
 
 			//Universalis = new Universalis();
 			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
 
-			CharacterMonitor = new CharacterMonitor();
-			GameUi = new GameUiManager();
+			CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
+			GameUi = new GameUiManager(Service.GameInteropProvider);
 			OverlayService = new OverlayService(GameUi);
 
 			TryOn = new TryOn();
 			OdrScanner = new OdrScanner(CharacterMonitor);
 			CraftMonitor = new CraftMonitor(GameUi);
-			InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner);
-			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, FrameworkService);
+			InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, Service.GameInteropProvider);
+			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Service.Framework);
 			InventoryScanner.Enable();
 
 			GlamourPlates = new();
@@ -130,11 +135,9 @@ namespace Dresser {
 			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();
 			ApplyGearChange.Dispose();
-			FrameworkService.Dispose();
 
 			GlamourPlates.Dispose();
 
-			FrameworkService = null!;
 			InventoryMonitor = null!;
 			InventoryScanner = null!;
 			CharacterMonitor = null!;
