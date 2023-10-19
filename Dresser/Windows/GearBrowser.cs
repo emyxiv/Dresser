@@ -93,6 +93,7 @@ namespace Dresser.Windows {
 				default: DrawWithMode_Vertical(); break;
 			}
 
+			TestWindow();
 		}
 
 		public enum DisplayMode {
@@ -773,18 +774,19 @@ namespace Dresser.Windows {
 		private void TestWindow() {
 			if (ImGui.Begin("Test Window")) {
 
+				ImageGuiCrop.TestParts();
 
 				// textures
-				var texturePart = PluginServices.ImageGuiCrop.GetPart("character", 17);
-				if (texturePart.Item1 != IntPtr.Zero) {
-					if (PluginServices.ImageGuiCrop.Textures.TryGetValue("character", out var tex)) {
-						ImGui.Text($"s:{tex.Width}*{tex.Height}");
-						ImGui.Image(texturePart.Item1, new(tex.Width, tex.Height));
-					}
-					ImGui.Image(texturePart.Item1, ItemIcon.IconSize, texturePart.Item2, texturePart.Item3);
-					ImGui.SameLine();
-					ImGui.Image(texturePart.Item1, texturePart.Item4, texturePart.Item2, texturePart.Item3);
-				}
+				//var texturePart = PluginServices.ImageGuiCrop.GetPart("character", 17);
+				//if (texturePart.ImGuiHandle != IntPtr.Zero) {
+				//	if (PluginServices.ImageGuiCrop.Textures.TryGetValue("character", out var tex)) {
+				//		ImGui.Text($"s:{tex.Width}*{tex.Height}");
+				//		ImGui.Image(texturePart.Item1, new(tex.Width, tex.Height));
+				//	}
+				//	ImGui.Image(texturePart.ImGuiHandle, ItemIcon.IconSize, texturePart.Item2, texturePart.Item3);
+				//	ImGui.SameLine();
+				//	ImGui.Image(texturePart.ImGuiHandle, texturePart.Item4, texturePart.Item2, texturePart.Item3);
+				//}
 
 				ImGui.End();
 			}

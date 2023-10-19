@@ -202,7 +202,16 @@ namespace Dresser.Windows.Components {
 
 					// TODO: smaller icons in their slot
 					// draw.AddImage(emptySlotInfo.Item1, slotPos, slotPos + slotSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
-					ImGui.Image(emptySlotInfo.Item1, iconSize, emptySlotInfo.Item2, emptySlotInfo.Item3);
+					if(emptySlotInfo != null) {
+						var ddddddddd = ImGui.GetCursorScreenPos();
+						ImGui.InvisibleButton("qsdddddsqsdqsd", iconSize);
+
+						var placeholderIconSize = iconSize * 0.75f;
+						var placeholderIconOffset = (iconSize - placeholderIconSize) / 2;
+						//+(placeholderIconSize / 2)
+						draw.AddImage(emptySlotInfo.ImGuiHandle, ddddddddd + placeholderIconOffset, ddddddddd + placeholderIconOffset + placeholderIconSize);
+						//ImGui.Image(emptySlotInfo.ImGuiHandle, iconSize * 0.5f);
+					}
 				}
 
 				clicked = ImGui.IsItemClicked();
@@ -217,15 +226,15 @@ namespace Dresser.Windows.Components {
 				ImGui.SetCursorPos(initialPosition);
 				ImGui.SetCursorPos(ImGui.GetCursorPos() - (difference / 2));
 
-				var itemCapInfo = PluginServices.ImageGuiCrop.GetPart("icon_a_frame", 1);
-
 				// item slot
-				var itemSlotInfo = PluginServices.ImageGuiCrop.GetPart("mirage_prism_box", 3);
-				var slotSize = capSize * (itemSlotInfo.Item4.X / itemCapInfo.Item4.X);
-				//difference = slotSize - iconSize;
-				var slotPos = ImGui.GetCursorScreenPos();
-				//var slotPos = ImGui.GetCursorScreenPos() - (difference / 2);
-				draw.AddImage(itemSlotInfo.Item1, slotPos, slotPos + slotSize, itemSlotInfo.Item2, itemSlotInfo.Item3);
+				var itemSlotInfo = PluginServices.ImageGuiCrop.GetPart(UldBundle.MirageSlotNormal);
+				if(itemSlotInfo != null) {
+					var slotSize = capSize;
+					//difference = slotSize - iconSize;
+					var slotPos = ImGui.GetCursorScreenPos();
+					//var slotPos = ImGui.GetCursorScreenPos() - (difference / 2);
+					draw.AddImage(itemSlotInfo.ImGuiHandle, slotPos, slotPos + slotSize);
+				}
 
 
 				// item cap (but no item cap in glam dresser)
@@ -235,13 +244,16 @@ namespace Dresser.Windows.Components {
 
 				// Hover visual
 				if (wasHovered) {
-					var itemHoveredInfo = PluginServices.ImageGuiCrop.GetPart("icon_a_frame", 16);
+					var itemHoveredInfo = PluginServices.ImageGuiCrop.GetPart(UldBundle.SlotHighlight);
 					ImGui.SetCursorPos(initialPosition);
-					var hoverSize = capSize * (itemHoveredInfo.Item4.X / itemCapInfo.Item4.X);
-					difference = hoverSize - iconSize;
+					if(itemHoveredInfo != null && itemSlotInfo != null) {
+						
+						var hoverSize = capSize * (itemHoveredInfo.Size.X / itemSlotInfo.Size.X);
+						difference = hoverSize - iconSize;
 
-					var hoverPos = ImGui.GetCursorScreenPos() - (difference / 2);
-					draw.AddImage(itemHoveredInfo.Item1, hoverPos, hoverPos + hoverSize, itemHoveredInfo.Item2, itemHoveredInfo.Item3);
+						var hoverPos = ImGui.GetCursorScreenPos() - (difference / 2);
+						draw.AddImage(itemHoveredInfo.ImGuiHandle, hoverPos, hoverPos + hoverSize);
+					}
 				}
 			} catch (Exception ex) {
 				PluginLog.Warning($"Error when Drawing item Icon\n{ex}");

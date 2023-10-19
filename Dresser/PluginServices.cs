@@ -31,6 +31,7 @@ namespace Dresser {
 		[PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
 		[PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
 		[PluginService] internal static IKeyState KeyState { get; private set; } = null!;
+		[PluginService] internal static IGameGui DalamudGameGui { get; private set; } = null!;
 
 		public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;

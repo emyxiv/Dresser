@@ -1,6 +1,9 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.GameFonts;
 using Dalamud.Utility;
+
+using Dresser.Services;
+
 using ImGuiNET;
 
 using System;
@@ -42,23 +45,26 @@ namespace Dresser.Windows.Components {
 		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? textColor = null) {
 			return ButtonNoBg((label,h) => IconButton(icon, size, label), hiddenLabel, tooltip, textColor);
 		}
-		public static bool GameButton(string cropPath, int cropItemId, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null) {
+		public static bool GameButton(UldBundle cropItemId, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null) {
 			var tint = color?? Vector4.One;
 			return ButtonNoBg((label, hovered) => {
-				var z = PluginServices.ImageGuiCrop.GetPart(cropPath, cropItemId);
+				var z = PluginServices.ImageGuiCrop.GetPart(cropItemId);
+				if (z == null) return false;
 				var pos = ImGui.GetCursorScreenPos();
-				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, z.uv0, z.uv1,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint * 0.9f));
+				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint * 0.9f));
 				return ImGui.InvisibleButton(hiddenLabel, size);
 			}, hiddenLabel, tooltip, Vector4.Zero);
 		}
-		public static bool GameButtonCircleToggle(int cropCircleBUttonItemId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+		public static bool GameButtonCircleToggle(UldBundle cropCircleBUttonItemId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default) {
 
 			if (value) {
-				var z = PluginServices.ImageGuiCrop.GetPart("circle_buttons_4", 28);
-				var pos = ImGui.GetCursorScreenPos();
-				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, z.uv0, z.uv1);
+				var z = PluginServices.ImageGuiCrop.GetPart(UldBundle.CircleLargeHighlight);
+				if (z != null) {
+					var pos = ImGui.GetCursorScreenPos();
+					ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size);
+				}
 			}
-			var accepting = GameButton("circle_buttons_4", cropCircleBUttonItemId, hiddenLabel, tooltip, size);
+			var accepting = GameButton(cropCircleBUttonItemId, hiddenLabel, tooltip, size);
 			if (accepting) {
 				value = !value;
 			}

@@ -11,7 +11,7 @@ namespace Dresser.Structs.Actor {
 		[FieldOffset(0x00)] public WeaponEquip Equip;
 		[FieldOffset(0x08)] public unsafe WeaponModel* Model;
 		[FieldOffset(0x40)] public bool IsSheathed;
-		[FieldOffset(0x5C)] public WeaponFlags Flags;
+		[FieldOffset(0x60)] public WeaponFlags Flags;
 	}
 
 	[StructLayout(LayoutKind.Explicit)]
@@ -32,6 +32,8 @@ namespace Dresser.Structs.Actor {
 		[FieldOffset(0x88)] public byte Flags;
 
 		[FieldOffset(0xA0)] public unsafe Skeleton* Skeleton;
+
+		[FieldOffset(0x8F0)] public WeaponEquip Equip;
 	}
 	public enum WeaponIndex : int {
 		MainHand,

@@ -99,6 +99,7 @@ namespace Dresser {
 
 			pluginInterface.UiBuilder.Draw += DrawUI;
 			pluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+			pluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
 
 
 		}
@@ -150,7 +151,9 @@ namespace Dresser {
 		public void ToggleConfigUI() {
 			ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
 		}
-
+		public void DrawMainUI() {
+			CurrentGear.IsOpen = true;
+		}
 		public void DrawConfigUI() {
 			ConfigWindow.IsOpen = true;
 		}

@@ -21,7 +21,7 @@ namespace Dresser.Interop.Addons {
 
 			MiragePrismMiragePlateOverlay.OnPlateChanged += OnPlateChanged;
 
-			OnLogin(null!, null!);
+			OnLogin();
 		}
 
 		public static void Dispose() {
@@ -39,14 +39,14 @@ namespace Dresser.Interop.Addons {
 			MiragePrismMiragePlateOverlay.OnPlateChanged -= OnPlateChanged;
 
 
-			OnLogout(null!, null!);
+			OnLogout();
 		}
 
 		// Various event methods
-		private static void OnLogin(object? sender, EventArgs e) {
+		private static void OnLogin() {
 			//Sets.Init();
 		}
-		private static void OnLogout(object? sender, EventArgs e) {
+		private static void OnLogout() {
 			//Sets.Dispose();
 		}
 

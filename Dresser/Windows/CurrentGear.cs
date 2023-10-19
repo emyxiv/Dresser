@@ -66,6 +66,7 @@ public class CurrentGear : Window, IDisposable {
 		DrawPlateSelector(draw);
 		DrawSlots();
 
+
 		DrawChildren();
 	}
 
@@ -80,7 +81,7 @@ public class CurrentGear : Window, IDisposable {
 		//ImGui.SameLine();
 
 
-		if (GuiHelpers.GameButton("circle_buttons_4", 4, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
+		if (GuiHelpers.GameButton(UldBundle.CircleLargeQuestionMark, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
 			Help.Open();
 		}
 		//ImGui.SameLine();
@@ -88,20 +89,20 @@ public class CurrentGear : Window, IDisposable {
 		//	PluginServices.Context.LocalPlayer.RedrawWeapon();
 		//}
 		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(35, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
+		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallHat, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
 			PluginServices.Context.LocalPlayer.RedrawHeadGear();
 		}
 		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(37, ref ConfigurationManager.Config.CurrentGearDisplayVisor, "Manually adjust visor##CurrentGear", "Manually adjust visor", SizeGameCircleIcons)) {
+		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallVisor, ref ConfigurationManager.Config.CurrentGearDisplayVisor, "Manually adjust visor##CurrentGear", "Manually adjust visor", SizeGameCircleIcons)) {
 			PluginServices.Context.LocalPlayer.RedrawHeadGear();
 		}
 		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(38, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {
+		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallDisplayGear, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {
 			PluginServices.ApplyGearChange.ToggleDisplayGear();
 		}
 		if (PluginServices.Context.IsAnyPlateSelectionOpen) {
 			ImGui.SameLine();
-			if (GuiHelpers.GameButton("circle_buttons_4", 27, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill", SizeGameCircleIcons)) {
+			if (GuiHelpers.GameButton(UldBundle.CircleLargeRefresh2, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill", SizeGameCircleIcons)) {
 				PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
 			}
 		}
@@ -118,10 +119,10 @@ public class CurrentGear : Window, IDisposable {
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0));
 
-		var radioActive = PluginServices.ImageGuiCrop.GetPart("mirage_prism_plate2", 6);
-		var radioInActive = PluginServices.ImageGuiCrop.GetPart("mirage_prism_plate2", 5);
+		var radioActive = PluginServices.ImageGuiCrop.GetPart(UldBundle.MiragePlateRadioSelected);
+		var radioInActive = PluginServices.ImageGuiCrop.GetPart(UldBundle.MiragePlateRadio);
 
-		var radioOiriginalSize = radioInActive.Item4 * ConfigurationManager.Config.IconSizeMult;
+		var radioOiriginalSize = (radioInActive?.Size ?? Vector2.One) * ConfigurationManager.Config.IconSizeMult;
 		var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
 		//var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
 		var fontSize = 28f * ConfigurationManager.Config.IconSizeMult;
@@ -149,7 +150,7 @@ public class CurrentGear : Window, IDisposable {
 
 			var tint = PlateSlotButtonHovering == plateNumber ? hoverColor : roleColor??restColor;
 			if (isActive) tint = ActiveColor;
-			ImGui.Image(imageInfo.Item1, radioSize, imageInfo.Item2, imageInfo.Item3, tint);
+			if (imageInfo != null) ImGui.Image(imageInfo.ImGuiHandle, radioSize, Vector2.Zero, Vector2.One, tint);
 			var clicked = ImGui.IsItemClicked();
 			var hovering = ImGui.IsItemHovered();
 			if (ImGui.BeginPopupContextItem($"{plateNumber}##PlateSelector##ContextMenu##CurrentGear")) {
@@ -166,11 +167,11 @@ public class CurrentGear : Window, IDisposable {
 			var classJobTexture = GearSets.GetClassJobIconTextureForPlate(plateNumber);
 			if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons && classJobTexture != null) {
 				var cjt_ratio = 0.8f;
-				var cjt_p_min = ImGui.GetCursorScreenPos() + new Vector2(radioSize.X - (radioSize.Y * 1.0f), - radioSize.Y + (radioSize.Y * ((1 - cjt_ratio)/2)));
+				var cjt_p_min = ImGui.GetCursorScreenPos() + new Vector2(radioSize.X - (radioSize.Y * 0.8f), - radioSize.Y + (radioSize.Y * ((1 - cjt_ratio)/2)));
 				var cjt_p_max = cjt_p_min + new Vector2(radioSize.Y * cjt_ratio);
 
 				var jobIconColor1 = !ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors ? roleColor1 ?? new Vector4(0, 0, 0, 1) : new Vector4(1, 1, 1, 1);
-				var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.25f);
+				var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.35f);
 				draw.AddImage(classJobTexture.ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
 			}
 
@@ -333,7 +334,7 @@ public class CurrentGear : Window, IDisposable {
 				var tint = ItemIcon.ColorBad * new Vector4(1.75f, 1.75f, 1.75f, 1);
 				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(-5* ConfigurationManager.Config.IconSizeMult, 0));
 
-				GuiHelpers.GameButton("circle_buttons_4", 29, "OverwritePendingWithCurrent##CurrentGear", "", SizeGameCircleIcons, tint);
+				GuiHelpers.GameButton(UldBundle.CircleLargeExclamationMark, "OverwritePendingWithCurrent##CurrentGear", "", SizeGameCircleIcons, tint);
 				ImGui.SameLine();
 
 				var tasksText = $"{taskedItems.Count} Task{(taskedItems.Count > 1 ? "s" : "")}";
