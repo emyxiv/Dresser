@@ -1,4 +1,4 @@
-using Dalamud.Logging;
+using Dresser.Logic;
 
 using System.Collections.Generic;
 using System.Linq;

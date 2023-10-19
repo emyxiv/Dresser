@@ -4,7 +4,6 @@ using CriticalCommonLib.Extensions;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using Dalamud.Interface.Internal;
-using Dalamud.Logging;
 
 using Dresser.Data.Excel;
 using Dresser.Extensions;

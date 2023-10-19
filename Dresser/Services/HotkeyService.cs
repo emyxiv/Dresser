@@ -1,11 +1,10 @@
+using Dalamud.Game.ClientState.Keys;
+using Dalamud.Plugin.Services;
+
+using Dresser.Logic;
+
 using System;
 using System.Collections.Generic;
-using CriticalCommonLib.Services;
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Logging;
-using System.Linq;
-using Dresser.Logic;
-using Dalamud.Plugin.Services;
 
 namespace Dresser.Services;
 

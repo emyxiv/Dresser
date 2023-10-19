@@ -2,10 +2,8 @@
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 using CriticalCommonLib.GameStructs;
-using CriticalCommonLib.Models;
 
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 
 using Dresser.Extensions;
@@ -23,9 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 

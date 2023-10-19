@@ -1,8 +1,5 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Extensions;
-using CriticalCommonLib.Models;
-
-using Dalamud.Logging;
 
 using Dresser.Extensions;
 using Dresser.Logic;

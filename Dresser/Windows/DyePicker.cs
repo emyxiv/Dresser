@@ -1,5 +1,4 @@
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 
 using Dresser.Data;
 using Dresser.Data.Excel;

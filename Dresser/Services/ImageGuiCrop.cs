@@ -1,5 +1,4 @@
 ﻿using Dalamud.Interface.Internal;
-using Dalamud.Logging;
 
 using Dresser.Logic;
 using Dresser.Structs.Dresser;

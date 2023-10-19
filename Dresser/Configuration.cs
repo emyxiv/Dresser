@@ -3,7 +3,6 @@ using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
 using Dalamud.Configuration;
-using Dalamud.Logging;
 
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
@@ -14,12 +13,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
-
-
 using static Dresser.Windows.GearBrowser;
-using System.Diagnostics;
+
+using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 namespace Dresser {
 	[Serializable]

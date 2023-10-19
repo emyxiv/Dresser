@@ -2,15 +2,12 @@ using CriticalCommonLib;
 using CriticalCommonLib.Models;
 using CriticalCommonLib.Resolvers;
 
-using Dalamud.Logging;
-
 using Dispatch;
 
 using Dresser.Logic;
 using Dresser.Windows;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 
 namespace Dresser.Services {

@@ -3,7 +3,6 @@ using CriticalCommonLib.Models;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 
 using Dresser.Extensions;
 using Dresser.Logic;

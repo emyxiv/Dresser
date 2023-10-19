@@ -1,6 +1,5 @@
-using Dalamud.Logging;
-
 using Dresser.Interop.GameUi;
+using Dresser.Logic;
 using Dresser.Services;
 
 using System;

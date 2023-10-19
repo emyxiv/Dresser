@@ -1,5 +1,6 @@
 ﻿using Dalamud.Hooking;
-using Dalamud.Logging;
+
+using Dresser.Logic;
 
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;

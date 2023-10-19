@@ -4,12 +4,10 @@ using CriticalCommonLib.Models;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 
-using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
@@ -21,9 +19,6 @@ using Dresser.Windows;
 
 using System;
 using System.Collections.Generic;
-
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
 
 namespace Dresser {

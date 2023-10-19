@@ -8,7 +8,6 @@ using DalaMock.Shared.Classes;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
@@ -28,6 +27,7 @@ namespace Dresser {
 		[PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
 		[PluginService] internal static IKeyState KeyState { get; private set; } = null!;
 		[PluginService] internal static IGameGui DalamudGameGui { get; private set; } = null!;
+		[PluginService] internal static IPluginLog PluginLog { get; private set; } = null!;
 
 		public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;

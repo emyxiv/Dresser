@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-using Dalamud.Logging;
+using Dresser.Logic;
 
 using System;
 using System.Collections.Generic;

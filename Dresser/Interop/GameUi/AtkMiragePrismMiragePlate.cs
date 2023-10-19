@@ -1,6 +1,6 @@
 ﻿using CriticalCommonLib.Services.Ui;
 
-using Dalamud.Logging;
+using Dresser.Logic;
 
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
