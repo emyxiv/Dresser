@@ -1,6 +1,5 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Extensions;
-using CriticalCommonLib.Models;
 
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
@@ -62,7 +61,7 @@ namespace Dresser.Windows.Components {
 
 			// item variables
 			var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
-			var image = ConfigurationManager.Config.ShowImagesInBrowser ? PluginServices.IconStorage.Get(item) : null;
+			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
 			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
@@ -86,7 +85,7 @@ namespace Dresser.Windows.Components {
 					try {
 
 
-						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = PluginServices.IconStorage.Get(item);
+						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = IconWrapper.Get(item);
 						DrawImage(image!, dye, isDyeable, item);
 
 						var rarityColor = Storage.RarityColor(item.Item);

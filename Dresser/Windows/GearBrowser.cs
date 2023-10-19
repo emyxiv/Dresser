@@ -93,7 +93,7 @@ namespace Dresser.Windows {
 				default: DrawWithMode_Vertical(); break;
 			}
 
-			TestWindow();
+			//TestWindow();
 		}
 
 		public enum DisplayMode {

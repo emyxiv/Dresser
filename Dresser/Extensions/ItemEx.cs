@@ -4,6 +4,7 @@ using CriticalCommonLib.Extensions;
 
 using Dalamud.Interface.Internal;
 
+using Dresser.Logic;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
 using Dresser.Structs.Dresser;
@@ -97,7 +98,7 @@ namespace Dresser.Extensions {
 			return false;
 		}
 		public static IDalamudTextureWrap IconTextureWrap(this CriticalItemEx itemEx) {
-			return PluginServices.IconStorage.Get(itemEx);
+			return IconWrapper.Get(itemEx);
 		}
 
 

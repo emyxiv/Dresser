@@ -93,7 +93,7 @@ namespace Dresser.Logic {
 		public static IDalamudTextureWrap? GetClassJobIconTextureForPlate(ushort plateNumber) {
 			var iconId = GetClassJobIconForPlate(plateNumber);
 			if(!iconId.HasValue) return null;
-			return PluginServices.IconStorage[iconId.Value];
+			return IconWrapper.Get(iconId.Value);
 		}
 
 

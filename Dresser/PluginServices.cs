@@ -5,12 +5,8 @@ using CriticalCommonLib.Services.Ui;
 
 using DalaMock.Shared.Classes;
 
-using Dalamud.Data;
 using Dalamud.Game;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects;
-using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Logging;
 using Dalamud.Plugin;
@@ -46,7 +42,6 @@ namespace Dresser {
 		public static CraftMonitor CraftMonitor { get; private set; } = null!;
 		//public static MarketCache MarketCache { get; private set; } = null!;
 		//public static Universalis Universalis { get; private set; } = null!;
-		public static IconStorage IconStorage { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 
 
@@ -74,7 +69,6 @@ namespace Dresser {
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			Service.ExcelCache.PreCacheItemData();
 			HotkeyService = new HotkeyService(Service.Framework, KeyState);
-			IconStorage = new IconStorage();
 			ImageGuiCrop = new ImageGuiCrop();
 			Storage = new Storage();
 			ChatUtilities = new ChatUtilities();
@@ -132,7 +126,6 @@ namespace Dresser {
 			//MarketCache.Dispose();
 			//Universalis.Dispose();
 			GameInterface.Dispose();
-			IconStorage.Dispose();
 			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();
 			ApplyGearChange.Dispose();
@@ -155,7 +148,6 @@ namespace Dresser {
 			//MarketCache = null!;
 			//Universalis = null!;
 			GameInterface = null!;
-			IconStorage = null!;
 			HotkeyService = null!;
 			ImageGuiCrop = null!;
 			ApplyGearChange = null!;

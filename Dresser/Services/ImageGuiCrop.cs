@@ -1,46 +1,20 @@
-﻿using Dresser.Structs.Dresser;
+﻿using Dalamud.Interface.Internal;
+using Dalamud.Logging;
 
-using Dalamud.Interface.Internal;
+using Dresser.Logic;
+using Dresser.Structs.Dresser;
+using Dresser.Windows.Components;
 
-using Lumina.Data.Files;
+using ImGuiNET;
 
 using System;
 using System.Collections.Generic;
-using System.Numerics;
-//using Dalamud.Interface;
-using Dalamud.Logging;
-using System.IO;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-using Dresser.Logic;
-using Dresser.Data.Excel;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using static System.Net.WebRequestMethods;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-using ImGuiNET;
-using Dresser.Windows.Components;
-using System.Linq;
 
 namespace Dresser.Services {
 	internal class ImageGuiCrop : IDisposable {
 		public Dictionary<int, IDalamudTextureWrap> Textures = new();
 		public Dictionary<string, UldWrapper> Ulds = new();
 		public HashSet<int> Blacklist = new();
-		//public Dictionary<(string, int), (IntPtr, Vector2, Vector2, Vector2)> Cache = new();
-
-		// ui/uld/ArmouryBoard.uld
-		// ui/uld/ArmouryBoard_hr1.tex
-
-		public Dictionary<string, (string TexPath, string UldPath)> HandlesPaths = new Dictionary<string, (string, string)>() {
-			{"character",           ($"ui/uld/Character{Storage.HighResolutionSufix}.tex"           , "ui/uld/Character.uld" )},
-			{"icon_a_frame",        ($"ui/uld/IconA_Frame{Storage.HighResolutionSufix}.tex"         , "ui/uld/Character.uld")},
-			{"mirage_prism_box",    ($"ui/uld/MiragePrismBoxIcon{Storage.HighResolutionSufix}.tex"  , "ui/uld/MiragePrismBox.uld")},
-			{"mirage_prism_plate2", ($"ui/uld/MiragePrismPlate2{Storage.HighResolutionSufix}.tex"   , "ui/uld/MiragePrismPlate.uld")}, // plate number tabs
-			{"circle_buttons_4",    ($"ui/uld/CircleButtons{Storage.HighResolutionSufix}.tex"       , "ui/uld/Character.uld")}, 
-			//{"circle_buttons_4",    ($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/fourth/Character.uld")},
-		};
-
 
 		public Dictionary<GlamourPlateSlot, UldBundle> EmptyGlamourPlateSlot = new() {
 				{ GlamourPlateSlot.MainHand, UldBundle.MainHand }, // main weapon: 17
@@ -58,7 +32,6 @@ namespace Dresser.Services {
 			};
 
 		public IDalamudTextureWrap? GetPart(UldBundle uldBundle) {
-			//return null;
 			if (Blacklist.Contains(uldBundle.GetHashCode())) return null;
 
 			if (Textures.TryGetValue(uldBundle.GetHashCode(), out var texture)) {
@@ -74,46 +47,15 @@ namespace Dresser.Services {
 			}
 			PluginLog.Warning($"Unable to load Uld {uldBundle.Handle}");
 			Blacklist.Add(uldBundle.GetHashCode());
-			//PluginLog.Warning($"Some stats: Blacklist:{Blacklist.Count} Textures:{Textures.Count} Ulds:{Ulds.Count}");
 			return null;
 		}
 
-
-
-		/*
-		public (IntPtr ImGuiHandle, Vector2 uv0, Vector2 uv1, Vector2 size) GetPart(string type, int part_id) {
-			if (Cache.TryGetValue((type, part_id), out var cachedInfo))
-				return cachedInfo;
-			if (Textures.TryGetValue(type, out var texture))
-				if (texture != null && TexturesParts.TryGetValue(type, out var parts))
-					if (parts != null && parts.Count > 0 && parts.TryGetValue(part_id, out var posSize)) {
-
-						var textureSize = new Vector2(texture.Width, texture.Height);
-						var pos = posSize.Item1;
-						var size = posSize.Item2;
-						Vector2 uv0 = new(
-							pos.X / textureSize.X,
-							pos.Y / textureSize.Y
-							);
-						Vector2 uv1 = new(
-							(pos.X + size.X) / textureSize.X,
-							(pos.Y + size.Y) / textureSize.Y
-							);
-						var partInfo = (texture.ImGuiHandle, uv0, uv1, size);
-						Cache.Add((type, part_id), partInfo);
-						return partInfo;
-					}
-
-			return (default, default, default, default);
-		}
-		*/
 
 		public IDalamudTextureWrap? GetPart(GlamourPlateSlot slot)
 			=> GetPart(EmptyGlamourPlateSlot[slot]);
 
 		public ImageGuiCrop() {
-			PluginLog.Error("LOADING ULDS");
-
+			PluginLog.Verbose("LOADING ULDS");
 
 			var uldsPaths = new List<string>() {
 				"ui/uld/Character.uld",
@@ -121,39 +63,14 @@ namespace Dresser.Services {
 				"ui/uld/MiragePrismPlate.uld",
 			};
 			foreach (var uldFile in uldsPaths) {
-				//PluginLog.Debug($"TEX: {(PluginServices.DataManager.FileExists(texFile) ? "  EXIST  " : "not found")} file: {texFile}");
 
 				if (Ulds.ContainsKey(uldFile)) continue;
 				if (!PluginServices.DataManager.FileExists(uldFile)) continue;
 				var uld = new UldWrapper(uldFile);
 				if (uld == null || !uld.Valid || uld.Uld == null) continue;
 
-				PluginLog.Debug($"ULD: {uldFile} compatible with assets:");
-				var tli = new string(uld.Uld.TimelineList.Identifier).Replace("\0", string.Empty);
-				PluginLog.Debug($"  timeline identifier: {tli}");
-				
-
-				foreach ( var textureEntry in uld.Uld.AssetData) {
-					var assetPath = new string(textureEntry.Path).Replace("\0", string.Empty);
-					PluginLog.Debug($"    {assetPath}");
-				}
-
 				Ulds.Add(uldFile, uld);
-				
-				//var uld = new UldWrapper(PluginServices.PluginInterface.UiBuilder, "");
-
-				//	var image = PluginServices.DataManager.GetFile<TexFile>(path);
-				//	if (image == null) continue;
-				//	var tex = PluginServices.TextureProvider.GetTextureFromGame(path,true);
-				//	if (tex == null) continue;
-
-				//	Textures.Add(handle, tex);
 			}
-
-			//foreach ((var slot, var part_id) in EmptyGlamourPlateSlot)
-			//	GetPart("character", part_id);
-
-			//TestParts();
 		}
 		public static void TestParts() {
 

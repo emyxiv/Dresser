@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Dalamud.Data;
-using Dalamud.Interface.Internal;
+﻿using Dalamud.Interface.Internal;
+using Dalamud.Logging;
 using Dalamud.Utility;
-using Dalamud.Interface;
 
 using Lumina.Data.Files;
 using Lumina.Data.Parsing.Uld;
-using Dalamud.Logging;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Dresser.Logic {
 	//
