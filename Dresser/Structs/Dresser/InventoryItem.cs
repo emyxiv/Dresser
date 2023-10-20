@@ -2,7 +2,7 @@
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
-using Dalamud.Logging;
+using Dresser.Logic;
 using Dalamud.Utility;
 
 using Dresser.Extensions;

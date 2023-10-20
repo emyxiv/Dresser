@@ -1,6 +1,6 @@
 ﻿using CriticalCommonLib.Models;
 
-using Dalamud.Logging;
+using Dresser.Logic;
 
 using Dresser.Services;
 

@@ -6,7 +6,7 @@ using CriticalCommonLib.Sheets;
 
 using Dalamud.Interface.GameFonts;
 using Dalamud.Interface.Internal;
-using Dalamud.Logging;
+using Dresser.Logic;
 
 using Dresser.Data;
 using Dresser.Data.Excel;

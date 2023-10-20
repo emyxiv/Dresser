@@ -2,7 +2,7 @@
 using CriticalCommonLib.Services.Ui;
 
 using Dalamud.Game;
-using Dalamud.Logging;
+using Dresser.Logic;
 using Dalamud.Plugin.Services;
 
 using Dresser.Interop.GameUi;

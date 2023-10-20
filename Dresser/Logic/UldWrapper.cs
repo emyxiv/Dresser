@@ -1,5 +1,5 @@
 ﻿using Dalamud.Interface.Internal;
-using Dalamud.Logging;
+using Dresser.Logic;
 using Dalamud.Utility;
 
 using Lumina.Data.Files;
