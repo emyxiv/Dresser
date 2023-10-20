@@ -75,34 +75,28 @@ namespace Dresser.Services {
 
 		}
 
-
-		//private readonly EventSubscriber<ModSettingChange, string, string, bool> _modSettingChanged;
-		//private ActionSubscriber<int, RedrawType> _redrawSubscriber;
-		//private FuncSubscriber<nint, (nint, string)> _drawObjectInfo;
-
-		public uint InventoryCountByType(uint inventoryType, ulong? characterId) => _inventoryCountByType.InvokeFunc(inventoryType, characterId);
-		public uint InventoryCountByTypes(uint[] inventoryTypes, ulong? characterId) => _inventoryCountByTypes.InvokeFunc(inventoryTypes, characterId);
-
-		public uint ItemCount(uint a1, ulong a2, int a3) => _itemCount.InvokeFunc(a1, a2, a3);
-		public uint ItemCountHQ(uint a1, ulong a2, int a3) => _itemCountHQ.InvokeFunc(a1, a2, a3);
-		public uint ItemCountOwned(uint a1, bool a2, uint[] a3) => _itemCountOwned.InvokeFunc(a1, a2, a3);
-		public bool EnableUiFilter(string a1) => _enableUiFilter.InvokeFunc(a1);
-		public bool DisableUiFilter() => _disableUiFilter.InvokeFunc();
-		public bool ToggleUiFilter(string a1) => _toggleUiFilter.InvokeFunc(a1);
-		public bool EnableBackgroundFilter(string a1) => _enableBackgroundFilter.InvokeFunc(a1);
-		public bool DisableBackgroundFilter() => _disableBackgroundFilter.InvokeFunc();
-		public bool ToggleBackgroundFilter(string a1) => _toggleBackgroundFilter.InvokeFunc(a1);
-		public bool EnableCraftList(string a1) => _enableCraftList.InvokeFunc(a1);
-		public bool DisableCraftList() => _disableCraftList.InvokeFunc();
-		public bool ToggleCraftList(string a1) => _toggleCraftList.InvokeFunc(a1);
-		public bool AddItemToCraftList(string a1, uint a2, uint a3) => _addItemToCraftList.InvokeFunc(a1, a2, a3);
-		public bool RemoveItemFromCraftList(string a1, uint a2, uint a3) => _removeItemFromCraftList.InvokeFunc(a1,a2,a3);
-		public Dictionary<uint, uint> GetFilterItems(string a1) => _getFilterItems.InvokeFunc(a1);
-		public Dictionary<uint, uint> GetCraftItems(string a1) => _getCraftItems.InvokeFunc(a1);
-		public Dictionary<string, string> GetCraftLists() => _getCraftLists.InvokeFunc();
-		public string AddNewCraftList(string a1, Dictionary<uint, uint> a2) => _addNewCraftList.InvokeFunc(a1, a2);
-		public ulong CurrentCharacter() => _currentCharacter.InvokeFunc();
-		public bool IsInitialized() => _isInitialized.InvokeFunc();
+		public uint InventoryCountByType(uint inventoryType, ulong? characterId)     { try { return _inventoryCountByType.    InvokeFunc(inventoryType, characterId  ) ; } catch(Exception e){return 0;}}
+		public uint InventoryCountByTypes(uint[] inventoryTypes, ulong? characterId) { try { return _inventoryCountByTypes.   InvokeFunc(inventoryTypes, characterId ) ; } catch(Exception e){return 0;}}
+		public uint ItemCount(uint a1, ulong a2, int a3)                             { try { return _itemCount.               InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return 0;}}
+		public uint ItemCountHQ(uint a1, ulong a2, int a3)                           { try { return _itemCountHQ.             InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return 0;}}
+		public uint ItemCountOwned(uint a1, bool a2, uint[] a3)                      { try { return _itemCountOwned.          InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return 0;}}
+		public bool EnableUiFilter(string a1)                                        { try { return _enableUiFilter.          InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
+		public bool DisableUiFilter()                                                { try { return _disableUiFilter.         InvokeFunc(                            ) ; } catch(Exception e){return false;}}
+		public bool ToggleUiFilter(string a1)                                        { try { return _toggleUiFilter.          InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
+		public bool EnableBackgroundFilter(string a1)                                { try { return _enableBackgroundFilter.  InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
+		public bool DisableBackgroundFilter()                                        { try { return _disableBackgroundFilter. InvokeFunc(                            ) ; } catch(Exception e){return false;}}
+		public bool ToggleBackgroundFilter(string a1)                                { try { return _toggleBackgroundFilter.  InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
+		public bool EnableCraftList(string a1)                                       { try { return _enableCraftList.         InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
+		public bool DisableCraftList()                                               { try { return _disableCraftList.        InvokeFunc(                            ) ; } catch(Exception e){return false;}}
+		public bool ToggleCraftList(string a1)                                       { try { return _toggleCraftList.         InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
+		public bool AddItemToCraftList(string a1, uint a2, uint a3)                  { try { return _addItemToCraftList.      InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return false;}}
+		public bool RemoveItemFromCraftList(string a1, uint a2, uint a3)             { try { return _removeItemFromCraftList. InvokeFunc(a1,a2,a3                    ) ; } catch(Exception e){return false;}}
+		public Dictionary<uint, uint> GetFilterItems(string a1)                      { try { return _getFilterItems.          InvokeFunc(a1                          ) ; } catch(Exception e){return new();}}
+		public Dictionary<uint, uint> GetCraftItems(string a1)                       { try { return _getCraftItems.           InvokeFunc(a1                          ) ; } catch(Exception e){return new(); }}
+		public Dictionary<string, string> GetCraftLists()                            { try { return _getCraftLists.           InvokeFunc(                            ) ; } catch(Exception e){return new(); }}
+		public string AddNewCraftList(string a1, Dictionary<uint, uint> a2)          { try { return _addNewCraftList.         InvokeFunc(a1, a2                      ) ; } catch(Exception e){return "";}}
+		public ulong CurrentCharacter()                                              { try { return _currentCharacter.        InvokeFunc(                            ) ; } catch(Exception e){return 0;}}
+		public bool IsInitialized()                                                  { try { return _isInitialized.           InvokeFunc(                            ) ; } catch(Exception e) { return false; }}
 
 
 		private void RetainerChanged(ulong? a1) {
