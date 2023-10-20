@@ -29,7 +29,7 @@ public class ConfigWindow : Window, IDisposable {
 			{ "Windows & sizing", DrawWindowsAndSizingConfigs },
 			{ "Icons", DrawIconsConfigs },
 			{ "Behaviors", DrawBehaviourConfigs },
-			{ "Inventory Memory", DrawInventoryConfigs },
+			{ "Allagan Tools Ipc Status", AllaganToolsIpcStatus },
 		};
 	}
 
@@ -118,9 +118,6 @@ public class ConfigWindow : Window, IDisposable {
 		ConfigurationManager.Config.FilterInventoryTypeColumnNumber = FilterInventoryTypeColumnNumber;
 
 	}
-	private void DrawInventoryConfigs() {
-		DrawInventoryStatusTable();
-	}
 
 	private void DrawPlatesConfig() {
 
@@ -160,75 +157,34 @@ public class ConfigWindow : Window, IDisposable {
 
 	}
 
-	private void DrawInventoryStatusTable() {
+	private void AllaganToolsIpcStatus() {
+		var isInitialized = PluginServices.AllaganTools.IsInitialized();
+		ImGui.TextColored(isInitialized ? ItemIcon.ColorGood : ItemIcon.ColorBad, isInitialized? "Connected" : "Not Found");
 
 
-		if (ImGui.BeginTable("CharacterTable", 4, ImGuiTableFlags.BordersV |
-											 ImGuiTableFlags.BordersOuterV |
-											 ImGuiTableFlags.BordersInnerV |
-											 ImGuiTableFlags.BordersH |
-											 ImGuiTableFlags.BordersOuterH |
-											 ImGuiTableFlags.BordersInnerH)) {
-			ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 100.0f, 0);
-			ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthStretch, 100.0f, 1);
-			ImGui.TableSetupColumn("Items", ImGuiTableColumnFlags.WidthStretch, 50.0f, 2);
-			ImGui.TableSetupColumn("Actions", ImGuiTableColumnFlags.WidthStretch, 100.0f, 3);
-			ImGui.TableHeadersRow();
 
-			var characters = PluginServices.CharacterMonitor.Characters.Where(c=>c.Value.HouseId == 0).ToArray();
-			if (characters.Length == 0) {
-				ImGui.TableNextRow();
-				ImGui.Text("No characters available.");
-				ImGui.TableNextColumn();
-				ImGui.TableNextColumn();
-			}
-			for (var index = 0; index < characters.Length; index++) {
-				ImGui.TableNextRow();
-				var character = characters[index].Value;
-				ImGui.TableNextColumn();
-				if (!character.FormattedName.IsNullOrWhitespace()) {
-					ImGui.Text(character.FormattedName);
-					ImGui.SameLine();
-				}
-
-				ImGui.TableNextColumn();
-				ImGui.Text(character.CharacterType.ToString().AddSpaceBeforeCapital());
-
-				ImGui.TableNextColumn();
-				int itemCount = 0;
-				if (ConfigurationManager.Config.SavedInventories.TryGetValue(character.CharacterId, out var invs)) {
-					itemCount = invs.Sum(c => c.Value.Count);
-				}
-
-
-				ImGui.Text(itemCount.ToString());
-				ImGui.SameLine();
-
-				ImGui.TableNextColumn();
-				if (ImGui.SmallButton("Clear All Bags##" + index)) {
-					ImGui.OpenPopup("Are you sure?##" + index);
-				}
-				if (ImGui.BeginPopupModal("Are you sure?##" + index)) {
-					ImGui.Text(
-						"Are you sure you want to clear all the bags stored for this character?.\nThis operation cannot be undone!\n\n");
-					ImGui.Separator();
-
-					if (ImGui.Button("OK", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
-						PluginServices.InventoryMonitor.ClearCharacterInventories(character.CharacterId);
-						ImGui.CloseCurrentPopup();
-					}
-
-					ImGui.SetItemDefaultFocus();
-					ImGui.SameLine();
-					if (ImGui.Button("Cancel", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
-						ImGui.CloseCurrentPopup();
-					}
-
-					ImGui.EndPopup();
-				}
-			}
-			ImGui.EndTable();
+		/*
+		if (ImGui.SmallButton("Clear All Bags##" + index)) {
+			ImGui.OpenPopup("Are you sure?##" + index);
 		}
+		if (ImGui.BeginPopupModal("Are you sure?##" + index)) {
+			ImGui.Text(
+				"Are you sure you want to clear all the bags stored for this character?.\nThis operation cannot be undone!\n\n");
+			ImGui.Separator();
+
+			if (ImGui.Button("OK", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
+				ImGui.CloseCurrentPopup();
+			}
+
+			ImGui.SetItemDefaultFocus();
+			ImGui.SameLine();
+			if (ImGui.Button("Cancel", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
+				ImGui.CloseCurrentPopup();
+			}
+
+			ImGui.EndPopup();
+		}
+		*/
 
 	}
 }

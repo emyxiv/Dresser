@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Interop.Hooks;
+using Dresser.Logic;
 using Dresser.Windows;
 
 using Lumina.Excel.GeneratedSheets;

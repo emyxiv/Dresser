@@ -31,18 +31,19 @@ namespace Dresser {
 
 		public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
-		public static OdrScanner OdrScanner { get; private set; } = null!;
-		public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
-		public static InventoryScanner InventoryScanner { get; private set; } = null!;
+		//public static OdrScanner OdrScanner { get; private set; } = null!;
+		//public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
+		//public static InventoryScanner InventoryScanner { get; private set; } = null!;
 		public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
 		public static GameInterface GameInterface { get; private set; } = null!;
 		public static GameUiManager GameUi { get; private set; } = null!;
 		public static OverlayService OverlayService { get; private set; } = null!;
 		public static TryOn TryOn { get; private set; } = null!;
-		public static CraftMonitor CraftMonitor { get; private set; } = null!;
+		//public static CraftMonitor CraftMonitor { get; private set; } = null!;
 		//public static MarketCache MarketCache { get; private set; } = null!;
 		//public static Universalis Universalis { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
+		public static AllaganToolsService AllaganTools { get; private set; } = null!;
 
 
 		internal static AddonManager AddonManager = null!;
@@ -81,16 +82,17 @@ namespace Dresser {
 			//Universalis = new Universalis();
 			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
 
+			AllaganTools = new AllaganToolsService(dalamud);
 			CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
 			GameUi = new GameUiManager(Service.GameInteropProvider);
 			OverlayService = new OverlayService(GameUi);
 
 			TryOn = new TryOn();
-			OdrScanner = new OdrScanner(CharacterMonitor);
-			CraftMonitor = new CraftMonitor(GameUi);
-			InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, Service.GameInteropProvider);
-			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Service.Framework);
-			InventoryScanner.Enable();
+			//OdrScanner = new OdrScanner(CharacterMonitor);
+			//CraftMonitor = new CraftMonitor(GameUi);
+			//InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, Service.GameInteropProvider);
+			//InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Service.Framework);
+			//InventoryScanner.Enable();
 
 			GlamourPlates = new();
 
@@ -112,12 +114,13 @@ namespace Dresser {
 			//CommandManager.Dispose();
 			//FilterService.Dispose();
 			OverlayService.Dispose();
-			InventoryMonitor.Dispose();
-			InventoryScanner.Dispose();
-			CraftMonitor.Dispose();
+			//InventoryMonitor.Dispose();
+			//InventoryScanner.Dispose();
+			//CraftMonitor.Dispose();
 			TryOn.Dispose();
 			GameUi.Dispose();
 			CharacterMonitor.Dispose();
+			AllaganTools.Dispose();
 
 			Context.Dispose();
 
@@ -132,8 +135,9 @@ namespace Dresser {
 
 			GlamourPlates.Dispose();
 
-			InventoryMonitor = null!;
-			InventoryScanner = null!;
+			AllaganTools = null!;
+			//InventoryMonitor = null!;
+			//InventoryScanner = null!;
 			CharacterMonitor = null!;
 			ChatUtilities = null!;
 			Context = null!;
@@ -142,7 +146,7 @@ namespace Dresser {
 			//CommandManager = null!;
 			//FilterService = null!;
 			OverlayService = null!;
-			CraftMonitor = null!;
+			//CraftMonitor = null!;
 			GlamourPlates = null!;
 			//PluginInterface = null!;
 			//MarketCache = null!;
