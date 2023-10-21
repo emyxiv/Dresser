@@ -190,7 +190,7 @@ internal class PenumbraIpc : IDisposable {
 		return tmpItemList;
 	}
 	internal static (string FoundIconGamePath, string ModdedIconFilePath)? FindIconForItem(uint iconId, Dictionary<string, string> configTexts) {
-		List<string> possibleIconPaths = IconStorage.PossibleIconPaths(iconId);
+		List<string> possibleIconPaths = ModdedIconStorage.PossibleIconPaths(iconId);
 
 		foreach ((var configFile, var configContents) in configTexts) {
 			foreach (var possibleIconPath in possibleIconPaths) {

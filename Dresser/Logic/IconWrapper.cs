@@ -1,10 +1,10 @@
-﻿using CriticalCommonLib.Models;
-using CriticalCommonLib.Sheets;
+﻿using CriticalCommonLib.Sheets;
 
 using Dalamud.Utility;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Internal;
 
+using Dresser.Structs.Dresser;
 using Lumina.Data.Files;
 
 using System;
@@ -23,7 +23,7 @@ namespace Dresser.Logic {
 			return PluginServices.TextureProvider.GetIcon(itemEx.Icon);
 		}
 		public static IDalamudTextureWrap? Get(InventoryItem? inventoryItem)
-			=> Get(inventoryItem?.Item);
+			=> PluginServices.ModdedIconStorage.Get(inventoryItem) ?? Get(inventoryItem?.Item);
 
 		private TexFile? LoadIconHq(uint id) {
 			var path = $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}_hr1.tex";

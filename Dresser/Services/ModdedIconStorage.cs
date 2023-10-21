@@ -1,11 +1,10 @@
 ﻿using CriticalCommonLib.Sheets;
 
-using Dalamud.Logging;
+using Dalamud.Interface.Internal;
 using Dalamud.Utility;
 
 using Dresser.Structs.Dresser;
-
-using ImGuiScene;
+using Dresser.Logic;
 
 using Lumina.Data.Files;
 
@@ -16,19 +15,18 @@ using System.IO;
 namespace Dresser.Services {
 	public class ModdedIconStorage : IDisposable {
 
-		private readonly Dictionary<uint, TextureWrap> _icons;
-		private readonly Dictionary<string, TextureWrap?> _iconsModded;
+		private readonly Dictionary<string, IDalamudTextureWrap?> _iconsModded;
 
 		public ModdedIconStorage() {
 			_iconsModded = new();
 		}
 
-		public TextureWrap Get(InventoryItem? inventoryItem) {
+		public IDalamudTextureWrap? Get(InventoryItem? inventoryItem) {
 			if(inventoryItem != null && !inventoryItem.ModDirectory.IsNullOrWhitespace() && !inventoryItem.ModIconPath.IsNullOrWhitespace()) {
 				var ic = LoadIconPenumbra(Path.Combine(inventoryItem.ModDirectory, inventoryItem.ModIconPath));
 				if(ic != null) return ic;
 			}
-			return Get(inventoryItem?.Item);
+			return null;
 		}
 		public static string IconToTexPath(uint id, bool hr = true, bool hq = false) {
 			return $"ui/icon/{id / 1000 * 1000:000000}/{(hq?"hq/":"")}{id:000000}{(hr? Storage.HighResolutionSufix:"")}.tex";
@@ -41,23 +39,7 @@ namespace Dresser.Services {
 				IconToTexPath(id, false, true),
 			};
 		}
-		private TexFile? LoadIconHq(uint id) {
-			var path = IconToTexPath(id, true);
-			return PluginServices.DataManager.GetFile<TexFile>(path);
-		}
-		public TextureWrap LoadIcon(uint id) {
-			if (_icons.TryGetValue(id, out var ret))
-				return ret;
-
-			var icon = LoadIconHq(id) ?? PluginServices.DataManager.GetIcon(id)!;
-			var iconData = icon.GetRgbaImageData();
-
-
-			ret = PluginServices.PluginInterface.UiBuilder.LoadImageRaw(iconData, icon.Header.Width, icon.Header.Height, 4);
-			_icons[id] = ret;
-			return ret;
-		}
-		public TextureWrap? LoadIconPenumbra(string path) {
+		public IDalamudTextureWrap? LoadIconPenumbra(string path) {
 			if (_iconsModded.TryGetValue(path, out var ret))
 				return ret;
 
@@ -67,7 +49,7 @@ namespace Dresser.Services {
 
 				try {
 					var tex = PluginServices.DataManager.GameData.GetFileFromDisk<TexFile>(pathdd);
-					ret = PluginServices.DataManager.GetImGuiTexture(tex);
+					ret = PluginServices.TextureProvider.GetTextureFromFile(new FileInfo(pathdd));
 					// also returns null or will generate more failed attempts
 					_iconsModded[path] = ret;
 					return ret;

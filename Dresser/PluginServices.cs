@@ -44,6 +44,7 @@ namespace Dresser {
 		//public static MarketCache MarketCache { get; private set; } = null!;
 		//public static Universalis Universalis { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
+		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
 
 
 		internal static AddonManager AddonManager = null!;
@@ -82,7 +83,7 @@ namespace Dresser {
 
 			//Universalis = new Universalis();
 			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
-
+			ModdedIconStorage = new ModdedIconStorage();
 			CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
 			GameUi = new GameUiManager(Service.GameInteropProvider);
 			OverlayService = new OverlayService(GameUi);
@@ -110,6 +111,7 @@ namespace Dresser {
 			ConfigurationManager.ClearQueue();
 			ConfigurationManager.Save();
 
+			ModdedIconStorage.Dispose();
 			Storage.Dispose();
 			//CommandManager.Dispose();
 			//FilterService.Dispose();
@@ -149,6 +151,7 @@ namespace Dresser {
 			GlamourPlates = null!;
 			//PluginInterface = null!;
 			//MarketCache = null!;
+			ModdedIconStorage = null!;
 			//Universalis = null!;
 			GameInterface = null!;
 			HotkeyService = null!;

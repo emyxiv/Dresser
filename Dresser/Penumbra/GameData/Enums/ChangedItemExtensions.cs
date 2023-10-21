@@ -1,5 +1,7 @@
 using System;
 using Dalamud.Data;
+using Dalamud.Plugin.Services;
+
 using Lumina.Excel.GeneratedSheets;
 using Penumbra.Api.Enums;
 using Penumbra.GameData.Structs;
@@ -28,7 +30,7 @@ public static class ChangedItemExtensions
         };
     }
 
-    public static object? GetObject(this ChangedItemType type, DataManager manager, uint id)
+    public static object? GetObject(this ChangedItemType type, IDataManager manager, uint id)
     {
         return type switch
         {
