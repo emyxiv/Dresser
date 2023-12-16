@@ -171,5 +171,9 @@ public class ConfigWindow : Window, IDisposable {
 		}
 
 
+		var glamourerVersions = PluginServices.Glamourer.ApiVersions();
+		if (glamourerVersions.Major >= 0) {
+			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API {glamourerVersions.Major}.{glamourerVersions.Minor} Found");
+		}
 	}
 }
