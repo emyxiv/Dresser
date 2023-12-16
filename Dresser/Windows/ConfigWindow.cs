@@ -11,6 +11,8 @@ using Dresser.Windows.Components;
 
 using ImGuiNET;
 
+using Newtonsoft.Json;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -222,8 +224,21 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.SameLine();
 		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Plus, "PlusButton##AddToBlackList##PenumbraConfig##ConfigWindow", ""))
 			ModsBlackListSearchOpen = true;
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.FileExport, "ExportButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Export list to Clipboard as JSON"))
+			JsonConvert.SerializeObject(ConfigurationManager.Config.PenumbraModsBlacklist).ToClipboard();
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.FileImport, "ImportButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Import list from JSON Clipboard")) {
+			try {
+				var decodedBlacklist = JsonConvert.DeserializeObject<List<(string Path, string Name)>>(ImGui.GetClipboardText());
+				if (decodedBlacklist != null) ConfigurationManager.Config.PenumbraModsBlacklist = ConfigurationManager.Config.PenumbraModsBlacklist.Concat(decodedBlacklist).ToList();
+			} catch (Exception) { }
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Trash, "Empty blacklist\nHold ctrl + Shift to to confirm", default, "TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow"))
+			ConfigurationManager.Config.PenumbraModsBlacklist.Clear();
 
-		if (ImGui.BeginChildFrame(411141, new Vector2(ImGui.GetContentRegionAvail().X,ImGui.GetTextLineHeightWithSpacing() * 5))) {
+		if (ImGui.BeginChildFrame(411141, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 5))) {
 			for (int i = ConfigurationManager.Config.PenumbraModsBlacklist.Count - 1; i >= 0; i--) {
 				var mod = ConfigurationManager.Config.PenumbraModsBlacklist[i];
 				if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Trash, $"{mod.Path}##TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Remove from blacklist")) {
