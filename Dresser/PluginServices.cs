@@ -39,6 +39,7 @@ namespace Dresser {
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
 		public static AllaganToolsService AllaganTools { get; private set; } = null!;
+		public static GlamourerService Glamourer { get; private set; } = null!;
 
 
 		internal static AddonManager AddonManager = null!;
@@ -74,6 +75,7 @@ namespace Dresser {
 
 			ModdedIconStorage = new ModdedIconStorage();
 			AllaganTools = new AllaganToolsService(dalamud);
+			Glamourer = new GlamourerService(dalamud);
 			CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
 			GameUi = new GameUiManager(Service.GameInteropProvider);
 			OverlayService = new OverlayService(GameUi);
@@ -97,6 +99,7 @@ namespace Dresser {
 			GameUi.Dispose();
 			CharacterMonitor.Dispose();
 			AllaganTools.Dispose();
+			Glamourer.Dispose();
 
 			Context.Dispose();
 
@@ -110,6 +113,7 @@ namespace Dresser {
 			GlamourPlates.Dispose();
 
 			AllaganTools = null!;
+			Glamourer = null!;
 			CharacterMonitor = null!;
 			ChatUtilities = null!;
 			Context = null!;
