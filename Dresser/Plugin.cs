@@ -1,11 +1,7 @@
 
 using CriticalCommonLib;
-using CriticalCommonLib.Models;
-using CriticalCommonLib.Services;
-using CriticalCommonLib.Services.Ui;
 
 using Dalamud.Game.Command;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -18,7 +14,6 @@ using Dresser.Services;
 using Dresser.Windows;
 
 using System;
-using System.Collections.Generic;
 
 
 namespace Dresser {
@@ -46,19 +41,7 @@ namespace Dresser {
 
 
 			ConfigurationManager.Config.ConfigurationChanged += ConfigOnConfigurationChanged;
-			//PluginServices.InventoryMonitor.OnInventoryChanged += InventoryMonitorOnOnInventoryChanged;
-			//PluginServices.CharacterMonitor.OnCharacterUpdated += CharacterMonitorOnOnCharacterUpdated;
 			Service.Framework.Update += FrameworkOnUpdate;
-
-			//PluginServices.InventoryMonitor.LoadExistingData(ConfigurationManager.LoadInventory());
-			//PluginServices.CharacterMonitor.LoadExistingRetainers(ConfigurationManager.Config.GetSavedRetainers());
-
-
-
-			PluginServices.GameInterface.AcquiredItemsUpdated += GameInterfaceOnAcquiredItemsUpdated;
-
-
-
 
 			Gathering.Init();
 
@@ -94,8 +77,6 @@ namespace Dresser {
 			PluginServices.ApplyGearChange.RestoreAppearance();
 			PluginServices.ApplyGearChange.ClearApplyDresser();
 
-
-
 			ConfigWindow.Dispose();
 			GearBrowser.Dispose();
 			CurrentGear.Dispose();
@@ -105,14 +86,8 @@ namespace Dresser {
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);
 
-			PluginServices.GameInterface.AcquiredItemsUpdated -= GameInterfaceOnAcquiredItemsUpdated;
-			//ConfigurationManager.Config.SavedCharacters = PluginServices.CharacterMonitor.Characters;
 			Service.Framework.Update -= FrameworkOnUpdate;
-			//PluginServices.InventoryMonitor.OnInventoryChanged -= InventoryMonitorOnOnInventoryChanged;
-			//PluginServices.CharacterMonitor.OnCharacterUpdated -= CharacterMonitorOnOnCharacterUpdated;
 			ConfigurationManager.Config.ConfigurationChanged -= ConfigOnConfigurationChanged;
-
-
 
 
 			AddonListeners.Dispose();
@@ -178,16 +153,8 @@ namespace Dresser {
 			Dialogs!.IsOpen = true;
 		}
 
-
-
-
-
-
-		// Inventory tools save inventories
+		// Inventory tools save config
 		private DateTime? _nextSaveTime = null;
-		public void ClearAutoSave() {
-			_nextSaveTime = null;
-		}
 		public DateTime? NextSaveTime => _nextSaveTime;
 
 		private void FrameworkOnUpdate(IFramework framework) {
@@ -196,7 +163,6 @@ namespace Dresser {
 					_nextSaveTime = DateTime.Now.AddMinutes(ConfigurationManager.Config.AutoSaveMinutes);
 				} else {
 					if (DateTime.Now >= NextSaveTime) {
-						//PluginLog.Debug("===============SAVING INV NOW==============");
 						_nextSaveTime = null;
 						ConfigurationManager.SaveAsync();
 					}
@@ -209,46 +175,5 @@ namespace Dresser {
 		private void ConfigOnConfigurationChanged() {
 			ConfigurationManager.Save();
 		}
-
-
-		private Dictionary<ulong, List<Payload>> _cachedTooltipLines = new();
-		private bool _clearCachedLines = false;
-
-
-		private Dictionary<uint, InventoryMonitor.ItemChangesItem> _recentlyAddedSeen = new();
-		private void InventoryMonitorOnOnInventoryChanged(List<InventoryChange> inventoryChanges, InventoryMonitor.ItemChanges? itemChanges) {
-			//PluginLog.Verbose($"PluginLogic: Inventory changed, saving to config.");
-			//PluginLog.Debug($"====== RECORD UPDATE {inventories.Count + itemChanges.NewItems.Count + itemChanges.RemovedItems.Count}");
-			_clearCachedLines = true;
-			//ConfigurationManager.Config.SavedInventories = inventories;
-			//PluginConfiguration.SavedInventories = inventories;
-			//PluginLog.Debug($"====== inv updated {ConfigurationManager.Config.SavedInventories.Select(t=>t.Value.Count).Sum()}");
-			if (itemChanges != null)
-			foreach (var item in itemChanges.NewItems) {
-				if (_recentlyAddedSeen.ContainsKey(item.ItemId)) {
-					_recentlyAddedSeen.Remove(item.ItemId);
-				}
-				_recentlyAddedSeen.Add(item.ItemId, item);
-			}
-			ConfigurationManager.SaveAsync();
-			PluginLog.Debug($"PluginServices.Context.IsCurrentGearWindowOpen {PluginServices.Context.IsCurrentGearWindowOpen}");
-			if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange?.ReApplyAppearanceAfterEquipUpdate();
-		}
-
-		private void CharacterMonitorOnOnCharacterUpdated(Character? character) {
-			if (character != null) {
-				if (ConfigurationManager.Config.AcquiredItems.ContainsKey(character.CharacterId)) {
-					PluginServices.GameInterface.AcquiredItems = ConfigurationManager.Config.AcquiredItems[character.CharacterId];
-				}
-				ConfigurationManager.SaveAsync();
-				if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
-			} else {
-				PluginServices.GameInterface.AcquiredItems = new HashSet<uint>();
-			}
-		}
-		private void GameInterfaceOnAcquiredItemsUpdated() {
-			//if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
-		}
-
 	}
 }

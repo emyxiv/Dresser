@@ -1,5 +1,4 @@
 ﻿using CriticalCommonLib.Enums;
-using CriticalCommonLib.Models;
 
 using Dresser.Extensions;
 using Dresser.Services;
@@ -7,9 +6,6 @@ using Dresser.Structs.Dresser;
 
 using System.Linq;
 using System.Threading.Tasks;
-
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-
 
 namespace Dresser.Logic {
 
