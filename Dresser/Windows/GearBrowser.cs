@@ -566,14 +566,14 @@ namespace Dresser.Windows {
 			foreach ((var inventoryType, var itemsToAdd) in PluginServices.Storage.AdditionalItems) {
 				if (ConfigurationManager.Config.FilterInventoryType.TryGetValue(inventoryType, out var isEnabled) && isEnabled) {
 					items = items.Concat(itemsToAdd);
-					//PluginLog.Debug($"included {inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => p.SortedContainer).Distinct())}");
+					// PluginLog.Debug($"included {(InventoryTypeExtra)inventoryType} {itemsToAdd.Count} cat:{string.Join(",", itemsToAdd.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", itemsToAdd.Select(p => $"{(InventoryTypeExtra)p.SortedContainer}({(int)p.SortedContainer})").Distinct())}");
 				}
 			}
 
 			//PluginLog.Debug($"all items => {items.Count()} cat:{string.Join(",", items.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", items.Select(p => p.SortedContainer).Distinct())}");
 
 			// items from saved inventory (critical impact lib)
-			items = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(t => t.Value);
+			items = items.Concat(PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(t => t.Value));
 
 			items = items.Where(i => !i.IsEmpty && i.Item.ModelMain != 0);
 

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using static Dresser.Windows.GearBrowser;
 
 namespace Dresser {
