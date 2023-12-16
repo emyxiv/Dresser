@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dresser.Services {
 	internal class AllaganToolsService : IDisposable {
@@ -29,6 +30,8 @@ namespace Dresser.Services {
 		private readonly ICallGateSubscriber<string, uint, uint, bool> _removeItemFromCraftList;
 		private readonly ICallGateSubscriber<string, Dictionary<uint, uint>> _getFilterItems;
 		private readonly ICallGateSubscriber<string, Dictionary<uint, uint>> _getCraftItems;
+		private readonly ICallGateSubscriber<ulong, HashSet<ulong[]>> _getCharacterItems;
+		private readonly ICallGateSubscriber<bool, HashSet<ulong>> _getCharactersOwnedByActive;
 		private readonly ICallGateSubscriber<Dictionary<string, string>> _getCraftLists;
 		private readonly ICallGateSubscriber<string, Dictionary<uint, uint>, string> _addNewCraftList;
 		private readonly ICallGateSubscriber<ulong> _currentCharacter;
@@ -57,6 +60,8 @@ namespace Dresser.Services {
 			_removeItemFromCraftList = pluginInterface.GetIpcSubscriber<string, uint, uint, bool>("AllaganTools.RemoveItemFromCraftList");
 			_getFilterItems          = pluginInterface.GetIpcSubscriber<string, Dictionary<uint, uint>>("AllaganTools.GetFilterItems");
 			_getCraftItems           = pluginInterface.GetIpcSubscriber<string, Dictionary<uint, uint>>("AllaganTools.GetCraftItems");
+			_getCharacterItems       = pluginInterface.GetIpcSubscriber<ulong, HashSet<ulong[]>>("AllaganTools.GetCharacterItems");
+			_getCharactersOwnedByActive = pluginInterface.GetIpcSubscriber<bool, HashSet<ulong>>("AllaganTools.GetCharactersOwnedByActive");
 			_getCraftLists           = pluginInterface.GetIpcSubscriber<Dictionary<string, string>>("AllaganTools.GetCraftLists");
 			_addNewCraftList         = pluginInterface.GetIpcSubscriber<string, Dictionary<uint, uint>, string>("AllaganTools.AddNewCraftList");
 			_currentCharacter        = pluginInterface.GetIpcSubscriber<ulong>("AllaganTools.CurrentCharacter");
@@ -93,11 +98,21 @@ namespace Dresser.Services {
 		public bool RemoveItemFromCraftList(string a1, uint a2, uint a3)             { try { return _removeItemFromCraftList. InvokeFunc(a1,a2,a3                    ) ; } catch(Exception e){return false;}}
 		public Dictionary<uint, uint> GetFilterItems(string a1)                      { try { return _getFilterItems.          InvokeFunc(a1                          ) ; } catch(Exception e){return new();}}
 		public Dictionary<uint, uint> GetCraftItems(string a1)                       { try { return _getCraftItems.           InvokeFunc(a1                          ) ; } catch(Exception e){return new(); }}
+		public HashSet<ulong[]> GetCharacterItemsSerialized(ulong characterId)                { try { return _getCharacterItems.       InvokeFunc(characterId                 ); } catch (Exception e) { PluginLog.Error(e, "Error on GetCharacterItems1"); return new(); }}
+		public HashSet<ulong> GetCharactersOwnedByActive(bool includeOwner)          { try { return _getCharactersOwnedByActive.InvokeFunc(includeOwner              ); } catch (Exception e){ PluginLog.Error(e, "Error on GetCharactersOwnedByActive"); return new(); }}
 		public Dictionary<string, string> GetCraftLists()                            { try { return _getCraftLists.           InvokeFunc(                            ) ; } catch(Exception e){return new(); }}
 		public string AddNewCraftList(string a1, Dictionary<uint, uint> a2)          { try { return _addNewCraftList.         InvokeFunc(a1, a2                      ) ; } catch(Exception e){return "";}}
 		public ulong CurrentCharacter()                                              { try { return _currentCharacter.        InvokeFunc(                            ) ; } catch(Exception e){return 0;}}
 		public bool IsInitialized()                                                  { try { return _isInitialized.           InvokeFunc(                            ) ; } catch(Exception e) { return false; }}
 
+		public IEnumerable<CriticalCommonLib.Models.InventoryItem> GetCharacterItems(ulong characterId)
+			=> GetCharacterItemsSerialized(characterId).Select(CriticalCommonLib.Models.InventoryItem.FromNumeric);
+		public IEnumerable<Structs.Dresser.InventoryItem> GetItemsLocalChar()
+			=> GetItems(PluginServices.Context.LocalPlayerCharacterId);
+		public IEnumerable<Structs.Dresser.InventoryItem> GetItems(ulong characterId)
+			=> GetCharacterItems(characterId).Select(Structs.Dresser.InventoryItem.FromCritical);
+		public Dictionary<ulong, IEnumerable<Structs.Dresser.InventoryItem>> GetItemsLocalCharsRetainers(bool includeActiveCharacter = false)
+			=> GetCharactersOwnedByActive(includeActiveCharacter).ToDictionary(chId => chId, GetItems);
 
 		private void RetainerChanged(ulong? a1) {
 			PluginLog.Debug($"AllaganTools.RetainerChanged\n{a1}");
