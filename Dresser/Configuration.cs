@@ -15,9 +15,6 @@ using System.Numerics;
 
 using static Dresser.Windows.GearBrowser;
 
-using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-
 namespace Dresser {
 	[Serializable]
 	public class Configuration : IPluginConfiguration {
@@ -128,37 +125,16 @@ namespace Dresser {
 		public bool AutoSave { get; set; } = true;
 		public float AutoSaveMinutes { get; set; } = 5f;
 
-
-		public Dictionary<ulong, Character> SavedCharacters = new();
 		public bool SaveBackgroundFilter { get; set; } = false;
 		public string? ActiveBackgroundFilter { get; set; } = null;
-		public int InventoriesMigrated { get; set; } = 0;
-		[NonSerialized]
-		public Dictionary<ulong, Dictionary<InventoryCategory, List<InventoryItem>>> SavedInventories = new();
-
-		private Dictionary<ulong, HashSet<uint>> _acquiredItems = new();
-		public Dictionary<ulong, HashSet<uint>> AcquiredItems {
-			get => _acquiredItems ?? new Dictionary<ulong, HashSet<uint>>();
-			set => _acquiredItems = value;
-		}
-		public Dictionary<ulong, Dictionary<InventoryCategory, List<CriticalInventoryItem>>> GetSavedInventory() {
-			return SavedInventories.ToDictionary(v=>v.Key,v=>v.Value.ToDictionary(w=>w.Key,w=>w.Value.Select(x=> InventoryItem.ToCritical(x)).ToList()));
-		}
-
-		public Dictionary<ulong, Character> GetSavedRetainers() {
-			return SavedCharacters;
-		}
 		public void MarkReloaded() {
 			if (!SaveBackgroundFilter) {
 				ActiveBackgroundFilter = null;
 			}
 		}
 
-
-
 		public delegate void ConfigurationChangedDelegate();
 		public event ConfigurationChangedDelegate? ConfigurationChanged;
-
 
 		/// Migrations
 		public void Migrate() {

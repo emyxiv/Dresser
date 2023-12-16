@@ -1,5 +1,4 @@
 using CriticalCommonLib.Extensions;
-using CriticalCommonLib.Models;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
@@ -16,9 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-
 
 namespace Dresser.Windows;
 
@@ -349,7 +345,7 @@ public class CurrentGear : Window, IDisposable {
 	private static void DrawTasksTooltip() {
 		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
 			if(taskedItems.Any()) {
-				ImGui.TextDisabled($"Some items are neither in {InventoryCategory.GlamourChest.FormattedName()} or {InventoryCategory.Armoire.FormattedName()}");
+				ImGui.TextDisabled($"Some items are neither in {CriticalCommonLib.Models.InventoryCategory.GlamourChest.FormattedName()} or {CriticalCommonLib.Models.InventoryCategory.Armoire.FormattedName()}");
 				ImGui.Spacing();
 				if(ImGui.BeginTable("TaskTooltip##CurrentGear", 2)) {
 

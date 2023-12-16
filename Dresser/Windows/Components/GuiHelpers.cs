@@ -119,6 +119,8 @@ namespace Dresser.Windows.Components {
 			if (color.HasValue) {
 				ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
 				num++;
+				ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
+				num++;
 			}
 
 			ImGui.PushFont(UiBuilder.IconFont);

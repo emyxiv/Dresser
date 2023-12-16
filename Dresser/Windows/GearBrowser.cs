@@ -546,7 +546,6 @@ namespace Dresser.Windows {
 			}
 
 		}
-		//=> SavedQuantityCache = ConfigurationManager.Config.GetSavedInventoryLocalChar().ToDictionary(c => c.Key, c => c.Value.Count(i => i.ItemId != 0));
 		private static int SavedQuantityCacheGet(InventoryCategory cat) {
 			SavedQuantityInventoryCategoryCache.TryGetValue(cat, out var count);
 			return count;

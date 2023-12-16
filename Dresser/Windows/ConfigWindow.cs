@@ -27,12 +27,12 @@ public class ConfigWindow : Window, IDisposable {
 		this.SizeCondition = ImGuiCond.FirstUseEver;
 
 		sections = new() {
+			{ "Dependencies", Dependencies },
 			{ "Portable Plates", DrawPlatesConfig },
 			{ "Windows & sizing", DrawWindowsAndSizingConfigs },
 			{ "Icons", DrawIconsConfigs },
 			{ "Behaviors", DrawBehaviourConfigs },
 			{ "Penumbra", DrawPenumbraConfigs },
-			{ "Allagan Tools Ipc Status", AllaganToolsIpcStatus },
 		};
 	}
 
@@ -123,19 +123,20 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void DrawPlatesConfig() {
+		var hardMaxFreePlate = 60;
 
 		int numFreePlates = ConfigurationManager.Config.NumberOfFreePendingPlates;
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 2);
-		if (ImGui.DragInt("Number of free portable plates",ref numFreePlates,1,0,20, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
-			if (numFreePlates > 20) numFreePlates = 20;
+		if (ImGui.DragInt("Number of free portable plates",ref numFreePlates,1,0,hardMaxFreePlate, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+			if (numFreePlates > hardMaxFreePlate) numFreePlates = hardMaxFreePlate;
 			if (numFreePlates < 0) numFreePlates = 0;
 			ConfigurationManager.Config.NumberOfFreePendingPlates = (ushort)numFreePlates;
 		}
 		GuiHelpers.Tooltip("These are plates detached to vanilla's plates.\nTheir purpose is to try and mess around with glamours, or be used as temporary store.");
 		int breakAtPlateButton = ConfigurationManager.Config.NumberofPendingPlateNextColumn;
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 2);
-		if (ImGui.DragInt("Plate selection column length",ref breakAtPlateButton,1,1,20, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
-			if (breakAtPlateButton > 20) breakAtPlateButton = 20;
+		if (ImGui.DragInt("Plate selection column length",ref breakAtPlateButton,1,1, hardMaxFreePlate, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+			if (breakAtPlateButton > hardMaxFreePlate) breakAtPlateButton = hardMaxFreePlate;
 			if (breakAtPlateButton < 1) breakAtPlateButton = 1;
 
 			ConfigurationManager.Config.NumberofPendingPlateNextColumn = (ushort)breakAtPlateButton;
@@ -160,34 +161,18 @@ public class ConfigWindow : Window, IDisposable {
 
 	}
 
-	private void AllaganToolsIpcStatus() {
-		var isInitialized = PluginServices.AllaganTools.IsInitialized();
-		ImGui.TextColored(isInitialized ? ItemIcon.ColorGood : ItemIcon.ColorBad, isInitialized? "Connected" : "Not Found");
-
-
-
-		/*
-		if (ImGui.SmallButton("Clear All Bags##" + index)) {
-			ImGui.OpenPopup("Are you sure?##" + index);
-		}
-		if (ImGui.BeginPopupModal("Are you sure?##" + index)) {
-			ImGui.Text(
-				"Are you sure you want to clear all the bags stored for this character?.\nThis operation cannot be undone!\n\n");
-			ImGui.Separator();
-
-			if (ImGui.Button("OK", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
-				ImGui.CloseCurrentPopup();
-			}
-
-			ImGui.SetItemDefaultFocus();
+	private void Dependencies() {
+		if (PluginServices.AllaganTools.IsInitialized()) {
+			ImGui.TextColored(ItemIcon.ColorGood, "Allagan Tools Found");
+			//PluginServices.AllaganTools.CheckMethodAvailability();
+		} else {
+			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
 			ImGui.SameLine();
-			if (ImGui.Button("Cancel", new Vector2(120, 0) * ImGui.GetIO().FontGlobalScale)) {
-				ImGui.CloseCurrentPopup();
-			}
+			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
+			ImGui.TextWrapped("To find items in inventories, please install Allagan Tools plugin from Critical Impact.");
 
-			ImGui.EndPopup();
 		}
-		*/
+
 
 	}
 

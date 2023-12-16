@@ -1,26 +1,17 @@
 ﻿using CriticalCommonLib;
 
-using CsvHelper;
-
-using Dalamud.Game.ClientState.JobGauge.Enums;
 using Dalamud.Interface.Internal;
 
 using Dresser.Structs;
-using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 using ImGuiNET;
 
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 using static FFXIVClientStructs.FFXIV.Client.UI.Misc.RaptureGearsetModule;
 
