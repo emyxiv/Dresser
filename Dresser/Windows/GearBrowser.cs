@@ -574,8 +574,7 @@ namespace Dresser.Windows {
 			//PluginLog.Debug($"all items => {items.Count()} cat:{string.Join(",", items.Select(p => p.SortedCategory).Distinct())} types:{string.Join(",", items.Select(p => p.SortedContainer).Distinct())}");
 
 			// items from saved inventory (critical impact lib)
-			items = items.Concat(ConfigurationManager.Config.GetSavedInventoryLocalChar().SelectMany(t => t.Value));
-			items = items.Concat(ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers().SelectMany(t => t.Value));
+			items = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(t => t.Value);
 
 			items = items.Where(i => !i.IsEmpty && i.Item.ModelMain != 0);
 

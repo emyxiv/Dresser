@@ -63,7 +63,7 @@ namespace Dresser.Structs.Dresser {
 			return new CriticalInventoryItem(item);
 		}
 		public static InventoryItem FromCritical(CriticalInventoryItem item) {
-			return new InventoryItem(item.Container, item.Slot, item.ItemId, item.Quantity, item.Spiritbond, item.Condition, item.Flags, item.Materia0, item.Materia1, item.Materia2, item.Materia3, item.Materia4, item.MateriaLevel0, item.MateriaLevel1, item.MateriaLevel2, item.MateriaLevel3, item.MateriaLevel4, item.Stain, item.GlamourId);
+			return new InventoryItem { Container = item.Container, Slot = item.Slot, ItemId = item.ItemId, Quantity = item.Quantity, Spiritbond = item.Spiritbond, Condition = item.Condition, Flags = item.Flags, Materia0 = item.Materia0, Materia1 = item.Materia1, Materia2 = item.Materia2, Materia3 = item.Materia3, Materia4 = item.Materia4, MateriaLevel0 = item.MateriaLevel0, MateriaLevel1 = item.MateriaLevel1, MateriaLevel2 = item.MateriaLevel2, MateriaLevel3 = item.MateriaLevel3, MateriaLevel4 = item.MateriaLevel4, Stain = item.Stain, GlamourId = item.GlamourId, SortedContainer = item.SortedContainer, SortedCategory = item.SortedCategory, SortedSlotIndex = item.SortedSlotIndex, RetainerId = item.RetainerId, RetainerMarketPrice = item.RetainerMarketPrice, GearSets = item.GearSets, };
 		}
 		public static InventoryItem Zero => new InventoryItem();
 		public bool IsModded() {
@@ -102,7 +102,7 @@ namespace Dresser.Structs.Dresser {
 		public IEnumerable<InventoryItem> GetDyesInInventories() {
 			var stainTransient = Service.ExcelCache.GetSheet<StainTransient>().FirstOrDefault(st => st.RowId == this.Stain);
 
-			var inventories = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true);
+			var inventories = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true);
 			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient?.Item1.Value?.RowId || v.ItemId == stainTransient?.Item2.Value?.RowId)).Where(i=>i.ItemId != 0);
 
 			if(!foundDyes.Any()) {

@@ -1,5 +1,4 @@
 using CriticalCommonLib;
-using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 
@@ -32,19 +31,14 @@ namespace Dresser {
 		public static PenumbraIpc Penumbra { get; private set; } = null!;
 		public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
-		public static OdrScanner OdrScanner { get; private set; } = null!;
-		public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
-		public static InventoryScanner InventoryScanner { get; private set; } = null!;
 		public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
 		public static GameInterface GameInterface { get; private set; } = null!;
 		public static GameUiManager GameUi { get; private set; } = null!;
 		public static OverlayService OverlayService { get; private set; } = null!;
 		public static TryOn TryOn { get; private set; } = null!;
-		public static CraftMonitor CraftMonitor { get; private set; } = null!;
-		//public static MarketCache MarketCache { get; private set; } = null!;
-		//public static Universalis Universalis { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
+		public static AllaganToolsService AllaganTools { get; private set; } = null!;
 
 
 		internal static AddonManager AddonManager = null!;
@@ -65,8 +59,6 @@ namespace Dresser {
 
 			Context = new Context();
 
-			//PluginLog.Debug($"data ready {Service.Data.IsDataReady == true}");
-
 			Service.Interface = new PluginInterfaceService(dalamud);
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			Service.ExcelCache.PreCacheItemData();
@@ -80,26 +72,13 @@ namespace Dresser {
 			GameInterface = new GameInterface(Service.GameInteropProvider);
 			HotkeySetup.Init();
 
-
-			//Universalis = new Universalis();
-			//MarketCache.Initalise(Service.Interface.ConfigDirectory.FullName + "/universalis.json");
 			ModdedIconStorage = new ModdedIconStorage();
+			AllaganTools = new AllaganToolsService(dalamud);
 			CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
 			GameUi = new GameUiManager(Service.GameInteropProvider);
 			OverlayService = new OverlayService(GameUi);
-
 			TryOn = new TryOn();
-			OdrScanner = new OdrScanner(CharacterMonitor);
-			CraftMonitor = new CraftMonitor(GameUi);
-			InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, Service.GameInteropProvider);
-			InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Service.Framework);
-			InventoryScanner.Enable();
-
 			GlamourPlates = new();
-
-			//PluginLoaded = true;
-			//OnPluginLoaded?.Invoke();
-
 			ApplyGearChange = new ApplyGearChange(plugin);
 
 			PluginLoaded = true;
@@ -113,22 +92,15 @@ namespace Dresser {
 
 			ModdedIconStorage.Dispose();
 			Storage.Dispose();
-			//CommandManager.Dispose();
-			//FilterService.Dispose();
 			OverlayService.Dispose();
-			InventoryMonitor.Dispose();
-			InventoryScanner.Dispose();
-			CraftMonitor.Dispose();
 			TryOn.Dispose();
 			GameUi.Dispose();
 			CharacterMonitor.Dispose();
+			AllaganTools.Dispose();
 
 			Context.Dispose();
 
 			Service.ExcelCache.Destroy();
-			//MarketCache.SaveCache(true);
-			//MarketCache.Dispose();
-			//Universalis.Dispose();
 			GameInterface.Dispose();
 			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();
@@ -137,22 +109,15 @@ namespace Dresser {
 
 			GlamourPlates.Dispose();
 
-			InventoryMonitor = null!;
-			InventoryScanner = null!;
+			AllaganTools = null!;
 			CharacterMonitor = null!;
 			ChatUtilities = null!;
 			Context = null!;
 			GameUi = null!;
 			TryOn = null!;
-			//CommandManager = null!;
-			//FilterService = null!;
 			OverlayService = null!;
-			CraftMonitor = null!;
 			GlamourPlates = null!;
-			//PluginInterface = null!;
-			//MarketCache = null!;
 			ModdedIconStorage = null!;
-			//Universalis = null!;
 			GameInterface = null!;
 			HotkeyService = null!;
 			ImageGuiCrop = null!;

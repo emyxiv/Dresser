@@ -3,6 +3,7 @@ using CriticalCommonLib.Models;
 
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
+using Dresser.Logic;
 using Dresser.Services;
 
 using System;
@@ -98,30 +99,39 @@ namespace Dresser.Structs.Dresser {
 		public void UpdateSourcesForOwnedItems() {
 			var set = this;
 			Task.Run(()=>{
-				var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).SelectMany(c => c.Value.Copy()!);
-				foreach ((var slot, var item) in set.Items) {
-					if (item == null) continue;
-					if (item.IsModded()) continue;
-					var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
-					if (!foundMatchingItem.Any())
-						foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
+				try {
+					var ownedItems = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(c => c.Value);
+					if (ownedItems == null) return;
 
-					if (foundMatchingItem.Any()) {
-						var matchingItem = foundMatchingItem.First();
-						if (matchingItem != null) {
-							var matchingItemToProcess = matchingItem.Copy()!;
-							if (matchingItemToProcess.Stain != item.Stain)
-								matchingItemToProcess.Stain = item.Stain;
+					if (!(ownedItems?.Count() > 0)) return;
 
-							set.Items[slot] = matchingItemToProcess;
+					foreach ((var slot, var item) in set.Items) {
+						if (item == null) continue;
+						if (item.IsModded()) continue;
+
+						var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+						if (!foundMatchingItem.Any())
+							foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
+
+						if (foundMatchingItem.Any()) {
+							var matchingItem = foundMatchingItem.First();
+							if (matchingItem != null) {
+								var matchingItemToProcess = matchingItem.Copy()!;
+								if (matchingItemToProcess.Stain != item.Stain)
+									matchingItemToProcess.Stain = item.Stain;
+
+								set.Items[slot] = matchingItemToProcess;
+							}
 						}
 					}
+				} catch (Exception e) {
+					PluginLog.Error(e, "Error on UpdateSourcesForOwnedItems");
 				}
 			});
 		}
 		public List<InventoryItem> FindNotOwned() {
 			var list = new List<InventoryItem>();
-			var ownedItems = ConfigurationManager.Config.GetSavedInventoryLocalCharsRetainers(true).Where(i=>i.Key == InventoryCategory.Armoire || i.Key == InventoryCategory.GlamourChest).SelectMany(c => c.Value);
+			var ownedItems = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(c => c.Value).Where(i=>i.SortedCategory == InventoryCategory.Armoire || i.SortedCategory == InventoryCategory.GlamourChest);
 
 			foreach ((var slot, var item) in Items) {
 				if (item == null) continue;

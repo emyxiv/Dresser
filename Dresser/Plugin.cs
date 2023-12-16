@@ -46,23 +46,14 @@ namespace Dresser {
 
 
 			ConfigurationManager.Config.ConfigurationChanged += ConfigOnConfigurationChanged;
-			PluginServices.InventoryMonitor.OnInventoryChanged += InventoryMonitorOnOnInventoryChanged;
-			PluginServices.CharacterMonitor.OnCharacterUpdated += CharacterMonitorOnOnCharacterUpdated;
+			//PluginServices.InventoryMonitor.OnInventoryChanged += InventoryMonitorOnOnInventoryChanged;
+			//PluginServices.CharacterMonitor.OnCharacterUpdated += CharacterMonitorOnOnCharacterUpdated;
 			Service.Framework.Update += FrameworkOnUpdate;
 
-			PluginServices.InventoryMonitor.LoadExistingData(ConfigurationManager.LoadInventory());
-			PluginServices.CharacterMonitor.LoadExistingRetainers(ConfigurationManager.Config.GetSavedRetainers());
+			//PluginServices.InventoryMonitor.LoadExistingData(ConfigurationManager.LoadInventory());
+			//PluginServices.CharacterMonitor.LoadExistingRetainers(ConfigurationManager.Config.GetSavedRetainers());
 
 
-			PluginServices.GameUi.WatchWindowState(WindowName.RetainerGrid0);
-			PluginServices.GameUi.WatchWindowState(WindowName.InventoryGrid0E);
-			PluginServices.GameUi.WatchWindowState(WindowName.RetainerList);
-			PluginServices.GameUi.WatchWindowState(WindowName.Inventory);
-			PluginServices.GameUi.WatchWindowState(WindowName.InventoryLarge);
-			PluginServices.GameUi.WatchWindowState(WindowName.InventoryRetainerLarge);
-			PluginServices.GameUi.WatchWindowState(WindowName.InventoryRetainer);
-			PluginServices.GameUi.WatchWindowState(WindowName.InventoryBuddy);
-			PluginServices.GameUi.WatchWindowState(WindowName.InventoryBuddy2);
 
 			PluginServices.GameInterface.AcquiredItemsUpdated += GameInterfaceOnAcquiredItemsUpdated;
 
@@ -115,10 +106,10 @@ namespace Dresser {
 			PluginServices.CommandManager.RemoveHandler(CommandName);
 
 			PluginServices.GameInterface.AcquiredItemsUpdated -= GameInterfaceOnAcquiredItemsUpdated;
-			ConfigurationManager.Config.SavedCharacters = PluginServices.CharacterMonitor.Characters;
+			//ConfigurationManager.Config.SavedCharacters = PluginServices.CharacterMonitor.Characters;
 			Service.Framework.Update -= FrameworkOnUpdate;
-			PluginServices.InventoryMonitor.OnInventoryChanged -= InventoryMonitorOnOnInventoryChanged;
-			PluginServices.CharacterMonitor.OnCharacterUpdated -= CharacterMonitorOnOnCharacterUpdated;
+			//PluginServices.InventoryMonitor.OnInventoryChanged -= InventoryMonitorOnOnInventoryChanged;
+			//PluginServices.CharacterMonitor.OnCharacterUpdated -= CharacterMonitorOnOnCharacterUpdated;
 			ConfigurationManager.Config.ConfigurationChanged -= ConfigOnConfigurationChanged;
 
 
@@ -256,12 +247,7 @@ namespace Dresser {
 			}
 		}
 		private void GameInterfaceOnAcquiredItemsUpdated() {
-			var activeCharacter = PluginServices.CharacterMonitor.ActiveCharacterId;
-			if (activeCharacter != 0) {
-				ConfigurationManager.Config.AcquiredItems[activeCharacter] = PluginServices.GameInterface.AcquiredItems;
-				//if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
-				ConfigurationManager.SaveAsync();
-			}
+			//if (PluginServices.Context.IsCurrentGearWindowOpen) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 		}
 
 	}
