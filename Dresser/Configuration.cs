@@ -133,26 +133,6 @@ namespace Dresser {
 		public Dictionary<ulong, Dictionary<InventoryCategory, List<CriticalInventoryItem>>> GetSavedInventory() {
 			return SavedInventories.ToDictionary(v=>v.Key,v=>v.Value.ToDictionary(w=>w.Key,w=>w.Value.Select(x=> InventoryItem.ToCritical(x)).ToList()));
 		}
-		public Dictionary<InventoryCategory, List<InventoryItem>> GetSavedInventoryLocalChar() {
-			if (SavedInventories.TryGetValue(PluginServices.Context.LocalPlayerCharacterId, out var inventories))
-				return inventories;
-			return new();
-		}
-		public Dictionary<InventoryCategory, List<InventoryItem>> GetSavedInventoryLocalCharsRetainers(bool includeActiveCharacter = false) {
-			Dictionary<InventoryCategory, List<InventoryItem>> returnDic = new();
-
-			foreach ((var charId, var invs) in SavedInventories.Where(c => PluginServices.CharacterMonitor.BelongsToActiveCharacter(c.Key) && (includeActiveCharacter || c.Key != PluginServices.CharacterMonitor.ActiveCharacterId))) {
-				foreach ((var invCat, var list) in invs) {
-
-					List<InventoryItem> tmpList = new();
-					if (returnDic.TryGetValue(invCat, out var prevList) && prevList != null)
-						tmpList = tmpList.Concat(prevList).ToList();
-					tmpList = tmpList.Concat(list).ToList();
-					returnDic[invCat] = tmpList;
-				}
-			}
-			return returnDic;
-		}
 
 		public Dictionary<ulong, Character> GetSavedRetainers() {
 			return SavedCharacters;
