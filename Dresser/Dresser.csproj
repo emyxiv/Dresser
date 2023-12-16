@@ -34,19 +34,23 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>11.0</LangVersion>
+    <Optimize>False</Optimize>
+    <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|AnyCPU'">
     <LangVersion>11.0</LangVersion>
+    <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <LangVersion>11.0</LangVersion>
+    <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DalamudPackager" Version="2.1.12" />
-    <PackageReference Include="Penumbra.Api" Version="1.0.11" />
+    <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
     <ProjectReference Include="..\DalaMock\DalaMock.Shared\DalaMock.Shared.csproj" />
     <Reference Include="FFXIVClientStructs">

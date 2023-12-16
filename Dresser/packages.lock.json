@@ -8,12 +8,6 @@
         "resolved": "2.1.12",
         "contentHash": "Sc0PVxvgg4NQjcI8n10/VfUQBAS4O+Fw2pZrAqBdRMbthYGeogzu5+xmIGCGmsEZ/ukMOBuAqiNiB5qA3MRalg=="
       },
-      "Penumbra.Api": {
-        "type": "Direct",
-        "requested": "[1.0.11, )",
-        "resolved": "1.0.11",
-        "contentHash": "MscPf7uEoe2Dza09mZD8CqDhfSBr3hcwH15jTTQTStfyTnAVLPGRLPIhYM2aC83Qt1blE855xO9O2ox9mV2K2Q=="
-      },
       "CSVFile": {
         "type": "Transitive",
         "resolved": "3.1.0",
@@ -64,6 +58,19 @@
           "CSVFile": "[3.1.0, )",
           "CsvHelper": "[30.0.1, )"
         }
+      },
+      "penumbra.api": {
+        "type": "Project"
+      },
+      "penumbra.gamedata": {
+        "type": "Project",
+        "dependencies": {
+          "Penumbra.Api": "[1.0.12, )",
+          "Penumbra.String": "[1.0.4, )"
+        }
+      },
+      "penumbra.string": {
+        "type": "Project"
       }
     }
   }

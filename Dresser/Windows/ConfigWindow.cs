@@ -244,6 +244,9 @@ public class ConfigWindow : Window, IDisposable {
 		if (!ConfigurationManager.Config.PenumbraUseModListCollection) ImGui.EndDisabled();
 		GuiHelpers.Tooltip($"When enabled, the mods of this collection will be scanned.\nMods can be enabled regardless of conflicts, as mods sharing the same items can be displayed at the same time");
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
+		ImGui.InputText($"Temporary Penumbra collection##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionTmp, 100);
+		GuiHelpers.Tooltip($"This collection must be activated and assigned (to fake object) in order to find modded items");
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 		ImGui.InputText($"Penumbra collection to apply##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionApply, 100);
 		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 		ImGui.DragInt($"Delay 1##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance, 10, 0, int.MaxValue,"%.0f",ImGuiSliderFlags.AlwaysClamp);

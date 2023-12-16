@@ -740,6 +740,8 @@ namespace Dresser.Windows {
 				item.LinkInChatHistory();
 			if (!ConfigurationManager.Config.PenumbraUseModListCollection && itemInv.IsModded() && ImGui.Selectable("Blacklist this Mod"))
 				ConfigWindow.AddModToBlacklist((itemInv.ModDirectory, itemInv.ModName)!);
+			if (itemInv.IsModded() && ImGui.Selectable("Open in Penumbra"))
+				PluginServices.Penumbra.OpenModWindow((itemInv.ModDirectory, itemInv.ModName)!);
 
 			if (item.CanTryOn && ImGui.Selectable("Try On") && PluginServices.TryOn.CanUseTryOn)
 				PluginServices.TryOn.TryOnItem(item);

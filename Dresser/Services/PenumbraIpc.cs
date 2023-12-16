@@ -3,6 +3,7 @@ using CriticalCommonLib.Extensions;
 
 using Dalamud.Utility;
 
+using Dresser.Logic;
 using Dresser.Structs.Dresser;
 
 using Newtonsoft.Json.Linq;
@@ -20,7 +21,7 @@ using System.Threading.Tasks;
 using static Dresser.Services.Storage;
 
 using CurrentSettings = System.ValueTuple<Penumbra.Api.Enums.PenumbraApiEc, (bool EnabledState, int Priority, System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<string>> EnabledOptions, bool Inherited)?>;
-using PseudoEquipItem = System.ValueTuple<string, ulong, ushort, ushort, ushort, byte, byte>;
+using PseudoEquipItem = System.ValueTuple<string, ulong, ushort, ushort, ushort, byte, uint>;
 
 namespace Dresser.Services;
 
@@ -54,6 +55,8 @@ internal class PenumbraIpc : IDisposable {
 	private FuncSubscriber<string, string, string, bool, PenumbraApiEc> TrySetModSubscriber { get; }
 	private FuncSubscriber<string, string, (PenumbraApiEc, string, bool)> GetModPathSubscriber { get; }
 
+	private FuncSubscriber<TabType, string, string, PenumbraApiEc> OpenMainWindowSubscriber { get; }
+
 	private EventSubscriber<string, string>? Test { get; set; }
 
 	internal PenumbraIpc() {
@@ -86,6 +89,8 @@ internal class PenumbraIpc : IDisposable {
 		TrySetModSubscriber = Penumbra.Api.Ipc.TrySetMod.Subscriber(PluginServices.PluginInterface);
 		GetModPathSubscriber = Penumbra.Api.Ipc.GetModPath.Subscriber(PluginServices.PluginInterface);
 
+		OpenMainWindowSubscriber = Penumbra.Api.Ipc.OpenMainWindow.Subscriber(PluginServices.PluginInterface);
+
 		RegisterEvents();
 	}
 
@@ -116,12 +121,11 @@ internal class PenumbraIpc : IDisposable {
 			return new Dictionary<string, dynamic?>();
 		}
 	}
-	private const string PenumbraCollectionTmp = "Dresser ZZZ";
 	internal IEnumerable<(uint ItemId, string ModModelPath)> GetChangedItemIdsForMod(string modPath, string modName) {
 
 		List<(uint ItemId, string ModModelPath)> items = new();
 
-		var res5 = PluginServices.Penumbra.TrySetMod(PenumbraCollectionTmp, modPath, true);
+		var res5 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionTmp, modPath, true);
 		//PluginLog.Warning($"Enable mod (path:){modPath}: {res5}");
 
 		//var tempCollection = $"DaCol_{modCount}";
@@ -135,18 +139,18 @@ internal class PenumbraIpc : IDisposable {
 		//}
 
 		Task.Run(async delegate { await Task.Delay(50); }).Wait();
-		var changedItems = PluginServices.Penumbra.GetChangedEquipItemsForCollection(PenumbraCollectionTmp);
+		var changedItems = PluginServices.Penumbra.GetChangedEquipItemsForCollection(ConfigurationManager.Config.PenumbraCollectionTmp);
 
 
 		foreach (var i in changedItems) {
-			items.Add((i.ItemId, i.ModelString));
+			items.Add((i.ItemId.Id, i.ModelString));
 		}
 
 		//var ddd = PluginServices.Penumbra.RemoveTemporaryCollectionByName(tempCollection);
 		//PluginLog.Debug($"{tempCollection} {(ddd == PenumbraApiEc.Success ? "removed" : "NOT REMOVED")}");
 		//}
-		var res6 = PluginServices.Penumbra.TrySetMod(PenumbraCollectionTmp, modPath, false);
-		//PluginLog.Debug($"Re-enable mod {modPath}: {res6}");
+		var res6 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionTmp, modPath, false);
+		//PluginLog.Debug($"disable mod {modPath}: {res6}");
 
 		return items;
 	}
@@ -238,16 +242,20 @@ internal class PenumbraIpc : IDisposable {
 
 	internal IEnumerable<EquipItem> GetChangedEquipItemsForCollection(string collectionName) {
 		return this.GetChangedItemsForCollection(collectionName).Where(o => {
+			return o.Value?.GetType().ToString() == typeof(EquipItem).ToString();
 			try {
+				PluginLog.Debug($"change type: {o.Value?.GetType()??"null"}");
 				EquipItem ddd = (PseudoEquipItem)o.Value;
 				return true;
-			} catch (Exception) { }
+			} catch (Exception e) {
+				PluginLog.Debug(e, $"failed to load item from penumbra");
+			}
 
 			return false;
 		}).Select(i => {
 			var qsd = (EquipItem)(PseudoEquipItem)i.Value;
 
-			//PluginLog.Debug($"changed equip item: {qsd.Name} || {qsd.Id} || {i.Key}");
+			PluginLog.Debug($"changed equip item: {qsd.Name} || {qsd.Id} || {i.Key}");
 			return qsd;
 		});
 	}
@@ -490,5 +498,15 @@ internal class PenumbraIpc : IDisposable {
 		} catch (Exception) {
 			return false;
 		}
+	}	/// <inheritdoc cref="Penumbra.Api.IPenumbraApi.OpenMainWindow(TabType, string, string)"/>
+	internal PenumbraApiEc OpenMainWindow(TabType tab, string modDirectory, string modName) {
+		try {
+			return OpenMainWindowSubscriber.Invoke(tab, modDirectory, modName);
+		} catch (Exception) {
+			return PenumbraApiEc.UnknownError;
+		}
+	}
+	internal bool OpenModWindow((string modDirectory, string modName) mod) {
+		return OpenMainWindow(TabType.Mods, mod.modDirectory, mod.modName) == PenumbraApiEc.Success;
 	}
 }
