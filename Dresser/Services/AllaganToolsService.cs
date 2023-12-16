@@ -77,33 +77,32 @@ namespace Dresser.Services {
 			_initialized     = pluginInterface.GetIpcSubscriber<bool, bool>("AllaganTools.Initialized");
 			_initialized.Subscribe(Initialized);
 
-
 		}
 
-		public uint InventoryCountByType(uint inventoryType, ulong? characterId)     { try { return _inventoryCountByType.    InvokeFunc(inventoryType, characterId  ) ; } catch(Exception e){return 0;}}
-		public uint InventoryCountByTypes(uint[] inventoryTypes, ulong? characterId) { try { return _inventoryCountByTypes.   InvokeFunc(inventoryTypes, characterId ) ; } catch(Exception e){return 0;}}
-		public uint ItemCount(uint a1, ulong a2, int a3)                             { try { return _itemCount.               InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return 0;}}
-		public uint ItemCountHQ(uint a1, ulong a2, int a3)                           { try { return _itemCountHQ.             InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return 0;}}
-		public uint ItemCountOwned(uint a1, bool a2, uint[] a3)                      { try { return _itemCountOwned.          InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return 0;}}
-		public bool EnableUiFilter(string a1)                                        { try { return _enableUiFilter.          InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
-		public bool DisableUiFilter()                                                { try { return _disableUiFilter.         InvokeFunc(                            ) ; } catch(Exception e){return false;}}
-		public bool ToggleUiFilter(string a1)                                        { try { return _toggleUiFilter.          InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
-		public bool EnableBackgroundFilter(string a1)                                { try { return _enableBackgroundFilter.  InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
-		public bool DisableBackgroundFilter()                                        { try { return _disableBackgroundFilter. InvokeFunc(                            ) ; } catch(Exception e){return false;}}
-		public bool ToggleBackgroundFilter(string a1)                                { try { return _toggleBackgroundFilter.  InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
-		public bool EnableCraftList(string a1)                                       { try { return _enableCraftList.         InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
-		public bool DisableCraftList()                                               { try { return _disableCraftList.        InvokeFunc(                            ) ; } catch(Exception e){return false;}}
-		public bool ToggleCraftList(string a1)                                       { try { return _toggleCraftList.         InvokeFunc(a1                          ) ; } catch(Exception e){return false;}}
-		public bool AddItemToCraftList(string a1, uint a2, uint a3)                  { try { return _addItemToCraftList.      InvokeFunc(a1, a2, a3                  ) ; } catch(Exception e){return false;}}
-		public bool RemoveItemFromCraftList(string a1, uint a2, uint a3)             { try { return _removeItemFromCraftList. InvokeFunc(a1,a2,a3                    ) ; } catch(Exception e){return false;}}
-		public Dictionary<uint, uint> GetFilterItems(string a1)                      { try { return _getFilterItems.          InvokeFunc(a1                          ) ; } catch(Exception e){return new();}}
-		public Dictionary<uint, uint> GetCraftItems(string a1)                       { try { return _getCraftItems.           InvokeFunc(a1                          ) ; } catch(Exception e){return new(); }}
-		public HashSet<ulong[]> GetCharacterItemsSerialized(ulong characterId)                { try { return _getCharacterItems.       InvokeFunc(characterId                 ); } catch (Exception e) { PluginLog.Error(e, "Error on GetCharacterItems1"); return new(); }}
+		public uint InventoryCountByType(uint inventoryType, ulong? characterId)     { try { return _inventoryCountByType.    InvokeFunc(inventoryType, characterId  ) ; } catch(Exception){return 0;}}
+		public uint InventoryCountByTypes(uint[] inventoryTypes, ulong? characterId) { try { return _inventoryCountByTypes.   InvokeFunc(inventoryTypes, characterId ) ; } catch(Exception){return 0;}}
+		public uint ItemCount(uint a1, ulong a2, int a3)                             { try { return _itemCount.               InvokeFunc(a1, a2, a3                  ) ; } catch(Exception){return 0;}}
+		public uint ItemCountHQ(uint a1, ulong a2, int a3)                           { try { return _itemCountHQ.             InvokeFunc(a1, a2, a3                  ) ; } catch(Exception){return 0;}}
+		public uint ItemCountOwned(uint a1, bool a2, uint[] a3)                      { try { return _itemCountOwned.          InvokeFunc(a1, a2, a3                  ) ; } catch(Exception){return 0;}}
+		public bool EnableUiFilter(string a1)                                        { try { return _enableUiFilter.          InvokeFunc(a1                          ) ; } catch(Exception){return false;}}
+		public bool DisableUiFilter()                                                { try { return _disableUiFilter.         InvokeFunc(                            ) ; } catch(Exception){return false;}}
+		public bool ToggleUiFilter(string a1)                                        { try { return _toggleUiFilter.          InvokeFunc(a1                          ) ; } catch(Exception){return false;}}
+		public bool EnableBackgroundFilter(string a1)                                { try { return _enableBackgroundFilter.  InvokeFunc(a1                          ) ; } catch(Exception){return false;}}
+		public bool DisableBackgroundFilter()                                        { try { return _disableBackgroundFilter. InvokeFunc(                            ) ; } catch(Exception){return false;}}
+		public bool ToggleBackgroundFilter(string a1)                                { try { return _toggleBackgroundFilter.  InvokeFunc(a1                          ) ; } catch(Exception){return false;}}
+		public bool EnableCraftList(string a1)                                       { try { return _enableCraftList.         InvokeFunc(a1                          ) ; } catch(Exception){return false;}}
+		public bool DisableCraftList()                                               { try { return _disableCraftList.        InvokeFunc(                            ) ; } catch(Exception){return false;}}
+		public bool ToggleCraftList(string a1)                                       { try { return _toggleCraftList.         InvokeFunc(a1                          ) ; } catch(Exception){return false;}}
+		public bool AddItemToCraftList(string a1, uint a2, uint a3)                  { try { return _addItemToCraftList.      InvokeFunc(a1, a2, a3                  ) ; } catch(Exception){return false;}}
+		public bool RemoveItemFromCraftList(string a1, uint a2, uint a3)             { try { return _removeItemFromCraftList. InvokeFunc(a1,a2,a3                    ) ; } catch(Exception){return false;}}
+		public Dictionary<uint, uint> GetFilterItems(string a1)                      { try { return _getFilterItems.          InvokeFunc(a1                          ) ; } catch(Exception){return new();}}
+		public Dictionary<uint, uint> GetCraftItems(string a1)                       { try { return _getCraftItems.           InvokeFunc(a1                          ) ; } catch(Exception){return new(); }}
+		public HashSet<ulong[]> GetCharacterItemsSerialized(ulong characterId)       { try { return _getCharacterItems.       InvokeFunc(characterId                 ); } catch (Exception e){ PluginLog.Error(e, "Error on GetCharacterItems1"); return new(); }}
 		public HashSet<ulong> GetCharactersOwnedByActive(bool includeOwner)          { try { return _getCharactersOwnedByActive.InvokeFunc(includeOwner              ); } catch (Exception e){ PluginLog.Error(e, "Error on GetCharactersOwnedByActive"); return new(); }}
-		public Dictionary<string, string> GetCraftLists()                            { try { return _getCraftLists.           InvokeFunc(                            ) ; } catch(Exception e){return new(); }}
-		public string AddNewCraftList(string a1, Dictionary<uint, uint> a2)          { try { return _addNewCraftList.         InvokeFunc(a1, a2                      ) ; } catch(Exception e){return "";}}
-		public ulong CurrentCharacter()                                              { try { return _currentCharacter.        InvokeFunc(                            ) ; } catch(Exception e){return 0;}}
-		public bool IsInitialized()                                                  { try { return _isInitialized.           InvokeFunc(                            ) ; } catch(Exception e) { return false; }}
+		public Dictionary<string, string> GetCraftLists()                            { try { return _getCraftLists.           InvokeFunc(                            ) ; } catch(Exception){return new(); }}
+		public string AddNewCraftList(string a1, Dictionary<uint, uint> a2)          { try { return _addNewCraftList.         InvokeFunc(a1, a2                      ) ; } catch(Exception){return "";}}
+		public ulong CurrentCharacter()                                              { try { return _currentCharacter.        InvokeFunc(                            ) ; } catch(Exception){return 0;}}
+		public bool IsInitialized()                                                  { try { return _isInitialized.           InvokeFunc(                            ) ; } catch(Exception) { return false; }}
 
 		public IEnumerable<CriticalCommonLib.Models.InventoryItem> GetCharacterItems(ulong characterId)
 			=> GetCharacterItemsSerialized(characterId).Select(CriticalCommonLib.Models.InventoryItem.FromNumeric);
@@ -114,6 +113,17 @@ namespace Dresser.Services {
 		public Dictionary<ulong, IEnumerable<Structs.Dresser.InventoryItem>> GetItemsLocalCharsRetainers(bool includeActiveCharacter = false)
 			=> GetCharactersOwnedByActive(includeActiveCharacter).ToDictionary(chId => chId, GetItems);
 
+		public bool CheckMethodAvailability() {
+			bool isOk;
+			try {
+				var dsqdd = _getCharacterItems.InvokeFunc(PluginServices.Context.LocalPlayerCharacterId);
+				isOk = true;
+
+			} catch (Exception e) {
+				isOk = false;
+			}
+			return isOk;
+		}
 		private void RetainerChanged(ulong? a1) {
 			PluginLog.Debug($"AllaganTools.RetainerChanged\n{a1}");
 			

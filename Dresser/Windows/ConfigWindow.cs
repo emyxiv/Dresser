@@ -159,16 +159,17 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void Dependencies() {
-		if(PluginServices.AllaganTools.IsInitialized())
-			ImGui.TextColored(ItemIcon.ColorGood, "Allagan Tools OK");
-		else {
+		if (PluginServices.AllaganTools.IsInitialized()) {
+			ImGui.TextColored(ItemIcon.ColorGood, "Allagan Tools Found");
+			//PluginServices.AllaganTools.CheckMethodAvailability();
+		} else {
 			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
 			ImGui.TextWrapped("To find items in inventories, please install Allagan Tools plugin from Critical Impact.");
 
 		}
-		
+
 
 	}
 }
