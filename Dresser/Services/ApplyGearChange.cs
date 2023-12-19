@@ -4,12 +4,14 @@ using CriticalCommonLib.Extensions;
 
 using Dresser.Extensions;
 using Dresser.Logic;
-using Dresser.Structs.Actor;
 using Dresser.Structs.Dresser;
 using Dresser.Windows;
 using Dresser.Windows.Components;
 
 using ImGuiNET;
+
+using Penumbra.GameData.Enums;
+using Penumbra.GameData.Structs;
 
 using System;
 using System.Collections.Generic;
@@ -25,13 +27,12 @@ namespace Dresser.Services {
 		public ApplyGearChange(Plugin plugin) {
 			Plugin = plugin;
 		}
-		public void Dispose() { }
+		public void Dispose() {
+			ClearApplyAppearanceQueue();
+		}
 
 
-
-		private WeaponEquip AppearanceBackupWeaponMain = new();
-		private WeaponEquip AppearanceBackupWeaponOff = new();
-		private Dictionary<EquipIndex, ItemEquip>? AppearanceBackupEquip = new();
+		private InventoryItemSet? BackedUpItems = null;
 
 		public void EnterBrowsingMode() {
 			ReApplyAppearanceAfterEquipUpdate();
@@ -59,22 +60,20 @@ namespace Dresser.Services {
 				clonedItem.Stain = (byte)DyePicker.CurrentDye.RowId;
 			}
 
-			var slot = clonedItem.Item.GlamourPlateSlot();
+			
+			var slot = GearBrowser.SelectedSlot;
 
 			if (slot != null) {
 				if(!ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
 					plate = new();
 					ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
 				}
-				plate.SetSlot((GlamourPlateSlot)slot, clonedItem);
+				plate.SetSlot(slot.Value, clonedItem);
+
+				PrepareModsAndDo(clonedItem, slot.Value, ApplyItemAppearanceOnPlayer);
+				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 			}
-
-			PrepareModsAndDo(clonedItem, ApplyItemAppearanceOnPlayer);
-			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
-		private void ApplyItemAppearanceOnPlayer(InventoryItem item)
-			=> Service.ClientState.LocalPlayer?.Equip(item);
-
 
 		private void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
 			//foreach ((var s, var item) in set.Items)
@@ -87,16 +86,16 @@ namespace Dresser.Services {
 			var numberOfMods = set.Items.Where(i => i.Value?.IsModded() ?? false).DistinctBy(i => i.Value?.ModDirectory).Count();
 			bool isModInstant = numberOfMods <= 1;
 			PluginLog.Debug($"numberOfMods: {numberOfMods} => {(isModInstant ? "instant" : "notinstant")}");
-			Dictionary<string, List<InventoryItem>> itemsByMods = new();
+			Dictionary<string, List<(GlamourPlateSlot Slot,InventoryItem Item)>> itemsByMods = new();
 			foreach ((var s, var item) in set.Items)
 				if (item != null) {
 					if(item.IsModded() && !isModInstant && item.ModDirectory != null) {
 						PluginLog.Warning($"putting in queue {item.FormattedName} => {item.ModDirectory}");
 						itemsByMods.TryAdd(item.ModDirectory, new());
-						itemsByMods[item.ModDirectory].Add(item);
-						ApplyItemAppearanceOnPlayer(InventoryItem.Zero);
+						itemsByMods[item.ModDirectory].Add((s,item));
+						//ApplyItemAppearanceOnPlayer(InventoryItem.Zero,s);
 					} else {
-						PrepareModsAndDo(item, ApplyItemAppearanceOnPlayer);
+						PrepareModsAndDo(item, s, ApplyItemAppearanceOnPlayer);
 					}
 				}
 
@@ -108,8 +107,7 @@ namespace Dresser.Services {
 			}
 		}
 
-		private void PrepareModsAndDo(InventoryItem item, Action<InventoryItem>? callback = null, bool ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance = false) {
-
+		private void PrepareModsAndDo(InventoryItem item, GlamourPlateSlot slot, Action<InventoryItem,GlamourPlateSlot>? callback = null, bool ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance = false) {
 			if (item.Container == (InventoryType)Storage.InventoryTypeExtra.ModdedItems && item.IsModded() && PluginServices.Penumbra.GetEnabledState()) {
 				PluginLog.Verbose($"applying modded item: {item.FormattedName} => {item.ModName}");
 
@@ -133,7 +131,7 @@ namespace Dresser.Services {
 					if(!ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance)
 						await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
 					PluginLog.Warning($"Applying appearance...");
-					callback?.Invoke(item);
+					callback?.Invoke(item, slot);
 					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
 					var res3 = PluginServices.Penumbra.TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, true);
 					PluginLog.Debug($"Disable mod after apply {res3} | {item.ModName}");
@@ -144,21 +142,22 @@ namespace Dresser.Services {
 				});
 
 			} else {
-				callback?.Invoke(item);
+				callback?.Invoke(item, slot);
 			}
 		}
 
-		private Queue<List<InventoryItem>> ApplyAppearanceQueue = new();
-		private void AddToApplyAppearanceQueue(List<InventoryItem> items) => ApplyAppearanceQueue.Enqueue(items);
+		private Queue<List<(GlamourPlateSlot Slot,InventoryItem Item)>> ApplyAppearanceQueue = new();
+		private void AddToApplyAppearanceQueue(List<(GlamourPlateSlot Slot,InventoryItem Item)> items) => ApplyAppearanceQueue.Enqueue(items);
 		public void ClearApplyAppearanceQueue() => ApplyAppearanceQueue.Clear();
 		private void ApplyAppearanceQueueTick(bool ignoreFirstDelay = false) {
 			if (ApplyAppearanceQueue.Count > 0) {
 				var list = ApplyAppearanceQueue.Dequeue();
-				PrepareModsAndDo(list.First(), (i)=> {
+				var ffff = list.First();
+				PrepareModsAndDo(ffff.Item,ffff.Slot, (i,s)=> {
 
 					foreach (var item in list) {
-						PluginLog.Error($"Process ApplyAppearanceQueue... item {item.ModDirectory} ===> {item.FormattedName}");
-						ApplyItemAppearanceOnPlayer(item);
+						PluginLog.Error($"Process ApplyAppearanceQueue... item {item.Item.ModDirectory} ===> {item.Item.FormattedName}");
+						ApplyItemAppearanceOnPlayer(item.Item,item.Slot);
 					}
 
 				}, ignoreFirstDelay);
@@ -176,12 +175,57 @@ namespace Dresser.Services {
 			Plugin.OpenGearBrowserIfClosed();
 			Plugin.UncollapseGearBrowserIfCollapsed();
 		}
-		public void ExecuteCurrentContextRemoveItem(InventoryItem item) {
+		public void ExecuteCurrentContextRemoveItem(InventoryItem item, GlamourPlateSlot? slot) {
+			if (slot == null) return;
 			item.Clear();
-			Service.ClientState.LocalPlayer?.Equip(item);
-			RestoreAppearance();
-			ReApplyAppearanceAfterEquipUpdate();
+			Service.ClientState.LocalPlayer?.Equip(item, slot.Value);
+			//RestoreAppearance();
+			//ReApplyAppearanceAfterEquipUpdate();
 		}
+
+
+		private void ApplyItemAppearanceOnPlayer(InventoryItem item, GlamourPlateSlot slot)
+			=> Service.ClientState.LocalPlayer?.Equip(item,slot);
+
+
+		public void AppearanceUpdateNakedOrWearing() {
+			var set = new InventoryItemSet();
+
+
+			// this is where we change every items on
+			//   - empty slot = naked
+			//   - empty slot = show wearing (backed up)
+
+
+			// get current plate slots
+			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
+				var glamourPlateSlots = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
+
+				// for each glam plate slots
+				foreach (var g in glamourPlateSlots) {
+					if (currentPlate.Items.TryGetValue(g, out var i) && (i?.ItemId ?? 0) != 0) {
+						// if slot is equipped...
+						// this is the case where we assume no change is required
+					} else {
+						// if slot is empty...
+						if (ConfigurationManager.Config.CurrentGearDisplayGear) {
+							// if should show wearing weapons... show backed up stuff
+							// TODO: optimization: check this item is currently displayed, don't do anything in this case
+							set.SetSlot(g, BackedUpItems?.GetSlot(g));
+						} else {
+							// if should show empty slots as naked
+							// TODO: optimization: check this item is currently empty, don't do anything in this case
+							set.SetSlot(g, InventoryItem.Zero);
+						}
+					}
+				}
+			}
+			
+
+			set.ApplyAppearance();
+		}
+
+
 		public void ExecuteCurrentContextDye(InventoryItem item) {
 			PluginLog.Warning("TODO: open dye picker");
 		}
@@ -193,7 +237,7 @@ namespace Dresser.Services {
 				var item = plate.GetSlot(slot);
 				if (item != null) {
 					item.Stain = stain;
-					PluginServices.Context.LocalPlayer?.Equip(item);
+					PluginServices.Context.LocalPlayer?.Equip(item, slot);
 				}
 			}
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
@@ -208,21 +252,36 @@ namespace Dresser.Services {
 
 		public void BackupAppearance() {
 			PluginLog.Verbose("Backing up appearance");
-			AppearanceBackupWeaponMain = PluginServices.Context.LocalPlayer?.MainHandModels().Equip ?? new();
-			AppearanceBackupWeaponOff = PluginServices.Context.LocalPlayer?.OffHandModels().Equip ?? new();
-			AppearanceBackupEquip = PluginServices.Context.LocalPlayer?.EquipmentModels().Dictionary();
+
+			var appearanceBackupWeaponMain = PluginServices.Context.LocalPlayer?.MainHandModels().Equip ?? new();
+			var modelMainHand = new CustomItemId(
+				(SetId)appearanceBackupWeaponMain.Set,
+				(WeaponType)appearanceBackupWeaponMain.Base,
+				(Variant)appearanceBackupWeaponMain.Variant,
+				FullEquipType.Unknown);
+			//PluginLog.Debug($"appearance: set:{appearanceBackupWeaponMain.Set}, base:{appearanceBackupWeaponMain.Base}, variant:{appearanceBackupWeaponMain.Variant}  ==> {modelMainHand.ToString()}");
+			var appearanceBackupWeaponOff = PluginServices.Context.LocalPlayer?.OffHandModels().Equip ?? new();
+			var appearanceBackupEquip = PluginServices.Context.LocalPlayer?.EquipmentModels().Dictionary();
+
+			BackedUpItems = new(appearanceBackupEquip);
+			BackedUpItems?.SetSlot(GlamourPlateSlot.MainHand, InventoryItem.FromWeaponEquip(appearanceBackupWeaponMain, GlamourPlateSlot.MainHand));
+			BackedUpItems?.SetSlot(GlamourPlateSlot.OffHand,  InventoryItem.FromWeaponEquip(appearanceBackupWeaponOff, GlamourPlateSlot.OffHand));
+			
+			
+			//foreach((var slot,var item) in BackedUpItems?.Items) {
+			//	PluginLog.Debug($"Backup {slot} => {(item == null ? "null" : item.ItemId)}");
+			//}
 		}
 		public void RestoreAppearance() {
 			PluginLog.Verbose("Restoring appearance");
 
-			PluginServices.Context.LocalPlayer?.Equip(WeaponIndex.MainHand, AppearanceBackupWeaponMain);
-			PluginServices.Context.LocalPlayer?.Equip(WeaponIndex.OffHand, AppearanceBackupWeaponOff);
-			if (AppearanceBackupEquip != null)
-				foreach ((var index, var item) in AppearanceBackupEquip) {
-					PluginServices.Context.LocalPlayer?.Equip(index, item);
-				}
-			AppearanceBackupEquip = null;
-
+			if (PluginServices.Context.GlamourerState) {
+				PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
+				PluginServices.Glamourer.RevertToAutomationCharacter(PluginServices.Context.LocalPlayer);
+				return;
+			}
+			BackedUpItems?.ApplyAppearance();
+			BackedUpItems = null;
 		}
 
 
@@ -240,56 +299,17 @@ namespace Dresser.Services {
 				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 				ApplyItemsAppearancesOnPlayer(currentPlate);
 			}
-			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
-			else ShowStrippedSlots();
+			//if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
+			//else ShowStrippedSlots();
 		}
 		public void ReApplyAppearanceAfterEquipUpdate() {
 			BackupAppearance();
 			ApplyCurrentPendingPlateAppearance();
-			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
-
-		}
-		public void StripEmptySlotCurrentPendingPlateAppearance() {
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
-				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
-				foreach (var g in glamourPlates) {
-					if (!(!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0)) {
-						var indexW = g.ToWeaponIndex();
-						if (indexW != null)
-							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, new WeaponEquip() { Base = 0, Dye = 0, Set = 0, Variant = 0 });
-					} else {
-						var index = g.ToEquipIndex();
-						if (index != null) {
-							PluginServices.Context.LocalPlayer?.Equip((EquipIndex)index, new ItemEquip() { Id = 0, Variant = 0, Dye = 0 });
-						}
-					}
-				}
-			}
-		}
-		public void ShowStrippedSlots() {
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
-				var glamourPlates = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>();
-				foreach (var g in glamourPlates) {
-					if (!(!currentPlate.Items.TryGetValue(g, out var item) || (item?.ItemId ?? 0) == 0)) {
-						var indexW = g.ToWeaponIndex();
-						if (indexW == WeaponIndex.MainHand)
-							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponMain);
-						else if (indexW == WeaponIndex.OffHand)
-							PluginServices.Context.LocalPlayer?.Equip((WeaponIndex)indexW, AppearanceBackupWeaponOff);
-					} else {
-						var index = g.ToEquipIndex();
-						if (index != null && AppearanceBackupEquip!.TryGetValue((EquipIndex)index, out var equip)) {
-							PluginServices.Context.LocalPlayer?.Equip((EquipIndex)index, equip);
-						}
-					}
-				}
-			}
+			PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
 
 		}
 		public void ToggleDisplayGear() {
-			if (!ConfigurationManager.Config.CurrentGearDisplayGear) StripEmptySlotCurrentPendingPlateAppearance();
-			else ShowStrippedSlots();
-
+			PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
 		}
 
 		public void OverwritePendingWithCurrentPlate() {

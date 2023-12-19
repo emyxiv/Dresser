@@ -78,10 +78,10 @@ public class CurrentGear : Window, IDisposable {
 		if (GuiHelpers.GameButton(UldBundle.CircleLargeQuestionMark, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
 			Help.Open();
 		}
-		//ImGui.SameLine();
-		//if (GuiHelpers.GameButtonCircleToggle(36, ref ConfigurationManager.Config.CurrentGearDisplayWeapon, "Display Sheathed Arms##CurrentGear", "Display Sheathed Arms", SizeGameCircleIcons)) {
-		//	PluginServices.Context.LocalPlayer.RedrawWeapon();
-		//}
+		ImGui.SameLine();
+		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallWeapon, ref ConfigurationManager.Config.CurrentGearDisplayWeapon, "Display Sheathed Arms##CurrentGear", "Display Sheathed Arms", SizeGameCircleIcons)) {
+			PluginServices.Context.LocalPlayer.RedrawWeapon();
+		}
 		ImGui.SameLine();
 		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallHat, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
 			PluginServices.Context.LocalPlayer.RedrawHeadGear();
@@ -267,7 +267,7 @@ public class CurrentGear : Window, IDisposable {
 
 	private static void ContextMenuCurrent(InventoryItem item, GlamourPlateSlot? slot) {
 		if (ImGui.Selectable("Remove Item Image from Plate"))
-			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item);
+			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item,slot);
 
 		if (ImGui.Selectable("Dye")) {
 

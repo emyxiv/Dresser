@@ -2,6 +2,7 @@
 using Dalamud.Plugin.Ipc;
 
 using Dresser.Logic;
+using Dresser.Windows;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
 
@@ -125,19 +126,19 @@ namespace Dresser.Services {
 			return isOk;
 		}
 		private void RetainerChanged(ulong? a1) {
-			PluginLog.Debug($"AllaganTools.RetainerChanged\n{a1}");
-			
+			//PluginLog.Debug($"AllaganTools.RetainerChanged\n{a1}");
+			if(Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
 		}
 		private void ItemRemoved((uint, InventoryItem.ItemFlags, ulong, uint) a1) {
-			PluginLog.Debug($"AllaganTools.ItemRemoved\n{a1}");
-
+			//PluginLog.Debug($"AllaganTools.ItemRemoved\n{a1}");
+			if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
 		}
 		private void ItemAdded((uint, InventoryItem.ItemFlags, ulong, uint) a1) {
-			PluginLog.Debug($"AllaganTools.ItemAdded\n{a1}");
-
+			//PluginLog.Debug($"AllaganTools.ItemAdded\n{a1}");
+			if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
 		}
 		private void Initialized(bool a1) {
-			PluginLog.Debug($"AllaganTools.Initialized\n{a1}");
+			//PluginLog.Debug($"AllaganTools.Initialized\n{a1}");
 
 		}
 

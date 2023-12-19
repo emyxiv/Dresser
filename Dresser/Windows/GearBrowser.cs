@@ -561,6 +561,7 @@ namespace Dresser.Windows {
 		private static bool JustRecomputed = false;
 		public static void RecomputeItems() {
 
+			PluginLog.Verbose($"RecomputeItems for slot {SelectedSlot}");
 			IEnumerable<InventoryItem> items = new HashSet<InventoryItem>();
 
 			foreach ((var inventoryType, var itemsToAdd) in PluginServices.Storage.AdditionalItems) {
@@ -582,7 +583,7 @@ namespace Dresser.Windows {
 			items = items.Where(i =>
 					(!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
 					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob(ConfigurationManager.Config.filterCurrentJobStrict))
-					&& SelectedSlot == i.Item.GlamourPlateSlot()
+					&& i.IsInGearBrowserSelectedSlot()
 					&& i.IsFilterDisplayable()
 					&& i.IsInFilterLevelRanges()
 					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Rarity == ConfigurationManager.Config.filterRarity)

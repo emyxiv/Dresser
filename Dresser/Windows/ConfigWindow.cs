@@ -164,7 +164,7 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void Dependencies() {
-		if (PluginServices.AllaganTools.IsInitialized()) {
+		if (PluginServices.Context.AllaganToolsState) {
 			ImGui.TextColored(ItemIcon.ColorGood, "Allagan Tools Found");
 			//PluginServices.AllaganTools.CheckMethodAvailability();
 		} else {
@@ -172,13 +172,17 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
 			ImGui.TextWrapped("To find items in inventories, please install Allagan Tools plugin from Critical Impact.");
-
 		}
 
 
-		var glamourerVersions = PluginServices.Glamourer.ApiVersions();
-		if (glamourerVersions.Major >= 0) {
-			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API {glamourerVersions.Major}.{glamourerVersions.Minor} Found");
+		if (PluginServices.Context.GlamourerState) {
+			var glamourerVersions = PluginServices.Glamourer.ApiVersions();
+			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API Found (Version {glamourerVersions.Major}.{glamourerVersions.Minor})");
+
+		}
+		if (PluginServices.Context.PenumbraState) {
+			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
+			ImGui.TextColored(ItemIcon.ColorGood, $"Penumbra API Found (Version: Breaking {penumbraVersions.Breaking}, Feature {penumbraVersions.Features})");
 		}
 	}
 

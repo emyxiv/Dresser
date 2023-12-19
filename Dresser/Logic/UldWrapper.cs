@@ -123,7 +123,7 @@ namespace Dresser.Logic {
 		private IDalamudTextureWrap? CopyRect(int width, int height, bool hd, byte[] rgbaData, UldRoot.PartData part) {
 
 			//if (part.V + part.W > width*2 || part.U + part.H > height*2) {
-				PluginLog.Debug($"CopyRect 0: {part.V} + {part.W} > {width} || {part.U} + {part.H} > {height}");
+				//PluginLog.Debug($"CopyRect 0: {part.V} + {part.W} > {width} || {part.U} + {part.H} > {height}");
 				//return null;
 			//}
 			//PluginLog.Debug("CopyRect 1");

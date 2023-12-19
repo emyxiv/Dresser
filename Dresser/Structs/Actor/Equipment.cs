@@ -57,8 +57,12 @@ namespace Dresser.Structs.Actor {
 			Variant = (byte)(num >> 16 & 0xFF),
 			Dye = (byte)(num >> 24)
 		};
+		public readonly uint ToModelId() {
+			return Id | (uint)Variant << 16;
+		}
+		public static ItemEquip Empty => new() { Id = 0, Variant = 0, Dye = 0 };
 
-		public bool Equals(ItemEquip other) => Id == other.Id && Variant == other.Variant;
+		public readonly bool Equals(ItemEquip other) => Id == other.Id && Variant == other.Variant;
 	}
 
 	public enum EquipIndex : uint {

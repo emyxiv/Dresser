@@ -1,6 +1,8 @@
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.Havok;
 
+using Penumbra.GameData.Enums;
+
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -20,6 +22,17 @@ namespace Dresser.Structs.Actor {
 		[FieldOffset(0x02)] public ushort Base;
 		[FieldOffset(0x04)] public ushort Variant;
 		[FieldOffset(0x06)] public byte Dye;
+
+		public static WeaponEquip Empty => new() { Base = 0, Dye = 0, Set = 0, Variant = 0 };
+		public readonly ulong ToModelId() {
+			return Set | ((ulong)Base << 16) | ((ulong)Variant << 32);
+		}
+
+		public readonly FullEquipType ToFullEquipType() {
+			return Penumbra.GameData.Data.ItemData.ConvertWeaponId(Set);
+		}
+		public readonly bool IsMainModelOnOffhand()
+			=> ToFullEquipType().ToSlot() == EquipSlot.OffHand;
 	}
 
 	[StructLayout(LayoutKind.Explicit)]

@@ -13,6 +13,7 @@ using Lumina.Excel.GeneratedSheets;
 
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace Dresser.Services {
 	internal class Context : IDisposable {
@@ -31,9 +32,17 @@ namespace Dresser.Services {
 		public byte LocalPlayerLevel = 0;
 		public ulong LocalPlayerCharacterId = 0;
 
+		private Timer Every5seconds;
+
+		// Stuff executed every 5s
+		public bool AllaganToolsState = false;
+		public bool GlamourerState = false;
+		public bool PenumbraState = false;
+
 
 
 		public Context() {
+			Every5seconds = new Timer(ExecutedEvery5Seconds, null, 0, 5000); // set a 5 seconds interval
 			//Refresh();
 		}
 		public void Dispose() {
@@ -42,6 +51,8 @@ namespace Dresser.Services {
 			LocalPlayerGender = null;
 			LocalPlayerClass = null;
 			LocalPlayerLevel = 0;
+			Every5seconds.Dispose();
+			Every5seconds = null!;
 		}
 
 		private bool _lastState_IsGlamingAtDresser = false;
@@ -78,6 +89,13 @@ namespace Dresser.Services {
 				LocalPlayerLevel = LocalPlayer.Level;
 			}
 
+		}
+
+		private void ExecutedEvery5Seconds(object? state) {
+			if (LocalPlayer == null) return;
+			AllaganToolsState = PluginServices.AllaganTools.IsInitialized();
+			GlamourerState = PluginServices.Glamourer.IsInitialized();
+			PenumbraState = PluginServices.Penumbra.GetEnabledState();
 		}
 	}
 }

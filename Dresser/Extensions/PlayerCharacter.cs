@@ -1,6 +1,8 @@
 ﻿using Dresser.Interop;
+using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Actor;
+using Dresser.Structs.Dresser;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
@@ -10,19 +12,51 @@ using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.Player
 namespace Dresser.Extensions {
 	public static class PlayerCharacterExtention {
 
-		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, DresserInventoryItem item) {
 
-			var index = item.Item.EquipIndex();
-			if (index != null) {
-				playerCharacter.Equip((EquipIndex)index, item.ToItemEquip());
+		// apply appearance of set items
+		public unsafe static void EquipSet(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
+			if (PluginServices.Context.GlamourerState)
+				playerCharacter.EquipGlamourer(set);
+			else {
+				//PluginLog.Debug($"dddv => {set.Items.Count}");
 
-			} else if (item.Item.IsWeapon()) {
+				foreach ((var slot, var item) in set.Items) {
+					//PluginLog.Debug($"dddv => {slot}, {(item == null?"null":item.ItemId)}");
+					if (item == null) continue;
+					playerCharacter.EquipStandalone(item, slot);
+				}
+			}
+		}
 
-				var weaponIndex = item.Item.EquipSlotCategoryEx?.OffHand == 1 ? WeaponIndex.OffHand : WeaponIndex.MainHand;
-				playerCharacter.Equip(weaponIndex, item.ToWeaponEquip(weaponIndex));
+		// apply appearance of single item
+		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, DresserInventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+			if (PluginServices.Context.GlamourerState) {
+				playerCharacter.EquipGlamourer(new Structs.Dresser.InventoryItemSet(slot, item));
+			} else {
+				playerCharacter.EquipStandalone(item, slot);
+			}
+		}
+		public unsafe static void EquipGlamourer(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
+			//PluginLog.Debug($"ddd => {set.Items.Count}");
+			var json = Glamourer.Designs.Design.PrepareDesign(set);
+			json.ToClipboard();
+			PluginServices.Glamourer.ApplyOnlyEquipmentToCharacter(json, playerCharacter);
+		}
+		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, DresserInventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+			if (slot.IsWeapon()) {
+				var weaponIndex = slot.ToWeaponIndex();
+				if (weaponIndex != null) {
+					playerCharacter.Equip(weaponIndex.Value, item.ToWeaponEquip(weaponIndex.Value));
+					//PluginLog.Debug($"item {item.DebugName} = {item.Item.ToFullEquipType(true)}");
+					if (slot == Structs.Dresser.GlamourPlateSlot.MainHand && !item.Item.IsMainModelOnOffhand()) { // TODO: if item is not a shield or tool, don't do that (also equip offhand sub)
+						playerCharacter.Equip(WeaponIndex.OffHand, item.ToWeaponEquipSub());
+					}
+				}
+			} else {
+				var index = slot.ToEquipIndex();
+				//PluginLog.Debug($"stda armor Equip => {item.ItemId} => {index} => {item.ToItemEquip().Id}");
 
-				if (weaponIndex == WeaponIndex.MainHand)
-					playerCharacter.Equip(WeaponIndex.OffHand, item.ToWeaponEquip(WeaponIndex.OffHand));
+				if (index != null) playerCharacter.Equip(index.Value, item.ToItemEquip());
 			}
 		}
 
@@ -50,6 +84,7 @@ namespace Dresser.Extensions {
 		}
 
 		public unsafe static void DisplayHeadGearIfHidden(this SubKindsPlayerCharacter playerCharacter) {
+			if (PluginServices.Context.GlamourerState) return;
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
 			bool mustResetHat = !drawData.IsHatHidden != ConfigurationManager.Config.CurrentGearDisplayHat;
 			if(mustResetHat) {
@@ -59,15 +94,42 @@ namespace Dresser.Extensions {
 			// as it is done for hats
 			drawData.SetVisor(ConfigurationManager.Config.CurrentGearDisplayVisor);
 		}
-		public static void RedrawHeadGear(this SubKindsPlayerCharacter playerCharacter)
-			=> playerCharacter.Equip(EquipIndex.Head, playerCharacter.EquipmentModel(EquipIndex.Head));
+		public static void RedrawHeadGear(this SubKindsPlayerCharacter playerCharacter) {
+			if (PluginServices.Context.GlamourerState) {
+				playerCharacter.EquipGlamourer(new());
+				return;
+			}
+
+			playerCharacter.Equip(EquipIndex.Head, playerCharacter.EquipmentModel(EquipIndex.Head));
+		}
 		public unsafe static void DisplayWeaponIfHidden(this SubKindsPlayerCharacter playerCharacter) {
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
 			drawData.HideWeapons(!ConfigurationManager.Config.CurrentGearDisplayWeapon);
 		}
-		public static void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
-			playerCharacter.Equip(WeaponIndex.MainHand, playerCharacter.MainHandModels().Equip);
-			playerCharacter.Equip(WeaponIndex.OffHand, playerCharacter.OffHandModels().Equip);
+		public static unsafe void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
+			if (PluginServices.Context.GlamourerState) {
+				playerCharacter.EquipGlamourer(new());
+				return;
+			}
+			// Todo toggle hide weapon glamourer
+
+
+			//var drawData = ((Character*)playerCharacter.Address)->DrawData;
+			//var weaponData = *(WeaponModelId*)drawData.WeaponData;
+			//drawData.LoadWeapon(DrawDataContainer.WeaponSlot.MainHand, weaponData,1,)
+
+
+
+			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
+				var itemMain = plate.GetSlot(GlamourPlateSlot.MainHand);
+				var itemOff = plate.GetSlot(GlamourPlateSlot.OffHand);
+				playerCharacter.Equip(WeaponIndex.MainHand, ConfigurationManager.Config.CurrentGearDisplayWeapon && itemMain != null ? itemMain.ToWeaponEquipMain() : WeaponEquip.Empty);
+				playerCharacter.Equip(WeaponIndex.OffHand, ConfigurationManager.Config.CurrentGearDisplayWeapon && itemOff != null ? itemOff.ToWeaponEquipSub() : WeaponEquip.Empty);
+			}
+
+
+			//playerCharacter.Equip(WeaponIndex.MainHand, playerCharacter.MainHandModels().Equip);
+			//playerCharacter.Equip(WeaponIndex.OffHand, playerCharacter.OffHandModels().Equip);
 		}
 
 

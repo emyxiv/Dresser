@@ -12,6 +12,9 @@ using Dresser.Structs.Dresser;
 
 using Lumina.Data;
 
+using Penumbra.GameData.Enums;
+using Penumbra.GameData.Structs;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +42,25 @@ namespace Dresser.Extensions {
 			return null;
 			//throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
 		}
+		public static byte ToEquipSlotCategoryByte(this GlamourPlateSlot slot) {
+			return slot switch {
+				Structs.Dresser.GlamourPlateSlot.MainHand => 0 + 1,
+				Structs.Dresser.GlamourPlateSlot.OffHand => 1 + 1,
+				Structs.Dresser.GlamourPlateSlot.Head => 2 + 1,
+				Structs.Dresser.GlamourPlateSlot.Body => 3 + 1,
+				Structs.Dresser.GlamourPlateSlot.Hands => 4 + 1,
+				//Structs.Dresser.GlamourPlateSlot.Waist => 5 + 1,
+				Structs.Dresser.GlamourPlateSlot.Legs => 6 + 1,
+				Structs.Dresser.GlamourPlateSlot.Feet => 7 + 1,
+				Structs.Dresser.GlamourPlateSlot.Ears => 8 + 1,
+				Structs.Dresser.GlamourPlateSlot.Neck => 9 + 1,
+				Structs.Dresser.GlamourPlateSlot.Wrists => 10 + 1,
+				Structs.Dresser.GlamourPlateSlot.LeftRing => 11 + 1,
+				Structs.Dresser.GlamourPlateSlot.RightRing => 12 + 1,
+				//Structs.Dresser.GlamourPlateSlot.SoulCrystal => 13 + 1,
+				_ => throw new Exception($"Unidentified GlamourPlateSlot: {slot}")
+			};
+		}
 		public static EquipIndex? EquipIndex(this CriticalItemEx item) {
 			var slot = item.EquipSlotCategoryEx;
 			if (slot == null) return null;
@@ -56,6 +78,45 @@ namespace Dresser.Extensions {
 			if (slot.FingerL == 1) return Structs.Actor.EquipIndex.RingLeft;
 			return null;
 		}
+
+		public static Penumbra.GameData.Enums.EquipSlot? PenumbraEquipIndex(this CriticalItemEx item) {
+
+			var slot = item.EquipSlotCategoryEx;
+			if (slot == null) return null;
+			if (slot.MainHand == 1) return Penumbra.GameData.Enums.EquipSlot.MainHand;
+			if (slot.OffHand == 1) return Penumbra.GameData.Enums.EquipSlot.OffHand;
+			if (slot.Head == 1) return Penumbra.GameData.Enums.EquipSlot.Head;
+			if (slot.Body == 1) return Penumbra.GameData.Enums.EquipSlot.Body;
+			if (slot.Gloves == 1) return Penumbra.GameData.Enums.EquipSlot.Hands;
+			if (slot.Legs == 1) return Penumbra.GameData.Enums.EquipSlot.Legs;
+			if (slot.Feet == 1) return Penumbra.GameData.Enums.EquipSlot.Feet;
+			if (slot.Ears == 1) return Penumbra.GameData.Enums.EquipSlot.Ears;
+			if (slot.Neck == 1) return Penumbra.GameData.Enums.EquipSlot.Neck;
+			if (slot.Wrists == 1) return Penumbra.GameData.Enums.EquipSlot.Wrists;
+			if (slot.FingerR == 1) return Penumbra.GameData.Enums.EquipSlot.RFinger;
+			if (slot.FingerL == 1) return Penumbra.GameData.Enums.EquipSlot.LFinger;
+			return null;
+		}
+
+		public static FullEquipType ToFullEquipType(this CriticalItemEx item, bool isMainHand) {
+			var slot = (Penumbra.GameData.Enums.EquipSlot)item.EquipSlotCategory.Row;
+			var weapon = (WeaponCategory)item.ItemUICategory.Row;
+			return slot.ToEquipType(weapon, isMainHand);
+		}
+		public static Structs.Dresser.GlamourPlateSlot? ToWeaponSlot(this CriticalItemEx item) {
+			return item.ToFullEquipType(true).ToSlot() switch {
+				Penumbra.GameData.Enums.EquipSlot.MainHand => Structs.Dresser.GlamourPlateSlot.MainHand,
+				Penumbra.GameData.Enums.EquipSlot.OffHand => Structs.Dresser.GlamourPlateSlot.OffHand,
+				_ => null
+			};
+		}
+		public static bool IsMainModelOnOffhand(this CriticalItemEx item) {
+			return item.ToFullEquipType(true).ToSlot() == Penumbra.GameData.Enums.EquipSlot.OffHand;
+		}
+
+
+
+
 
 		private static ItemModel ItemModelFromUlong(this CriticalItemEx item, ulong model, bool isWeapon)
 			=> new(model, isWeapon);

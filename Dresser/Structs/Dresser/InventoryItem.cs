@@ -2,13 +2,13 @@
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
-using Dresser.Logic;
 using Dalamud.Utility;
 
 using Dresser.Extensions;
-using Dresser.Services;
+using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Actor;
+using Dresser.Windows;
 
 using Lumina.Excel.GeneratedSheets;
 
@@ -87,14 +87,67 @@ namespace Dresser.Structs.Dresser {
 			};
 		}
 		public WeaponEquip ToWeaponEquip(WeaponIndex index) {
-			var itemModel = index == WeaponIndex.OffHand ? Item.ModelSubItemModel() : Item.ModelMainItemModel();
+
+			var itemModel = index == WeaponIndex.MainHand || Item.IsMainModelOnOffhand() ? Item.ModelMainItemModel() : Item.ModelSubItemModel();
 			return new() {
-				Set = (ushort)(index == WeaponIndex.OffHand ? Item.ModelSub : Item.ModelMain),
+				Set = itemModel.Id,
 				Base = itemModel.Base,
 				Variant = itemModel.Variant,
 				Dye = this.Item.IsDyeable ? this.Stain : (byte)0,
 			};
 		}
+
+		public static InventoryItem? FromItemEquip(ItemEquip? itemEquip, GlamourPlateSlot slot) {
+			if (itemEquip == null || itemEquip.Value.Id == 0) return null;
+			var dd = FromModelMain(itemEquip.Value.ToModelId(), slot);
+			if (dd != null) return new InventoryItem(InventoryType.Bag0, dd.RowId) {
+				Stain = itemEquip.Value.Dye
+			};
+			return null;
+		}
+
+		public static InventoryItem? FromWeaponEquip(WeaponEquip? weaponEquip, GlamourPlateSlot slot) {
+			if (weaponEquip == null || weaponEquip.Value.Set == 0) return null;
+
+			//PluginLog.Debug($"appearance: Set:{weaponEquip.Value.Set}, Variant:{weaponEquip.Value.Base}, variant:{weaponEquip.Value.Variant}  ==> {weaponEquip.Value.ToModelId()}");
+			//uint stoladressId = 39937;
+			//var stoladress = Service.ExcelCache.AllItems.Where(item => item.Value.RowId == stoladressId).First().Value;
+			//PluginLog.Debug($"manderville wings: {stoladress.RowId} => model:m:{stoladress.ModelMain} s:{stoladress.ModelSub}");
+
+
+			var dd = slot.ToWeaponIndex() == WeaponIndex.MainHand || weaponEquip.Value.IsMainModelOnOffhand() ? FromModelWeaponMain(weaponEquip.Value.ToModelId(), slot) : FromModelWeaponSub(weaponEquip.Value.ToModelId(), slot);
+			if (dd != null) return new InventoryItem(InventoryType.Bag0, dd.RowId) {
+				Stain = weaponEquip.Value.Dye
+			};
+			return null;
+		}
+		public static CriticalCommonLib.Sheets.ItemEx? FromModelMain(ulong model, GlamourPlateSlot slot) {
+
+			var equipSlotCategory = slot.ToEquipSlotCategoryByte();
+			var ddddd = Service.ExcelCache.AllItems.Where(item => item.Value.ModelMain == model && item.Value.EquipSlotCategory.Row == equipSlotCategory);
+			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
+			//foreach((var id,var item) in ddddd) {
+			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
+
+			//}
+			return ddddd.FirstOrDefault().Value;
+		}
+		public static CriticalCommonLib.Sheets.ItemEx? FromModelWeaponMain(ulong model, GlamourPlateSlot slot) {
+
+			//var equipSlotCategory = slot.ToEquipSlotCategoryByte();
+			var ddddd = Service.ExcelCache.AllItems.Where(item => item.Value.ModelMain == model);
+			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
+			//foreach ((var id, var item) in ddddd) {
+			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
+
+			//}
+			return ddddd.FirstOrDefault().Value;
+		}
+		public static CriticalCommonLib.Sheets.ItemEx? FromModelWeaponSub(ulong model, GlamourPlateSlot slot) {
+			return Service.ExcelCache.AllItems.Where(item => item.Value.ModelSub == model).FirstOrDefault().Value;
+		}
+
+
 		public WeaponEquip ToWeaponEquipMain()
 			=> ToWeaponEquip(WeaponIndex.MainHand);
 		public WeaponEquip ToWeaponEquipSub()
@@ -123,6 +176,12 @@ namespace Dresser.Structs.Dresser {
 			if (ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == this.ModDirectory))
 				return false;
 			return true;
+		}
+
+		public bool IsInGearBrowserSelectedSlot() {
+			var itemSlot = this.Item.GlamourPlateSlot();
+			//PluginLog.Debug($"IsInGearBrowserSelectedSlot: {itemSlot}");
+			return itemSlot == GearBrowser.SelectedSlot || (itemSlot == GlamourPlateSlot.RightRing && GearBrowser.SelectedSlot == GlamourPlateSlot.LeftRing);
 		}
 
 

@@ -12,6 +12,23 @@ using CriticalInventoryType = CriticalCommonLib.Enums.InventoryType;
 
 namespace Dresser.Extensions {
 	public static class SlotsEnumExtensions {
+		public static Penumbra.GameData.Enums.EquipSlot ToPenumbraEquipSlot(this GlamourPlateSlot slot) {
+			return slot switch {
+				GlamourPlateSlot.MainHand => Penumbra.GameData.Enums.EquipSlot.MainHand,
+				GlamourPlateSlot.OffHand => Penumbra.GameData.Enums.EquipSlot.OffHand,
+				GlamourPlateSlot.Head => Penumbra.GameData.Enums.EquipSlot.Head,
+				GlamourPlateSlot.Body => Penumbra.GameData.Enums.EquipSlot.Body,
+				GlamourPlateSlot.Hands => Penumbra.GameData.Enums.EquipSlot.Hands,
+				GlamourPlateSlot.Legs => Penumbra.GameData.Enums.EquipSlot.Legs,
+				GlamourPlateSlot.Feet => Penumbra.GameData.Enums.EquipSlot.Feet,
+				GlamourPlateSlot.Ears => Penumbra.GameData.Enums.EquipSlot.Ears,
+				GlamourPlateSlot.Neck => Penumbra.GameData.Enums.EquipSlot.Neck,
+				GlamourPlateSlot.Wrists => Penumbra.GameData.Enums.EquipSlot.Wrists,
+				GlamourPlateSlot.RightRing => Penumbra.GameData.Enums.EquipSlot.RFinger,
+				GlamourPlateSlot.LeftRing => Penumbra.GameData.Enums.EquipSlot.LFinger,
+				_ => throw new Exception($"Unidentified GlamourPlateSlot: {slot}")
+			};
+		}
 		public static EquipIndex? ToEquipIndex(this GlamourPlateSlot slot) {
 			return slot switch {
 				GlamourPlateSlot.Head => EquipIndex.Head,
@@ -32,6 +49,12 @@ namespace Dresser.Extensions {
 				GlamourPlateSlot.MainHand => WeaponIndex.MainHand,
 				GlamourPlateSlot.OffHand => WeaponIndex.OffHand,
 				_ => null
+			};
+		}
+		public static bool IsWeapon(this GlamourPlateSlot slot) {
+			return slot switch {
+				GlamourPlateSlot.MainHand or GlamourPlateSlot.OffHand => true,
+				_ => false
 			};
 		}
 
