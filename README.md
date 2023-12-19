@@ -8,6 +8,7 @@ A [Dalamud](https://discord.gg/3NMcUV5) plugin aiming to ease glamour dresser ex
 This tool is still under development, there are bugs and missing features.
 It is not aiming to alter appearance outside of its prupose, the altered appearances will be removed when leaving the tool.
 
+Any feedback would be appreciated on [Discord](https://discord.gg/kXwKDFjXBd).
 
 ## Acknowledgements
 
