@@ -49,9 +49,10 @@ namespace Dresser.Windows.Components {
 		public static void DrawIcon(InventoryItem? item) {
 			bool _ = false;
 			bool __ = false;
-			DrawIcon(item, ref _, ref __);
+			DrawIcon(item, ref _, ref __, out __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
+			clickedMiddle = false;
 
 			if (PluginServices.Context.LocalPlayer == null
 				|| PluginServices.Context.LocalPlayerRace == null
@@ -73,7 +74,7 @@ namespace Dresser.Windows.Components {
 
 			if (item.ItemId == 0)
 				image = null;
-			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, iconImageFlag, item,contextAction, emptySlot, sizeMod);
+			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, out clickedMiddle, iconImageFlag, item,contextAction, emptySlot, sizeMod);
 			var isTooltipActive2 = isTooltipActive;
 
 			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
@@ -202,11 +203,11 @@ namespace Dresser.Windows.Components {
 		}
 		private static bool DrawImage(IDalamudTextureWrap image, Dye? dye, bool isDyeable, InventoryItem item, IconImageFlag iconImageFlag = 0) {
 			bool _ = false;
-			return DrawImage(image, dye, isDyeable, ref _, iconImageFlag, item);
+			return DrawImage(image, dye, isDyeable, ref _, out _, iconImageFlag, item);
 		}
-		private static bool DrawImage(IDalamudTextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
+		private static bool DrawImage(IDalamudTextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, out bool clickedMiddle, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
-
+			clickedMiddle = false;
 			var iconSize = IconSize * sizeMod;
 
 			bool wasHovered = hovering;
@@ -242,6 +243,7 @@ namespace Dresser.Windows.Components {
 				}
 
 				clicked = ImGui.IsItemClicked();
+				clickedMiddle = ImGui.IsItemClicked(ImGuiMouseButton.Middle);
 				hovering = ImGui.IsItemHovered();
 				if (ImGui.BeginPopupContextItem($"ContextMenuItemIcon##{((BrowserIndex)item)}##{emptySlot.GetHashCode()}")) {
 					contextAction?.Invoke(item, emptySlot);

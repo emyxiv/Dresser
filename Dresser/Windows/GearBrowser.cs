@@ -662,7 +662,7 @@ namespace Dresser.Windows {
 						var selectedInCurrentGear = itemHash == selectedItemHash;
 						if (selectedInCurrentGear) HoveredIncrement = i;
 						isHovered |= selectedInCurrentGear;
-						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, null, ContextMenuBrowser);
+						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, out bool clickedMiddle, null, ContextMenuBrowser);
 						var hoverDown = !selectedInCurrentGear && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
 
 						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
@@ -772,7 +772,7 @@ namespace Dresser.Windows {
 			var slot = items.First().Item.GlamourPlateSlot();
 			foreach (var item in items) {
 				bool isHovering = iconKey == DrawListOfItemIconsHoveredIcon;
-				if(ItemIcon.DrawIcon(item, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod)) {
+				if(ItemIcon.DrawIcon(item, ref isHovering, ref isAnotherTooltipActive, out bool clickedMiddle, slot, null, sizeMod)) {
 					PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
 				}
 				if (isHovering) DrawListOfItemIconsHoveredIcon = iconKey;

@@ -384,7 +384,7 @@ namespace Dresser.Services {
 
 
 					bool isHovering = iconKey == HoveredIcon;
-					ItemIcon.DrawIcon(replacementItem, ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
+					ItemIcon.DrawIcon(replacementItem, ref isHovering, ref isAnotherTooltipActive, out bool clickedMiddle, slot, null, sizeMod);
 					if (isHovering) HoveredIcon = iconKey;
 					iconKey++;
 
@@ -394,7 +394,7 @@ namespace Dresser.Services {
 
 
 					isHovering = iconKey == HoveredIcon;
-					ItemIcon.DrawIcon(diffToReplacePlate.GetSlot(slot), ref isHovering, ref isAnotherTooltipActive, slot, null, sizeMod);
+					ItemIcon.DrawIcon(diffToReplacePlate.GetSlot(slot), ref isHovering, ref isAnotherTooltipActive, out clickedMiddle, slot, null, sizeMod);
 					if (isHovering) HoveredIcon = iconKey;
 					iconKey++;
 				}
