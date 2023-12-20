@@ -28,33 +28,46 @@ public class ConfigWindow : Window, IDisposable {
 		this.Size = new Vector2(232, 75);
 		this.SizeCondition = ImGuiCond.FirstUseEver;
 
-		sections = new() {
-			{ "Dependencies", Dependencies },
-			{ "Portable Plates", DrawPlatesConfig },
-			{ "Windows & sizing", DrawWindowsAndSizingConfigs },
-			{ "Icons", DrawIconsConfigs },
-			{ "Behaviors", DrawBehaviourConfigs },
-			{ "Penumbra", DrawPenumbraConfigs },
+		Tabs = new Dictionary<string, Dictionary<string, Action>>() {
+			{"Dependencies",new () {
+				{ "Required Plugins", RequiredPlugins },
+				{ "Optional Plugins", OptionalPlugins },
+			}},
+			{"Dresser",new () {
+				{ "Portable Plates", DrawPlatesConfig },
+				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
+				{ "Icons", DrawIconsConfigs },
+				{ "Behaviors", DrawBehaviourConfigs },
+			}},
+			{"Mod Browser",new () {
+				{ "Penumbra", DrawPenumbraConfigs },
+			}},
 		};
 	}
 
-	private Dictionary<string, Action> sections;
+	private Dictionary<string, Dictionary<string, Action>> Tabs;
 
 	public void Dispose() { }
 
 	public override void Draw() {
-		// can't ref a property, so use a local copy
-		//var configValue = this.Configuration.SomePropertyToBeSavedAndWithADefault;
-		//if (ImGui.Checkbox("Random Config Bool", ref configValue)) {
-		//	Configuration.SomePropertyToBeSavedAndWithADefault = configValue;
-		//	//can save immediately on change, if you don't want to provide a "Save and Close" button
-		//	Configuration.Save();
-		//}
+		if (!ImGui.BeginTabBar("##ConfigWindowTabs")) return;
 
-		var draw = ImGui.GetWindowDrawList();
+		foreach ((var tabName, var sections) in Tabs) {
+			if (!ImGui.BeginTabItem(tabName)) continue;
+			if (!ImGui.BeginChild($"##{tabName}##ConfigWindowTabs")) { ImGui.EndTabItem(); continue; }
+			DrawTabContents(sections);
+			ImGui.EndChild();
+			ImGui.EndTabItem();
+		}
+
+		ImGui.EndTabBar();
+	}
+	private void DrawTabContents(Dictionary<string, Action> tabContents) {
 		var fontSize = ImGui.GetFontSize();
 		var textColor = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]);
-		foreach ((var title, var contents) in sections) {
+		var draw = ImGui.GetWindowDrawList();
+
+		foreach ((var title, var contents) in tabContents) {
 
 			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize * 0.5f);
 
@@ -64,13 +77,14 @@ public class ConfigWindow : Window, IDisposable {
 			var titelRectSize = ImGui.GetItemRectSize();
 			var end = start + new Vector2(titelRectSize.X, 0);
 			draw.AddLine(start, end, textColor, fontSize * 0.15f);
-			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize*1.5f);
+			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize * 1.5f);
 
 			contents();
 			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize * 1.5f);
 
-
 		}
+
+
 	}
 
 	private void DrawBehaviourConfigs() {
@@ -163,7 +177,7 @@ public class ConfigWindow : Window, IDisposable {
 
 	}
 
-	private void Dependencies() {
+	private void RequiredPlugins() {
 		if (PluginServices.Context.AllaganToolsState) {
 			ImGui.TextColored(ItemIcon.ColorGood, "Allagan Tools Found");
 			//PluginServices.AllaganTools.CheckMethodAvailability();
@@ -173,8 +187,8 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
 			ImGui.TextWrapped("To find items in inventories, please install Allagan Tools plugin from Critical Impact.");
 		}
-
-
+	}
+	private void OptionalPlugins() {
 		if (PluginServices.Context.GlamourerState) {
 			var glamourerVersions = PluginServices.Glamourer.ApiVersions();
 			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API Found (Version {glamourerVersions.Major}.{glamourerVersions.Minor})");

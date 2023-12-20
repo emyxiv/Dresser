@@ -65,7 +65,7 @@ namespace Dresser.Services {
 			if (IsGlamingAtDresser != _lastState_IsGlamingAtDresser) OnChangeGlamingAtDresser?.Invoke(IsGlamingAtDresser);
 			_lastState_IsGlamingAtDresser = IsGlamingAtDresser;
 
-			IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false;
+			try { IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false; } catch (Exception) { IsCurrentGearWindowOpen = false; }
 
 			if (IsCurrentGearWindowOpen) {
 				IsBrowserWindowOpen = Plugin.GetInstance()?.IsBrowserVisible() ?? false;
