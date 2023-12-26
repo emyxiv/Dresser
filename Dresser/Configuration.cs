@@ -32,6 +32,7 @@ namespace Dresser {
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearPortablePlateJobIcons = true;
 		public bool CurrentGearPortablePlateJobBgColors = false;
+		public GlamourPlateSlot CurrentGearSelectedSlot = GlamourPlateSlot.Body;
 
 		public bool CurrentGearDisplayGear = false;
 		public bool CurrentGearDisplayHat = true;
