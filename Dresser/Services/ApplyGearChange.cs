@@ -168,6 +168,7 @@ namespace Dresser.Services {
 		}
 		public void SelectCurrentSlot(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
+			ConfigurationManager.Config.CurrentGearSelectedSlot = slot;
 			GearBrowser.RecomputeItems();
 		}
 		public void ExecuteCurrentItem(GlamourPlateSlot slot) {

@@ -40,6 +40,7 @@ public class CurrentGear : Window, IDisposable {
 		=> Styler.PopStyleCollection();
 	public override void OnOpen() {
 		base.OnOpen();
+		if (GearBrowser.SelectedSlot == null) PluginServices.ApplyGearChange.SelectCurrentSlot(ConfigurationManager.Config.CurrentGearSelectedSlot);
 		PluginServices.ApplyGearChange.EnterBrowsingMode();
 	}
 
