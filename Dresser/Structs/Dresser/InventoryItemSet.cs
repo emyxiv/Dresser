@@ -188,8 +188,10 @@ namespace Dresser.Structs.Dresser {
 				.Select(group => group.Key); // Include all items from each group
 		}
 
+		public readonly bool HasModdedItem()
+			=> Items.Any(i => i.Value?.IsModded() ?? false );
 
-		public void ApplyAppearance() {
+		public readonly void ApplyAppearance() {
 			PluginServices.Context.LocalPlayer?.EquipSet(this);
 		}
 	}

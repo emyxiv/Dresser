@@ -6,7 +6,8 @@ using Dresser.Structs.Dresser;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
-using DresserInventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using System.Diagnostics;
+
 using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter;
 
 namespace Dresser.Extensions {
@@ -15,7 +16,7 @@ namespace Dresser.Extensions {
 
 		// apply appearance of set items
 		public unsafe static void EquipSet(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
-			if (PluginServices.Context.GlamourerState)
+			if (PluginServices.Context.MustGlamourerApply() && !set.HasModdedItem())
 				playerCharacter.EquipGlamourer(set);
 			else {
 				//PluginLog.Debug($"dddv => {set.Items.Count}");
@@ -29,20 +30,25 @@ namespace Dresser.Extensions {
 		}
 
 		// apply appearance of single item
-		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, DresserInventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
-			if (PluginServices.Context.GlamourerState) {
+		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+			if (PluginServices.Context.MustGlamourerApply() && !item.IsModded()) {
+				//PluginLog.Debug($"Apply Item set with EquipGlamourer through Equip {slot}, {item.FormattedName}");
 				playerCharacter.EquipGlamourer(new Structs.Dresser.InventoryItemSet(slot, item));
 			} else {
 				playerCharacter.EquipStandalone(item, slot);
 			}
 		}
 		public unsafe static void EquipGlamourer(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
+			//PluginLog.Debug($"Apply Item set with EquipGlamourer \n{new StackTrace()}");
 			//PluginLog.Debug($"ddd => {set.Items.Count}");
-			var json = Glamourer.Designs.Design.PrepareDesign(set);
-			json.ToClipboard();
+			var design = PluginServices.Glamourer.GetAllCustomizationDesignFromCharacter(playerCharacter);
+			if (design == null) return;
+			var json = Glamourer.Designs.Design.PrepareDesign(design, set);
+			//json.ToClipboard();
 			PluginServices.Glamourer.ApplyOnlyEquipmentToCharacter(json, playerCharacter);
 		}
-		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, DresserInventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+			PluginLog.Debug($"Apply Item with EquipStandalone");
 			if (slot.IsWeapon()) {
 				var weaponIndex = slot.ToWeaponIndex();
 				if (weaponIndex != null) {
@@ -84,7 +90,7 @@ namespace Dresser.Extensions {
 		}
 
 		public unsafe static void DisplayHeadGearIfHidden(this SubKindsPlayerCharacter playerCharacter) {
-			if (PluginServices.Context.GlamourerState) return;
+			if (PluginServices.Context.MustGlamourerApply()) return;
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
 			bool mustResetHat = !drawData.IsHatHidden != ConfigurationManager.Config.CurrentGearDisplayHat;
 			if(mustResetHat) {
@@ -95,19 +101,25 @@ namespace Dresser.Extensions {
 			drawData.SetVisor(ConfigurationManager.Config.CurrentGearDisplayVisor);
 		}
 		public static void RedrawHeadGear(this SubKindsPlayerCharacter playerCharacter) {
-			if (PluginServices.Context.GlamourerState) {
+			ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
+
+			if (PluginServices.Context.MustGlamourerApply() && !plate.HasModdedItem()) {
 				playerCharacter.EquipGlamourer(new());
 				return;
 			}
 
-			playerCharacter.Equip(EquipIndex.Head, playerCharacter.EquipmentModel(EquipIndex.Head));
+			var currentHat = plate.GetSlot(GlamourPlateSlot.Head);
+			if (currentHat != null) PluginServices.ApplyGearChange.ApplyItemAppearanceOnPlayerWithMods(currentHat, GlamourPlateSlot.Head);
 		}
 		public unsafe static void DisplayWeaponIfHidden(this SubKindsPlayerCharacter playerCharacter) {
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
 			drawData.HideWeapons(!ConfigurationManager.Config.CurrentGearDisplayWeapon);
 		}
-		public static unsafe void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
-			if (PluginServices.Context.GlamourerState) {
+		public static void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
+
+			var didGetValue = ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
+
+			if (PluginServices.Context.MustGlamourerApply() && !plate.HasModdedItem()) {
 				playerCharacter.EquipGlamourer(new());
 				return;
 			}
@@ -120,11 +132,18 @@ namespace Dresser.Extensions {
 
 
 
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
-				var itemMain = plate.GetSlot(GlamourPlateSlot.MainHand);
-				var itemOff = plate.GetSlot(GlamourPlateSlot.OffHand);
-				playerCharacter.Equip(WeaponIndex.MainHand, ConfigurationManager.Config.CurrentGearDisplayWeapon && itemMain != null ? itemMain.ToWeaponEquipMain() : WeaponEquip.Empty);
-				playerCharacter.Equip(WeaponIndex.OffHand, ConfigurationManager.Config.CurrentGearDisplayWeapon && itemOff != null ? itemOff.ToWeaponEquipSub() : WeaponEquip.Empty);
+			if (didGetValue) {
+				if (!ConfigurationManager.Config.CurrentGearDisplayWeapon) {
+					playerCharacter.Equip(WeaponIndex.MainHand, WeaponEquip.Empty);
+					playerCharacter.Equip(WeaponIndex.OffHand, WeaponEquip.Empty);
+				} else {
+					var itemMain = plate.GetSlot(GlamourPlateSlot.MainHand);
+					if (itemMain != null) PluginServices.ApplyGearChange.ApplyItemAppearanceOnPlayerWithMods(itemMain, GlamourPlateSlot.MainHand);
+					var itemOff = plate.GetSlot(GlamourPlateSlot.OffHand);
+					if(itemOff != null)	PluginServices.ApplyGearChange.ApplyItemAppearanceOnPlayerWithMods(itemOff, GlamourPlateSlot.OffHand);
+				}
+
+
 			}
 
 

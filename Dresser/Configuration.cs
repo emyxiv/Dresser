@@ -25,6 +25,10 @@ namespace Dresser {
 		}
 		public int Version { get; set; } = 0;
 
+		public bool Debug = false;
+		public bool EnablePenumbraModding = false;
+		public bool ForceStandaloneAppearanceApply = false;
+
 		public InventoryItemSet DisplayPlateItems { get; set; } = new();
 		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();
 		public ushort NumberOfFreePendingPlates { get; set; } = 19;

@@ -97,5 +97,8 @@ namespace Dresser.Services {
 			GlamourerState = PluginServices.Glamourer.IsInitialized();
 			PenumbraState = PluginServices.Penumbra.GetEnabledState();
 		}
+		public bool MustGlamourerApply() {
+			return GlamourerState && !ConfigurationManager.Config.ForceStandaloneAppearanceApply;
+		}
 	}
 }
