@@ -1,13 +1,13 @@
 ﻿namespace Dresser.Structs {
 	public class ItemModel {
 		public ushort Id { get; set; }
-		public ushort Base { get; set; }
 		public ushort Variant { get; set; }
+		public ushort Base { get; set; }
 
 		public ItemModel(ulong var, bool isWep = false) {
 			Id = (ushort)var;
-			Base = (ushort)(isWep ? var >> 16 : 0);
 			Variant = (ushort)(isWep ? var >> 32 : var >> 16);
+			Base = (ushort)(isWep ? var >> 16 : 0);
 		}
 		public static ulong ToUlong(ItemModel itemModel, bool isWep = false) {
 			ulong result = itemModel.Id;
