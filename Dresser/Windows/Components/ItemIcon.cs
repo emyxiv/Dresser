@@ -129,6 +129,10 @@ namespace Dresser.Windows.Components {
 							ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
 							ImGui.SameLine();
 							ImGui.TextColored(ColorGreyDark, $"]");
+
+							ImGui.TextColored(ColorGreyDark, $"MM: [{item.Item.ModelMain}] {item.Item.ModelMainItemModel()}");
+							ImGui.SameLine();
+							ImGui.TextColored(ColorGreyDark, $"MS: [{item.Item.ModelSub}] {item.Item.ModelSubItemModel()}");
 						}
 						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.GetPatch()}]");
 						if (isDyeable) ImGui.TextColored(dye?.RowId != 0 ? ColorGoodLight : ColorGrey, $"{dye?.Name}");
