@@ -20,5 +20,8 @@
 			}
 			return result;
 		}
+		public override string ToString() {
+			return $"({Id}, {Variant}, {Base})";
+		}
 	}
 }

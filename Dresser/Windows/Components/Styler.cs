@@ -16,6 +16,7 @@ namespace Dresser.Windows.Components {
 		public static Vector4 CollectionColorScrollbar = (new Vector4(116, 123, 98, 255) / 255 * 0.2f) + new Vector4(0, 0, 0, 1);
 		public static Vector4 ColorIconImageTintDisabled = new(1, 1, 1, 0.5f);
 		public static Vector4 ColorIconImageTintEnabled = Vector4.One;
+		public static Vector4 DiscordColor = new Vector4(86, 98, 246, 255) / 255;
 
 		public static void PushStyleCollection() {
 			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 5f);

@@ -227,6 +227,7 @@ namespace Dresser.Windows.Components {
 			if (!AnyItemTooltiping && ImGui.IsItemHovered()) {
 				AnyItemTooltiping = true;
 				ImGui.BeginTooltip();
+				ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);
 				action();
 				ImGui.EndTooltip();
 			} else

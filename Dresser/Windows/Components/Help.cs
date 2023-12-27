@@ -22,7 +22,6 @@ namespace Dresser.Windows.Components {
 		}
 
 
-		private static Vector4 DiscordColor = new Vector4(86, 98, 246, 255) / 255;
 		public static void Draw() {
 
 			if (ImGui.CollapsingHeader("Introduction & Disclaimer", ImGuiTreeNodeFlags.DefaultOpen)) {
@@ -47,7 +46,7 @@ namespace Dresser.Windows.Components {
 				ImGui.Text($"Suggestions and bug reports are welcome on ");
 				ImGui.SameLine();
 
-				ImGui.PushStyleColor(ImGuiCol.Button, DiscordColor);
+				ImGui.PushStyleColor(ImGuiCol.Button, Styler.DiscordColor);
 				if (ImGui.Button("Discord"))
 					"https://discord.gg/kXwKDFjXBd".OpenBrowser();
 				ImGui.PopStyleColor();
