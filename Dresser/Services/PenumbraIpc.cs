@@ -155,6 +155,7 @@ internal class PenumbraIpc : IDisposable {
 		return items;
 	}
 
+	// carefull here, the allowInheritance seems reversed?
 	internal List<(string Path, string Name)> GetEnabledModsForCollection(string collection, bool allowInheritance) {
 		List<(string Path, string Name)> DaCollModsSettings = new();
 		foreach (var mod in PluginServices.Penumbra.GetMods()) {
@@ -508,5 +509,18 @@ internal class PenumbraIpc : IDisposable {
 	}
 	internal bool OpenModWindow((string modDirectory, string modName) mod) {
 		return OpenMainWindow(TabType.Mods, mod.modDirectory, mod.modName) == PenumbraApiEc.Success;
+	}
+
+	internal int CountModsDresserApplyCollection() {
+		return GetEnabledModsForCollection(ConfigurationManager.Config.PenumbraCollectionApply, true).Count();
+	}
+	internal void CleanDresserApplyCollection() {
+
+		foreach(var mod in GetEnabledModsForCollection(ConfigurationManager.Config.PenumbraCollectionApply, true)){
+
+			PluginLog.Debug($"reset apply state of mod {mod.Path},{mod.Name}");
+			PluginServices.Penumbra.TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, mod.Path, mod.Name, true);
+		}
+
 	}
 }

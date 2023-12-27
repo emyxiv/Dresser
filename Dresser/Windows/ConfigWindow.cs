@@ -44,14 +44,14 @@ public class ConfigWindow : Window, IDisposable {
 			}},
 		};
 
-		AdjustDebugMode();
+		AdjustDynamicSections();
 	}
 
 	private Dictionary<string, Dictionary<string, Action>> Tabs;
 
 	public void Dispose() { }
 
-	private void AdjustDebugMode() {
+	private void AdjustDynamicSections() {
 		if (ConfigurationManager.Config.Debug && !Tabs.ContainsKey("Debug")) {
 			Tabs.Add("Debug", new Dictionary<string, Action> {
 				{ "Debug", DrawDebugSection}
@@ -59,12 +59,21 @@ public class ConfigWindow : Window, IDisposable {
 		} else if (!ConfigurationManager.Config.Debug && Tabs.ContainsKey("Debug")) {
 			Tabs.Remove("Debug");
 		}
+
+		if (ConfigurationManager.Config.EnablePenumbraModding && !Tabs.ContainsKey("Mod Browser")) {
+			Tabs.Add("Mod Browser", new Dictionary<string, Action> {
+				{ "Penumbra", DrawPenumbraConfigs}
+			});
+		} else if (!ConfigurationManager.Config.EnablePenumbraModding && Tabs.ContainsKey("Mod Browser")) {
+			Tabs.Remove("Mod Browser");
+		}
+
 	}
 
 	public override void Draw() {
 		if (!ImGui.BeginTabBar("##ConfigWindowTabs")) return;
 
-		AdjustDebugMode();
+		AdjustDynamicSections();
 		foreach ((var tabName, var sections) in Tabs) {
 			if (!ImGui.BeginTabItem(tabName)) continue;
 			if (!ImGui.BeginChild($"##{tabName}##ConfigWindowTabs")) { ImGui.EndTabItem(); continue; }
@@ -212,12 +221,26 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API connected (Version {glamourerVersions.Major}.{glamourerVersions.Minor})");
 
+			// reverse ForceStandaloneAppearanceApply
+			var useGlamourerToApplyAppearance = !ConfigurationManager.Config.ForceStandaloneAppearanceApply;
+			ImGui.Checkbox($"Enable Glamourer compatibility##OptionalPlugins{(ConfigurationManager.Config.EnablePenumbraModding?" (disabled for mods)":"")}##ConfigWindow", ref useGlamourerToApplyAppearance);
+			GuiHelpers.Tooltip(() => {
+				ImGui.TextWrapped("This will ask Glamourer to apply item's appearance when possible");
+				if (PluginServices.Context.PenumbraState) {
+					ImGui.Bullet(); ImGui.SameLine();
+					ImGui.TextWrapped("Modded items will not be applied with Glamourer");
+				}
+			});
+			ConfigurationManager.Config.ForceStandaloneAppearanceApply = !useGlamourerToApplyAppearance;
+
 		}
 		if (PluginServices.Context.PenumbraState) {
 			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
 			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorGood, $"Penumbra API connected (Version: Breaking {penumbraVersions.Breaking}, Feature {penumbraVersions.Features})");
+
+			ImGui.Checkbox($"Enable mod browsing with penumbra (experimental)##OptionalPlugins##ConfigWindow", ref ConfigurationManager.Config.EnablePenumbraModding);
 		}
 	}
 
