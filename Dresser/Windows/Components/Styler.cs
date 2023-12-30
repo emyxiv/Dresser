@@ -1,21 +1,17 @@
 ﻿using Dresser.Services;
+
 using ImGuiNET;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dresser.Windows.Components {
 	internal class Styler {
 
-		public static Vector4 CollectionColorBackground = new Vector4(113, 98, 119, 200) / 255;
-		public static Vector4 CollectionColorBorder = (new Vector4(116, 123, 98, 255) / 255 * 0.4f) + new Vector4(0, 0, 0, 1);
-		public static Vector4 CollectionColorScrollbar = (new Vector4(116, 123, 98, 255) / 255 * 0.2f) + new Vector4(0, 0, 0, 1);
-		public static Vector4 ColorIconImageTintDisabled = new(1, 1, 1, 0.5f);
-		public static Vector4 ColorIconImageTintEnabled = Vector4.One;
+		public static Vector4 CollectionColorBackground => ConfigurationManager.Config.CollectionColorBackground;
+		public static Vector4 CollectionColorBorder => ConfigurationManager.Config.CollectionColorBorder;
+		public static Vector4 CollectionColorScrollbar => ConfigurationManager.Config.CollectionColorScrollbar;
+		public static Vector4 ColorIconImageTintDisabled => ConfigurationManager.Config.ColorIconImageTintDisabled;
+		public static Vector4 ColorIconImageTintEnabled => ConfigurationManager.Config.ColorIconImageTintEnabled;
 		public static Vector4 DiscordColor = new Vector4(86, 98, 246, 255) / 255;
 
 		public static void PushStyleCollection() {

@@ -20,8 +20,12 @@ namespace Dresser {
 	[Serializable]
 	public class Configuration : IPluginConfiguration {
 		public Configuration() {
+		}
+		public void Load() {
 			LoadFilterInventoryCategory();
 			LoadAdditionaltems();
+			SortOrder = InventoryItemOrder.Defaults();
+			MarkReloaded();
 		}
 		public int Version { get; set; } = 0;
 
@@ -48,6 +52,7 @@ namespace Dresser {
 
 		public bool WindowsHotkeysAllowAfterLoosingFocus = false;
 		public bool WindowsHotkeysPasstoGame = false;
+		public bool GearBrowserSourceHideEmpty = true;
 
 		// Help popup
 		public bool CollapsibleIntroductionDisclaimer = true;
@@ -56,6 +61,30 @@ namespace Dresser {
 		public bool CollapsibleOtherTips = true;
 		public bool CollapsibleKnownIssues = true;
 
+		// ---- Colors ----
+		// frames
+		public Vector4 CollectionColorBackground = new Vector4(113, 98, 119, 200) / 255;
+		public Vector4 CollectionColorBorder = (new Vector4(116, 123, 98, 255) / 255 * 0.4f) + new Vector4(0, 0, 0, 1);
+		public Vector4 CollectionColorScrollbar = (new Vector4(116, 123, 98, 255) / 255 * 0.2f) + new Vector4(0, 0, 0, 1);
+		public Vector4 ColorIconImageTintDisabled = new(1, 1, 1, 0.5f);
+		public Vector4 ColorIconImageTintEnabled = Vector4.One;
+
+		// plate selector
+		public Vector4 PlateSelectorRestColor = new(1, 1, 1, 0.70f);
+		public Vector4 PlateSelectorHoverColor = new(1, 1, 1, 1);
+		public Vector4 PlateSelectorActiveColor = new(1, 0.95f, 0.8f, 1);
+		public Vector4 PlateSelectorColorTitle = (new Vector4(116, 123, 98, 255) / 255 * 0.3f) + new Vector4(0, 0, 0, 1);
+		public Vector4 PlateSelectorColorRadio = ((new Vector4(116, 123, 98, 255) / 255 * 0.3f) * new Vector4(1, 1, 1, 0)) + new Vector4(0, 0, 0, 0.70f);
+
+		// text and icons
+		public Vector4 ColorGood                = new Vector4(124, 236, 56, 255) / 255;
+		public Vector4 ColorGoodLight           = new Vector4(180, 244, 170, 255) / 255;
+		public Vector4 ColorBad                 = new Vector4(237, 107, 89, 255) / 255;
+		public Vector4 ColorGrey                = new Vector4(199, 198, 197, 255) / 255;
+		public Vector4 ColorGreyDark            = new Vector4(199, 198, 197, 255) / 255 / 1.1f;
+		public Vector4 ColorBronze              = new Vector4(240, 223, 191, 255) / 255;
+		public Vector4 ModdedItemWatermarkColor = new Vector4(240, 161, 223, 15) / 255;
+		public Vector4 ModdedItemColor          = new Vector4(223, 101, 240, 255) / 255;
 
 
 

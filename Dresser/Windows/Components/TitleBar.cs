@@ -18,7 +18,7 @@ namespace Dresser.Windows.Components {
 		public static ImDrawListPtr Draw(Window window) {
 			var draw = ImGui.GetWindowDrawList();
 
-			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(CurrentGear.CollectionColorTitle);
+			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.PlateSelectorColorTitle);
 			var hoverTextColor = ImGui.ColorConvertFloat4ToU32(GuiHelpers.ColorAddHSV(Styler.CollectionColorBackground * new Vector4(1, 1, 1, 0) + new Vector4(0.2f, 0.2f, 0.2f, 1),0, 0.2f,0.2f));
 
 			draw.AddText(

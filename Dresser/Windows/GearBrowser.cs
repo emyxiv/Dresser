@@ -170,15 +170,16 @@ namespace Dresser.Windows {
 		private static bool DrawFilters() {
 			bool filterChanged = false;
 
-			if (ImGui.CollapsingHeader($"Source##Source##GearBrowser", ConfigurationManager.Config.FilterSourceCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+			if (ImGui.CollapsingHeader($"Owned##Source##GearBrowser", ConfigurationManager.Config.FilterSourceCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSourceCollapse = true;
 				ImGui.Columns(ConfigurationManager.Config.FilterInventoryCategoryColumnNumber is >= 1 and <= 5 ? ConfigurationManager.Config.FilterInventoryCategoryColumnNumber : 2);
 				ImGui.BeginGroup();
 
 				int i = 0;
 				foreach ((var cat, var willDisplay) in ConfigurationManager.Config.FilterInventoryCategory) {
-					var numberOfItems = SavedQuantityCacheGet(cat);
 
+					var numberOfItems = SavedQuantityCacheGet(cat);
+					if (numberOfItems < 1 && ConfigurationManager.Config.GearBrowserSourceHideEmpty) continue;
 
 					var willDisplayValue = willDisplay;
 					if (numberOfItems < 1) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * new Vector4(1, 1, 1, 0.5f));

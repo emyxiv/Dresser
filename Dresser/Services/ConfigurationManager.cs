@@ -32,8 +32,7 @@ namespace Dresser.Services {
 
 			if (!File.Exists(ConfigurationFile)) {
 				Config = new Configuration();
-				Config.SortOrder = InventoryItemOrder.Defaults();
-				Config.MarkReloaded();
+				Config.Load();
 				return;
 			}
 
@@ -45,7 +44,7 @@ namespace Dresser.Services {
 			});
 			if (inventoryToolsConfiguration == null) {
 				Config = new Configuration();
-				Config.MarkReloaded();
+				Config.Load();
 				return;
 			}
 

@@ -29,14 +29,14 @@ namespace Dresser.Windows.Components {
 		public static Vector2 TooltipItemSpacing => TooltipFramePadding;
 		public static float DyeBorder => 3 * ConfigurationManager.Config.IconSizeMult;
 
-		public static Vector4 ColorGood = new Vector4(124, 236, 56, 255) / 255;
-		public static Vector4 ColorGoodLight = new Vector4(180, 244, 170, 255) / 255;
-		public static Vector4 ColorBad = new Vector4(237, 107, 89, 255) / 255;
-		public static Vector4 ColorGrey = new Vector4(199, 198, 197, 255) / 255;
-		public static Vector4 ColorGreyDark = ColorGrey / 1.1f;
-		public static Vector4 ColorBronze = new Vector4(240, 223, 191, 255) / 255;
-		public static Vector4 ModdedItemWatermarkColor = new Vector4(240, 161, 223, 15) / 255;
-		public static Vector4 ModdedItemColor = new Vector4(223, 101, 240, 255) / 255;
+		public static Vector4 ColorGood => ConfigurationManager.Config.ColorGood;
+		public static Vector4 ColorGoodLight => ConfigurationManager.Config.ColorGoodLight;
+		public static Vector4 ColorBad => ConfigurationManager.Config.ColorBad;
+		public static Vector4 ColorGrey => ConfigurationManager.Config.ColorGrey;
+		public static Vector4 ColorGreyDark => ConfigurationManager.Config.ColorGreyDark;
+		public static Vector4 ColorBronze => ConfigurationManager.Config.ColorBronze;
+		public static Vector4 ModdedItemWatermarkColor => ConfigurationManager.Config.ModdedItemWatermarkColor;
+		public static Vector4 ModdedItemColor => ConfigurationManager.Config.ModdedItemColor;
 
 		public static InventoryItem? ContexMenuItem = null;
 		public static Action<InventoryItem, GlamourPlateSlot?>? ContexMenuAction = null;

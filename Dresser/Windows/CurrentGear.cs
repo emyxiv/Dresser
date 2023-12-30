@@ -50,9 +50,6 @@ public class CurrentGear : Window, IDisposable {
 	}
 	public void Dispose() { }
 
-	public static Vector4 CollectionColorTitle = (new Vector4(116, 123, 98, 255) / 255 * 0.3f) + new Vector4(0, 0, 0, 1);
-	public static float opacityRadio = 0.70f;
-	public static Vector4 CollectionColorRadio = ((new Vector4(116, 123, 98, 255) / 255 * 0.3f) * new Vector4(1, 1, 1, 0)) + new Vector4(0, 0, 0, opacityRadio);
 	private static ushort? PlateSlotButtonHovering = null;
 	public override void Draw() {
 
@@ -125,10 +122,6 @@ public class CurrentGear : Window, IDisposable {
 		if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) textOffset += new Vector2(-10f, 0);
 		var textPlacement = textOffset * ConfigurationManager.Config.IconSizeMult;
 
-		Vector4 restColor = new(1, 1, 1, opacityRadio);
-		Vector4 hoverColor = new(1, 1, 1, 1);
-		Vector4 ActiveColor = new(1, 0.95f, 0.8f, 1);
-
 		ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates);
 		bool anythingHovered = false;
 		for (ushort plateNumber = 0; plateNumber < maxPlates; plateNumber++) {
@@ -143,8 +136,8 @@ public class CurrentGear : Window, IDisposable {
 				if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors && roleColor1 != null) roleColor = roleColor1 + new Vector4(0.6f, 0.6f, 0.6f, -0.1f);
 			}
 
-			var tint = PlateSlotButtonHovering == plateNumber ? hoverColor : roleColor??restColor;
-			if (isActive) tint = ActiveColor;
+			var tint = PlateSlotButtonHovering == plateNumber ? ConfigurationManager.Config.PlateSelectorHoverColor : roleColor??ConfigurationManager.Config.PlateSelectorRestColor;
+			if (isActive) tint = ConfigurationManager.Config.PlateSelectorActiveColor;
 			if (imageInfo != null) ImGui.Image(imageInfo.ImGuiHandle, radioSize, Vector2.Zero, Vector2.One, tint);
 			var clicked = ImGui.IsItemClicked();
 			var hovering = ImGui.IsItemHovered();
@@ -176,7 +169,7 @@ public class CurrentGear : Window, IDisposable {
 					PluginServices.Storage.FontRadio.ImFont,
 					fontSize,
 					ImGui.GetCursorScreenPos() + textPlacement,
-					ImGui.ColorConvertFloat4ToU32(CollectionColorRadio),
+					ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.PlateSelectorColorRadio),
 					$"{spacer}{plateNumber + 1}");
 			}
 

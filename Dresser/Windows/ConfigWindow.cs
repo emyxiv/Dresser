@@ -1,5 +1,6 @@
 using CriticalCommonLib.Extensions;
 
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 
@@ -8,7 +9,6 @@ using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
-
 using ImGuiNET;
 
 using Newtonsoft.Json;
@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
 namespace Dresser.Windows;
 
 public class ConfigWindow : Window, IDisposable {
@@ -33,11 +32,14 @@ public class ConfigWindow : Window, IDisposable {
 				{ "Required Plugins", RequiredPlugins },
 				{ "Optional Plugins", OptionalPlugins },
 			}},
-			{"Dresser",new () {
+			{"General",new () {
 				{ "Portable Plates", DrawPlatesConfig },
-				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
 				{ "Icons", DrawIconsConfigs },
 				{ "Behaviors", DrawBehaviourConfigs },
+			}},
+			{"Style",new () {
+				{ "Colors", DrawColorStyleConfig },
+				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
 			}},
 			{"Mod Browser",new () {
 				{ "Penumbra", DrawPenumbraConfigs },
@@ -110,6 +112,7 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void DrawBehaviourConfigs() {
+		ImGui.Checkbox($"Hide empty owned item types##Behaviours##Config", ref ConfigurationManager.Config.GearBrowserSourceHideEmpty);
 		ImGui.Checkbox($"(Experimental) Hotkeys after loosing window focus##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus);
 		GuiHelpers.Tooltip("For example, when loosing Gear Browser focus, the directional hotkeys will continue working until another window is focused or dresser is closed");
 
@@ -247,7 +250,7 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawPenumbraConfigs() {
 
 		if (ImGui.CollapsingHeader("Info##DrawPenumbraConfigs")) {
-			ImGui.TextWrapped($"This is part may be nerdy to configure. Due to current technical limitations (or knowledge limitation) it is not straightforward to set-up and might require manipulations in Penumbra.");
+			ImGui.TextWrapped($"This is feature may be nerdy to configure. Due to current technical limitations (or knowledge limitation) it is not straightforward to set-up and might require manipulations in Penumbra.");
 
 			ImGui.Spacing();
 			ImGui.TextWrapped($"The method to apply appearance will only work for one mod per item, it will not work with conversion mods " +
@@ -329,7 +332,7 @@ public class ConfigWindow : Window, IDisposable {
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was enabled\nBefore apply appearance");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 1##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance = 60;
+				ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance = new Configuration().PenumbraDelayAfterModEnableBeforeApplyAppearance;
 
 
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
@@ -337,14 +340,14 @@ public class ConfigWindow : Window, IDisposable {
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter apply appearance\nBefore disabling the mod");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 2##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable = 500;
+				ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable = new Configuration().PenumbraDelayAfterApplyAppearanceBeforeModDisable;
 
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 			ImGui.DragInt($"Delay 3##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 3##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = 100;
+				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = new Configuration().PenumbraDelayAfterModDisableBeforeNextModLoop;
 
 		}
 
@@ -461,4 +464,55 @@ public class ConfigWindow : Window, IDisposable {
 		}
 	}
 
+	private void DrawColorStyleConfig() {
+		ImGui.TextDisabled("Frames");
+		ConfigColorVecot4(nameof(Configuration.CollectionColorBackground), "Window Background", "Background color for the frames that contain items", ImGuiColorEditFlags.None);
+		ConfigColorVecot4(nameof(Configuration.CollectionColorBorder), "Window Border", "Border color for the frames that contain items", ImGuiColorEditFlags.None);
+		ConfigColorVecot4(nameof(Configuration.CollectionColorScrollbar), "Scroll bar", "Scroll bar color for the frames that contain items (in Gear Browser)", ImGuiColorEditFlags.None);
+		ConfigColorVecot4(nameof(Configuration.ColorIconImageTintEnabled), "Icon Tint (Enabled)", "Tint of enabled icons (currencies)", ImGuiColorEditFlags.None);
+		ConfigColorVecot4(nameof(Configuration.ColorIconImageTintDisabled), "Icon Tint (Disabled)", "Tint of disabled icons (currencies)", ImGuiColorEditFlags.None);
+
+		ImGui.Separator();
+		ImGui.TextDisabled("Text");
+		ConfigColorVecot4(nameof(Configuration.PlateSelectorColorTitle), "Title");
+		ConfigColorVecot4(nameof(Configuration.ColorGood),"Good");
+		ConfigColorVecot4(nameof(Configuration.ColorGoodLight),"Good (light)");
+		ConfigColorVecot4(nameof(Configuration.ColorBad),"Bad");
+		ConfigColorVecot4(nameof(Configuration.ColorGrey),"Grey");
+		ConfigColorVecot4(nameof(Configuration.ColorGreyDark),"Grey (dark)");
+		ConfigColorVecot4(nameof(Configuration.ColorBronze),"Bronze");
+		ConfigColorVecot4(nameof(Configuration.ModdedItemColor), "Modded item name");
+		ConfigColorVecot4(nameof(Configuration.ModdedItemWatermarkColor),"Modded item tooltip watermark");
+
+		ImGui.Separator();
+		ImGui.TextDisabled("Plate selector");
+		ConfigColorVecot4(nameof(Configuration.PlateSelectorActiveColor), "Active");
+		ConfigColorVecot4(nameof(Configuration.PlateSelectorHoverColor), "Hover");
+		ConfigColorVecot4(nameof(Configuration.PlateSelectorRestColor), "Rest");
+		ConfigColorVecot4(nameof(Configuration.PlateSelectorColorRadio), "Radio text");
+
+
+	}
+
+	private static void ConfigColorVecot4(string propertyName, string label, string description = "", ImGuiColorEditFlags imguiColorEditFlag = ImGuiColorEditFlags.None) {
+
+		var fieldInfo = typeof(Configuration).GetField(propertyName);
+		if (fieldInfo == null) return;
+		var colGet = fieldInfo?.GetValue(ConfigurationManager.Config);
+		if (colGet == null || colGet.GetType() != typeof(Vector4)) return;
+		var color = (Vector4)colGet;
+
+		color = ImGuiComponents.ColorPickerWithPalette(propertyName.GetHashCode(), label, color, ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreview | ImGuiColorEditFlags.AlphaPreviewHalf | imguiColorEditFlag);
+		ImGui.SameLine();
+		GuiHelpers.TextTooltip(label, description);
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, $"{label}##Delay 3##ColorConfig##ConfigWindow", "Reset to default value")) {
+			var colorDefaultObj = fieldInfo?.GetValue(new Configuration());
+			if(colorDefaultObj != null && colorDefaultObj.GetType() == typeof(Vector4)) {
+				color = (Vector4)colorDefaultObj;
+			}
+		}
+
+		fieldInfo?.SetValue(ConfigurationManager.Config, color);
+	}
 }
