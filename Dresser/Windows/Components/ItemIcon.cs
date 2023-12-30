@@ -19,6 +19,8 @@ using System;
 using System.Linq;
 using System.Numerics;
 
+using static Dresser.Services.Storage;
+
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 
@@ -168,10 +170,18 @@ namespace Dresser.Windows.Components {
 
 						// Acquisition
 						ImGui.Separator();
+						var typEx = (InventoryTypeExtra)item.SortedContainer;
+						switch (typEx) {
+							case InventoryTypeExtra.RelicVendors:
+							case InventoryTypeExtra.CalamityVendors:
+								ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
+								break;
+						}
 
 						// Other info
-						ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
-						var zz = item.Item.Vendors;
+						//if((InventoryTypeExtra)item.SortedContainer == InventoryTypeExtra.CalamityVendors)
+						//ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
+						//var zz = item.Item.Vendors;
 						//var dd = zz.Select(shop => shop.Name).Distinct().ToList();
 						//var dd = zz.SelectMany(shop => shop.ENpcs.Select(n=>(n.Resident?.Singular ?? "Unknown",shop.Name)).Distinct()).Distinct().ToList();
 						//ImGui.Text($"Name: {string.Join(",",dd.Select(t=>$"{t.Item1}:{t.Name}"))}");
@@ -192,7 +202,7 @@ namespace Dresser.Windows.Components {
 						//zz.
 						// TODO: market price
 
-						ImGui.Text($"Sell for {item.SellToVendorPrice:n0} gil");
+						//ImGui.Text($"Sell for {item.SellToVendorPrice:n0} gil");
 					} catch (Exception ex) {
 						PluginLog.Warning($"Error when displaying item ToolTip\n{ex}");
 					}
