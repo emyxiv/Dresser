@@ -2,11 +2,16 @@
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
 
+using Dresser.Extensions;
 using Dresser.Logic;
+using Dresser.Structs.Dresser;
 
 using Glamourer.Designs;
 
 using Newtonsoft.Json.Linq;
+
+using Penumbra.GameData.Enums;
+using Penumbra.GameData.Structs;
 
 using System;
 
@@ -46,7 +51,9 @@ namespace Dresser.Services {
 		private readonly ICallGateSubscriber<Character?, uint, bool>            _unlockSubscriber;
 		private readonly ICallGateSubscriber<string, uint, bool>                _unlockNameSubscriber;
 
-		
+		private readonly ICallGateSubscriber<Character?, byte, ulong, uint, int> _setItemSubscriber;
+		private readonly ICallGateSubscriber<string, byte, ulong, uint, int>     _setItemByActorNameSubscriber;
+
 
 		public GlamourerService(DalamudPluginInterface pluginInterface) {
 			_apiVersionSubscriber  = pluginInterface.GetIpcSubscriber<int>                   ("Glamourer.ApiVersion");
@@ -79,6 +86,9 @@ namespace Dresser.Services {
 			_unlockSubscriber                      = pluginInterface.GetIpcSubscriber<Character?, uint, bool>   ("Glamourer.Unlock");
 			_unlockNameSubscriber                  = pluginInterface.GetIpcSubscriber<string, uint, bool>       ("Glamourer.UnlockName");
 
+			_setItemSubscriber            = pluginInterface.GetIpcSubscriber<Character?, byte, ulong, uint, int>("Glamourer.SetItem");
+			_setItemByActorNameSubscriber = pluginInterface.GetIpcSubscriber<string, byte, ulong, uint, int>    ("Glamourer.SetItemByActorName");
+
 		}
 		public bool IsInitialized()                                                                   { try { return _apiVersionSubscriber.                                 InvokeFunc() >= 0;                         } catch (Exception) { return false; } }
 
@@ -106,6 +116,23 @@ namespace Dresser.Services {
 		public bool Unlock(Character? character,uint lockCode)                                        { try { return _unlockSubscriber.                             InvokeFunc(character,lockCode);            } catch (Exception e) { PluginLog.Error(e, "Failed to contact Unlock");  return false; } }
 
 
+		public GlamourerErrorCode SetItem(Character? character, EquipSlot slot, CustomItemId itemId, uint key) {
+			try {
+				return (GlamourerErrorCode)_setItemSubscriber.InvokeFunc(character, (byte)slot, itemId.Id, key);
+			} catch (Exception e) {
+				PluginLog.Error(e, "Failed to contact SetItem"); return (GlamourerErrorCode)100;
+			}
+		}
+		public bool SetItem(Character? character, InventoryItem item, GlamourPlateSlot slot) {
+			return SetItem(character, slot.ToPenumbraEquipSlot(), item.Item.ToCustomItemId(slot), 0) == GlamourerErrorCode.Success;
+		}
+
+		public enum GlamourerErrorCode {
+			Success,
+			ActorNotFound,
+			ActorNotHuman,
+			ItemInvalid,
+		}
 
 		public void Dispose() {
 		}

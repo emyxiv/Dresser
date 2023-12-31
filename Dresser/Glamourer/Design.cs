@@ -1,4 +1,6 @@
-﻿using Dresser.Extensions;
+﻿using CriticalCommonLib.Sheets;
+
+using Dresser.Extensions;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
@@ -52,57 +54,7 @@ public class Design {
 
 			CustomItemId? mainItem = null;
 			if (item.ItemId == 0) mainItem = NothingId(slot.ToPenumbraEquipSlot()).Id;
-			else {
-				var equipItem = slot switch {
-					GlamourPlateSlot.MainHand or GlamourPlateSlot.OffHand => EquipItem.FromMainhand(item.Item),
-					_ => EquipItem.FromArmor(item.Item),
-				};
-
-				//if (slot == GlamourPlateSlot.MainHand) {
-				//	PluginLog.Debug($"mainhand => {equipItem.ModelId}, {equipItem.WeaponType}, {equipItem.Variant}, {equipItem.Type}");
-				//}
-
-				//var manualUlong = equipItem.ModelId.Id | (ulong)equipItem.WeaponType.Id << 16 | (ulong)equipItem.Variant.Id << 32;
-				//PluginLog.Debug($"weapon => {manualUlong}");
-				//manualUlong |= (ulong)equipItem.Type << 42;
-				//PluginLog.Debug($"weapon + type => {manualUlong}");
-				mainItem = new CustomItemId(equipItem.ModelId, equipItem.WeaponType, equipItem.Variant, equipItem.Type);
-				//mainItem = new CustomItemId(manualUlong);
-
-				//if (slot == GlamourPlateSlot.MainHand) {
-				//	PluginLog.Debug($"mainhand ({slot})>({slot.ToPenumbraEquipSlot()}) => {mainItem.Id} > {mainItem.Item.Id}, {(mainItem.IsItem ? "is": "not")} an item");
-				//}
-				//PluginLog.Debug($"new  = > jr:{equipItem.JobRestrictions}");
-
-
-
-				// below is attempt to check if weapon should be set or now, depending on item's weapon type and current's glamourer weapon type
-				if (ret.TryGetValue(slot.ToPenumbraEquipSlot().ToString(), out var slotObject)) {
-
-					var id = (ulong)(((JObject?)slotObject)?["ItemId"] ?? 0);
-					var cId = new CustomItemId(id);
-					//var eIt = EquipItem.FromId(cId);
-
-					//ulong CustomFlag = 1ul << 48;
-					
-					//var issss = cId.Id < CustomFlag;
-					//var dddsqs = ((SetId)cId.Id, (WeaponType)(cId.Id >> 16), (Variant)(cId.Id >> 32), (FullEquipType)(cId.Id >> 40));
-
-
-					//var foundItemOld = InventoryItem.FromModelMain(id, slot);
-
-
-					//PluginLog.Debug($"old = >  id:{id} | {cId.Item}");
-					//PluginLog.Debug($"old = > jr:{eIt.JobRestrictions}  cId:{cId} => {(issss?"YesItem":"notItem")} {dddsqs} <>>>>>>>> {foundItemOld?.ModelMain} :> {foundItemOld?.NameString}");
-					//var fd = eIt
-					//if (cId)
-
-
-					//EquipItem.FromId().Type == EquipSlot.MainHand
-
-				}
-
-			}
+			else                  mainItem = FromInventoryItem(item.Item, slot, ret);
 
 			//var hackedId = mainItem.Id | 1ul << 48;
 
@@ -132,6 +84,59 @@ public class Design {
 		ret["Weapon"] = SerializeToggles("Show", ConfigurationManager.Config.CurrentGearDisplayWeapon, true);
 
 		design["Equipment"] = ret;
+
+	}
+	public static CustomItemId FromInventoryItem(ItemEx item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
+		var equipItem = slot switch {
+			GlamourPlateSlot.MainHand or GlamourPlateSlot.OffHand => EquipItem.FromMainhand(item),
+			_ => EquipItem.FromArmor(item),
+		};
+
+		//if (slot == GlamourPlateSlot.MainHand) {
+		//	PluginLog.Debug($"mainhand => {equipItem.ModelId}, {equipItem.WeaponType}, {equipItem.Variant}, {equipItem.Type}");
+		//}
+
+		//var manualUlong = equipItem.ModelId.Id | (ulong)equipItem.WeaponType.Id << 16 | (ulong)equipItem.Variant.Id << 32;
+		//PluginLog.Debug($"weapon => {manualUlong}");
+		//manualUlong |= (ulong)equipItem.Type << 42;
+		//PluginLog.Debug($"weapon + type => {manualUlong}");
+		var mainItem = new CustomItemId(equipItem.ModelId, equipItem.WeaponType, equipItem.Variant, equipItem.Type);
+		//mainItem = new CustomItemId(manualUlong);
+
+		//if (slot == GlamourPlateSlot.MainHand) {
+		//	PluginLog.Debug($"mainhand ({slot})>({slot.ToPenumbraEquipSlot()}) => {mainItem.Id} > {mainItem.Item.Id}, {(mainItem.IsItem ? "is": "not")} an item");
+		//}
+		//PluginLog.Debug($"new  = > jr:{equipItem.JobRestrictions}");
+
+
+
+		// below is attempt to check if weapon should be set or now, depending on item's weapon type and current's glamourer weapon type
+		if (equipmentDesign != null && equipmentDesign.TryGetValue(slot.ToPenumbraEquipSlot().ToString(), out var slotObject)) {
+
+			var id = (ulong)(((JObject?)slotObject)?["ItemId"] ?? 0);
+			var cId = new CustomItemId(id);
+			//var eIt = EquipItem.FromId(cId);
+
+			//ulong CustomFlag = 1ul << 48;
+
+			//var issss = cId.Id < CustomFlag;
+			//var dddsqs = ((SetId)cId.Id, (WeaponType)(cId.Id >> 16), (Variant)(cId.Id >> 32), (FullEquipType)(cId.Id >> 40));
+
+
+			//var foundItemOld = InventoryItem.FromModelMain(id, slot);
+
+
+			//PluginLog.Debug($"old = >  id:{id} | {cId.Item}");
+			//PluginLog.Debug($"old = > jr:{eIt.JobRestrictions}  cId:{cId} => {(issss?"YesItem":"notItem")} {dddsqs} <>>>>>>>> {foundItemOld?.ModelMain} :> {foundItemOld?.NameString}");
+			//var fd = eIt
+			//if (cId)
+
+
+			//EquipItem.FromId().Type == EquipSlot.MainHand
+
+		}
+
+		return mainItem;
 
 	}
 

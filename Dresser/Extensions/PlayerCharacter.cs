@@ -31,9 +31,10 @@ namespace Dresser.Extensions {
 
 		// apply appearance of single item
 		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
-			if (PluginServices.Context.MustGlamourerApply() && !item.IsModded()) {
+			if (PluginServices.Context.MustGlamourerApply()) {
 				//PluginLog.Debug($"Apply Item set with EquipGlamourer through Equip {slot}, {item.FormattedName}");
-				playerCharacter.EquipGlamourer(new Structs.Dresser.InventoryItemSet(slot, item));
+				//playerCharacter.EquipGlamourer(new Structs.Dresser.InventoryItemSet(slot, item));
+				PluginServices.Glamourer.SetItem(playerCharacter, item, slot);
 			} else {
 				playerCharacter.EquipStandalone(item, slot);
 			}

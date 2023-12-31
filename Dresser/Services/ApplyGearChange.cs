@@ -169,7 +169,7 @@ namespace Dresser.Services {
 
 					foreach (var item in list) {
 						PluginLog.Error($"Process ApplyAppearanceQueue... item {item.Item.ModDirectory} ===> {item.Item.FormattedName}");
-						PluginServices.ApplyGearChange.ApplyItemAppearanceOnPlayer(item.Item,item.Slot,item.Item.IsModded());
+						PluginServices.ApplyGearChange.ApplyItemAppearanceOnPlayer(item.Item,item.Slot);
 					}
 
 				}, ignoreFirstDelay);
@@ -198,12 +198,13 @@ namespace Dresser.Services {
 
 
 		public void ApplyItemAppearanceOnPlayerWithMods(InventoryItem item, GlamourPlateSlot slot)
-			=> PrepareModsAndDo(item, slot, (i, s) => ApplyItemAppearanceOnPlayer(i, s, true));
-		public void ApplyItemAppearanceOnPlayer(InventoryItem item, GlamourPlateSlot slot)
-			=> ApplyItemAppearanceOnPlayer(item, slot, item.IsModded());
-		public void ApplyItemAppearanceOnPlayer(InventoryItem item, GlamourPlateSlot slot, bool forceStandalone = false) {
-			if(forceStandalone) Service.ClientState.LocalPlayer?.EquipStandalone(item, slot);
-			else Service.ClientState.LocalPlayer?.Equip(item,slot);
+			=> PrepareModsAndDo(item, slot, ApplyItemAppearanceOnPlayer);
+		//public void ApplyItemAppearanceOnPlayer(InventoryItem item, GlamourPlateSlot slot)
+		//	=> ApplyItemAppearanceOnPlayer(item, slot);
+		public void ApplyItemAppearanceOnPlayer(InventoryItem item, GlamourPlateSlot slot) {
+			//if(forceStandalone) Service.ClientState.LocalPlayer?.EquipStandalone(item, slot);
+			//else
+				Service.ClientState.LocalPlayer?.Equip(item,slot);
 		}
 
 
@@ -264,7 +265,7 @@ namespace Dresser.Services {
 				var item = plate.GetSlot(slot);
 				if (item != null) {
 					item.Stain = stain;
-					ApplyItemAppearanceOnPlayer(item, slot);
+					ApplyItemAppearanceOnPlayerWithMods(item, slot);
 				}
 			}
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);

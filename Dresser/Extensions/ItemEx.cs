@@ -191,5 +191,8 @@ namespace Dresser.Extensions {
 
 		public static bool IsSoldByAnyVendor(this CriticalItemEx item, IEnumerable<string> vendorNames)
 			=> Service.ExcelCache.ShopCollection.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular)));
+
+		public static CustomItemId ToCustomItemId(this CriticalItemEx item, GlamourPlateSlot slot)
+			=> Glamourer.Designs.Design.FromInventoryItem(item, slot);
 	}
 }
