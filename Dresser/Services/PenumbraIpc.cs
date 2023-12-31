@@ -158,7 +158,7 @@ internal class PenumbraIpc : IDisposable {
 	// carefull here, the allowInheritance seems reversed?
 	internal List<(string Path, string Name)> GetEnabledModsForCollection(string collection, bool allowInheritance) {
 		List<(string Path, string Name)> DaCollModsSettings = new();
-		foreach (var mod in PluginServices.Penumbra.GetMods()) {
+		foreach (var mod in PluginServices.Penumbra.GetNotBlacklistedMods()) {
 			var modSettings = PluginServices.Penumbra.GetCurrentModSettings(collection, mod.Path, mod.Name, allowInheritance);
 			if (modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue && modSettings.Item2.Value.EnabledState) {
 				PluginServices.Storage.ModsReloadingMax++;
