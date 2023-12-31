@@ -232,6 +232,8 @@ public class ConfigWindow : Window, IDisposable {
 				if (PluginServices.Context.PenumbraState) {
 					ImGui.Bullet(); ImGui.SameLine();
 					ImGui.TextWrapped("Modded items will not be applied with Glamourer");
+					ImGui.Bullet(); ImGui.SameLine();
+					ImGui.TextWrapped("Will show the changes to users synchronized with Mare");
 				}
 			});
 			ConfigurationManager.Config.ForceStandaloneAppearanceApply = !useGlamourerToApplyAppearance;
