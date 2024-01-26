@@ -100,7 +100,7 @@ public class Design {
 		//PluginLog.Debug($"weapon => {manualUlong}");
 		//manualUlong |= (ulong)equipItem.Type << 42;
 		//PluginLog.Debug($"weapon + type => {manualUlong}");
-		var mainItem = new CustomItemId(equipItem.ModelId, equipItem.WeaponType, equipItem.Variant, equipItem.Type);
+		var mainItem = new CustomItemId(equipItem.PrimaryId, equipItem.SecondaryId, equipItem.Variant, equipItem.Type);
 		//mainItem = new CustomItemId(manualUlong);
 
 		//if (slot == GlamourPlateSlot.MainHand) {
