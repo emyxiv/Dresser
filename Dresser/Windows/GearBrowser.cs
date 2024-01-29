@@ -286,12 +286,12 @@ namespace Dresser.Windows {
 				ImGui.Text("Equip Level");
 				// todo: ilvl
 				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if (filterChanged |= ImGui.DragFloat($"##Min##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.X, 1, 1, 665, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+				if (filterChanged |= ImGui.DragFloat($"##Min##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.X, 1, 1, 1000, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 					if (ConfigurationManager.Config.filterItemLevel.Y < ConfigurationManager.Config.filterItemLevel.X) ConfigurationManager.Config.filterItemLevel.Y = ConfigurationManager.Config.filterItemLevel.X;
 				}
 				ImGui.SameLine();
 				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if (filterChanged |= ImGui.DragFloat($"##Max##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.Y, 1, 1, 665, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+				if (filterChanged |= ImGui.DragFloat($"##Max##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.Y, 1, 1, 1000, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 					if (ConfigurationManager.Config.filterItemLevel.X > ConfigurationManager.Config.filterItemLevel.Y) ConfigurationManager.Config.filterItemLevel.X = ConfigurationManager.Config.filterItemLevel.Y;
 				}
 				ImGui.SameLine();
