@@ -118,7 +118,9 @@ namespace Dresser.Services {
 
 		public GlamourerErrorCode SetItem(Character? character, EquipSlot slot, CustomItemId itemId, byte stainId, uint key) {
 			try {
-				return (GlamourerErrorCode)_setItemSubscriber.InvokeFunc(character, (byte)slot, itemId.Id, stainId, key);
+				var iid = itemId.Id;
+				if (iid == 0) iid = (ulong)Design.NothingId(slot).Id;
+				return (GlamourerErrorCode)_setItemSubscriber.InvokeFunc(character, (byte)slot, iid, stainId, key);
 			} catch (Exception e) {
 				PluginLog.Error(e, "Failed to contact SetItem"); return (GlamourerErrorCode)100;
 			}

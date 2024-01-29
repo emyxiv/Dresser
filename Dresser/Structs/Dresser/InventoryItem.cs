@@ -66,6 +66,33 @@ namespace Dresser.Structs.Dresser {
 			return new InventoryItem { Container = item.Container, Slot = item.Slot, ItemId = item.ItemId, Quantity = item.Quantity, Spiritbond = item.Spiritbond, Condition = item.Condition, Flags = item.Flags, Materia0 = item.Materia0, Materia1 = item.Materia1, Materia2 = item.Materia2, Materia3 = item.Materia3, Materia4 = item.Materia4, MateriaLevel0 = item.MateriaLevel0, MateriaLevel1 = item.MateriaLevel1, MateriaLevel2 = item.MateriaLevel2, MateriaLevel3 = item.MateriaLevel3, MateriaLevel4 = item.MateriaLevel4, Stain = item.Stain, GlamourId = item.GlamourId, SortedContainer = item.SortedContainer, SortedCategory = item.SortedCategory, SortedSlotIndex = item.SortedSlotIndex, RetainerId = item.RetainerId, RetainerMarketPrice = item.RetainerMarketPrice, GearSets = item.GearSets, };
 		}
 		public static InventoryItem Zero => new InventoryItem();
+
+		public void Clear() {
+
+			this.Container = 0;
+			//this.Slot = 0;
+			this.ItemId = 0;
+			this.Quantity = 0;
+			this.Spiritbond = 0;
+			this.Condition = 0;
+			this.Flags = 0;
+			this.Materia0 = 0;
+			this.Materia1 = 0;
+			this.Materia2 = 0;
+			this.Materia3 = 0;
+			this.Materia4 = 0;
+			this.MateriaLevel0 = 0;
+			this.MateriaLevel1 = 0;
+			this.MateriaLevel2 = 0;
+			this.MateriaLevel3 = 0;
+			this.MateriaLevel4 = 0;
+			this.Stain = 0;
+
+			this.ModName = null;
+			this.ModDirectory = null;
+			this.ModModelPath = null;
+		}
+
 		public bool IsModded() {
 			return !this.ModDirectory.IsNullOrWhitespace();
 		}
@@ -75,7 +102,15 @@ namespace Dresser.Structs.Dresser {
 				&& this.ModDirectory == item2?.ModDirectory
 				&& this.ModModelPath == item2?.ModModelPath;
 		}
-
+		public bool IsMod((string Path, string Name)? mod) {
+			if (mod == null) return false; // always say it's different, even if both are null, it's not a mod
+			return this.ModName == mod?.Name
+				&& this.ModDirectory == mod?.Path;
+		}
+		public (string Path, string Name)? GetMod() {
+			if(this.ModDirectory.IsNullOrWhitespace() && this.ModName.IsNullOrWhitespace()) return null;
+			return (this.ModDirectory ?? "", this.ModName ?? "");
+		}
 
 		public ItemEquip ToItemEquip() {
 			var itemModelMain = this.Item.ModelMainItemModel();

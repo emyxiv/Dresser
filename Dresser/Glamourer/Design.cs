@@ -101,6 +101,7 @@ public class Design {
 		//manualUlong |= (ulong)equipItem.Type << 42;
 		//PluginLog.Debug($"weapon + type => {manualUlong}");
 		var mainItem = new CustomItemId(equipItem.PrimaryId, equipItem.SecondaryId, equipItem.Variant, equipItem.Type);
+		if (item.RowId == 0) mainItem = NothingId(slot.ToPenumbraEquipSlot());
 		//mainItem = new CustomItemId(manualUlong);
 
 		//if (slot == GlamourPlateSlot.MainHand) {

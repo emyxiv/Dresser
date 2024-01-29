@@ -35,6 +35,7 @@ internal class PenumbraIpc : IDisposable {
 
 
 	private FuncSubscriber<string, string, string, bool, (PenumbraApiEc, (bool, int, IDictionary<string, IList<string>>, bool)?)> GetCurrentModSettingsSubscriber { get; }
+	private FuncSubscriber<string, string, string, int, PenumbraApiEc> TrySetModPrioritySubscriber { get; }
 	private FuncSubscriber<string, string, string, string, string, PenumbraApiEc> TrySetModSettingSubscriber { get; }
 	private FuncSubscriber<string, string, string, string, IReadOnlyList<string>, PenumbraApiEc> TrySetModSettingsSubscriber { get; }
 	private FuncSubscriber<string, string, string, bool, PenumbraApiEc> TryInheritModSubscriber { get; }
@@ -68,6 +69,7 @@ internal class PenumbraIpc : IDisposable {
 		RemoveTemporaryModSubscriber = Penumbra.Api.Ipc.RemoveTemporaryMod.Subscriber(PluginServices.PluginInterface);
 
 		GetCurrentModSettingsSubscriber = Penumbra.Api.Ipc.GetCurrentModSettings.Subscriber(PluginServices.PluginInterface);
+		TrySetModPrioritySubscriber = Penumbra.Api.Ipc.TrySetModPriority.Subscriber(PluginServices.PluginInterface);
 		TrySetModSettingSubscriber = Penumbra.Api.Ipc.TrySetModSetting.Subscriber(PluginServices.PluginInterface);
 		TrySetModSettingsSubscriber = Penumbra.Api.Ipc.TrySetModSettings.Subscriber(PluginServices.PluginInterface);
 		TryInheritModSubscriber = Penumbra.Api.Ipc.TryInheritMod.Subscriber(PluginServices.PluginInterface);
@@ -379,6 +381,15 @@ internal class PenumbraIpc : IDisposable {
 			return GetCurrentModSettingsSubscriber.Invoke(collectionName, modDirectory, modName, allowInheritance);
 		} catch (Exception) {
 			return (PenumbraApiEc.UnknownError, null);
+		}
+	}
+
+	/// <inheritdoc cref="Penumbra.Api.IPenumbraApi.TrySetModPriority"/>
+	internal PenumbraApiEc TrySetModPriority(string collectionName, string modDirectory, string modName, int priority) {
+		try {
+			return TrySetModPrioritySubscriber.Invoke(collectionName, modDirectory, modName, priority);
+		} catch (Exception) {
+			return PenumbraApiEc.UnknownError;
 		}
 	}
 

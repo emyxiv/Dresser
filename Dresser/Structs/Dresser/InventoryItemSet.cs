@@ -190,6 +190,8 @@ namespace Dresser.Structs.Dresser {
 
 		public readonly bool HasModdedItem()
 			=> Items.Any(i => i.Value?.IsModded() ?? false );
+		public readonly bool HasMod((string Path, string Name)? mod)
+			=> Items.Any(i => i.Value?.IsMod(mod) ?? false);
 
 		public readonly void ApplyAppearance() {
 			PluginServices.Context.LocalPlayer?.EquipSet(this);

@@ -145,6 +145,7 @@ namespace Dresser {
 		// Penumbra
 
 		public bool PenumbraUseModListCollection = false;
+		public bool PenumbraDisableModRightAfterApply = false;
 		public string PenumbraCollectionModList = "Dresser Mod List";
 		public string PenumbraCollectionApply = "Dresser Apply";
 		public string PenumbraCollectionTmp = "Dresser TMP";
