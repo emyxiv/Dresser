@@ -81,7 +81,7 @@
 
   <ProjectExtensions>
     <DalamudPlugin>
-      <ApiLevel>8</ApiLevel>
+      <ApiLevel>9</ApiLevel>
       <Author>emyxiv</Author>
       <Name>Dresser</Name>
       <Punchline>Make glamouring more enjoyable</Punchline>
