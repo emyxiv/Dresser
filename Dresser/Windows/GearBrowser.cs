@@ -608,7 +608,7 @@ namespace Dresser.Windows {
 			if (items.Any(i => i.IsModded())){
 				uniqueItems = items;
 			} else {
-				uniqueItems = items.GroupBy(i => i.GetHashCode()).Select(i => i.First());
+				uniqueItems = items.GroupBy(i => i.GetHashCode()).Select(i => i.Last());
 			}
 
 			Items = InventoryItemOrder.OrderItems(uniqueItems);
