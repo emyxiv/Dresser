@@ -743,10 +743,10 @@ namespace Dresser.Windows {
 			if (itemInv.IsModded() && ImGui.Selectable("Open in Penumbra"))
 				PluginServices.Penumbra.OpenModWindow((itemInv.ModDirectory, itemInv.ModName)!);
 
-			if (item.CanTryOn && ImGui.Selectable("Try On") && PluginServices.TryOn.CanUseTryOn)
-				PluginServices.TryOn.TryOnItem(item);
-			if (item.CanOpenCraftLog && ImGui.Selectable("Open Crafting Log"))
-				PluginServices.GameInterface.OpenCraftingLog(item.RowId);
+			if (item.CanTryOn && ImGui.Selectable("Try On"))
+				item.TryOn();
+			//if (item.CanOpenCraftLog && ImGui.Selectable("Open Crafting Log"))
+			//	PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 
 			DrawSameModels(itemInv);
 

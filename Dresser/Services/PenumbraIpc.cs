@@ -26,88 +26,53 @@ using PseudoEquipItem = System.ValueTuple<string, ulong, ushort, ushort, ushort,
 namespace Dresser.Services;
 
 internal class PenumbraIpc : IDisposable {
-	private FuncSubscriber<IList<(string, string)>> GetModsSubscriber { get; }
-	private FuncSubscriber<string, IReadOnlyDictionary<string, dynamic?>> GetChangedItemsSubscriber { get; }
-	private FuncSubscriber<string, PenumbraApiEc> CreateNamedTemporaryCollectionSubscriber { get; }
-	private FuncSubscriber<string, PenumbraApiEc> RemoveTemporaryCollectionByNameSubscriber { get; }
-	private FuncSubscriber<string, string, Dictionary<string, string>, string, int, PenumbraApiEc> AddTemporaryModSubscriber { get; }
-	private FuncSubscriber<string, string, int, PenumbraApiEc> RemoveTemporaryModSubscriber { get; }
+	private Penumbra.Api.IpcSubscribers.Legacy.GetMods               GetModsSubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.GetChangedItems       GetChangedItemsSubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.GetCurrentModSettings GetCurrentModSettingsSubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.TrySetModPriority     TrySetModPrioritySubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.TrySetModSettings     TrySetModSettingsSubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.TryInheritMod         TryInheritModSubscriber;
+	private Penumbra.Api.IpcSubscribers.ApiVersion                   ApiVersionsSubscriber;
+	private Penumbra.Api.IpcSubscribers.GetEnabledState              GetEnabledStateSubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.GetCollectionForType  GetCollectionForTypeSubscriber;
+	private Penumbra.Api.IpcSubscribers.GetModDirectory              GetModDirectorySubscriber;
+	private Penumbra.Api.IpcSubscribers.Legacy.TrySetMod             TrySetModSubscriber;
+	private Penumbra.Api.IpcSubscribers.OpenMainWindow               OpenMainWindowSubscriber;
 
 
-	private FuncSubscriber<string, string, string, bool, (PenumbraApiEc, (bool, int, IDictionary<string, IList<string>>, bool)?)> GetCurrentModSettingsSubscriber { get; }
-	private FuncSubscriber<string, string, string, int, PenumbraApiEc> TrySetModPrioritySubscriber { get; }
-	private FuncSubscriber<string, string, string, string, string, PenumbraApiEc> TrySetModSettingSubscriber { get; }
-	private FuncSubscriber<string, string, string, string, IReadOnlyList<string>, PenumbraApiEc> TrySetModSettingsSubscriber { get; }
-	private FuncSubscriber<string, string, string, bool, PenumbraApiEc> TryInheritModSubscriber { get; }
 	
-	private FuncSubscriber<(int Breaking, int Features)> ApiVersionsSubscriber { get; }
-	private FuncSubscriber<bool> GetEnabledStateSubscriber { get; }
 
-	private FuncSubscriber<string, (string, bool)> GetCharacterCollectionNameSubscriber { get; }
-	private FuncSubscriber<ApiCollectionType, string> GetCollectionForTypeSubscriber { get; }
 
-	private FuncSubscriber<string> GetModDirectorySubscriber { get; }
-	private FuncSubscriber<string, PenumbraApiEc> AddModSubscriber { get; }
-	private FuncSubscriber<string, string, PenumbraApiEc> ReloadModSubscriber { get; }
-	private FuncSubscriber<string, string, string, PenumbraApiEc> SetModPathSubscriber { get; }
-	private FuncSubscriber<string, string, PenumbraApiEc> DeleteModSubscriber { get; }
-	private FuncSubscriber<string, string, string, PenumbraApiEc> CopyModSettingsSubscriber { get; }
-	private FuncSubscriber<IList<string>> GetCollectionsSubscriber { get; }
-	private FuncSubscriber<string, string, string, bool, PenumbraApiEc> TrySetModSubscriber { get; }
-	private FuncSubscriber<string, string, (PenumbraApiEc, string, bool)> GetModPathSubscriber { get; }
 
-	private FuncSubscriber<TabType, string, string, PenumbraApiEc> OpenMainWindowSubscriber { get; }
 
 	private EventSubscriber<string, string>? Test { get; set; }
 
 	internal PenumbraIpc() {
-		GetModsSubscriber = Penumbra.Api.Ipc.GetMods.Subscriber(PluginServices.PluginInterface);
-		GetChangedItemsSubscriber = Penumbra.Api.Ipc.GetChangedItems.Subscriber(PluginServices.PluginInterface);
-		CreateNamedTemporaryCollectionSubscriber = Penumbra.Api.Ipc.CreateNamedTemporaryCollection.Subscriber(PluginServices.PluginInterface);
-		RemoveTemporaryCollectionByNameSubscriber = Penumbra.Api.Ipc.RemoveTemporaryCollectionByName.Subscriber(PluginServices.PluginInterface);
-		AddTemporaryModSubscriber = Penumbra.Api.Ipc.AddTemporaryMod.Subscriber(PluginServices.PluginInterface);
-		RemoveTemporaryModSubscriber = Penumbra.Api.Ipc.RemoveTemporaryMod.Subscriber(PluginServices.PluginInterface);
-
-		GetCurrentModSettingsSubscriber = Penumbra.Api.Ipc.GetCurrentModSettings.Subscriber(PluginServices.PluginInterface);
-		TrySetModPrioritySubscriber = Penumbra.Api.Ipc.TrySetModPriority.Subscriber(PluginServices.PluginInterface);
-		TrySetModSettingSubscriber = Penumbra.Api.Ipc.TrySetModSetting.Subscriber(PluginServices.PluginInterface);
-		TrySetModSettingsSubscriber = Penumbra.Api.Ipc.TrySetModSettings.Subscriber(PluginServices.PluginInterface);
-		TryInheritModSubscriber = Penumbra.Api.Ipc.TryInheritMod.Subscriber(PluginServices.PluginInterface);
-
-		ApiVersionsSubscriber = Penumbra.Api.Ipc.ApiVersions.Subscriber(PluginServices.PluginInterface);
-		GetEnabledStateSubscriber = Penumbra.Api.Ipc.GetEnabledState.Subscriber(PluginServices.PluginInterface);
-
-
-		GetCharacterCollectionNameSubscriber = Penumbra.Api.Ipc.GetCharacterCollectionName.Subscriber(PluginServices.PluginInterface);
-		GetCollectionForTypeSubscriber = Penumbra.Api.Ipc.GetCollectionForType.Subscriber(PluginServices.PluginInterface);
-
-		GetModDirectorySubscriber = Penumbra.Api.Ipc.GetModDirectory.Subscriber(PluginServices.PluginInterface);
-		AddModSubscriber = Penumbra.Api.Ipc.AddMod.Subscriber(PluginServices.PluginInterface);
-		ReloadModSubscriber = Penumbra.Api.Ipc.ReloadMod.Subscriber(PluginServices.PluginInterface);
-		SetModPathSubscriber = Penumbra.Api.Ipc.SetModPath.Subscriber(PluginServices.PluginInterface);
-		DeleteModSubscriber = Penumbra.Api.Ipc.DeleteMod.Subscriber(PluginServices.PluginInterface);
-		CopyModSettingsSubscriber = Penumbra.Api.Ipc.CopyModSettings.Subscriber(PluginServices.PluginInterface);
-		GetCollectionsSubscriber = Penumbra.Api.Ipc.GetCollections.Subscriber(PluginServices.PluginInterface);
-		TrySetModSubscriber = Penumbra.Api.Ipc.TrySetMod.Subscriber(PluginServices.PluginInterface);
-		GetModPathSubscriber = Penumbra.Api.Ipc.GetModPath.Subscriber(PluginServices.PluginInterface);
-
-		OpenMainWindowSubscriber = Penumbra.Api.Ipc.OpenMainWindow.Subscriber(PluginServices.PluginInterface);
+		GetModsSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.GetMods(PluginServices.PluginInterface);
+		GetChangedItemsSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.GetChangedItems       (PluginServices.PluginInterface);
+		GetCurrentModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.GetCurrentModSettings (PluginServices.PluginInterface);
+		TrySetModPrioritySubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.TrySetModPriority     (PluginServices.PluginInterface);
+		TrySetModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.TrySetModSettings     (PluginServices.PluginInterface);
+		TryInheritModSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.TryInheritMod         (PluginServices.PluginInterface);
+		ApiVersionsSubscriber = new global::Penumbra.Api.IpcSubscribers.ApiVersion                   (PluginServices.PluginInterface);
+		GetEnabledStateSubscriber = new global::Penumbra.Api.IpcSubscribers.GetEnabledState              (PluginServices.PluginInterface);
+		GetCollectionForTypeSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.GetCollectionForType  (PluginServices.PluginInterface);
+		GetModDirectorySubscriber = new global::Penumbra.Api.IpcSubscribers.GetModDirectory              (PluginServices.PluginInterface);
+		TrySetModSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.TrySetMod             (PluginServices.PluginInterface);
+		OpenMainWindowSubscriber = new global::Penumbra.Api.IpcSubscribers.OpenMainWindow               (PluginServices.PluginInterface);
 
 		RegisterEvents();
 	}
 
 	public void Dispose() {
-		Test?.Dispose();
 	}
 
 	private void RegisterEvents() {
-		this.Test = Penumbra.Api.Ipc.ModMoved.Subscriber(PluginServices.PluginInterface, (_, _) => {
-		});
 	}
 
 	internal IList<(string Path, string Name)> GetMods() {
 		try {
-			return GetModsSubscriber.Invoke();
+			return GetModsSubscriber!.Invoke().ToList();
 		} catch (Exception) {
 			return new List<(string, string)>();
 		}
@@ -275,67 +240,13 @@ internal class PenumbraIpc : IDisposable {
 	internal string? GetModDirectoryCached()
 		=> ModDirectoryCache ??= GetModDirectory();
 	
-	internal bool AddMod(string path) {
-		try {
-			return AddModSubscriber.Invoke(path) == PenumbraApiEc.Success;
-		} catch (Exception) {
-			return false;
-		}
-	}
 
-	internal bool ReloadMod(string directoryName) {
-		try {
-			return ReloadModSubscriber.Invoke(directoryName, "") == PenumbraApiEc.Success;
-		} catch (Exception) {
-			return false;
-		}
-	}
 
-	internal bool SetModPath(string directoryName, string newPath) {
-		try {
-			return SetModPathSubscriber.Invoke(directoryName, "", newPath) == PenumbraApiEc.Success;
-		} catch (Exception) {
-			return false;
-		}
-	}
-
-	internal bool DeleteMod(string directoryName) {
-		try {
-			return DeleteModSubscriber.Invoke(directoryName, "") == PenumbraApiEc.Success;
-		} catch (Exception) {
-			return false;
-		}
-	}
-
-	/// <summary>
-	/// Copy all current settings for a mod to another mod.
-	/// </summary>
-	/// <param name="collectionName">Specify the collection to work in, leave empty or null to do it in all collections.</param>
-	/// <param name="modDirectoryFrom">Specify the mod to take the settings from via its directory name.</param>
-	/// <param name="modDirectoryTo">Specify the mod to put the settings on via its directory name. If the mod does not exist, it will be added as unused settings.</param>
-	/// <returns>CollectionMissing if collectionName is not empty but does not exist or Success.</returns>
-	/// <remarks>If the target mod exists, the settings will be fixed before being applied. If the source mod does not exist, it will use unused settings if available and remove existing settings otherwise.</remarks>
-	internal bool CopyModSettings(string from, string to) {
-		try {
-			return CopyModSettingsSubscriber.Invoke("", from, to) == PenumbraApiEc.Success;
-		} catch (Exception) {
-			return false;
-		}
-	}
-
-	/// <returns>A list of the names of all currently installed collections.</returns>
-	internal IList<string>? GetCollections() {
-		try {
-			return GetCollectionsSubscriber.Invoke();
-		} catch (Exception) {
-			return null;
-		}
-	}
 
 	/// <summary> Try to set the enabled state of a mod in a collection. </summary>
 	internal bool TrySetMod(string collection, string directory, bool enabled) {
 		try {
-			return TrySetModSubscriber.Invoke(collection, directory, "", enabled) == PenumbraApiEc.Success;
+			return TrySetModSubscriber.Invoke(collection, directory, enabled) == PenumbraApiEc.Success;
 		} catch (Exception) {
 			return false;
 		}
@@ -345,27 +256,12 @@ internal class PenumbraIpc : IDisposable {
 	/// <returns>ModMissing, CollectionMissing, NothingChanged or Success.</returns>
 	internal PenumbraApiEc TryInheritMod(string collectionName, string modDirectory, string modName, bool inherit) {
 		try {
-			return TryInheritModSubscriber.Invoke(collectionName, modDirectory, modName, inherit);
+			return TryInheritModSubscriber.Invoke(collectionName, modDirectory, inherit, modName);
 		} catch (Exception) {
 			return PenumbraApiEc.UnknownError;
 		}
 	}
 
-
-	/// <summary>
-	/// Get the internal full filesystem path including search order for the specified mod
-	/// given by its <paramref name="modDirectory" /> name or <paramref name="modName" />.
-	/// </summary>
-	/// <returns>On Success, the full path and a bool indicating whether this is default (false) or manually set (true).
-	/// Otherwise returns ModMissing if the mod can not be found.</returns>
-	internal string? GetModPath(string directoryName) {
-		try {
-			var (status, path, _) = GetModPathSubscriber.Invoke(directoryName, "");
-			return status == PenumbraApiEc.Success ? path : null;
-		} catch (Exception) {
-			return null;
-		}
-	}
 
 	/// <summary>
 	/// Obtain the enabled state, the priority, the settings of a mod given by its <paramref name="modDirectory" /> name or <paramref name="modName" /> in the specified collection.
@@ -387,40 +283,20 @@ internal class PenumbraIpc : IDisposable {
 	/// <inheritdoc cref="Penumbra.Api.IPenumbraApi.TrySetModPriority"/>
 	internal PenumbraApiEc TrySetModPriority(string collectionName, string modDirectory, string modName, int priority) {
 		try {
-			return TrySetModPrioritySubscriber.Invoke(collectionName, modDirectory, modName, priority);
+			return TrySetModPrioritySubscriber.Invoke(collectionName, modDirectory, priority, modName);
 		} catch (Exception) {
 			return PenumbraApiEc.UnknownError;
 		}
 	}
 
-	/// <summary> Try to set a specific option group of a mod in the given collection to a specific value. </summary>
-	/// <remarks>Removes inheritance. Single Selection groups should provide a single option, Multi Selection can provide multiple.
-	/// If any setting can not be found, it will not change anything.</remarks>
-	/// <returns>ModMissing, CollectionMissing, OptionGroupMissing, SettingMissing, NothingChanged or Success.</returns>
-	internal PenumbraApiEc TrySetModSetting(string collectionName, string modDirectory, string modName, string optionGroupName, string option) {
-		try {
-			return TrySetModSettingSubscriber.Invoke(collectionName, modDirectory, modName, optionGroupName, option);
-		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
-		}
-	}
 	internal PenumbraApiEc TrySetModSettings(string collectionName, string modDirectory, string modName, string optionGroupName, IReadOnlyList<string> options) {
 		try {
-			return TrySetModSettingsSubscriber.Invoke(collectionName, modDirectory, modName, optionGroupName, options);
+			return TrySetModSettingsSubscriber.Invoke(collectionName, modDirectory, optionGroupName, options, modName);
 		} catch (Exception) {
 			return PenumbraApiEc.UnknownError;
 		}
 	}
 
-	/// <returns>A dictionary of affected items in <paramref name="collectionName"/> via name and known objects or null.</returns>
-	internal string? GetCharacterCollectionName(string characterName) {
-		try {
-			var (collectionName, success) = GetCharacterCollectionNameSubscriber.Invoke(characterName);
-			return success ? collectionName : null;
-		} catch (Exception) {
-			return null;
-		}
-	}
 	/// <returns>The name of the collection assigned to the given <paramref name="type"/> or an empty string if none is assigned or type is invalid.</returns>
 	internal string GetCollectionForType(ApiCollectionType type) {
 		try {
@@ -435,63 +311,7 @@ internal class PenumbraIpc : IDisposable {
 
 
 
-	/// <summary>
-	/// Create a temporary collection of the given <paramref name="name"/>.
-	/// </summary>
-	/// <param name="name">The intended name. It may not be empty or contain symbols invalid in a path used by XIV.</param>
-	/// <returns>Success, InvalidArgument if name is not valid for a collection, or TemporaryCollectionExists.</returns>
-	internal PenumbraApiEc CreateNamedTemporaryCollection(string collectionName) {
-		try {
-			return CreateNamedTemporaryCollectionSubscriber.Invoke(collectionName);
-		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
-		}
-	}
 
-	/// <summary>
-	/// Remove the temporary collection of the given name.
-	/// </summary>
-	/// <param name="collectionName">The chosen temporary collection to remove.</param>
-	/// <returns>NothingChanged or Success.</returns>
-	internal PenumbraApiEc RemoveTemporaryCollectionByName(string collectionName) {
-		try {
-			return RemoveTemporaryCollectionByNameSubscriber.Invoke(collectionName);
-		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
-		}
-	}
-
-	/// <summary>
-	/// Set a temporary mod with the given paths, manipulations and priority and the name tag to a specific collection.
-	/// </summary>
-	/// <param name="tag">Custom name for the temporary mod.</param>
-	/// <param name="collectionName">Name of the collection the mod should apply to. Can be a temporary collection name.</param>
-	/// <param name="paths">List of redirections (can be swaps or redirections).</param>
-	/// <param name="manipString">Zipped Base64 string of meta manipulations.</param>
-	/// <param name="priority">Desired priority.</param>
-	/// <returns>CollectionMissing, InvalidGamePath, InvalidManipulation or Success.</returns>
-	internal PenumbraApiEc AddTemporaryMod(string tag, string collectionName, Dictionary<string, string> paths, string manipString, int priority) {
-		try {
-			return AddTemporaryModSubscriber.Invoke(tag, collectionName, paths, manipString, priority);
-		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
-		}
-	}
-
-	/// <summary>
-	/// Remove the temporary mod with the given tag and priority from the temporary mods applying to a specific collection, if it exists.
-	/// </summary>
-	/// <param name="tag">The tag to look for.</param>
-	/// <param name="collectionName">Name of the collection the mod should apply to. Can be a temporary collection name.</param>
-	/// <param name="priority">The initially provided priority.</param>
-	/// <returns>CollectionMissing, NothingDone or Success.</returns>
-	internal PenumbraApiEc RemoveTemporaryMod(string tag, string collectionName, int priority) {
-		try {
-			return RemoveTemporaryModSubscriber.Invoke(tag, collectionName, priority);
-		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
-		}
-	}
 
 
 

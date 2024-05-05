@@ -41,7 +41,7 @@ namespace Dresser {
 
 
 			ConfigurationManager.Config.ConfigurationChanged += ConfigOnConfigurationChanged;
-			Service.Framework.Update += FrameworkOnUpdate;
+			PluginServices.Framework.Update += FrameworkOnUpdate;
 
 			Gathering.Init();
 
@@ -86,7 +86,7 @@ namespace Dresser {
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);
 
-			Service.Framework.Update -= FrameworkOnUpdate;
+			PluginServices.Framework.Update -= FrameworkOnUpdate;
 			ConfigurationManager.Config.ConfigurationChanged -= ConfigOnConfigurationChanged;
 
 

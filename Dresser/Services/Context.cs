@@ -82,7 +82,7 @@ namespace Dresser.Services {
 
 			LocalPlayer = Service.ClientState.LocalPlayer;
 			if (LocalPlayer != null) {
-				LocalPlayerCharacterId = PluginServices.CharacterMonitor?.ActiveCharacterId ?? 0;
+				LocalPlayerCharacterId = PluginServices.ClientState.LocalContentId;
 				LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];
 				LocalPlayerGender = LocalPlayer.Customize[(int)CustomizeIndex.Gender] == 0 ? CharacterSex.Male : CharacterSex.Female;
 				LocalPlayerClass = LocalPlayer.ClassJob.GameData;

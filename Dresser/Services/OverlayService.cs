@@ -1,5 +1,6 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Services.Ui;
+using CriticalCommonLib.Services;
 
 using Dalamud.Game;
 using Dresser.Logic;
@@ -17,10 +18,10 @@ namespace Dresser.Services {
 		public OverlayService(GameUiManager gameUiManager) {
 			_gameUiManager = gameUiManager;
 			PluginServices.GameUi.UiVisibilityChanged += GameUiOnUiVisibilityChanged;
-			PluginServices.GameUi.UiUpdated += GameUiOnUiUpdated;
+			//PluginServices.GameUi.UiUpdated += GameUiOnUiUpdated;
 			AddOverlay(new MiragePrismMiragePlateOverlay());
 
-			Service.Framework.Update += FrameworkOnUpdate;
+			PluginServices.Framework.Update += FrameworkOnUpdate;
 			PluginServices.OnPluginLoaded += PluginServiceOnOnPluginLoaded;
 		}
 
@@ -75,7 +76,7 @@ namespace Dresser.Services {
 			if (_setupHooks.Contains(overlayState.WindowName)) {
 				return;
 			}
-			var result = PluginServices.GameUi.WatchWindowState(overlayState.WindowName);
+			var result = PluginServices.GameUi.IsWindowVisible(overlayState.WindowName);
 			if (result) {
 				_setupHooks.Add(overlayState.WindowName);
 			}
@@ -134,6 +135,7 @@ namespace Dresser.Services {
 			}
 		}
 
+		/*
 		private void GameUiOnUiUpdated(WindowName windowname) {
 			if (PluginServices.PluginLoaded) {
 				if (_overlays.ContainsKey(windowname)) {
@@ -157,6 +159,7 @@ namespace Dresser.Services {
 				}
 			}
 		}
+		*/
 
 		private bool _disposed;
 		public void Dispose() {
@@ -166,10 +169,10 @@ namespace Dresser.Services {
 
 		protected virtual void Dispose(bool disposing) {
 			if (!_disposed && disposing) {
-				Service.Framework.Update -= FrameworkOnUpdate;
+				PluginServices.Framework.Update -= FrameworkOnUpdate;
 				ClearOverlays();
 				PluginServices.GameUi.UiVisibilityChanged -= GameUiOnUiVisibilityChanged;
-				PluginServices.GameUi.UiUpdated -= GameUiOnUiUpdated;
+				//PluginServices.GameUi.UiUpdated -= GameUiOnUiUpdated;
 				PluginServices.OnPluginLoaded -= PluginServiceOnOnPluginLoaded;
 			}
 			_disposed = true;

@@ -56,7 +56,7 @@ namespace Dresser.Interop.GameUi {
 		}
 
 		public void UpdateState(HighlighterState? newState) {
-			if (PluginServices.CharacterMonitor.ActiveCharacterId == 0) {
+			if (PluginServices.ClientState.LocalContentId == 0) {
 				return;
 			}
 			if (newState != null && HasAddon && newState.Value.PlatesToHighlight.Any()) {

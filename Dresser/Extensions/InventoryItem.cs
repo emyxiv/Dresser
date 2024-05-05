@@ -75,9 +75,13 @@ namespace Dresser.Extensions {
 			};
 		}
 		public static string FormattedOwnerName(this CriticalInventoryItem item) {
-			var id = item.InRetainer ? item.RetainerId : PluginServices.CharacterMonitor.ActiveCharacterId;
-			var character = PluginServices.CharacterMonitor.GetCharacterById(id);
-			return character?.FormattedName ?? "";
+			var id = item.InRetainer ? item.RetainerId : PluginServices.ClientState.LocalContentId;
+			var charaName = PluginServices.Objects.SearchById(id)?.Name;
+			if(charaName != null && charaName.IsValidCharacterName()) return charaName.TextValue;
+			return "";
+
+			//var character = PluginServices.CharacterMonitor.GetCharacterById(id);
+			//return character?.FormattedName ?? "";
 		}
 
 		//public static bool IsSoldBy(this CriticalInventoryItem item, string VendorFilterName) {

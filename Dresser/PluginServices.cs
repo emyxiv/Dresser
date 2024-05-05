@@ -2,8 +2,6 @@ using CriticalCommonLib;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 
-using DalaMock.Shared.Classes;
-
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
@@ -27,12 +25,15 @@ namespace Dresser {
 		[PluginService] internal static IKeyState KeyState { get; private set; } = null!;
 		[PluginService] internal static IGameGui DalamudGameGui { get; private set; } = null!;
 		[PluginService] internal static IPluginLog PluginLog { get; private set; } = null!;
+		[PluginService] public static IFramework Framework { get; set; } = null!;
+		[PluginService] public static IChatGui ChatGui { get; set; } = null!;
+		[PluginService] public static IObjectTable Objects { get; set; } = null!;
 
 		public static PenumbraIpc Penumbra { get; private set; } = null!;
-		public static IChatUtilities ChatUtilities { get; private set; } = null!;
+		//public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
-		public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
-		public static GameInterface GameInterface { get; private set; } = null!;
+		//public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
+		//public static GameInterface GameInterface { get; private set; } = null!;
 		public static GameUiManager GameUi { get; private set; } = null!;
 		public static OverlayService OverlayService { get; private set; } = null!;
 		public static TryOn TryOn { get; private set; } = null!;
@@ -60,24 +61,25 @@ namespace Dresser {
 
 			Context = new Context();
 
-			Service.Interface = new PluginInterfaceService(dalamud);
+			Service.PluginInterfaceService = dalamud;
+			//Service.Interface = new PluginInterfaceService(dalamud);
 			Service.ExcelCache = new ExcelCache(Service.Data);
 			Service.ExcelCache.PreCacheItemData();
 			HotkeyService = new HotkeyService(Service.Framework, KeyState);
 			ImageGuiCrop = new ImageGuiCrop();
 			Penumbra = new PenumbraIpc();
 			Storage = new Storage();
-			ChatUtilities = new ChatUtilities();
+			//ChatUtilities = new ChatUtilities();
 
 			ConfigurationManager.Load();
-			GameInterface = new GameInterface(Service.GameInteropProvider);
+			//GameInterface = new GameInterface(Service.GameInteropProvider);
 			HotkeySetup.Init();
 
 			ModdedIconStorage = new ModdedIconStorage();
 			AllaganTools = new AllaganToolsService(dalamud);
 			Glamourer = new GlamourerService(dalamud);
-			CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
-			GameUi = new GameUiManager(Service.GameInteropProvider);
+			//CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
+			GameUi = new GameUiManager(Service.GameInteropProvider,Service.GameGui);
 			OverlayService = new OverlayService(GameUi);
 			TryOn = new TryOn();
 			GlamourPlates = new();
@@ -97,14 +99,14 @@ namespace Dresser {
 			OverlayService.Dispose();
 			TryOn.Dispose();
 			GameUi.Dispose();
-			CharacterMonitor.Dispose();
+			//CharacterMonitor.Dispose();
 			AllaganTools.Dispose();
 			Glamourer.Dispose();
 
 			Context.Dispose();
 
 			Service.ExcelCache.Destroy();
-			GameInterface.Dispose();
+			//GameInterface.Dispose();
 			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();
 			ApplyGearChange.Dispose();
@@ -114,15 +116,15 @@ namespace Dresser {
 
 			AllaganTools = null!;
 			Glamourer = null!;
-			CharacterMonitor = null!;
-			ChatUtilities = null!;
+			//CharacterMonitor = null!;
+			//ChatUtilities = null!;
 			Context = null!;
 			GameUi = null!;
 			TryOn = null!;
 			OverlayService = null!;
 			GlamourPlates = null!;
 			ModdedIconStorage = null!;
-			GameInterface = null!;
+			//GameInterface = null!;
 			HotkeyService = null!;
 			ImageGuiCrop = null!;
 			ApplyGearChange = null!;

@@ -196,5 +196,14 @@ namespace Dresser.Structs.Dresser {
 		public readonly void ApplyAppearance() {
 			PluginServices.Context.LocalPlayer?.EquipSet(this);
 		}
+
+		public readonly override string ToString() {
+			string ret = "Plate contents:";
+
+			foreach ((var s, var i) in Items) {
+				ret += $"\n{i?.FormattedName ?? "Unknown item"} {i?.ItemId}";
+			}
+			return ret;
+		}
 	}
 }
