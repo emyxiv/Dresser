@@ -121,6 +121,7 @@ public class CurrentGear : Window, IDisposable {
 		var textOffset = new Vector2(28f, -36f);
 		if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) textOffset += new Vector2(-10f, 0);
 		var textPlacement = textOffset * ConfigurationManager.Config.IconSizeMult;
+		var textPlacementFreePOffset = new Vector2(12.5f, 0f) * ConfigurationManager.Config.IconSizeMult;
 
 		ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates);
 		bool anythingHovered = false;
@@ -128,6 +129,7 @@ public class CurrentGear : Window, IDisposable {
 			var isFreePlate = plateNumber + 1 > Storage.PlateNumber;
 			var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
 			var imageInfo = isActive ? radioActive : radioInActive;
+			var plateNumberForHuman = isFreePlate ? (plateNumber + 1 - Storage.PlateNumber) : plateNumber + 1;
 
 			Vector4? roleColor = null;
 			Vector4? roleColor1 = null;
@@ -145,10 +147,10 @@ public class CurrentGear : Window, IDisposable {
 				ContextMenuPlateSelector(plateNumber);
 				ImGui.EndPopup();
 			}
-			if (!isFreePlate) GuiHelpers.Tooltip(() => {
-				var plateName = isFreePlate ? $"Free Plate {plateNumber + 1 - Storage.PlateNumber}" : $"Plate {plateNumber + 1}";
+			GuiHelpers.Tooltip(() => {
+				var plateName = $"{(isFreePlate ? "Free " : "")}Plate {plateNumberForHuman}";
 				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.TrumpGothic_184);
-				GearSets.RelatedGearSetNamesImgui(plateNumber);
+				if (!isFreePlate) GearSets.RelatedGearSetNamesImgui(plateNumber);
 				ImGui.Spacing();
 			});
 
@@ -163,15 +165,13 @@ public class CurrentGear : Window, IDisposable {
 				draw.AddImage(classJobTexture.ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
 			}
 
-			if (!isFreePlate) {
-				var spacer = plateNumber < 9 ? " " : "";
-				draw.AddText(
-					PluginServices.Storage.FontRadio.ImFont,
-					fontSize,
-					ImGui.GetCursorScreenPos() + textPlacement,
-					ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.PlateSelectorColorRadio),
-					$"{spacer}{plateNumber + 1}");
-			}
+			var spacer = plateNumberForHuman < 10 ? " " : "";
+			draw.AddText(
+				PluginServices.Storage.FontRadio.ImFont,
+				fontSize,
+				ImGui.GetCursorScreenPos() + textPlacement + (isFreePlate ? textPlacementFreePOffset : Vector2.Zero ),
+				ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.PlateSelectorColorRadio),
+				$"{spacer}{plateNumberForHuman}");
 
 			if (clicked) {
 				// Change selected plate
