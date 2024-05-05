@@ -37,7 +37,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
 
       - name: Download Dalamud Library
         run: |
@@ -54,6 +54,10 @@ jobs:
 
       - name: Build plugin in release mode
         run: dotnet build -c Release --no-restore --nologo -o ./bin/Release
+
+        # temp till LuminaSupplementals goes net8
+      - name: Edit LuminaSupplementals
+        run: sed -i 's#net7.0-windows#net8.0-windows#' LuminaSupplemental/src/LuminaSupplemental.Excel/LuminaSupplemental.Excel.csproj
 
       - name: Generate Checksums
         working-directory: Dresser/bin/Release/Dresser
