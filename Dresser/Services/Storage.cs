@@ -113,6 +113,7 @@ namespace Dresser.Services {
 		// InventoryTypeExtra must match AdditionalItem * 1000000 + (currency item id OR other)
 		public enum InventoryTypeExtra {
 			AllItems = 1000000,
+			AllButSqStore = 1000001,
 
 			CalamityVendors = 2000001,
 			RelicVendors = 2000002,
@@ -173,7 +174,7 @@ namespace Dresser.Services {
 		//public Dictionary<AdditionalItem, Dictionary<InventoryType, HashSet<InventoryItem>>> AdditionalItems = FilterNames.ToDictionary(fn=>fn.Key,fn=>fn.Value.ToDictionary(itn=>itn.Key,itn=> new HashSet<InventoryItem>()));
 
 		// all items
-		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems };
+		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems, (InventoryType)InventoryTypeExtra.AllButSqStore };
 		// vendor
 		public static Dictionary<InventoryType, Func<ItemEx, bool>> FilterUnobtainedFromCustomSource = new() {
 			{ (InventoryType) InventoryTypeExtra.CalamityVendors , (i) => {return i.IsSoldByAnyVendor(new string[] {"Calamity salvager", "journeyman salvager"}); } },
@@ -189,11 +190,13 @@ namespace Dresser.Services {
 				// at least filter glam items
 				PluginLog.Debug($"================= item numbers all: {Service.ExcelCache.AllItems.Count}");
 
-				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
+				var q = Service.ExcelCache.AllItems
 					//.DistinctBy(i=>i.Value.GetSharedModels())
-					.Where((itemPair) => itemPair.Value.ModelMain != 0)
-					.Select(i => new InventoryItem(inventoryType, i.Key)).ToList();
+					.Where((itemPair) => itemPair.Value.ModelMain != 0);
 
+				if (inventoryType == (InventoryType)InventoryTypeExtra.AllButSqStore) q = q.Where(p => !p.Value.PurchasedSQStore); // for AllButSqStore
+
+				AdditionalItems[inventoryType] = q.Select(i => new InventoryItem(inventoryType, i.Key)).ToList();
 
 				var a = FilterNames[AdditionalItem.All][inventoryType];
 				var b = AdditionalItems[inventoryType].Count;
