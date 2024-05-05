@@ -34,6 +34,12 @@ jobs:
         with:
           submodules: recursive # Grab any submodules that may be required
 
+      # temp till LuminaSupplementals goes net8
+      - name: Edit LuminaSupplementals
+        working-directory: LuminaSupplemental/src/LuminaSupplemental.Excel/
+        run: |
+          sed -i 's#net7.0-windows#net8.0-windows#' LuminaSupplemental.Excel.csproj
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -51,13 +57,6 @@ jobs:
 
       - name: Restore Dependencies
         run: dotnet restore
-
-        # temp till LuminaSupplementals goes net8
-      - name: Edit LuminaSupplementals
-        working-directory: LuminaSupplemental/src/LuminaSupplemental.Excel/
-        run: |
-          sed -i 's#net7.0-windows#net8.0-windows#' LuminaSupplemental.Excel.csproj
-          cat LuminaSupplemental.Excel.csproj
 
       - name: Build plugin in release mode
         run: dotnet build -c Release --no-restore --nologo -o ./bin/Release
