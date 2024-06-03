@@ -464,6 +464,52 @@ public class ConfigWindow : Window, IDisposable {
 
 
 		}
+		if (ImGui.CollapsingHeader("Info")) {
+			ImGui.TextDisabled($"characters owned by player from AT IPC");
+
+			ImGui.BeginTable("##tablecharacterIdsFromATIPC##Info##Debug##ConfigWindow", 2);
+			ImGui.TableSetupColumn("Character ID");
+			ImGui.TableSetupColumn("Character Type");
+			ImGui.TableHeadersRow();
+
+			foreach ( var characterId in PluginServices.AllaganTools.GetCharactersOwnedByActive(true)) {
+				ImGui.TableNextColumn();
+				ImGui.TextUnformatted($"{characterId}");
+				ImGui.TableNextColumn();
+				ImGui.TextUnformatted($"{(characterId.ToString().StartsWith("3") ? "Retainer": (PluginServices.ClientState.LocalContentId == characterId ? "Player Character" : "Unknown"))}");
+			}
+
+			ImGui.EndTable();
+			ImGui.Separator();ImGui.Spacing();ImGui.Spacing();
+
+			ImGui.TextDisabled($"allitems retainerId distinct from AT IPC");
+
+			ImGui.BeginTable("##tablecharacterIdsFromItems##Info##Debug##ConfigWindow", 1);
+			ImGui.TableSetupColumn("Character ID");
+			ImGui.TableHeadersRow();
+
+			foreach (var characterId in PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(t => t.Value).Select(i=>i.RetainerId).Distinct()) {
+				ImGui.TableNextColumn();
+				ImGui.TextUnformatted($"{characterId}");
+			}
+
+			ImGui.EndTable();
+			ImGui.Separator();ImGui.Spacing();ImGui.Spacing();
+
+			ImGui.TextDisabled($"GetItemsLocalCharsRetainers");
+
+			ImGui.BeginTable("##tablecharacterIdsFromItems##Info##Debug##ConfigWindow", 1);
+			ImGui.TableSetupColumn("Character ID");
+			ImGui.TableHeadersRow();
+
+			foreach (var characterId in PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(t => t.Value).Select(i=>i.RetainerId).Distinct()) {
+				ImGui.TableNextColumn();
+				ImGui.TextUnformatted($"{characterId}");
+			}
+
+			ImGui.EndTable();
+
+		}
 	}
 
 	private void DrawColorStyleConfig() {
