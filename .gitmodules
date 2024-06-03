@@ -6,7 +6,7 @@
 	url = https://github.com/Critical-Impact/LuminaSupplemental
 [submodule "CriticalCommonLib"]
 	path = CriticalCommonLib
-	url = git@github_emy:emyxiv/CriticalCommonLib.git
+	url = https://github.com/emyxiv/CriticalCommonLib.git
 [submodule "DalaMock"]
 	path = DalaMock
 	url = https://github.com/Critical-Impact/DalaMock.git
