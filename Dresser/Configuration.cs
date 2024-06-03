@@ -32,6 +32,7 @@ namespace Dresser {
 		public bool Debug = false;
 		public bool EnablePenumbraModding = false;
 		public bool ForceStandaloneAppearanceApply = false;
+		public bool DebugDisplayModedInTitleBar = false;
 
 		public InventoryItemSet DisplayPlateItems { get; set; } = new();
 		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();

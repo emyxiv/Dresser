@@ -38,6 +38,7 @@ namespace Dresser.Services {
 		public bool AllaganToolsState = false;
 		public bool GlamourerState = false;
 		public bool PenumbraState = false;
+		public int PenumbraModCountInApplyCollection = 0;
 
 
 
@@ -96,6 +97,7 @@ namespace Dresser.Services {
 			AllaganToolsState = PluginServices.AllaganTools.IsInitialized();
 			GlamourerState = PluginServices.Glamourer.IsInitialized();
 			PenumbraState = PluginServices.Penumbra.GetEnabledState();
+			PenumbraModCountInApplyCollection = PluginServices.Penumbra.CountModsDresserApplyCollection();
 		}
 		public bool MustGlamourerApply() {
 			return GlamourerState && !ConfigurationManager.Config.ForceStandaloneAppearanceApply;

@@ -56,7 +56,7 @@ public class ConfigWindow : Window, IDisposable {
 	private void AdjustDynamicSections() {
 		if (ConfigurationManager.Config.Debug && !Tabs.ContainsKey("Debug")) {
 			Tabs.Add("Debug", new Dictionary<string, Action> {
-				{ "Debug", DrawDebugSection}
+				{ "Debug", DrawDebugSection},
 			});
 		} else if (!ConfigurationManager.Config.Debug && Tabs.ContainsKey("Debug")) {
 			Tabs.Remove("Debug");
@@ -313,7 +313,7 @@ public class ConfigWindow : Window, IDisposable {
 		}
 		ImGui.Spacing();
 
-		if (ImGui.CollapsingHeader("Collections##DrawPenumbraConfigs")) {
+		if (ImGui.CollapsingHeader("Collections & Behaviors##DrawPenumbraConfigs")) {
 			ImGui.Checkbox($"Use collection Mod List##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraUseModListCollection);
 			GuiHelpers.Tooltip($"If checked, only mods enabled on [{ConfigurationManager.Config.PenumbraCollectionModList}] will be scanned\nIf unchecked, ALL installed mods will be scanned for changed items");
 
@@ -351,6 +351,8 @@ public class ConfigWindow : Window, IDisposable {
 			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 3##PenumbraConfig##ConfigWindow", "Reset to default value"))
 				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = new Configuration().PenumbraDelayAfterModDisableBeforeNextModLoop;
 
+			ImGui.Checkbox($"Disable the mod instantly after applied##Debug##GearBrowserConfig", ref ConfigurationManager.Config.PenumbraDisableModRightAfterApply);
+			GuiHelpers.Tooltip($"Right after the item appearance is applied on the character, the mod applied during  application will be disabled. The item will still be displaed with the mod (Except in Mare). This allows displaying mods that affects the same items.");
 		}
 
 
@@ -451,9 +453,13 @@ public class ConfigWindow : Window, IDisposable {
 
 	private void DrawDebugSection() {
 		if (ImGui.CollapsingHeader("Toggle debug stuff")) {
-			ImGui.Checkbox($"Display debug info##Images##GearBrowserConfig", ref ConfigurationManager.Config.IconTooltipShowDev);
-			ImGui.Checkbox($"Force Standalone Appearance Apply##Images##GearBrowserConfig", ref ConfigurationManager.Config.ForceStandaloneAppearanceApply);
+			ImGui.Checkbox($"Display debug info##Debug##GearBrowserConfig", ref ConfigurationManager.Config.IconTooltipShowDev);
+			ImGui.Checkbox($"Force Standalone Appearance Apply##Debug##GearBrowserConfig", ref ConfigurationManager.Config.ForceStandaloneAppearanceApply);
 
+
+		}
+		if (ImGui.CollapsingHeader("Modded items debug")) {
+			ImGui.Checkbox($"Display how many items applied in title bar##Debug##GearBrowserConfig", ref ConfigurationManager.Config.DebugDisplayModedInTitleBar);
 		}
 		if (ImGui.CollapsingHeader("Manual triggers")) {
 			if (ImGui.Button("AppearanceUpdateNakedOrWearing2##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing2();

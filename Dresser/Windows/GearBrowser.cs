@@ -144,6 +144,16 @@ namespace Dresser.Windows {
 			ImGui.Text($"{ItemsCount}");
 			GuiHelpers.Tooltip($"{ItemsCount} items found with the selected filters");
 
+			if (ConfigurationManager.Config.DebugDisplayModedInTitleBar) {
+				ImGui.SameLine();
+				var modedItemsCountInApplyCollection = PluginServices.Context.PenumbraModCountInApplyCollection;
+				if (modedItemsCountInApplyCollection > 0) {
+					ImGui.TextColored(ConfigurationManager.Config.ModdedItemColor, $" {modedItemsCountInApplyCollection}");
+					GuiHelpers.Tooltip($"{ItemsCount} modded items are applied in {ConfigurationManager.Config.PenumbraCollectionApply} collection");
+				}
+			}
+
+
 			ImGui.SameLine();
 
 			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? Dalamud.Interface.FontAwesomeIcon.Columns : Dalamud.Interface.FontAwesomeIcon.Expand;

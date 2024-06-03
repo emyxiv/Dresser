@@ -408,9 +408,17 @@ namespace Dresser.Services {
 				TasksOnCurrentPlate[plateN] = set.FindNotOwned();
 			}
 		}
+		public void UnApplyCurrentPendingPlateAppearance() {
+			ClearApplyAppearanceQueue();
+			if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
+				foreach (var mod in currentPlate.Mods()) {
+					if(mod.HasValue) PluginServices.Penumbra.CleanDresserApplyMod(mod.Value);
+				}
+			}
+		}
 		public void ApplyCurrentPendingPlateAppearance() {
 			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
-				if (currentPlate.HasModdedItem()) PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
+				//if (currentPlate.HasModdedItem()) PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
 				currentPlate.UpdateSourcesForOwnedItems();
 				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 				ApplyItemsAppearancesOnPlayer(currentPlate);
@@ -420,7 +428,7 @@ namespace Dresser.Services {
 		}
 		public void ReApplyAppearanceAfterEquipUpdate() {
 			BackupAppearance();
-			PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
+			//PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
 			ApplyCurrentPendingPlateAppearance();
 			PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
 

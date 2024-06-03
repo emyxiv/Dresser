@@ -192,7 +192,9 @@ namespace Dresser.Structs.Dresser {
 			=> Items.Any(i => i.Value?.IsModded() ?? false );
 		public readonly bool HasMod((string Path, string Name)? mod)
 			=> Items.Any(i => i.Value?.IsMod(mod) ?? false);
-
+		public readonly IEnumerable<(string Path, string Name)?> Mods() {
+			return Items.Where(i => i.Value?.IsModded() ?? false).Select(i => i.Value?.GetMod()).Distinct();
+		}
 		public readonly void ApplyAppearance() {
 			PluginServices.Context.LocalPlayer?.EquipSet(this);
 		}
