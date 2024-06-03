@@ -6,7 +6,7 @@
 	url = https://github.com/Critical-Impact/LuminaSupplemental
 [submodule "CriticalCommonLib"]
 	path = CriticalCommonLib
-	url = https://github.com/emyxiv/CriticalCommonLib.git
+	url = git@github_emy:emyxiv/CriticalCommonLib.git
 [submodule "DalaMock"]
 	path = DalaMock
 	url = https://github.com/Critical-Impact/DalaMock.git
@@ -22,3 +22,6 @@
 [submodule "OtterGui"]
 	path = OtterGui
 	url = https://github.com/Ottermandias/OtterGui.git
+[submodule "Glamourer.Api"]
+	path = Glamourer.Api
+	url = https://github.com/Ottermandias/Glamourer.Api

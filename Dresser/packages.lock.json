@@ -55,6 +55,9 @@
           "System.Reactive": "[5.0.0, )"
         }
       },
+      "glamourer.api": {
+        "type": "Project"
+      },
       "luminasupplemental.excel": {
         "type": "Project",
         "dependencies": {
@@ -76,7 +79,7 @@
         "type": "Project",
         "dependencies": {
           "OtterGui": "[1.0.0, )",
-          "Penumbra.Api": "[5.0.0, )",
+          "Penumbra.Api": "[5.1.0, )",
           "Penumbra.String": "[1.0.4, )"
         }
       },

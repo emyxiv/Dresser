@@ -13,9 +13,9 @@ using Penumbra.GameData.Structs;
 
 using System;
 
-namespace Glamourer.Designs;
+namespace Dresser.Logic.Glamourer;
 
-public class Design {
+public static class Design {
 
 
 	public static string PrepareDesign(JObject design, InventoryItemSet set) {
@@ -34,7 +34,7 @@ public class Design {
 		return ShareBase64(design);
 	}
 
-	protected static void SerializeEquipment(ref JObject design, InventoryItemSet set) {
+	public static void SerializeEquipment(ref JObject design, InventoryItemSet set) {
 		var ret = (JObject?)design["Equipment"];
 		if (ret == null) return;
 
@@ -46,15 +46,15 @@ public class Design {
 		//}
 
 		foreach ((var slot, var item) in set.Items) {
-			if(item == null) continue; // if null, leave empty to let it be filled with empty + not apply
-			if (slot == GlamourPlateSlot.OffHand && overwritesOffhand) continue; 
+			if (item == null) continue; // if null, leave empty to let it be filled with empty + not apply
+			if (slot == GlamourPlateSlot.OffHand && overwritesOffhand) continue;
 
 			// if item id == 0, make it empty and apply
 			// else display the item
 
 			CustomItemId? mainItem = null;
 			if (item.ItemId == 0) mainItem = NothingId(slot.ToPenumbraEquipSlot()).Id;
-			else                  mainItem = FromInventoryItem(item.Item, slot, ret);
+			else mainItem = FromInventoryItem(item.Item, slot, ret);
 
 			//var hackedId = mainItem.Id | 1ul << 48;
 
@@ -63,7 +63,7 @@ public class Design {
 			//mainItem = 38081;
 
 
-			if(mainItem != null) {
+			if (mainItem != null) {
 				ret[slot.ToPenumbraEquipSlot().ToString()] = SerializeItem(mainItem.Value, item.Stain, false, true, true, false);
 				if (slot == GlamourPlateSlot.MainHand) {
 					//&& !item.Item.IsMainModelOnOffhand()
@@ -160,13 +160,13 @@ public class Design {
 	private static string ShareBase64(JObject jObject) {
 		var json = jObject.ToString(Formatting.None);
 		var compressed = json.Compress(6);
-		return System.Convert.ToBase64String(compressed);
+		return Convert.ToBase64String(compressed);
 	}
 	public static JObject FromBase64(string base64String) {
 		byte[] byteArray = Convert.FromBase64String(base64String);
 		byteArray.DecompressToString(out var json);
 		return JObject.Parse(json);
-	} 
+	}
 	static void TurnOffAllApplies(ref JObject json) {
 
 		var propertyName = "Apply";

@@ -16,7 +16,7 @@ namespace Dresser.Extensions {
 
 		// apply appearance of set items
 		public unsafe static void EquipSet(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
-			if (PluginServices.Context.MustGlamourerApply() && !set.HasModdedItem())
+			if (PluginServices.Context.MustGlamourerApply())
 				playerCharacter.EquipGlamourer(set);
 			else {
 				//PluginLog.Debug($"dddv => {set.Items.Count}");
@@ -40,13 +40,10 @@ namespace Dresser.Extensions {
 			}
 		}
 		public unsafe static void EquipGlamourer(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
-			//PluginLog.Debug($"Apply Item set with EquipGlamourer \n{new StackTrace()}");
-			//PluginLog.Debug($"ddd => {set.Items.Count}");
-			var design = PluginServices.Glamourer.GetAllCustomizationDesignFromCharacter(playerCharacter);
-			if (design == null) return;
-			var json = Glamourer.Designs.Design.PrepareDesign(design, set);
-			//json.ToClipboard();
-			PluginServices.Glamourer.ApplyOnlyEquipmentToCharacter(json, playerCharacter);
+			foreach ((var slot, var item) in set.Items) {
+				if (item == null) continue;
+				playerCharacter.Equip(item, slot);
+			}
 		}
 		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
 			PluginLog.Debug($"Apply Item with EquipStandalone");

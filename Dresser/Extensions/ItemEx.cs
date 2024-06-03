@@ -9,6 +9,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Internal;
 
 using Dresser.Logic;
+using Dresser.Logic.Glamourer;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
 using Dresser.Structs.Dresser;
@@ -217,9 +218,9 @@ namespace Dresser.Extensions {
 		//}
 
 		public static bool IsSoldByAnyVendor(this CriticalItemEx item, IEnumerable<string> vendorNames)
-			=> Service.ExcelCache.ShopCollection.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular)));
+			=> Service.ExcelCache.ShopCollection?.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular))) ?? false;
 
 		public static CustomItemId ToCustomItemId(this CriticalItemEx item, GlamourPlateSlot slot)
-			=> Glamourer.Designs.Design.FromInventoryItem(item, slot);
+			=> Design.FromInventoryItem(item, slot);
 	}
 }
