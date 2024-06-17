@@ -1,5 +1,6 @@
 using CriticalCommonLib.Extensions;
 
+using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
@@ -465,6 +466,10 @@ public class ConfigWindow : Window, IDisposable {
 			if (ImGui.Button("AppearanceUpdateNakedOrWearing2##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing2();
 			if (ImGui.Button("ReApplyAppearanceAfterEquipUpdate##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 			if (ImGui.Button($"CleanDresserApplyCollection ({PluginServices.Penumbra.CountModsDresserApplyCollection()})##Manual triggers##Debug##ConfigWindow")) PluginServices.Penumbra.CleanDresserApplyCollection();
+			if (ImGui.Button($"Save config##Manual triggers##Debug##ConfigWindow")) ConfigurationManager.SaveAsync();
+			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Broom, $"Remove EVERY (ALL) items from ALL plates for THIS character {PluginServices.Context.LocalPlayer?.Name}", default, $"##clear##Manual triggers##Debug##ConfigWindow")) {
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar = new();
+			}
 
 
 

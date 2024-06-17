@@ -65,9 +65,9 @@ namespace Dresser.Services {
 			var slot = GearBrowser.SelectedSlot;
 
 			if (slot != null) {
-				if(!ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
+				if(!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
 					plate = new();
-					ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
+					ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
 				}
 				CurrentPreviousMod = plate.GetSlot(slot.Value)?.GetMod();
 				plate.SetSlot(slot.Value, clonedItem);
@@ -279,7 +279,7 @@ namespace Dresser.Services {
 		}
 
 		public InventoryItemSet? GetCurrentPlate() {
-			if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
+			if(ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				return currentPlate;
 			}
 			return null;
@@ -341,7 +341,7 @@ namespace Dresser.Services {
 			item.Stain = 0;
 		}
 		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain) {
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(PlateNumber, out var plate)) {
+			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(PlateNumber, out var plate)) {
 				var item = plate.GetSlot(slot);
 				if (item != null) {
 					item.Stain = stain;
@@ -352,7 +352,7 @@ namespace Dresser.Services {
 		}
 
 		public void OpenGlamourDresser() {
-			if (!ConfigurationManager.Config.PendingPlateItems.Any(s=>!s.Value.IsEmpty())) {
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.Any(s=>!s.Value.IsEmpty())) {
 				PluginLog.Verbose($"Found found no portable plates, populating them with current");
 				PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 			}
@@ -403,21 +403,21 @@ namespace Dresser.Services {
 
 		public Dictionary<ushort, List<InventoryItem>> TasksOnCurrentPlate = new();
 		public void CompileTodoTasks(ushort? plateNumber = null) {
-			foreach((var plateN, var set) in ConfigurationManager.Config.PendingPlateItems) {
+			foreach((var plateN, var set) in ConfigurationManager.Config.PendingPlateItemsCurrentChar) {
 				if (plateNumber != null && plateN != plateNumber) continue;
 				TasksOnCurrentPlate[plateN] = set.FindNotOwned();
 			}
 		}
 		public void UnApplyCurrentPendingPlateAppearance() {
 			ClearApplyAppearanceQueue();
-			if(ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
+			if(ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				foreach (var mod in currentPlate.Mods()) {
 					if(mod.HasValue) PluginServices.Penumbra.CleanDresserApplyMod(mod.Value);
 				}
 			}
 		}
 		public void ApplyCurrentPendingPlateAppearance() {
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
+			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
 				//if (currentPlate.HasModdedItem()) PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
 				currentPlate.UpdateSourcesForOwnedItems();
 				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
@@ -438,7 +438,7 @@ namespace Dresser.Services {
 		}
 
 		public void OverwritePendingWithCurrentPlate() {
-			ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems.Copy().RemoveEmpty();
+			ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems.Copy().RemoveEmpty();
 			ReApplyAppearanceAfterEquipUpdate();
 		}
 		public void OverwritePendingWithActualPlates() {
@@ -450,7 +450,7 @@ namespace Dresser.Services {
 				}
 				foreach ((var plateNumber, var set) in Storage.PagesInv) {
 					if (plateNumber == Storage.PlateNumber || set.IsEmpty()) continue;
-					ConfigurationManager.Config.PendingPlateItems[plateNumber] = set;
+					ConfigurationManager.Config.PendingPlateItemsCurrentChar[plateNumber] = set;
 				}
 			});
 		}
@@ -461,7 +461,7 @@ namespace Dresser.Services {
 
 		public void CheckModificationsOnPendingPlates() {
 			PluginLog.Verbose("Calculating Modifications On Pending Plates ...");
-			var pendingPlates = ConfigurationManager.Config.PendingPlateItems;
+			var pendingPlates = ConfigurationManager.Config.PendingPlateItemsCurrentChar;
 			var actualPlates = Storage.PagesInv;
 
 
@@ -619,7 +619,7 @@ namespace Dresser.Services {
 			if (PluginServices.Storage.Pages != null && platelateNumber >= 0 && platelateNumber < PluginServices.Storage.Pages.Length) {
 				var miragePlate = PluginServices.Storage.Pages[platelateNumber];
 				var ggg = (InventoryItemSet)miragePlate;
-				if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(platelateNumber, out var pendingPlate)) {
+				if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(platelateNumber, out var pendingPlate)) {
 					return pendingPlate.IsDifferentGlam(ggg, out var _, out var _);
 				}
 			}

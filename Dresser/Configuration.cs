@@ -15,6 +15,7 @@ using System.Numerics;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using static Dresser.Windows.GearBrowser;
+using System.Text.Json.Serialization;
 
 namespace Dresser {
 	[Serializable]
@@ -35,7 +36,43 @@ namespace Dresser {
 		public bool DebugDisplayModedInTitleBar = false;
 
 		public InventoryItemSet DisplayPlateItems { get; set; } = new();
+		[Obsolete]
 		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();
+		[JsonIgnore]
+		public Dictionary<ushort, InventoryItemSet> PendingPlateItemsCurrentChar {
+			get {
+				if (PendingPlateItemsAllChar.TryGetValue(PluginServices.Context.LocalPlayerCharacterId, out var result) && result != null)
+					return result;
+				else {
+
+#pragma warning disable CS0612 // Type or member is obsolete
+					if (PendingPlateItems.Count != 0) {
+						PendingPlateItemsAllChar[PluginServices.Context.LocalPlayerCharacterId] = PendingPlateItems;
+						return PendingPlateItemsAllChar[PluginServices.Context.LocalPlayerCharacterId];
+					}
+#pragma warning restore CS0612 // Type or member is obsolete
+					else {
+						return new();
+					}
+				}
+			} set {
+				if(!PendingPlateItemsAllChar.ContainsKey(PluginServices.Context.LocalPlayerCharacterId)) {
+					PendingPlateItemsAllChar.Add(PluginServices.Context.LocalPlayerCharacterId, new());
+				}
+				PendingPlateItemsAllChar[PluginServices.Context.LocalPlayerCharacterId] = value;
+			}
+		}
+		[JsonIgnore]
+		public InventoryItemSet PendingPlateCurrentCharPlate { get {
+				if (PendingPlateItemsCurrentChar.TryGetValue(this.SelectedCurrentPlate, out var result))
+					return result;
+				else
+					return new();
+			} set {
+				PendingPlateItemsCurrentChar[this.SelectedCurrentPlate] = value;
+			}
+		}
+		public Dictionary<ulong, Dictionary<ushort, InventoryItemSet>> PendingPlateItemsAllChar = new();
 		public ushort NumberOfFreePendingPlates { get; set; } = 19;
 		public ushort NumberofPendingPlateNextColumn { get; set; } = 20;
 		public ushort SelectedCurrentPlate { get; set; } = 0;

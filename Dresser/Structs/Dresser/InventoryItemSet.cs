@@ -20,6 +20,7 @@ namespace Dresser.Structs.Dresser {
 		public Dictionary<GlamourPlateSlot, InventoryItem?> Items;
 		public InventoryItemSet() {
 			Items = new();
+			EmptyAllItemsToNull();
 		}
 		public InventoryItemSet(Dictionary<GlamourPlateSlot, InventoryItem?> items) {
 			Items = items;
@@ -107,8 +108,8 @@ namespace Dresser.Structs.Dresser {
 			return Items.Count == 0 || !Items.Any(i => i.Value != null);
 		}
 		public void EmptyAllItemsToNull() {
-			InventoryItem? nullItem = null;
-			Items = Enum.GetValues<GlamourPlateSlot>().ToDictionary(s => s, s => nullItem);
+			foreach((var key, var item) in Items)
+				Items[key] = new();
 		}
 		public void UpdateSourcesForOwnedItems() {
 			var set = this;

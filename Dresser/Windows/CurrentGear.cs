@@ -47,6 +47,7 @@ public class CurrentGear : Window, IDisposable {
 	public override void OnClose() {
 		base.OnClose();
 		PluginServices.ApplyGearChange.ExitBrowsingMode();
+		ConfigurationManager.SaveAsync();
 	}
 	public void Dispose() { }
 
@@ -226,7 +227,7 @@ public class CurrentGear : Window, IDisposable {
 			//	plateItems = ConfigurationManager.Config.DisplayPlateItems;
 			//} else {
 			CheckPendingPlateItems();
-				if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2)) {
+				if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plateItems2)) {
 					plateItems = plateItems2;
 				} else plateItems = Gathering.EmptyGlamourPlate();
 			//}
@@ -290,29 +291,31 @@ public class CurrentGear : Window, IDisposable {
 		ImGui.TextDisabled($"{FormattedPlateName(plateNumber)}");
 		ImGui.Spacing();
 		if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Broom, $"Remove every items from this plate ({FormattedPlateName(plateNumber)})", default, $"##{plateNumber}##clear##PlateSelector##CurrentGear")) {
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(plateNumber, out var set))
+			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var set)) {
 				set.EmptyAllItemsToNull();
+				set.ApplyAppearance();
+			}
 		}
 		ImGui.SameLine();
 		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowRightArrowLeft, $"Swap contents of current ({FormattedNameCurrentPlate()}) with contents of {FormattedPlateName(plateNumber)}", default, $"##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear")) {
-			if (ConfigurationManager.Config.PendingPlateItems.TryGetValue(plateNumber, out var targetPlateInvItems) && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlateInvItems)) {
-				ConfigurationManager.Config.PendingPlateItems[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems.Copy();
-				ConfigurationManager.Config.PendingPlateItems[plateNumber] = currentPlateInvItems.Copy();
+			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var targetPlateInvItems) && ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlateInvItems)) {
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems.Copy();
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[plateNumber] = currentPlateInvItems.Copy();
 				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
 			}
 		}
 	}
 
 	private static void CheckPendingPlateItems() {
-		if (ConfigurationManager.Config.PendingPlateItems == null || !ConfigurationManager.Config.PendingPlateItems.Any()) {
-			ConfigurationManager.Config.PendingPlateItems = new();
+		if (ConfigurationManager.Config.PendingPlateItemsCurrentChar == null || !ConfigurationManager.Config.PendingPlateItemsCurrentChar.Any()) {
+			ConfigurationManager.Config.PendingPlateItemsCurrentChar = new();
 			for (ushort i = 0; i < Storage.PlateNumber; i++) {
-				ConfigurationManager.Config.PendingPlateItems[i] = new();
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[i] = new();
 			}
 		}
 	}
 	public static InventoryItem? SelectedInventoryItem() {
-		if(GearBrowser.SelectedSlot != null && ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var set)) {
+		if(GearBrowser.SelectedSlot != null && ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var set)) {
 			return set.GetSlot((GlamourPlateSlot)GearBrowser.SelectedSlot);
 		}
 		return null;

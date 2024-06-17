@@ -41,8 +41,8 @@ namespace Dresser.Extensions {
 		}
 		public unsafe static void EquipGlamourer(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
 			foreach ((var slot, var item) in set.Items) {
-				if (item == null) continue;
-				playerCharacter.Equip(item, slot);
+				if (item == null) playerCharacter.Equip(InventoryItem.Zero, slot);
+				else playerCharacter.Equip(item, slot);
 			}
 		}
 		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
@@ -99,7 +99,7 @@ namespace Dresser.Extensions {
 			drawData.SetVisor(ConfigurationManager.Config.CurrentGearDisplayVisor);
 		}
 		public static void RedrawHeadGear(this SubKindsPlayerCharacter playerCharacter) {
-			ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
+			ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
 
 			if (PluginServices.Context.MustGlamourerApply() && !plate.HasModdedItem()) {
 				playerCharacter.EquipGlamourer(new());
@@ -115,7 +115,7 @@ namespace Dresser.Extensions {
 		}
 		public static void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
 
-			var didGetValue = ConfigurationManager.Config.PendingPlateItems.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
+			var didGetValue = ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
 
 			if (PluginServices.Context.MustGlamourerApply() && !plate.HasModdedItem()) {
 				playerCharacter.EquipGlamourer(new());
