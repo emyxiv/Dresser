@@ -114,5 +114,16 @@ namespace Dresser.Logic {
 			}
 		}
 
+		public unsafe static ushort? CurrentGearsetToPlateNumber() {
+			var ddd = Instance()->CurrentGearsetIndex;
+			if (ddd >= 0) return null;
+			if (!Instance()->IsValidGearset(ddd)) return null;
+			var currentGearset = Instance()->GetGearset(ddd);
+
+			var glamourPlateNumber = currentGearset->GlamourSetLink;
+
+			return glamourPlateNumber;
+		}
+
 	}
 }

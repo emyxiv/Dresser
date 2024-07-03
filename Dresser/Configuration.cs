@@ -77,6 +77,7 @@ namespace Dresser {
 		public ushort NumberofPendingPlateNextColumn { get; set; } = 20;
 		public ushort SelectedCurrentPlate { get; set; } = 0;
 		public bool CurrentGearPortablePlateJobIcons = true;
+		public bool SelectCurrentGearsetOnOpenCurrentGearWindow = false;
 		public bool CurrentGearPortablePlateJobBgColors = false;
 		public GlamourPlateSlot CurrentGearSelectedSlot = GlamourPlateSlot.Body;
 

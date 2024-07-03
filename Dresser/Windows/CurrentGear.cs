@@ -38,6 +38,15 @@ public class CurrentGear : Window, IDisposable {
 		=> Styler.PushStyleCollection();
 	public override void PostDraw()
 		=> Styler.PopStyleCollection();
+	public override void PreOpenCheck() {
+		if (ConfigurationManager.Config.SelectCurrentGearsetOnOpenCurrentGearWindow) {
+			var gearsetPlateNumber = GearSets.CurrentGearsetToPlateNumber();
+			PluginLog.Error($"found gearset plate number {gearsetPlateNumber}");
+			if (gearsetPlateNumber.HasValue) {
+				ConfigurationManager.Config.SelectedCurrentPlate = gearsetPlateNumber.Value;
+			}
+		}
+	}
 	public override void OnOpen() {
 		base.OnOpen();
 		if (GearBrowser.SelectedSlot == null) PluginServices.ApplyGearChange.SelectCurrentSlot(ConfigurationManager.Config.CurrentGearSelectedSlot);

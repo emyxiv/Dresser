@@ -113,6 +113,7 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void DrawBehaviourConfigs() {
+		ImGui.Checkbox($"Select plate linked to current gearset on open##Behaviours##Config", ref ConfigurationManager.Config.SelectCurrentGearsetOnOpenCurrentGearWindow);
 		ImGui.Checkbox($"Hide empty owned item types##Behaviours##Config", ref ConfigurationManager.Config.GearBrowserSourceHideEmpty);
 		ImGui.Checkbox($"(Experimental) Hotkeys after loosing window focus##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus);
 		GuiHelpers.Tooltip("For example, when loosing Gear Browser focus, the directional hotkeys will continue working until another window is focused or dresser is closed");
