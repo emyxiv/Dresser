@@ -19,7 +19,7 @@ namespace Dresser.Services {
 			_gameUiManager = gameUiManager;
 			PluginServices.GameUi.UiVisibilityChanged += GameUiOnUiVisibilityChanged;
 			//PluginServices.GameUi.UiUpdated += GameUiOnUiUpdated;
-			AddOverlay(new MiragePrismMiragePlateOverlay());
+			AddOverlay(new MiragePrismMiragePlateOverlay(new AtkMiragePrismMiragePlate()));
 
 			PluginServices.Framework.Update += FrameworkOnUpdate;
 			PluginServices.OnPluginLoaded += PluginServiceOnOnPluginLoaded;
@@ -54,14 +54,14 @@ namespace Dresser.Services {
 			}
 		}
 
-		private Dictionary<WindowName, IAtkOverlayState> _overlays = new();
+		private Dictionary<WindowName, IGameOverlay> _overlays = new();
 		private HashSet<WindowName> _setupHooks = new();
 		private Dictionary<WindowName, DateTime> _lastUpdate = new();
 		private HighlighterState? _lastState;
 
 		public HighlighterState? LastState => _lastState;
 
-		public Dictionary<WindowName, IAtkOverlayState> Overlays {
+		public Dictionary<WindowName, IGameOverlay> Overlays {
 			get => _overlays;
 		}
 
@@ -72,7 +72,7 @@ namespace Dresser.Services {
 			}
 		}
 
-		public void SetupUpdateHook(IAtkOverlayState overlayState) {
+		public void SetupUpdateHook(IGameOverlay overlayState) {
 			if (_setupHooks.Contains(overlayState.WindowName)) {
 				return;
 			}
@@ -82,7 +82,7 @@ namespace Dresser.Services {
 			}
 		}
 
-		public void AddOverlay(IAtkOverlayState overlayState) {
+		public void AddOverlay(IGameOverlay overlayState) {
 			if (!Overlays.ContainsKey(overlayState.WindowName)) {
 				Overlays.Add(overlayState.WindowName, overlayState);
 				overlayState.Setup();
@@ -99,7 +99,7 @@ namespace Dresser.Services {
 			}
 		}
 
-		public void RemoveOverlay(IAtkOverlayState overlayState) {
+		public void RemoveOverlay(IGameOverlay overlayState) {
 			if (Overlays.ContainsKey(overlayState.WindowName)) {
 				Overlays.Remove(overlayState.WindowName);
 				overlayState.Clear();
