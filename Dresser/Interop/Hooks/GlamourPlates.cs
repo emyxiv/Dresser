@@ -453,7 +453,7 @@ namespace Dresser.Interop.Hooks {
 
 		internal GlamourPlates() {
 
-			Service.GameInteropProvider.InitializeFromAttributes(this);
+			//Service.GameInteropProvider.InitializeFromAttributes(this);
 
 		}
 
