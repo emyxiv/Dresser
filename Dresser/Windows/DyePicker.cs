@@ -1,8 +1,10 @@
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Extensions;
 using Dresser.Logic;
 using Dresser.Services;
+using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
 using ImGuiNET;
@@ -62,10 +64,12 @@ public class DyePicker :  Window, IDisposable {
 
 	// Properties
 	private static bool SearchBarValidated = false;
-	private static int LastSelectedItemKey = 0;
+	private static int? LastSelectedItemKey = null;
 	private static int Columns = 12;
 	private static int IndexKey = 0;
-	public static Stain? CurrentDye = null;
+	//public static Stain? CurrentDye2 = null;
+	public static Dictionary<ushort, Stain?> CurrentDyesInEditor = new();
+	public static Dictionary<ushort,byte?> CurrentDyeList = new();
 	private string SearchBarLabel = $"##dye_search";
 	private string SearchBarHint = "Search...";
 	private string DyeNameSearch = "";
@@ -75,6 +79,23 @@ public class DyePicker :  Window, IDisposable {
 	public static readonly IEnumerable<Stain> Dyes = PluginServices.DataManager.GetExcelSheet<Stain>()!
 		.Where(i => i.IsValid())
 		.OrderBy(i => i.Shade).ThenBy(i => i.SubOrder);
+	public static Stain Dye(byte stain) => PluginServices.DataManager.GetExcelSheet<Stain>()!
+		.First(i => i.RowId == stain);
+
+	public static void SetSelection(InventoryItem? item, bool resetSelected = true) {
+			if (item?.Item.IsDyeable1() ?? false) SetSelection(item.Stain, 1, resetSelected);
+			if (item?.Item.IsDyeable2() ?? false) SetSelection(item.Stain2, 2, resetSelected);
+	}
+	public static void SetSelection(byte stain, ushort index, bool resetSelected = true) {
+		CurrentDyeList[index] = stain;
+		CurrentDyesInEditor[index] = Dye(stain);
+		if (resetSelected) LastSelectedItemKey = null;
+	}
+	public static void SetSelection(Stain stain, ushort index, bool resetSelected = true) {
+		CurrentDyeList[index] = (byte)stain.RowId;
+		CurrentDyesInEditor[index] = stain;
+		if(resetSelected) LastSelectedItemKey = null;
+	}
 
 	private void DrawLogic() {
 
@@ -109,12 +130,12 @@ public class DyePicker :  Window, IDisposable {
 				selecting |= drawnLineTurpe.Item1;
 
 				if (!isOneSelected) {
-					selecting |= ImGui.IsKeyPressed(KeyBindBrowseUp) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) - 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-					selecting |= ImGui.IsKeyPressed(KeyBindBrowseDown) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) + 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-					selecting |= ImGui.IsKeyPressed(KeyBindBrowseUpFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) - FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-					selecting |= ImGui.IsKeyPressed(KeyBindBrowseDownFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey) + FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey);
-					selecting |= ImGui.IsKeyPressed(KeyBindBrowseLeft) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey) - 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey);
-					selecting |= ImGui.IsKeyPressed(KeyBindBrowseRight) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey) + 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseUp) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey??0) - 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey??0);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseDown) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey??0) + 1 && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey??0);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseUpFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey??0) - FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey??0);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseDownFast) && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey??0) + FastScrollLineJump && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey??0);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseLeft) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey??0) - 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey??0);
+					selecting |= ImGui.IsKeyPressed(KeyBindBrowseRight) && ColFromKey(IndexKey) == ColFromKey(LastSelectedItemKey??0) + 1 && RowFromKey(IndexKey) == RowFromKey(LastSelectedItemKey??0);
 					selecting |= SearchBarValidated;
 				}
 
@@ -122,13 +143,16 @@ public class DyePicker :  Window, IDisposable {
 					if (ImGui.IsKeyPressed(KeyBindBrowseUp) || ImGui.IsKeyPressed(KeyBindBrowseDown) || ImGui.IsKeyPressed(KeyBindBrowseUpFast) || ImGui.IsKeyPressed(KeyBindBrowseDownFast))
 						ImGui.SetScrollY(ImGui.GetCursorPosY() - (ImGui.GetWindowHeight() / 2));
 
-					if (GearBrowser.SelectedSlot.HasValue)
-						PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, GearBrowser.SelectedSlot.Value, (byte)i.RowId);
+					if (GearBrowser.SelectedSlot.HasValue) {
+
+						PluginServices.ApplyGearChange.ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, GearBrowser.SelectedSlot.Value, (byte)i.RowId, DyeIndex);
+					}
 
 					// assigning cache vars
 					LastSelectedItemKey = IndexKey;
 					isOneSelected = true;
-					CurrentDye = i;
+					CurrentDyeList[DyeIndex] = (byte)i.RowId;
+					CurrentDyesInEditor[DyeIndex] = i;
 				}
 				IndexKey++;
 			}
@@ -159,7 +183,8 @@ public class DyePicker :  Window, IDisposable {
 		DyeLastSubOrder = i.SubOrder;
 
 		// as we previously changed the index key, let's calculate calculate isActive again
-		isActive = IndexKey == LastSelectedItemKey;
+		if (LastSelectedItemKey == null && CurrentDyeList.TryGetValue(DyeIndex, out var stain) && stain != null) isActive = i.RowId == stain.Value;
+		else isActive = IndexKey == LastSelectedItemKey;
 
 		Vector2 startPos = default;
 		if (isActive) {
@@ -168,7 +193,7 @@ public class DyePicker :  Window, IDisposable {
 		var selecting = false;
 		try {
 			selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4(), ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
-			selecting |= i != CurrentDye && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
+			selecting |= !CurrentDyeList.ContainsValue((byte)i.RowId) && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
 
 		} catch (Exception e) {
 			PluginLog.Error(e, "Error in DrawDyePickerItem");
@@ -176,25 +201,28 @@ public class DyePicker :  Window, IDisposable {
 		if (isActive) {
 			var draw = ImGui.GetWindowDrawList();
 			var endPos = startPos + ConfigurationManager.Config.DyePickerDyeSize;
-			var thickness1 = ConfigurationManager.Config.DyePickerDyeSize.X / 10;
+			var thicknessOutter = ConfigurationManager.Config.DyePickerDyeSize.X * 0.3f;
+			var thicknessInner = thicknessOutter * 0.4f;
+			var selectionColorOutter = ConfigurationManager.Config.DyePickerHighlightSelection;
+			var selectionColorInner = new Vector4(selectionColorOutter.X * 0.8f, selectionColorOutter.Y * 0.8f, selectionColorOutter.Z * 0.8f, 0.9f);
+
 			draw.AddRect(
 				startPos,
 				endPos,
-				ImGui.ColorConvertFloat4ToU32(new Vector4(70 / 255f, 133 / 255f, 158 / 255f, 1)),
+				ImGui.ColorConvertFloat4ToU32(selectionColorOutter),
 				ConfigurationManager.Config.DyePickerDyeSize.X / 5,
 				ImDrawFlags.None,
-				thickness1
+				thicknessOutter
 				);
-			var thickness2 = thickness1 / 2.5f;
 
 
 			draw.AddRect(
 				startPos,
 				endPos,
-				ImGui.ColorConvertFloat4ToU32(new Vector4(192 / 255f, 233 / 255f, 237 / 255f, 1)),
+				ImGui.ColorConvertFloat4ToU32(selectionColorInner),
 				ConfigurationManager.Config.DyePickerDyeSize.X / 5,
 				ImDrawFlags.None,
-				thickness2
+				thicknessInner
 				);
 
 		}
@@ -202,21 +230,45 @@ public class DyePicker :  Window, IDisposable {
 		return (selecting, ImGui.IsItemFocused());
 	}
 
+	public static ushort DyeIndex = 1;
+	public static List<ushort> DyeIndexList = new() {1,2};
 	private static void DrawDyePickerHeader() {
-		var i = CurrentDye;
+		var spacingPrebuttons = ImGui.GetContentRegionAvail().X
+			- ConfigurationManager.Config.DyePickerDyeSize.X
+			- ImGui.GetStyle().ItemInnerSpacing.X * 3 // * by number of icon, cause it's between them (and left end item)
+			- (ImGui.GetStyle().FramePadding.X * 6); // * by number of icons x2, cause on each sides of the icon
 
-		var colorLabel = $"{i?.Name ?? ""}##{i?.RowId ?? 0}##selected1";
-		var colorVec4 = i?.ColorVector4() ?? new Vector4(0, 0, 0, 0);
-		var colorFlags = ImGuiColorEditFlags.NoDragDrop;
-		if(i == null) colorFlags |= ImGuiColorEditFlags.NoPicker | ImGuiColorEditFlags.AlphaPreview;
-		ImGui.ColorButton(colorLabel, colorVec4, colorFlags, ConfigurationManager.Config.DyePickerDyeSize);
+		foreach (var dyeIndex in DyeIndexList) {
+			if (!CurrentDyesInEditor.TryGetValue(dyeIndex, out var i)) i = null;
 
-		ImGui.SameLine();
-		//ImGui.AlignTextToFramePadding();
-		//GuiHelpers.TextWithFont(i.Name, GuiHelpers.Font.TrumpGothic_23);
-		ImGui.Text(i?.Name ?? "");
+			Vector4? textCo = dyeIndex == DyeIndex ? ConfigurationManager.Config.DyePickerDye1Or2SelectedColor : null;
+			Vector4  BgCo   = dyeIndex == DyeIndex ? ConfigurationManager.Config.DyePickerDye1Or2SelectedBg : ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg];
 
-		ImGui.SameLine();
+			var childFrameCol = ImRaii.PushColor(ImGuiCol.FrameBg, BgCo);
+			if (ImGui.BeginChildFrame(115919u + dyeIndex, new Vector2((spacingPrebuttons / 2) - (ImGui.GetStyle().FramePadding.X * 2), ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y*2)))){
+
+				var clicked = false;
+
+				var colorLabel = $"{i?.Name ?? "No Color"}##{i?.RowId ?? 0}##stain{dyeIndex}##selected1";
+				var colorVec4 = i?.ColorVector4() ?? new Vector4(0, 0, 0, 0);
+				var colorFlags = ImGuiColorEditFlags.NoDragDrop;
+				if (i == null) colorFlags |= ImGuiColorEditFlags.NoPicker | ImGuiColorEditFlags.AlphaPreview;
+				clicked |= ImGui.ColorButton(colorLabel, colorVec4, colorFlags, ConfigurationManager.Config.DyePickerDyeSize);
+
+				ImGui.SameLine();
+				clicked |= GuiHelpers.ButtonNoBg((hl, v) => ImGui.Button(colorLabel + "##textbutton" + hl), $"##zzzzzz{DyeIndex}##{i?.RowId}","",textCo);
+
+				if (clicked) {
+					DyeIndex = dyeIndex;
+					LastSelectedItemKey = null;
+				}
+
+				ImGui.EndChildFrame();
+			}
+			childFrameCol.Dispose();
+			ImGui.SameLine();
+		}
+
 		var spacing = ImGui.GetContentRegionAvail().X
 			- ConfigurationManager.Config.DyePickerDyeSize.X
 			//- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.PaintRoller).X // setting icon

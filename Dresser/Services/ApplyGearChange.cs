@@ -57,8 +57,15 @@ namespace Dresser.Services {
 
 
 			var clonedItem = item.Clone();
-			if (Plugin.DyePicker.IsOpen && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem && DyePicker.CurrentDye != null) {
-				clonedItem.Stain = (byte)DyePicker.CurrentDye.RowId;
+			if (Plugin.DyePicker.IsOpen && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
+				foreach ((var dyeIndex, var currentDye) in DyePicker.CurrentDyeList) {
+					if (currentDye == null) continue;
+
+					switch (dyeIndex) {
+						case 1: clonedItem.Stain  = currentDye.Value; break;
+						case 2: clonedItem.Stain2 = currentDye.Value; break;
+					}
+				}
 			}
 
 			
@@ -247,6 +254,7 @@ namespace Dresser.Services {
 		public void SelectCurrentSlot(GlamourPlateSlot slot) {
 			GearBrowser.SelectedSlot = slot;
 			ConfigurationManager.Config.CurrentGearSelectedSlot = slot;
+			DyePicker.SetSelection(GetCurrentPlateItem(slot));
 			GearBrowser.RecomputeItems();
 		}
 		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
@@ -340,11 +348,14 @@ namespace Dresser.Services {
 		public void ExecuteCurrentContextRemoveDye(InventoryItem item) {
 			item.Stain = 0;
 		}
-		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain) {
+		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain, ushort stainIndex) {
 			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(PlateNumber, out var plate)) {
 				var item = plate.GetSlot(slot);
 				if (item != null) {
-					item.Stain = stain;
+					switch (stainIndex) {
+						case 1: item.Stain  = stain; break;
+						case 2: item.Stain2 = stain; break;
+					}
 					ApplyItemAppearanceOnPlayerWithMods(item, slot);
 				}
 			}

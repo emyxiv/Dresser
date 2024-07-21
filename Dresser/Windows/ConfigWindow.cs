@@ -554,6 +554,11 @@ public class ConfigWindow : Window, IDisposable {
 		ConfigColorVecot4(nameof(Configuration.PlateSelectorRestColor), "Rest");
 		ConfigColorVecot4(nameof(Configuration.PlateSelectorColorRadio), "Radio text");
 
+		ImGui.Separator();
+		ImGui.TextDisabled("Dye Picker");
+		ConfigColorVecot4(nameof(Configuration.DyePickerHighlightSelection  ), "Selection");
+		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedBg   ), "Active dye bg");
+		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedColor), "Active dye text");
 
 	}
 

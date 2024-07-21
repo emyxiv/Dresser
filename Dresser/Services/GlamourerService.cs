@@ -47,7 +47,7 @@ namespace Dresser.Services {
 			}
 		}
 		public bool SetItem(ICharacter character, InventoryItem item, GlamourPlateSlot slot) {
-			return SetItem(character, slot.ToPenumbraEquipSlot(), item.Item.ToCustomItemId(slot), item.Stain, 0) == GlamourerApiEc.Success;
+			return SetItem(character, slot.ToPenumbraEquipSlot(), item.Item.ToCustomItemId(slot), item.Stain, item.Stain2) == GlamourerApiEc.Success;
 		}
 
 		public void Dispose() {

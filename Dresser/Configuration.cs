@@ -125,6 +125,10 @@ namespace Dresser {
 		public Vector4 ModdedItemWatermarkColor = new Vector4(240, 161, 223, 15) / 255;
 		public Vector4 ModdedItemColor          = new Vector4(223, 101, 240, 255) / 255;
 
+		// dye picker
+		public Vector4 DyePickerHighlightSelection    = new Vector4(240, 161, 223, 15) / 255;
+		public Vector4 DyePickerDye1Or2SelectedBg     = new Vector4(1f, 0.8f, 0.45f, 1f);
+		public Vector4 DyePickerDye1Or2SelectedColor  = new Vector4(0f, 0f, 0f, 1f);
 
 
 		// gear browser remember
