@@ -1,12 +1,13 @@
 using Dalamud.Interface.Windowing;
 
-using Dresser.Data;
-using Dresser.Data.Excel;
+using Dresser.Extensions;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
 using ImGuiNET;
+
+using Lumina.Excel.GeneratedSheets;
 
 using System;
 using System.Collections.Generic;
@@ -64,14 +65,14 @@ public class DyePicker :  Window, IDisposable {
 	private static int LastSelectedItemKey = 0;
 	private static int Columns = 12;
 	private static int IndexKey = 0;
-	public static Dye? CurrentDye = null;
+	public static Stain? CurrentDye = null;
 	private string SearchBarLabel = $"##dye_search";
 	private string SearchBarHint = "Search...";
 	private string DyeNameSearch = "";
 
 	private static int RowFromKey(int key) => (int)Math.Floor((double)(key / Columns));
 	private static int ColFromKey(int key) => key % Columns;
-	public static readonly IEnumerable<Dye> Dyes = Sheets.GetSheet<Dye>()
+	public static readonly IEnumerable<Stain> Dyes = PluginServices.DataManager.GetExcelSheet<Stain>()!
 		.Where(i => i.IsValid())
 		.OrderBy(i => i.Shade).ThenBy(i => i.SubOrder);
 
@@ -87,10 +88,10 @@ public class DyePicker :  Window, IDisposable {
 		DrawDyePickerHeader();
 
 
-		IEnumerable<Dye> dyesFiltered = Dyes;
+		IEnumerable<Stain> dyesFiltered = Dyes;
 		if (DyeNameSearch.Length > 0) {
 			var DyeNameSearch2 = DyeNameSearch;
-			dyesFiltered = Dyes.Where(i => i.Name.Contains(DyeNameSearch2, StringComparison.OrdinalIgnoreCase));
+			dyesFiltered = Dyes.Where(i => i.Name.ToString().Contains(DyeNameSearch2, StringComparison.OrdinalIgnoreCase));
 		}
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ConfigurationManager.Config.DyePickerDyeSize * 0.15f);
@@ -142,7 +143,7 @@ public class DyePicker :  Window, IDisposable {
 
 	private static int DyeLastSubOrder = -1;
 
-	private static (bool, bool) DrawDyePickerItem(Dye i, bool isActive) {
+	private static (bool, bool) DrawDyePickerItem(Stain i, bool isActive) {
 		bool isThisRealNewLine = IndexKey % Columns == 0;
 		bool isThisANewShade = i.SubOrder == 1;
 
@@ -166,7 +167,7 @@ public class DyePicker :  Window, IDisposable {
 		}
 		var selecting = false;
 		try {
-			selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4, ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
+			selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4(), ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
 			selecting |= i != CurrentDye && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
 
 		} catch (Exception e) {
@@ -205,7 +206,7 @@ public class DyePicker :  Window, IDisposable {
 		var i = CurrentDye;
 
 		var colorLabel = $"{i?.Name ?? ""}##{i?.RowId ?? 0}##selected1";
-		var colorVec4 = i?.ColorVector4 ?? new Vector4(0, 0, 0, 0);
+		var colorVec4 = i?.ColorVector4() ?? new Vector4(0, 0, 0, 0);
 		var colorFlags = ImGuiColorEditFlags.NoDragDrop;
 		if(i == null) colorFlags |= ImGuiColorEditFlags.NoPicker | ImGuiColorEditFlags.AlphaPreview;
 		ImGui.ColorButton(colorLabel, colorVec4, colorFlags, ConfigurationManager.Config.DyePickerDyeSize);

@@ -96,7 +96,7 @@ public class ConfigWindow : Window, IDisposable {
 
 			ImGui.SetCursorPosY(ImGui.GetCursorPosY() + fontSize * 0.5f);
 
-			GuiHelpers.TextWithFont(title, GuiHelpers.Font.TrumpGothic_23);
+			GuiHelpers.TextWithFont(title, GuiHelpers.Font.Config);
 			var start = ImGui.GetCursorScreenPos();
 			//start += new Vector2(0, fontSize * 0.1f);
 			var titelRectSize = ImGui.GetItemRectSize();
@@ -475,6 +475,9 @@ public class ConfigWindow : Window, IDisposable {
 
 
 
+		}
+		if (ImGui.CollapsingHeader("TestUld")) {
+			ImageGuiCrop.TestParts();
 		}
 		if (ImGui.CollapsingHeader("Info")) {
 			ImGui.TextDisabled($"characters owned by player from AT IPC");

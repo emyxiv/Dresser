@@ -1,4 +1,5 @@
-﻿using Dalamud.Interface.Internal;
+﻿using Dalamud.Interface;
+using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
@@ -13,7 +14,6 @@ namespace Dresser.Services {
 	internal class ImageGuiCrop : IDisposable {
 		public Dictionary<int, IDalamudTextureWrap> Textures = new();
 		public Dictionary<string, UldWrapper> Ulds = new();
-		public HashSet<int> Blacklist = new();
 
 		public Dictionary<GlamourPlateSlot, UldBundle> EmptyGlamourPlateSlot = new() {
 				{ GlamourPlateSlot.MainHand, UldBundle.MainHand }, // main weapon: 17
@@ -31,21 +31,25 @@ namespace Dresser.Services {
 			};
 
 		public IDalamudTextureWrap? GetPart(UldBundle uldBundle) {
-			if (Blacklist.Contains(uldBundle.GetHashCode())) return null;
 
 			if (Textures.TryGetValue(uldBundle.GetHashCode(), out var texture)) {
 				return texture;
 			}
 
 			if (Ulds.TryGetValue(uldBundle.Uld, out var uld)) {
-				texture =  uld.LoadTexturePart(uldBundle.Tex, uldBundle.Part);
-				if(texture != null) {
-					Textures.Add(uldBundle.GetHashCode(), texture);
-					return texture;
+
+				if (uld.Valid) {
+					texture = uld.LoadTexturePart(uldBundle.Tex, uldBundle.Part);
+					if (texture != null) {
+						Textures.Add(uldBundle.GetHashCode(), texture);
+						return texture;
+					}
 				}
+			} else {
+				// if uld not found, make it
+				MakeUld(uldBundle);
 			}
-			PluginLog.Warning($"Unable to load Uld {uldBundle.Handle}");
-			Blacklist.Add(uldBundle.GetHashCode());
+			PluginLog.Warning($"Unable to load Uld texture {uldBundle.Handle}");
 			return null;
 		}
 
@@ -53,22 +57,33 @@ namespace Dresser.Services {
 		public IDalamudTextureWrap? GetPart(GlamourPlateSlot slot)
 			=> GetPart(EmptyGlamourPlateSlot[slot]);
 
-		public ImageGuiCrop() {
-			PluginLog.Verbose("LOADING ULDS");
+		public ImageGuiCrop() { }
+		private void MakeUld(UldBundle uldBundle) {
+			PluginLog.Warning($"creating {uldBundle.Tex} {uldBundle.Uld} {uldBundle.Part} {uldBundle.Handle}");
 
-			var uldsPaths = new List<string>() {
-				"ui/uld/Character.uld",
-				"ui/uld/MiragePrismBox.uld",
-				"ui/uld/MiragePrismPlate.uld",
-			};
-			foreach (var uldFile in uldsPaths) {
+			if (Ulds.ContainsKey(uldBundle.Uld)) return;
+			if (!PluginServices.DataManager.FileExists(uldBundle.Uld)) return;
+			var uld = PluginServices.PluginInterface.UiBuilder.LoadUld(uldBundle.Uld);
+			if (uld == null) {
+				PluginLog.Debug("created uld but NULL");
+				return;
+			}
 
-				if (Ulds.ContainsKey(uldFile)) continue;
-				if (!PluginServices.DataManager.FileExists(uldFile)) continue;
-				var uld = new UldWrapper(uldFile);
-				if (uld == null || !uld.Valid || uld.Uld == null) continue;
+			//var assets = uld.Uld?.AssetData;
+			//if (assets != null) {
 
-				Ulds.Add(uldFile, uld);
+			//	foreach ( var asset in assets) {
+			//		var path = new string(asset.Path);
+			//		PluginLog.Debug($" [{uldBundle.Uld}] => {path}");
+			//	}
+			//}
+
+			Ulds.Add(uldBundle.Uld, uld);
+			if (uld.Uld == null) {
+				PluginLog.Debug("created uld but uldfile NULL");
+			}
+			if (!uld.Valid) {
+				PluginLog.Debug("created uld but not valid");
 			}
 		}
 		public static void TestParts() {
@@ -80,6 +95,7 @@ namespace Dresser.Services {
 			foreach (var pi in prepertiesInfo) if(pi.PropertyType == uldBundleType) parts.Add((UldBundle)pi.GetValue(null)!);
 
 			foreach (var uldBundle in parts) {
+				ImGui.Text($"[{uldBundle.Uld}]       [{uldBundle.Tex}]      [{uldBundle.Part}]");
 				var texture = PluginServices.ImageGuiCrop.GetPart(uldBundle);
 				if (texture?.Size.X > ImGui.GetContentRegionAvail().X) ImGui.NewLine();
 				if (texture == null) {
@@ -93,6 +109,7 @@ namespace Dresser.Services {
 			}
 		}
 		public void Dispose() {
+			foreach ((var k, var t) in Textures) t.Dispose();
 			foreach ((var handle, var uld) in Ulds) uld.Dispose();
 			Ulds.Clear();
 		}
@@ -130,13 +147,18 @@ namespace Dresser.Services {
 			return (Tex, Uld, Part).GetHashCode();
 		}
 
+		// this is blocked by UldWrapper.GetTexture(string texturePath)  only allowing tex in the list of Uld.AssetData
+		private static string ThemePathPart
+			=> "";
+		//=> "fourth/";
 
-		public static UldBundle ItemCapNormal         => new($"ui/uld/fourth/IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 0, "ItemCapNormal"); // OK
-		public static UldBundle ItemCapCrossBlue      => new($"ui/uld/fourth/IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 2, "ItemCapCrossBlue");
-		public static UldBundle ItemCapCrossRed       => new($"ui/uld/fourth/IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 3, "ItemCapCrossRed");
-		public static UldBundle ItemSlot              => new($"ui/uld/fourth/IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 4, "ItemSlot");
-		public static UldBundle SlotHighlightInner    => new($"ui/uld/fourth/IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 5, "SlotHighlightInner");
-		public static UldBundle SlotHighlight         => new($"ui/uld/fourth/IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 16, "SlotHighlight");
+
+		public static UldBundle ItemCapNormal         => new($"ui/uld/{ThemePathPart}IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 0, "ItemCapNormal"); // OK
+		public static UldBundle ItemCapCrossBlue      => new($"ui/uld/{ThemePathPart}IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 2, "ItemCapCrossBlue");
+		public static UldBundle ItemCapCrossRed       => new($"ui/uld/{ThemePathPart}IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 3, "ItemCapCrossRed");
+		public static UldBundle ItemSlot              => new($"ui/uld/{ThemePathPart}IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 4, "ItemSlot");
+		public static UldBundle SlotHighlightInner    => new($"ui/uld/{ThemePathPart}IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 5, "SlotHighlightInner");
+		public static UldBundle SlotHighlight         => new($"ui/uld/{ThemePathPart}IconA_Frame{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 16, "SlotHighlight");
 
 
 		// handle: character
@@ -156,41 +178,41 @@ namespace Dresser.Services {
 
 
 		// handle: circle_buttons_4
-		public static UldBundle CircleSmallMagnifyLense      => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 0,"CircleSmallMagnifyLense");
-		public static UldBundle CircleSmallEdit              => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 1,"CircleSmallEdit");
-		public static UldBundle CircleSmallViewport          => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 2,"CircleSmallViewport");
-		public static UldBundle CircleSmallHat               => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 3,"CircleSmallHat");
-		public static UldBundle CircleSmallWeapon            => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 4,"CircleSmallWeapon");
-		public static UldBundle CircleSmallVisor             => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 5,"CircleSmallVisor");
-		public static UldBundle CircleSmallDisplayGear       => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 6,"CircleSmallDisplayGear");
-		public static UldBundle CircleSmallDyePot            => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 7,"CircleSmallDyePot");
-		public static UldBundle CircleSmallEye               => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 8,"CircleSmallEye");
-		public static UldBundle CircleSmallRollback          => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 9,"CircleSmallRollback");
-		public static UldBundle CircleSmallSavePin           => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 10,"CircleSmallSavePin");
-		public static UldBundle CircleLargeCog               => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 11,"CircleLargeCog");
-		public static UldBundle CircleLargeFilter            => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 12,"CircleLargeFilter");
-		public static UldBundle CircleLargeSort              => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 13,"CircleLargeSort");
-		public static UldBundle CircleLargeQuestionMark      => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 14,"CircleLargeQuestionMark");
-		public static UldBundle CircleLargeRefresh           => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 15,"CircleLargeRefresh");
-		public static UldBundle CircleLargeBubble            => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 16,"CircleLargeBubble");
-		public static UldBundle CircleLargeNote              => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 17,"CircleLargeNote");
-		public static UldBundle CircleLargeEdit              => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 18,"CircleLargeEdit");
-		public static UldBundle CircleLargePlus              => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 19,"CircleLargePlus");
-		public static UldBundle CircleLargeRight             => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 20, "CircleLargeRight");
-		public static UldBundle CircleLargeMusicNote         => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 21, "CircleLargeMusicNote");
-		public static UldBundle CircleLargeSprout            => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 22,"CircleLargeSprout");
-		public static UldBundle CircleLargeEye               => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 23,"CircleLargeEye");
-		public static UldBundle CircleLargeLetterReceived    => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 24,"CircleLargeLetterReceived");
-		public static UldBundle CircleLargeSoundOn           => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 25,"CircleLargeSoundOn");
-		public static UldBundle CircleLargeSoundMute         => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 26,"CircleLargeSoundMute");
-		public static UldBundle CircleLargeHeartbeat         => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 27,"CircleLargeHeartbeat");
-		public static UldBundle CircleLargeCheckbox          => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 28, "CircleLargeCheckbox");
-		public static UldBundle CircleLargeHighlightedCog    => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 29,"CircleLargeHighlightedCog");
-		public static UldBundle CircleLargeHighlightedFilter => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 30,"CircleLargeHighlightedFilter");
-		public static UldBundle CircleLargeRefresh2          => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 31,"CircleLargeRefresh2");
-		public static UldBundle CircleLargeHighlight         => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 32,"CircleLargeHighlight");
-		public static UldBundle CircleLargeExclamationMark   => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 33,"CircleLargeExclamationMark");
-		public static UldBundle CircleLargeHighlightedNote   => new($"ui/uld/fourth/CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 34,"CircleLargeHighlightedNote");
+		public static UldBundle CircleSmallMagnifyLense      => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 0,"CircleSmallMagnifyLense");
+		public static UldBundle CircleSmallEdit              => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 1,"CircleSmallEdit");
+		public static UldBundle CircleSmallViewport          => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 2,"CircleSmallViewport");
+		public static UldBundle CircleSmallHat               => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 3,"CircleSmallHat");
+		public static UldBundle CircleSmallWeapon            => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 4,"CircleSmallWeapon");
+		public static UldBundle CircleSmallVisor             => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 5,"CircleSmallVisor");
+		public static UldBundle CircleSmallDisplayGear       => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 6,"CircleSmallDisplayGear");
+		public static UldBundle CircleSmallDyePot            => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 7,"CircleSmallDyePot");
+		public static UldBundle CircleSmallEye               => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 8,"CircleSmallEye");
+		public static UldBundle CircleSmallRollback          => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 9,"CircleSmallRollback");
+		public static UldBundle CircleSmallSavePin           => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 10,"CircleSmallSavePin");
+		public static UldBundle CircleLargeCog               => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 11,"CircleLargeCog");
+		public static UldBundle CircleLargeFilter            => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 12,"CircleLargeFilter");
+		public static UldBundle CircleLargeSort              => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 13,"CircleLargeSort");
+		public static UldBundle CircleLargeQuestionMark      => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 14,"CircleLargeQuestionMark");
+		public static UldBundle CircleLargeRefresh           => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 15,"CircleLargeRefresh");
+		public static UldBundle CircleLargeBubble            => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 16,"CircleLargeBubble");
+		public static UldBundle CircleLargeNote              => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 17,"CircleLargeNote");
+		public static UldBundle CircleLargeEdit              => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 18,"CircleLargeEdit");
+		public static UldBundle CircleLargePlus              => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 19,"CircleLargePlus");
+		public static UldBundle CircleLargeRight             => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 20, "CircleLargeRight");
+		public static UldBundle CircleLargeMusicNote         => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 21, "CircleLargeMusicNote");
+		public static UldBundle CircleLargeSprout            => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 22,"CircleLargeSprout");
+		public static UldBundle CircleLargeEye               => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 23,"CircleLargeEye");
+		public static UldBundle CircleLargeLetterReceived    => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 24,"CircleLargeLetterReceived");
+		public static UldBundle CircleLargeSoundOn           => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 25,"CircleLargeSoundOn");
+		public static UldBundle CircleLargeSoundMute         => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 26,"CircleLargeSoundMute");
+		public static UldBundle CircleLargeHeartbeat         => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 27,"CircleLargeHeartbeat");
+		public static UldBundle CircleLargeCheckbox          => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 28, "CircleLargeCheckbox");
+		public static UldBundle CircleLargeHighlightedCog    => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 29,"CircleLargeHighlightedCog");
+		public static UldBundle CircleLargeHighlightedFilter => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 30,"CircleLargeHighlightedFilter");
+		public static UldBundle CircleLargeRefresh2          => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 31,"CircleLargeRefresh2");
+		public static UldBundle CircleLargeHighlight         => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 32,"CircleLargeHighlight");
+		public static UldBundle CircleLargeExclamationMark   => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 33,"CircleLargeExclamationMark");
+		public static UldBundle CircleLargeHighlightedNote   => new($"ui/uld/{ThemePathPart}CircleButtons{Storage.HighResolutionSufix}.tex", "ui/uld/Character.uld", 34,"CircleLargeHighlightedNote");
 
 		// ULD: ui/uld/MiragePrismPlate.uld
 

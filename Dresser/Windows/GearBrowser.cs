@@ -233,7 +233,7 @@ namespace Dresser.Windows {
 
 						if (AddItemKind == AdditionalItem.Currency && PluginServices.Storage.FilterCurrencyItemEx.TryGetValue(inventoryType, out var itex) && itex != null && PluginServices.Storage.FilterCurrencyIconTexture.TryGetValue(inventoryType, out var texWrap) && texWrap != null) {
 							var savedPosX = ImGui.GetCursorPosX();
-							if (ImGui.ImageButton(texWrap.ImGuiHandle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? Styler.ColorIconImageTintEnabled : Styler.ColorIconImageTintDisabled)) {
+							if (ImGui.ImageButton(texWrap.GetWrapOrEmpty().ImGuiHandle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? Styler.ColorIconImageTintEnabled : Styler.ColorIconImageTintDisabled)) {
 
 
 								filterChanged = true;
@@ -773,7 +773,7 @@ namespace Dresser.Windows {
 
 		private static int DrawListOfItemIconsHoveredIcon = -1;
 		public static void DrawListOfItemIcons(List<ItemEx> items)
-			=> DrawListOfItemIcons(items.Select(i => InventoryItemExtensions.New(i.RowId, 0)).ToList());
+			=> DrawListOfItemIcons(items.Select(i => InventoryItemExtensions.New(i.RowId, 0, 0)).ToList());
 		public static void DrawListOfItemIcons(List<InventoryItem> items) {
 			if (!items.Any()) return;
 			bool isAnotherTooltipActive = false;
@@ -795,27 +795,6 @@ namespace Dresser.Windows {
 			}
 
 			if (!isAnotherTooltipActive) DrawListOfItemIconsHoveredIcon = -1;
-		}
-
-		private void TestWindow() {
-			if (ImGui.Begin("Test Window")) {
-
-				ImageGuiCrop.TestParts();
-
-				// textures
-				//var texturePart = PluginServices.ImageGuiCrop.GetPart("character", 17);
-				//if (texturePart.ImGuiHandle != IntPtr.Zero) {
-				//	if (PluginServices.ImageGuiCrop.Textures.TryGetValue("character", out var tex)) {
-				//		ImGui.Text($"s:{tex.Width}*{tex.Height}");
-				//		ImGui.Image(texturePart.Item1, new(tex.Width, tex.Height));
-				//	}
-				//	ImGui.Image(texturePart.ImGuiHandle, ItemIcon.IconSize, texturePart.Item2, texturePart.Item3);
-				//	ImGui.SameLine();
-				//	ImGui.Image(texturePart.ImGuiHandle, texturePart.Item4, texturePart.Item2, texturePart.Item3);
-				//}
-
-				ImGui.End();
-			}
 		}
 	}
 }

@@ -1,12 +1,12 @@
 ﻿using CriticalCommonLib;
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
 using Dalamud.Utility;
 
-using Dresser.Data.Excel;
 using Dresser.Extensions;
 using Dresser.Logic;
 using Dresser.Services;
@@ -14,6 +14,7 @@ using Dresser.Structs.Dresser;
 
 using ImGuiNET;
 
+using Lumina.Excel.GeneratedSheets;
 
 using System;
 using System.Linq;
@@ -45,8 +46,8 @@ namespace Dresser.Windows.Components {
 		public static GlamourPlateSlot? ContexMenuItemSlot = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
-		//public static bool DrawIcon(IDalamudTextureWrap image, Dye? dye, InventoryItem item, bool isDyeable)
-		//	=> DrawIcon(image, dye, isDyeable, item, out bool _);
+		//public static bool DrawIcon(IDalamudTextureWrap image, Dye? dye, InventoryItem item, byte DyeCount)
+		//	=> DrawIcon(image, dye, DyeCount, item, out bool _);
 
 		public static void DrawIcon(InventoryItem? item) {
 			bool _ = false;
@@ -65,18 +66,18 @@ namespace Dresser.Windows.Components {
 			item ??= Gathering.EmptyItemSlot();
 
 			// item variables
-			var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
+			//var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
 			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
-			var isDyeable = item.Item.IsDyeable;
+			var DyeCount = item.Item.DyeCount;
 			var isApplicable = !item.IsFadedInBrowser();
 			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
 
 			if (item.ItemId == 0)
 				image = null;
-			var clicked = DrawImage(image, dye, isDyeable, ref isHovered, out clickedMiddle, iconImageFlag, item,contextAction, emptySlot, sizeMod);
+			var clicked = DrawImage(image, ref isHovered, out clickedMiddle, iconImageFlag, item,contextAction, emptySlot, sizeMod);
 			var isTooltipActive2 = isTooltipActive;
 
 			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
@@ -89,10 +90,10 @@ namespace Dresser.Windows.Components {
 					isTooltipActive2 = true;
 					try {
 						var isModdedItem = item.IsModded();
-						if(isModdedItem) GuiHelpers.TextWithFontDrawlist("MODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM", GuiHelpers.Font.Title, ModdedItemWatermarkColor, 7f * ImGui.GetFontSize());
+						//if(isModdedItem) GuiHelpers.TextWithFontDrawlist("MODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM\nMODDED ITEM", GuiHelpers.Font.Title, ModdedItemWatermarkColor, 7f * ImGui.GetFontSize());
 
 						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = IconWrapper.Get(item);
-						DrawImage(image!, dye, isDyeable, item);
+						DrawImage(image!, item);
 
 						var rarityColor = Storage.RarityColor(item.Item);
 
@@ -137,7 +138,8 @@ namespace Dresser.Windows.Components {
 							ImGui.TextColored(ColorGreyDark, $"MS: [{item.Item.ModelSub}] {item.Item.ModelSubItemModel()}");
 						}
 						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.GetPatch()}]");
-						if (isDyeable) ImGui.TextColored(dye?.RowId != 0 ? ColorGoodLight : ColorGrey, $"{dye?.Name}");
+						if (item.Item.DyeCount > 0) ImGui.TextColored(item.Stain  != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GetStainSheet().First(i => i.RowId == item.Stain )?.Name}");
+						if (item.Item.DyeCount > 1) ImGui.TextColored(item.Stain2 != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GetStainSheet().First(i => i.RowId == item.Stain2)?.Name}");
 
 						ImGui.EndGroup();
 
@@ -215,11 +217,11 @@ namespace Dresser.Windows.Components {
 
 			return clicked;
 		}
-		private static bool DrawImage(IDalamudTextureWrap image, Dye? dye, bool isDyeable, InventoryItem item, IconImageFlag iconImageFlag = 0) {
+		private static bool DrawImage(ISharedImmediateTexture image, InventoryItem item, IconImageFlag iconImageFlag = 0) {
 			bool _ = false;
-			return DrawImage(image, dye, isDyeable, ref _, out _, iconImageFlag, item);
+			return DrawImage(image, ref _, out _, iconImageFlag, item);
 		}
-		private static bool DrawImage(IDalamudTextureWrap? image, Dye? dye, bool isDyeable, ref bool hovering, out bool clickedMiddle, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
+		private static bool DrawImage(ISharedImmediateTexture image, ref bool hovering, out bool clickedMiddle, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
 			clickedMiddle = false;
 			var iconSize = IconSize * sizeMod;
@@ -238,7 +240,7 @@ namespace Dresser.Windows.Components {
 
 				if (image != null) {
 					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? Styler.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
-					ImGui.Image(image.ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
+					ImGui.Image(image.GetWrapOrEmpty().ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
 				} else if (emptySlot != null) {
 					var emptySlotInfo = PluginServices.ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
 
@@ -264,7 +266,7 @@ namespace Dresser.Windows.Components {
 					ImGui.EndPopup();
 				}
 
-				DrawStain(dye, isDyeable, sizeMod);
+				DrawStains(item, sizeMod);
 
 				ImGui.SetCursorPos(initialPosition);
 				ImGui.SetCursorPos(ImGui.GetCursorPos() - (difference / 2));
@@ -309,19 +311,33 @@ namespace Dresser.Windows.Components {
 			return clicked;
 		}
 
-		public static void DrawStain(Dye? dye, bool isDyeable, float sizeMod = 1) {
-			if (dye == null || !isDyeable) return;
+		public static void DrawStains(InventoryItem item, float sizeMod = 1) {
 
+			if (!item.Item.IsDyeable1()) return;
+			var stain1 = Service.ExcelCache.GetStainSheet().First(i=>i.RowId == item.Stain);
+			//if(item.FormattedName == "Thavnairian Bustier") PluginLog.Debug($"DYE: {stain1.Name} {stain1.RowId}");
+			if(stain1 == null) return;
+			DrawStain(stain1, 1, sizeMod);
+
+
+			if (!item.Item.IsDyeable2()) return;
+			var stain2 = Service.ExcelCache.GetStainSheet().First(i => i.RowId == item.Stain2);
+			if (stain2 == null) return;
+			DrawStain(stain2, 2, sizeMod);
+		}
+		public static void DrawStain(Stain stain, ushort dyeIndex, float sizeMod = 1) {
 			ImGui.SameLine();
-			var color = dye.RowId == 0 ? new Vector4(0, 0, 0, 0) : dye.ColorVector4;
-
-			var draw = ImGui.GetWindowDrawList();
 			Vector2 cursorScreenPos = ImGui.GetCursorScreenPos();
+
+			var rowOffset = dyeIndex > 1 ? dyeIndex * 1.75f : 1;
+
 			var radius = (ImGui.GetFontSize()) * 0.5f * ConfigurationManager.Config.IconSizeMult * sizeMod;
 			var x = cursorScreenPos.X - radius - ImGui.GetStyle().ItemSpacing.X;
-			var y = cursorScreenPos.Y + radius;
+			var y = cursorScreenPos.Y + (rowOffset * radius);
 			var pos = new Vector2(x, y);
+			var color = stain.ColorVector4();
 
+			var draw = ImGui.GetWindowDrawList();
 			draw.AddCircleFilled(pos, radius, ImGui.ColorConvertFloat4ToU32(color));
 			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder * sizeMod);
 		}
