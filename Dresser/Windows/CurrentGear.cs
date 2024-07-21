@@ -159,7 +159,7 @@ public class CurrentGear : Window, IDisposable {
 			}
 			GuiHelpers.Tooltip(() => {
 				var plateName = $"{(isFreePlate ? "Free " : "")}Plate {plateNumberForHuman}";
-				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.Radio);
+				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.BubblePlateNumber);
 				if (!isFreePlate) GearSets.RelatedGearSetNamesImgui(plateNumber);
 				ImGui.Spacing();
 			});

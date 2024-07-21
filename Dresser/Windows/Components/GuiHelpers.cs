@@ -150,7 +150,7 @@ namespace Dresser.Windows.Components {
 			{Font.Title,GameFontFamilyAndSize.TrumpGothic23 },
 			{Font.Config,GameFontFamilyAndSize.TrumpGothic23 }, // FontConfigHeaders
 			{Font.Task,GameFontFamilyAndSize.TrumpGothic23 },
-			{Font.BubblePlateNumber,GameFontFamilyAndSize.Axis12 },
+			{Font.BubblePlateNumber,GameFontFamilyAndSize.TrumpGothic23 },
 		};
 		public static void TextWithFont(string text, Font font) {
 			var fontHandle = FontHandle(font,null,text);
