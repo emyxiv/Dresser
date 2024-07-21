@@ -159,7 +159,7 @@ public class CurrentGear : Window, IDisposable {
 			}
 			GuiHelpers.Tooltip(() => {
 				var plateName = $"{(isFreePlate ? "Free " : "")}Plate {plateNumberForHuman}";
-				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.TrumpGothic_184);
+				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.Radio);
 				if (!isFreePlate) GearSets.RelatedGearSetNamesImgui(plateNumber);
 				ImGui.Spacing();
 			});
@@ -172,16 +172,17 @@ public class CurrentGear : Window, IDisposable {
 
 				var jobIconColor1 = !ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors ? roleColor1 ?? new Vector4(0, 0, 0, 1) : new Vector4(1, 1, 1, 1);
 				var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.35f);
-				draw.AddImage(classJobTexture.ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
+
+				draw.AddImage(classJobTexture.GetWrapOrEmpty().ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
 			}
 
 			var spacer = plateNumberForHuman < 10 ? " " : "";
-			draw.AddText(
-				PluginServices.Storage.FontRadio.ImFont,
+			GuiHelpers.TextWithFontDrawlist(
+				$"{spacer}{plateNumberForHuman}",
+				GuiHelpers.Font.Radio,
+				ConfigurationManager.Config.PlateSelectorColorRadio,
 				fontSize,
-				ImGui.GetCursorScreenPos() + textPlacement + (isFreePlate ? textPlacementFreePOffset : Vector2.Zero ),
-				ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.PlateSelectorColorRadio),
-				$"{spacer}{plateNumberForHuman}");
+				textPlacement + (isFreePlate ? textPlacementFreePOffset : Vector2.Zero));
 
 			if (clicked) {
 				// Change selected plate
@@ -341,7 +342,11 @@ public class CurrentGear : Window, IDisposable {
 				ImGui.SameLine();
 
 				var tasksText = $"{taskedItems.Count} Task{(taskedItems.Count > 1 ? "s" : "")}";
-				GuiHelpers.TextWithFontDrawlist(tasksText, GuiHelpers.Font.Title, ItemIcon.ColorBad, SizeGameCircleIcons.Y);
+				GuiHelpers.TextWithFontDrawlist(
+					tasksText,
+					GuiHelpers.Font.Task,
+					ConfigurationManager.Config.PlateSelectorColorRadio,
+					SizeGameCircleIcons.Y);
 
 				ImGui.PopStyleVar();
 				ImGui.EndGroup();

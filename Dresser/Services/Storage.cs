@@ -1,24 +1,15 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Enums;
-using CriticalCommonLib.Extensions;
-using CriticalCommonLib.Models;
 using CriticalCommonLib.Sheets;
 
-using Dalamud.Interface.GameFonts;
-using Dalamud.Interface.Internal;
-using Dresser.Logic;
+using Dalamud.Interface.ManagedFontAtlas;
+using Dalamud.Interface.Textures;
 
-using Dresser.Data;
-using Dresser.Data.Excel;
 using Dresser.Extensions;
+using Dresser.Logic;
 using Dresser.Structs.Dresser;
 
-
-
 using Lumina.Data.Files;
-using Lumina.Excel;
-
-using Penumbra.Api.Enums;
 
 using System;
 using System.Collections.Generic;
@@ -26,13 +17,15 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using static Dresser.Windows.Components.GuiHelpers;
+
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 
 namespace Dresser.Services {
 	internal class Storage : IDisposable {
 
-		public ExcelSheet<Dye>? Dyes = null;
+		//public ExcelSheet<Dye>? Dyes = null;
 		public static string HighResolutionSufix = "_hr1";
 
 		public const int PlateNumber = 20;
@@ -42,37 +35,38 @@ namespace Dresser.Services {
 		public MiragePage? DisplayPage = null;
 		public Dictionary<byte, Vector4> RarityColors = new();
 		public HashSet<byte> RarityAllowed = new() { 1, 2, 3, 4, 7 };
-		public readonly GameFontHandle FontTitle =
-			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68));
-		public readonly GameFontHandle FontRadio =
-			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis36));
-		public readonly GameFontHandle FontConfigHeaders =
-			PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic23));
+
+		public Dictionary<Font, (IFontHandle handle, float size)> FontHandles = new();
+
+
 
 		public Storage() {
-			Dyes = Sheets.GetSheet<Dye>();
+
+			//Dyes = Sheets.GetSheet<Dye>();
 			// ui colors:
 			// bad: 14
 
+			var uicolorsheet = PluginServices.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.UIColor>()!;
+
 			RarityColors = new(){
 				// items colors:
-				{ 0, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 2)) },
+				{ 0, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 2)) },
 				// white: 33/549
-				{ 1, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 549)) },
+				{ 1, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 549)) },
 				// green: 42/67/551
-				{ 2, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 551)) },
+				{ 2, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 551)) },
 				// blue : 37/38/553
-				{ 3, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 553)) },
+				{ 3, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 553)) },
 				// purple: 522/48/555
-				{ 4, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 555)) },
+				{ 4, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 555)) },
 				// orange:557
-				{ 5, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 557)) },
+				{ 5, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 557)) },
 				// yellow:559
-				{ 6, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 559)) },
+				{ 6, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 559)) },
 				// pink: 578/556
-				{ 7, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 561)) },
+				{ 7, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 561)) },
 				// gold: 563
-				{ 8, Utils.ConvertUIColorToColor(Service.ExcelCache.GetUIColorSheet().First(c => c.RowId == 563)) },
+				{ 8, Utils.ConvertUiColorToColor(uicolorsheet.First(c => c.RowId == 563)) },
 			};
 
 
@@ -80,8 +74,11 @@ namespace Dresser.Services {
 			PluginServices.OnPluginLoaded += LoadAdditionalItems;
 		}
 		public void Dispose() {
-			Dyes = null;
-			Sheets.Cache.Clear();
+			//Dyes = null;
+			//Sheets.Cache.Clear();
+
+			foreach((var k, (var h, var s)) in FontHandles) h.Dispose();
+			FontHandles.Clear();
 		}
 
 		public static TexFile GetEmptyEquipTex() {
@@ -184,7 +181,7 @@ namespace Dresser.Services {
 		// currency
 		public Dictionary<InventoryType, uint> FilterCurrencyIds;
 		public Dictionary<InventoryType, ItemEx> FilterCurrencyItemEx;
-		public Dictionary<InventoryType, IDalamudTextureWrap> FilterCurrencyIconTexture;
+		public Dictionary<InventoryType, ISharedImmediateTexture> FilterCurrencyIconTexture;
 		private void LoadAdditional_All() {
 			foreach (var inventoryType in FilterAll) {
 				// at least filter glam items

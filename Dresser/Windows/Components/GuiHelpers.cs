@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.GameFonts;
+using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Utility;
 
 using Dresser.Services;
@@ -8,7 +9,6 @@ using ImGuiNET;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
 
 namespace Dresser.Windows.Components {
@@ -133,51 +133,82 @@ namespace Dresser.Windows.Components {
 		}
 		public enum Font {
 			Default,
-			Icon,
-			Axis_12,
-			Axis_14,
-			Axis_18,
-			Axis_36,
-			Axis_96,
-			TrumpGothic_184,
-			TrumpGothic_23,
-			TrumpGothic_34,
-			TrumpGothic_68,
+			Icon, // not game font (fontawesome)
+			Mono,
+
+			Title,
+			Config,
+			Radio,
+			Task,
+			BubblePlateNumber,
 
 			// alias
 			None = Default,
-			Title = TrumpGothic_68,
-			Radio = Axis_36,
 		}
+		public static Dictionary<Font, GameFontFamilyAndSize> FontGameFont = new() {
+			{Font.Radio,GameFontFamilyAndSize.Axis36 },
+			{Font.Title,GameFontFamilyAndSize.TrumpGothic23 },
+			{Font.Config,GameFontFamilyAndSize.TrumpGothic23 }, // FontConfigHeaders
+			{Font.Task,GameFontFamilyAndSize.TrumpGothic23 },
+			{Font.BubblePlateNumber,GameFontFamilyAndSize.Axis12 },
+		};
 		public static void TextWithFont(string text, Font font) {
-			ImGui.PushFont(FontToImFontPtr(font));
+			var fontHandle = FontHandle(font,null,text);
+			fontHandle.Push();
 			ImGui.Text(text);
-			ImGui.PopFont();
+			fontHandle.Pop();
 		}
 
-		private static ImFontPtr FontToImFontPtr(Font font) {
-			return font switch {
-				//Font.Title => PluginServices.Storage.FontTitle.ImFont,
-				Font.Radio => PluginServices.Storage.FontRadio.ImFont,
-				Font.Axis_12 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis12)).ImFont,
-				Font.Axis_14 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis14)).ImFont,
-				Font.Axis_18 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis18)).ImFont,
-				Font.Axis_96 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.Axis96)).ImFont,
-				Font.TrumpGothic_68 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic68)).ImFont,
-				Font.TrumpGothic_184 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic184)).ImFont,
-				Font.TrumpGothic_23 => PluginServices.Storage.FontConfigHeaders.ImFont,
-				Font.TrumpGothic_34 => PluginServices.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamilyAndSize.TrumpGothic34)).ImFont,
-				Font.Icon => UiBuilder.IconFont,
-				_ => UiBuilder.DefaultFont,
-			};
+		private static IFontHandle FontHandle(Font font, float? size = null,string someText = "") {
+			if(font == Font.Icon) return PluginServices.PluginInterface.UiBuilder.IconFontHandle;
+			if(font == Font.Mono) return PluginServices.PluginInterface.UiBuilder.MonoFontHandle;
+
+
+			if (PluginServices.Storage.FontHandles.TryGetValue(font, out var handlePair)) {
+
+				if(handlePair.handle == null) {
+					// if borken handle ? remove it (should never happen)
+					PluginServices.Storage.FontHandles.Remove(font);
+				} else if (handlePair.size == (size ?? 0f)) {
+					// if no size change, use it
+					return handlePair.handle;
+				}
+			}
+
+			return SetFont(font,size ?? 0f) ?? PluginServices.PluginInterface.UiBuilder.DefaultFontHandle;
 		}
-		public static void TextWithFontDrawlist(string text, Font font, Vector4? color = null, float size = 1.0f) {
-			ImGui.GetWindowDrawList().AddText(
-				FontToImFontPtr(font),
-				size,
-				ImGui.GetCursorScreenPos(),
-				ImGui.ColorConvertFloat4ToU32(color ?? ImGui.GetStyle().Colors[(int)ImGuiCol.Text]),
-				text);
+
+		private static IFontHandle? SetFont(Font font, float? size = null) {
+			if (!FontGameFont.TryGetValue(font, out var gameFont)) return null;
+
+			var fontStyle = new GameFontStyle(gameFont);
+			if((size?? 0f) > 0f) fontStyle.SizePx = (size ?? 0f) * 0.63f;
+
+			var newFontHandle = PluginServices.PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(fontStyle);
+			PluginServices.Storage.FontHandles[font] = (newFontHandle, size ?? 0f);
+			return newFontHandle;
+		}
+
+		public static void TextWithFontDrawlist(string text, Font font, Vector4? color = null, float? size = null, Vector2? offset = null) {
+			var prevPos = ImGui.GetCursorPos();
+
+			if(offset.HasValue) {
+				ImGui.SetCursorPos(prevPos + offset.Value);
+			}
+			var fontHandle = FontHandle(font, size,text);
+			fontHandle.Push();
+			if(color.HasValue) ImGui.TextColored(color.Value, text);
+			else ImGui.Text(text);
+			fontHandle.Pop();
+			ImGui.SetCursorPos(prevPos);
+
+
+			//ImGui.GetWindowDrawList().AddText(
+			//	FontToImFontPtr(font),
+			//	size,
+			//	ImGui.GetCursorScreenPos(),
+			//	ImGui.ColorConvertFloat4ToU32(color ?? ImGui.GetStyle().Colors[(int)ImGuiCol.Text]),
+			//	text);
 		}
 		public static void TextRight(string text, float offset = 0) {
 			// Careful: use of ImGui.GetContentRegionAvail().X without - WidthMargin()
