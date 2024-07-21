@@ -148,6 +148,9 @@ namespace Dresser.Services {
 		}
 
 		// this is blocked by UldWrapper.GetTexture(string texturePath)  only allowing tex in the list of Uld.AssetData
+		// TODO maybe offer PR dalamud with (modified for regex)
+		// near: texturePath = texturePath.Replace("_hr1", string.Empty);
+		// add:  texturePath = texturePath.Replace("fourth/", string.Empty); // fix alt themes
 		private static string ThemePathPart
 			=> "";
 		//=> "fourth/";
