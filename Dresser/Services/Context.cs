@@ -1,5 +1,6 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Enums;
 
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
@@ -25,7 +26,7 @@ namespace Dresser.Services {
 		public bool IsAnyPlateSelectionOpen => GlamourPlates.IsAnyPlateSelectionOpen();
 		public ushort? SelectedPlate = null;
 
-		public PlayerCharacter? LocalPlayer = null;
+		public IPlayerCharacter? LocalPlayer = null;
 		public CharacterRace? LocalPlayerRace = null;
 		public CharacterSex? LocalPlayerGender = null;
 		public ClassJob? LocalPlayerClass = null;

@@ -51,11 +51,32 @@ namespace Dresser.Structs.Actor {
 		[FieldOffset(0)] public ushort Id;
 		[FieldOffset(2)] public byte Variant;
 		[FieldOffset(3)] public byte Dye;
+		[FieldOffset(4)] public byte Dye2;
+
+
+		public byte GetDye(int index) {
+			return index switch {
+				1 => this.Dye2,
+				_ => this.Dye
+			};
+		}
+
+		public void SetDye(int index, byte value) {
+			switch (index) {
+				case 0:
+					this.Dye = value;
+					break;
+				case 1:
+					this.Dye2 = value;
+					break;
+			}
+		}
 
 		public static explicit operator ItemEquip(uint num) => new() {
 			Id = (ushort)(num & 0xFFFF),
 			Variant = (byte)(num >> 16 & 0xFF),
-			Dye = (byte)(num >> 24)
+			Dye = (byte)(num >> 24),
+			Dye2 = (byte)(num >> 32)
 		};
 		public readonly uint ToModelId() {
 			return Id | (uint)Variant << 16;

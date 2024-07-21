@@ -6,7 +6,7 @@ using CriticalCommonLib.Sheets;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Logic;
 using Dresser.Logic.Glamourer;
@@ -26,6 +26,7 @@ using System.Linq;
 
 using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
+using Dalamud.Interface.Textures;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
@@ -153,7 +154,7 @@ namespace Dresser.Extensions {
 			return Service.ExcelCache.ClassJobCategoryLookup[categoryId].Count == 1;
 		}
 		public static CriticalInventoryItem ToInventoryItem(this CriticalItemEx itemEx, InventoryType inventoryType) {
-			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		}
 
 		public static bool ObtainedWithSpecialShopCurrency2(this CriticalItemEx itemEx, uint currencyItemId) {
@@ -163,7 +164,7 @@ namespace Dresser.Extensions {
 
 			return false;
 		}
-		public static IDalamudTextureWrap IconTextureWrap(this CriticalItemEx itemEx) {
+		public static ISharedImmediateTexture IconTextureWrap(this CriticalItemEx itemEx) {
 			return IconWrapper.Get(itemEx);
 		}
 
@@ -222,5 +223,12 @@ namespace Dresser.Extensions {
 
 		public static CustomItemId ToCustomItemId(this CriticalItemEx item, GlamourPlateSlot slot)
 			=> Design.FromInventoryItem(item, slot);
+
+		public static bool IsDyeable1(this CriticalItemEx item) {
+			return item.DyeCount > 0;
+		}
+		public static bool IsDyeable2(this CriticalItemEx item) {
+			return item.DyeCount > 1;
+		}
 	}
 }

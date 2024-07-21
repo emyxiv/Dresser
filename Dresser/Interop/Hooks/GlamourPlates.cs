@@ -31,7 +31,7 @@ namespace Dresser.Interop.Hooks {
 
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/branch/main/Glamaholic/GameFunctions.cs
 
-		private delegate void SetGlamourPlateSlotDelegate(IntPtr agent, MirageSource mirageSource, int glamId, uint itemId, byte stainId);
+		private delegate void SetGlamourPlateSlotDelegate(IntPtr agent, MirageSource mirageSource, int glamId, uint itemId, byte stainId, byte stainId2);
 		private delegate void ModifyGlamourPlateSlotDelegate(IntPtr agent, GlamourPlateSlot slot, byte stainId, IntPtr numbers, int stainItemId);
 		private delegate void ClearGlamourPlateSlotDelegate(IntPtr agent, GlamourPlateSlot slot);
 		private delegate byte IsInArmoireDelegate(IntPtr armoire, int index);
@@ -43,9 +43,9 @@ namespace Dresser.Interop.Hooks {
 		[Signature(Signatures.ArmoirePointer, ScanType = ScanType.StaticAddress)] private readonly IntPtr _armoirePtr;
 
 
-		internal unsafe static AgentInterface* MiragePrismMiragePlateAgent => Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
-		internal unsafe static AgentInterface* MiragePrismPrismBoxAgent => Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
-		internal unsafe static AgentInterface* CabinetAgent => Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Cabinet);
+		internal unsafe static AgentInterface* MiragePrismMiragePlateAgent => Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
+		internal unsafe static AgentInterface* MiragePrismPrismBoxAgent => Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
+		internal unsafe static AgentInterface* CabinetAgent => Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Cabinet);
 
 		internal unsafe static bool IsGlamingAtDresser() {
 
@@ -69,13 +69,8 @@ namespace Dresser.Interop.Hooks {
 			return MiragePrismMiragePlateAgent->IsAgentActive();
 		}
 
-		internal unsafe void SetGlamourPlateSlot(MirageSource container, int containerIndex, uint itemId, byte stainId) {
-			this._setGlamourPlateSlot(
-				(IntPtr)MiragePrismMiragePlateAgent,
-				container,
-				containerIndex,
-				itemId,
-				stainId);
+		internal unsafe void SetGlamourPlateSlot(MirageSource container, int containerIndex, uint itemId, byte stainId, byte stainId2) {
+			this._setGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, container, containerIndex, itemId, stainId, stainId2);
 		}
 
 		private static readonly Stopwatch DresserTimer = new();
@@ -89,7 +84,7 @@ namespace Dresser.Interop.Hooks {
 
 				var list = new List<GlamourPlateItem>();
 
-				var agents = Framework.Instance()->GetUiModule()->GetAgentModule();
+				var agents = Framework.Instance()->GetUIModule()->GetAgentModule();
 				var dresserAgent = agents->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
 
 				// these offsets in 6.3-HF1: AD2BEB
@@ -216,7 +211,7 @@ namespace Dresser.Interop.Hooks {
 			// change slot to the item's
 			*slotPtr = (GlamourPlateSlot)slot;
 
-			SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain);
+			SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain, itemTmp.Stain2);
 
 			// todo: sometimes, it fails to apply the glamour, maybe it's because of ClearGlamourPlateSlot?
 			bool isApplied = false;
@@ -226,7 +221,7 @@ namespace Dresser.Interop.Hooks {
 				if (isApplied) break;
 				if (!isApplied) PluginLog.Warning($"Glamour place change did not take effect ({i + 1} try)");
 				Wait(500);
-				SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain);
+				SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain, itemTmp.Stain2);
 			}
 			if (!isApplied) PluginLog.Error($"Error while applying item ({itemTmp.ItemId}) in glamour plate after {maxTries} tries");
 
@@ -280,14 +275,14 @@ namespace Dresser.Interop.Hooks {
 				}
 
 				var source = MirageSource.GlamourDresser;
-				var info = (0, 0u, (byte)0);
+				var info = (0, 0u, (byte)0, (byte)0);
 				// find an item in the dresser that matches
 				var matchingIds = dresser.FindAll(mirage => mirage.ItemId % HqItemOffset == item.ItemId);
 				if (matchingIds.Count == 0) {
 					// if not in the glamour dresser, look in the armoire
 					if (this.ArmoireIndexIfPresent(item.ItemId) is { } armoireIdx) {
 						source = MirageSource.Armoire;
-						info = ((int)armoireIdx, item.ItemId, 0);
+						info = ((int)armoireIdx, item.ItemId, 0,0);
 					}
 				} else {
 					// try to find an item with a matching stain
@@ -297,7 +292,7 @@ namespace Dresser.Interop.Hooks {
 					}
 
 					var mirage = matchingIds[idx];
-					info = ((int)mirage.Index, mirage.ItemId, mirage.StainId);
+					info = ((int)mirage.Index, mirage.ItemId, mirage.StainId, mirage.StainId2);
 				}
 
 				if (info.Item1 == 0) {
@@ -309,7 +304,8 @@ namespace Dresser.Interop.Hooks {
 					source,
 					info.Item1,
 					info.Item2,
-					info.Item3
+					info.Item3,
+					info.Item4
 				);
 
 				if (item.StainId != info.Item3) {
@@ -358,7 +354,7 @@ namespace Dresser.Interop.Hooks {
 					for (var i = 0; i < inv->Size; i++) {
 						var address = ((uint)type, (uint)i);
 						var invItem = inv->Items[i];
-						if (invItem.ItemID != dyeItem.RowId) {
+						if (invItem.ItemId != dyeItem.RowId) {
 							continue;
 						}
 
@@ -466,6 +462,10 @@ namespace Dresser.Interop.Hooks {
 
 	}
 
+	internal enum MirageSource {
+		GlamourDresser = 1,
+		Armoire = 2,
+	}
 
 	[StructLayout(LayoutKind.Sequential)]
 	internal readonly struct ColorantInfo {
@@ -491,15 +491,17 @@ namespace Dresser.Interop.Hooks {
 	public class SavedGlamourItem {
 		public uint ItemId { get; set; }
 		public byte StainId { get; set; }
+		public byte StainId2 { get; set; }
 
 		internal SavedGlamourItem Clone() {
 			return new SavedGlamourItem() {
 				ItemId = this.ItemId,
 				StainId = this.StainId,
+				StainId2 = this.StainId2,
 			};
 		}
 		public static explicit operator InventoryItem(SavedGlamourItem item)
-			=> Extensions.InventoryItemExtensions.New(item.ItemId, item.StainId);
+			=> Extensions.InventoryItemExtensions.New(item.ItemId, item.StainId, item.StainId2);
 
 	}
 	public class SavedPlate {

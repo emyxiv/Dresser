@@ -1,6 +1,5 @@
 using CriticalCommonLib;
 using CriticalCommonLib.Services;
-using CriticalCommonLib.Services.Ui;
 
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
@@ -12,9 +11,11 @@ using Dresser.Interop.Addons;
 using Dresser.Logic;
 using Dresser.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace Dresser {
 	internal class PluginServices {
-		[PluginService] internal static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+		[PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
 		[PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
 		[PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 		[PluginService] internal static IClientState ClientState { get; private set; } = null!;
@@ -54,17 +55,17 @@ namespace Dresser {
 		public delegate void PluginLoadedDelegate();
 		public static event PluginLoadedDelegate? OnPluginLoaded;
 
-		public static void Init(DalamudPluginInterface dalamud, Plugin plugin) {
+		public static void Init(IDalamudPluginInterface dalamud, Plugin plugin) {
+
+			dalamud.Create<Service>();
+			Service.ExcelCache = new ExcelCache(Service.Data, new Logger<ExcelCache>(new LoggerFactory()));
+			Service.ExcelCache.CalculateLookups(false, false); //if you want NPC or shop data loaded set these to true
+			Service.ExcelCache.PreCacheItemData();
 
 			dalamud.Create<PluginServices>();
-			dalamud.Create<Service>();
 
 			Context = new Context();
 
-			Service.PluginInterfaceService = dalamud;
-			//Service.Interface = new PluginInterfaceService(dalamud);
-			Service.ExcelCache = new ExcelCache(Service.Data);
-			Service.ExcelCache.PreCacheItemData();
 			HotkeyService = new HotkeyService(Service.Framework, KeyState);
 			ImageGuiCrop = new ImageGuiCrop();
 			Penumbra = new PenumbraIpc();
@@ -79,7 +80,7 @@ namespace Dresser {
 			AllaganTools = new AllaganToolsService(dalamud);
 			Glamourer = new GlamourerService(dalamud);
 			//CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
-			GameUi = new GameUiManager(Service.GameInteropProvider,Service.GameGui);
+			GameUi = new GameUiManager(Framework,Service.GameGui);
 			OverlayService = new OverlayService(GameUi);
 			TryOn = new TryOn();
 			GlamourPlates = new();

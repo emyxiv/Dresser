@@ -34,8 +34,8 @@ namespace Dresser {
 		internal Dialogs? Dialogs = null;
 
 		public Plugin(
-			[RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-			[RequiredVersion("1.0")] ICommandManager commandManager) {
+			IDalamudPluginInterface pluginInterface,
+			ICommandManager commandManager) {
 			PluginInstance = this;
 			PluginServices.Init(pluginInterface, this);
 

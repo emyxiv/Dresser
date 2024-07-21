@@ -1,10 +1,8 @@
-﻿using CriticalCommonLib.Sheets;
-
-using Dalamud.Interface.Internal;
+﻿using Dalamud.Interface.Textures;
 using Dalamud.Utility;
 
-using Dresser.Structs.Dresser;
 using Dresser.Logic;
+using Dresser.Structs.Dresser;
 
 using Lumina.Data.Files;
 
@@ -15,13 +13,11 @@ using System.IO;
 namespace Dresser.Services {
 	public class ModdedIconStorage : IDisposable {
 
-		private readonly Dictionary<string, IDalamudTextureWrap?> _iconsModded;
 
 		public ModdedIconStorage() {
-			_iconsModded = new();
 		}
 
-		public IDalamudTextureWrap? Get(InventoryItem? inventoryItem) {
+		public ISharedImmediateTexture? Get(InventoryItem? inventoryItem) {
 			if(inventoryItem != null && !inventoryItem.ModDirectory.IsNullOrWhitespace() && !inventoryItem.ModIconPath.IsNullOrWhitespace()) {
 				var ic = LoadIconPenumbra(Path.Combine(inventoryItem.ModDirectory, inventoryItem.ModIconPath));
 				if(ic != null) return ic;
@@ -39,24 +35,17 @@ namespace Dresser.Services {
 				IconToTexPath(id, false, true),
 			};
 		}
-		public IDalamudTextureWrap? LoadIconPenumbra(string path) {
-			if (_iconsModded.TryGetValue(path, out var ret))
-				return ret;
-
+		public ISharedImmediateTexture? LoadIconPenumbra(string path) {
 			var penumbramodDir = PluginServices.Penumbra.GetModDirectoryCached();
 			if (penumbramodDir != null) {
 				var pathdd = Path.Combine(penumbramodDir, path);
 
 				try {
 					var tex = PluginServices.DataManager.GameData.GetFileFromDisk<TexFile>(pathdd);
-					ret = PluginServices.TextureProvider.GetTextureFromFile(new FileInfo(pathdd));
-					// also returns null or will generate more failed attempts
-					_iconsModded[path] = ret;
-					return ret;
+					return PluginServices.TextureProvider.GetFromFile(pathdd);
 
 				} catch (Exception e){
-					_iconsModded[path] = null;
-					PluginLog.Warning(e,$"Unable to load icon from {pathdd}, blacklisting it");
+					PluginLog.Warning(e,$"Unable to load icon from {pathdd}");
 				}
 
 			}
@@ -64,9 +53,6 @@ namespace Dresser.Services {
 			return null;
 		}
 		public void Dispose() {
-			foreach (var icon in _iconsModded.Values)
-				icon?.Dispose();
-			_iconsModded.Clear();
 		}
 
 	}

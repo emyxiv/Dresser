@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 namespace Dresser.Interop.GameUi {
 	public class AtkMiragePrismMiragePlate : AtkOverlay {
 		public override WindowName WindowName { get; set; } = WindowName.MiragePrismMiragePlate;
-		public override bool ShouldDraw { get; set; }
 		public int RadioButtonOffsetId = 6;
 		public int SaveButtonId = 114;
 
@@ -63,14 +62,7 @@ namespace Dresser.Interop.GameUi {
 			}
 		}
 
-		public override bool Draw() {
-
-			return true;
-		}
-
-		public override void Setup() {
-			return;
-		}
+		public override void Update() {}
 	}
 
 	[StructLayout(LayoutKind.Explicit, Size = 0x2DD)]

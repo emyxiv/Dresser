@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 using System.Diagnostics;
 
-using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.PlayerCharacter;
+using SubKindsPlayerCharacter = Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter;
 
 namespace Dresser.Extensions {
 	public static class PlayerCharacterExtention {

@@ -42,8 +42,8 @@ namespace Dresser.Structs.Dresser {
 			if (inventoryItem.IsModded()) PluginLog.Warning($"A Copy InventoryItem {this.ModDirectory}");
 		}
 
-		public InventoryItem(InventoryType container, short slot, uint itemId, uint quantity, ushort spiritbond, ushort condition, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem.ItemFlags flags, ushort materia0, ushort materia1, ushort materia2, ushort materia3, ushort materia4, byte materiaLevel0, byte materiaLevel1, byte materiaLevel2, byte materiaLevel3, byte materiaLevel4, byte stain, uint glamourId) : base(container, slot, itemId, quantity, spiritbond, condition, flags, materia0, materia1, materia2, materia3, materia4, materiaLevel0, materiaLevel1, materiaLevel2, materiaLevel3, materiaLevel4, stain, glamourId) { }
-		public InventoryItem(InventoryType inventoryType, uint itemId) : this(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
+		public InventoryItem(InventoryType container, short slot, uint itemId, uint quantity, ushort spiritbond, ushort condition, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem.ItemFlags flags, ushort materia0, ushort materia1, ushort materia2, ushort materia3, ushort materia4, byte materiaLevel0, byte materiaLevel1, byte materiaLevel2, byte materiaLevel3, byte materiaLevel4, byte stain, byte stain2, uint glamourId) : base(container, slot, itemId, quantity, spiritbond, condition, flags, materia0, materia1, materia2, materia3, materia4, materiaLevel0, materiaLevel1, materiaLevel2, materiaLevel3, materiaLevel4, stain, stain2, glamourId) { }
+		public InventoryItem(InventoryType inventoryType, uint itemId) : this(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
 			this.SortedContainer = inventoryType;
 		}
 		public InventoryItem(InventoryType inventoryType, uint itemId, string modName, string modDirectory, string modModelPath) : this(inventoryType, itemId) {
@@ -118,7 +118,8 @@ namespace Dresser.Structs.Dresser {
 			return new() {
 				Id = itemModelMain.Id,
 				Variant = (byte)itemModelMain.Variant,
-				Dye = this.Item.IsDyeable ? this.Stain : (byte)0,
+				Dye = this.Item.IsDyeable1() ? this.Stain : (byte)0,
+				Dye2 = this.Item.IsDyeable2() ? this.Stain2 : (byte)0,
 			};
 		}
 		public WeaponEquip ToWeaponEquip(WeaponIndex index) {
@@ -128,7 +129,8 @@ namespace Dresser.Structs.Dresser {
 				Set = itemModel.Id,
 				Base = itemModel.Base,
 				Variant = itemModel.Variant,
-				Dye = this.Item.IsDyeable ? this.Stain : (byte)0,
+				Dye = this.Item.IsDyeable1() ? this.Stain : (byte)0,
+				Dye2 = this.Item.IsDyeable2() ? this.Stain2 : (byte)0,
 			};
 		}
 
@@ -136,7 +138,8 @@ namespace Dresser.Structs.Dresser {
 			if (itemEquip == null || itemEquip.Value.Id == 0) return null;
 			var dd = FromModelMain(itemEquip.Value.ToModelId(), slot);
 			if (dd != null) return new InventoryItem(InventoryType.Bag0, dd.RowId) {
-				Stain = itemEquip.Value.Dye
+				Stain = itemEquip.Value.Dye,
+				Stain2 = itemEquip.Value.Dye
 			};
 			return null;
 		}
@@ -187,8 +190,8 @@ namespace Dresser.Structs.Dresser {
 			=> ToWeaponEquip(WeaponIndex.MainHand);
 		public WeaponEquip ToWeaponEquipSub()
 			=> ToWeaponEquip(WeaponIndex.OffHand);
-		public IEnumerable<InventoryItem> GetDyesInInventories() {
-			var stainTransient = Service.ExcelCache.GetSheet<StainTransient>().FirstOrDefault(st => st.RowId == this.Stain);
+		public IEnumerable<InventoryItem> GetDyesInInventories(int dyeIndex) {
+			var stainTransient = Service.ExcelCache.GetSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
 
 			var inventories = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true);
 			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient?.Item1.Value?.RowId || v.ItemId == stainTransient?.Item2.Value?.RowId)).Where(i=>i.ItemId != 0);

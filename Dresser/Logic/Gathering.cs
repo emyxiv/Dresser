@@ -28,7 +28,7 @@ namespace Dresser.Logic {
 			)
 			};
 		}
-		public static InventoryItem EmptyItemSlot() => new InventoryItem(InventoryType.GlamourChest, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		public static InventoryItem EmptyItemSlot() => new InventoryItem(InventoryType.GlamourChest, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		public static void DelayParseGlamPlates()
 			=> Task.Run(async delegate {
 				await Task.Delay(250);

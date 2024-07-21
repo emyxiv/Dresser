@@ -1,7 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using Dresser.Interop;
+
+using System.Runtime.InteropServices;
 
 namespace Dresser.Structs.Dresser {
-	[StructLayout(LayoutKind.Explicit, Size = 136)]
+	[StructLayout(LayoutKind.Explicit, Size = Offsets.GlamourPlateItem)]
 	internal readonly struct GlamourPlateItem {
 		[FieldOffset(0x70)]
 		internal readonly uint Index;
@@ -11,5 +13,8 @@ namespace Dresser.Structs.Dresser {
 
 		[FieldOffset(0x86)]
 		internal readonly byte StainId;
+
+		[FieldOffset(0x87)]
+		internal readonly byte StainId2;
 	}
 }

@@ -1,5 +1,5 @@
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-using FFXIVClientStructs.Havok;
+using FFXIVClientStructs.Havok.Common.Base.Math.QsTransform;
 
 using Penumbra.GameData.Enums;
 
@@ -22,6 +22,28 @@ namespace Dresser.Structs.Actor {
 		[FieldOffset(0x02)] public ushort Base;
 		[FieldOffset(0x04)] public ushort Variant;
 		[FieldOffset(0x06)] public byte Dye;
+		[FieldOffset(0x07)] public byte Dye2;
+
+		[FieldOffset(0x00)] public ulong Value;
+
+
+		public byte GetDye(int index) {
+			return index switch {
+				1 => this.Dye2,
+				_ => this.Dye
+			};
+		}
+
+		public void SetDye(int index, byte value) {
+			switch (index) {
+				case 0:
+					this.Dye = value;
+					break;
+				case 1:
+					this.Dye2 = value;
+					break;
+			}
+		}
 
 		public static WeaponEquip Empty => new() { Base = 0, Dye = 0, Set = 0, Variant = 0 };
 		public readonly ulong ToModelId() {

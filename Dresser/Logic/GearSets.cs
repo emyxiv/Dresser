@@ -1,6 +1,7 @@
 ﻿using CriticalCommonLib;
 
-using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Structs;
 using Dresser.Windows.Components;
@@ -49,9 +50,8 @@ namespace Dresser.Logic {
 		public unsafe static IEnumerable<string> RelatedGearSetNames(ushort plateNumber)
 			=> RelatedGearSets(plateNumber).Select(g => {
 				
-				var nameSeString = Dalamud.Game.Text.SeStringHandling.SeString.Parse(g.Name, 47);
-				var name = nameSeString.TextValue;
-				var id = g.ID + 1;
+				var name = g.NameString;
+				var id = g.Id + 1;
 				var ilvl = g.ItemLevel;
 				//{ (char)0xE033}
 				return $"{id}. {name} {ilvl}";
@@ -62,7 +62,7 @@ namespace Dresser.Logic {
 			var gearsets = RelatedGearSets(plateNumber);
 			if(gearsets.Count == 0) return null;
 			var gearset = gearsets.First();
-			return RaptureGearsetModule.Instance()->GetClassJobIconForGearset(gearset.ID);
+			return RaptureGearsetModule.Instance()->GetClassJobIconForGearset(gearset.Id);
 		}
 		public static ClassJobRole? RelatedGearSetRole(ushort plateNumber) {
 			var gearsets = RelatedGearSetClassJob(plateNumber);
@@ -81,7 +81,7 @@ namespace Dresser.Logic {
 				_ => null
 			};
 
-		public static IDalamudTextureWrap? GetClassJobIconTextureForPlate(ushort plateNumber) {
+		public static ISharedImmediateTexture GetClassJobIconTextureForPlate(ushort plateNumber) {
 			var iconId = GetClassJobIconForPlate(plateNumber);
 			if(!iconId.HasValue) return null;
 			return IconWrapper.Get(iconId.Value);
@@ -96,8 +96,8 @@ namespace Dresser.Logic {
 			}
 			ImGui.TextDisabled("Gearsets");
 			foreach (var g in gearsets) {
-				var name = Dalamud.Game.Text.SeStringHandling.SeString.Parse(g.Name, 47).TextValue;
-				var id = g.ID + 1;
+				var name = g.NameString;
+				var id = g.Id + 1;
 				var ilvl = g.ItemLevel;
 				//ImGui.Bullet();
 				ImGui.Text(" • ");
@@ -108,7 +108,7 @@ namespace Dresser.Logic {
 				ImGui.SameLine();
 				ImGui.Text($"{name}  ");
 				ImGui.SameLine();
-				GuiHelpers.TextWithFont($"{(char)0xE033}",GuiHelpers.Font.Axis_12);
+				GuiHelpers.TextWithFont($"{(char)0xE033}",GuiHelpers.Font.BubblePlateNumber);
 				ImGui.SameLine();
 				ImGui.Text($"{ilvl}");
 			}

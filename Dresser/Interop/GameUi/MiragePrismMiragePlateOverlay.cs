@@ -5,9 +5,7 @@ using System.Linq;
 using System.Numerics;
 
 namespace Dresser.Interop.GameUi {
-	public class MiragePrismMiragePlateOverlay : AtkMiragePrismMiragePlate, IAtkOverlayState {
-		public bool HasState { get; set; }
-		public bool NeedsStateRefresh { get; set; }
+	public class MiragePrismMiragePlateOverlay : GameOverlay<AtkMiragePrismMiragePlate>, IAtkOverlayState {
 
 		public Dictionary<ushort, Dictionary<Vector2, Vector4?>> ChestInventoryColours = new();
 		public Dictionary<uint, Vector4?> TabColours = new();
@@ -16,6 +14,12 @@ namespace Dresser.Interop.GameUi {
 
 		public ushort? _storedTab = null;
 
+		public MiragePrismMiragePlateOverlay(AtkMiragePrismMiragePlate overlay) : base(overlay) {
+		}
+
+		public override bool ShouldDraw { get; set; }
+		public override bool HasState { get; set; }
+		public override bool NeedsStateRefresh { get; set; }
 
 		public delegate void PlateChangedDelegate(ushort? newPlateIndex, ushort? oldPlateIndex);
 		public static event PlateChangedDelegate? OnPlateChanged;
@@ -27,7 +31,7 @@ namespace Dresser.Interop.GameUi {
 			if (!HasState || !HasAddon) {
 				return;
 			}
-			var currentTab = CurrentPlate;
+			var currentTab = this.AtkOverlay.CurrentPlate;
 			//PluginLog.Debug($"plate status === {currentTab} was {_storedTab} ");
 
 			if (currentTab != -1 && currentTab != _storedTab) {
@@ -46,16 +50,16 @@ namespace Dresser.Interop.GameUi {
 			if (!HasState || !HasAddon) {
 				return false;
 			}
-			var atkUnitBase = AtkUnitBase;
+			var atkUnitBase = this.AtkOverlay.AtkUnitBase;
 			if (atkUnitBase != null) {
 
-				this.SetTabColors(TabColours);
+				this.AtkOverlay.SetTabColors(TabColours);
 				return true;
 			}
 			return false;
 		}
 
-		public void UpdateState(HighlighterState? newState) {
+		public override void UpdateState(HighlighterState? newState) {
 			if (PluginServices.ClientState.LocalContentId == 0) {
 				return;
 			}
@@ -88,10 +92,10 @@ namespace Dresser.Interop.GameUi {
 
 		}
 
-		public void Clear() {
-			var atkUnitBase = AtkUnitBase;
+		public override void Clear() {
+			var atkUnitBase = this.AtkOverlay.AtkUnitBase;
 			if (atkUnitBase != null) {
-				this.SetTabColors(EmptyTabs);
+				this.AtkOverlay.SetTabColors(EmptyTabs);
 			}
 		}
 	}

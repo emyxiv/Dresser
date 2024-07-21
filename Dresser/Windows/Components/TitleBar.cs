@@ -18,15 +18,16 @@ namespace Dresser.Windows.Components {
 		public static ImDrawListPtr Draw(Window window) {
 			var draw = ImGui.GetWindowDrawList();
 
-			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.PlateSelectorColorTitle);
+			var collectionColorTitleV4 = ConfigurationManager.Config.PlateSelectorColorTitle;
+			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(collectionColorTitleV4);
 			var hoverTextColor = ImGui.ColorConvertFloat4ToU32(GuiHelpers.ColorAddHSV(Styler.CollectionColorBackground * new Vector4(1, 1, 1, 0) + new Vector4(0.2f, 0.2f, 0.2f, 1),0, 0.2f,0.2f));
 
-			draw.AddText(
-				PluginServices.Storage.FontTitle.ImFont,
+			GuiHelpers.TextWithFontDrawlist(
+				"Plate Creation",
+				GuiHelpers.Font.Title,
+				collectionColorTitleV4,
 				HeaderFontSize * ConfigurationManager.Config.IconSizeMult,
-				ImGui.GetCursorScreenPos() + new Vector2(0, -10 * ConfigurationManager.Config.IconSizeMult),
-				collectionColorTitleU32,
-				"Plate Creation");
+				new Vector2(0, -10 * ConfigurationManager.Config.IconSizeMult));
 
 			var avail = ImGui.GetContentRegionAvail();
 			var start = ImGui.GetCursorScreenPos() + new Vector2(0, ConfigurationManager.Config.IconSizeMult * (HeaderFontSize * 0.75f));

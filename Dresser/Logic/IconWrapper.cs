@@ -3,26 +3,29 @@
 using Dalamud.Utility;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Structs.Dresser;
 using Lumina.Data.Files;
 
 using System;
 using System.Collections.Generic;
+using Dalamud.Interface.Textures;
 
 namespace Dresser.Logic {
 	public class IconWrapper {
 
-		public static IDalamudTextureWrap? Get(int? id) {
+		public static ISharedImmediateTexture Get(int? id) {
 			if (id == null) return null;
-			return PluginServices.TextureProvider.GetIcon((uint)id); ;
+			return PluginServices.TextureProvider.GetFromGameIcon(new GameIconLookup((uint)id));
+				//.GetIcon((uint)id); ;
 		}
-		public static IDalamudTextureWrap? Get(ItemEx? itemEx) {
+		public static ISharedImmediateTexture Get(ItemEx? itemEx) {
 			if (itemEx == null)
 				return null;
-			return PluginServices.TextureProvider.GetIcon(itemEx.Icon);
+			return PluginServices.TextureProvider.GetFromGameIcon(new GameIconLookup(itemEx.Icon));
 		}
-		public static IDalamudTextureWrap? Get(InventoryItem? inventoryItem)
+		public static ISharedImmediateTexture Get(InventoryItem? inventoryItem)
 			=> PluginServices.ModdedIconStorage.Get(inventoryItem) ?? Get(inventoryItem?.Item);
 
 		private TexFile? LoadIconHq(uint id) {

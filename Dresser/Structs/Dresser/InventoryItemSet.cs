@@ -48,7 +48,7 @@ namespace Dresser.Structs.Dresser {
 
 		public static explicit operator InventoryItemSet(SavedPlate a)
 			=> new() {
-				Items = a.Items.ToDictionary(i => i.Key, i => i.Value.ItemId == 0 ? null : new InventoryItem(0, 0, i.Value.ItemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, i.Value.StainId, 0)),
+				Items = a.Items.ToDictionary(i => i.Key, i => i.Value.ItemId == 0 ? null : new InventoryItem(0, 0, i.Value.ItemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, i.Value.StainId, i.Value.StainId2, 0)),
 			};
 		public static explicit operator InventoryItemSet(MiragePage a)
 			 => new InventoryItemSet(a.ToDictionary().ToDictionary(p => p.Key, p => (InventoryItem?)p.Value));
@@ -157,14 +157,16 @@ namespace Dresser.Structs.Dresser {
 						// found items with unmatching dye
 						// check for dyes
 						// get only the first item found
-						list.Add(item.GetDyesInInventories().First());
+						list.Add(item.GetDyesInInventories(1).First());
 
 					}
 				}
 				if(!foundMatchingItem.Any()) {
 					list.Add(item.Clone());
-					if (item.Item.IsDyeable && item.Stain != 0) // also add needed dye in the list
-						list.Add(item.GetDyesInInventories().First());
+					if (item.Item.IsDyeable1() && item.Stain != 0) // also add needed dye in the list
+						list.Add(item.GetDyesInInventories(1).First());
+					if (item.Item.IsDyeable2() && item.Stain2 != 0) // also add needed dye in the list
+						list.Add(item.GetDyesInInventories(2).First());
 				}
 
 			}

@@ -20,7 +20,7 @@ namespace Dresser.Services {
 		private readonly ICallGateSubscriber<(uint, InventoryItem.ItemFlags, ulong, uint), bool> _itemAdded;
 		private readonly ICallGateSubscriber<(uint, InventoryItem.ItemFlags, ulong, uint), bool> _itemRemoved;
 
-		public AllaganToolsService(DalamudPluginInterface pluginInterface) {
+		public AllaganToolsService(IDalamudPluginInterface pluginInterface) {
 			_getCharacterItems       = pluginInterface.GetIpcSubscriber<ulong, HashSet<ulong[]>>("AllaganTools.GetCharacterItems");
 			_getCharactersOwnedByActive = pluginInterface.GetIpcSubscriber<bool, HashSet<ulong>>("AllaganTools.GetCharactersOwnedByActive");
 			_isInitialized           = pluginInterface.GetIpcSubscriber<bool>("AllaganTools.IsInitialized");

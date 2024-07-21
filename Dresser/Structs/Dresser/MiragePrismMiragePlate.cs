@@ -25,7 +25,7 @@ namespace Dresser.Structs.Dresser {
 		//[FieldOffset(40 + 36)] public IntPtr* PlatesPointer;
 		//[FieldOffset(40 + 36)] public fixed MiragePage Plates[20]; // This would be ideal, TODO: try to find a way to achieve this
 
-		internal static AgentInterface* MiragePlateAgent() => Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
+		internal static AgentInterface* MiragePlateAgent() => Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
 
 		// this getter exists because we cannot specify a sized array in the variable
 		public MiragePage[] Pages {
@@ -117,13 +117,15 @@ namespace Dresser.Structs.Dresser {
 		[FieldOffset(20)] public uint ItemType; // not item slot
 		[FieldOffset(24)] public byte DyeId;
 		[FieldOffset(25)] public byte DyePreviewId;
+		[FieldOffset(26)] public byte DyeId2;
+		[FieldOffset(27)] public byte DyePreviewId2;
 		//[FieldOffset(26)] public byte Unk5; // = 1 when previwing item
 		//[FieldOffset(28)] public uint Unk7; // > 0 when previewing item + dye
 		//[FieldOffset(39)] public byte Unk8; // = 1 when previewing item + dye
 		//[FieldOffset(42)] public ushort Unk9;
 
 		public static explicit operator InventoryItem?(MirageItem a) {
-			return a.ItemId == 0 ? null : InventoryItemExtensions.New(a.ItemId, a.DyeId);
+			return a.ItemId == 0 ? null : InventoryItemExtensions.New(a.ItemId, a.DyeId, a.DyeId2);
 		}
 	}
 
