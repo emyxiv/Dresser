@@ -1,12 +1,11 @@
-using CriticalCommonLib.Models;
-
 using Dresser.Extensions;
+using Dresser.Interop;
+using Dresser.Interop.Hooks;
 using Dresser.Services;
 
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 
 using System;
 using System.Collections.Generic;
@@ -22,8 +21,8 @@ namespace Dresser.Structs.Dresser {
 
 		[FieldOffset(0)] public AgentInterface AgentInterface;
 
-		//[FieldOffset(40 + 36)] public IntPtr* PlatesPointer;
-		//[FieldOffset(40 + 36)] public fixed MiragePage Plates[20]; // This would be ideal, TODO: try to find a way to achieve this
+		//[FieldOffset(Offsets.HeadSize + Offsets.HeadPostOffset)] public IntPtr* PlatesPointer;
+		//[FieldOffset(Offsets.HeadSize + Offsets.HeadPostOffset)] public fixed MiragePage Plates[Offsets.TotalPlates]; // This would be ideal, TODO: try to find a way to achieve this
 
 		internal static AgentInterface* MiragePlateAgent() => Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(AgentId.MiragePrismMiragePlate);
 
@@ -31,16 +30,17 @@ namespace Dresser.Structs.Dresser {
 		public MiragePage[] Pages {
 			get {
 				var totalPages = Storage.PlateNumber + 1; // the currently viewing/editing page is added at the end of the array
+				var totalSlots = GlamourPlates.CountSlots;
 				var pages = new MiragePage[totalPages];
 
 				if (!AgentInterface.IsAgentActive()) return pages;
 
 				// TODO: find a way to use PlatesPointer instead of calling the agent again
 				var agent = MiragePlateAgent();
-				var glamPlatePointer = *(IntPtr*)((IntPtr)agent + 40) + 36;
+				var glamPlatePointer = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize) + Offsets.HeadPostOffset;
 
 				for (int plateNumber = 0; plateNumber < totalPages; plateNumber++) {
-					var offset = 44 * 12 * plateNumber;
+					var offset = Offsets.SlotSize * totalSlots * plateNumber;
 					pages[plateNumber] = *(MiragePage*)(glamPlatePointer + offset);
 
 				}
@@ -50,8 +50,8 @@ namespace Dresser.Structs.Dresser {
 		public bool VerifyItem(ushort plateNumber, GlamourPlateSlot slot, InventoryItem item) {
 			if (!AgentInterface.IsAgentActive()) return false;
 			var agent = MiragePlateAgent();
-			var glamPlatePointer = *(IntPtr*)((IntPtr)agent + 40) + 36;
-			var offset = 44 * 12 * plateNumber;
+			var glamPlatePointer = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize) + Offsets.HeadPostOffset;
+			var offset = Offsets.SlotSize * GlamourPlates.CountSlots * plateNumber;
 			var plate = *(MiragePage*)(glamPlatePointer + offset);
 			var mirageItem = plate[slot];
 			return item.IsAppearanceDifferent(item);
@@ -60,18 +60,18 @@ namespace Dresser.Structs.Dresser {
 
 	[StructLayout(LayoutKind.Explicit, Size = 0x210)]
 	public struct MiragePage {
-		[FieldOffset(0x2C * 00)] public MirageItem MainHand;
-		[FieldOffset(0x2C * 01)] public MirageItem OffHand;
-		[FieldOffset(0x2C * 02)] public MirageItem Head;
-		[FieldOffset(0x2C * 03)] public MirageItem Chest;
-		[FieldOffset(0x2C * 04)] public MirageItem Hands;
-		[FieldOffset(0x2C * 05)] public MirageItem Legs;
-		[FieldOffset(0x2C * 06)] public MirageItem Feet;
-		[FieldOffset(0x2C * 07)] public MirageItem Earring;
-		[FieldOffset(0x2C * 08)] public MirageItem Necklace;
-		[FieldOffset(0x2C * 09)] public MirageItem Bracelet;
-		[FieldOffset(0x2C * 10)] public MirageItem RingRight;
-		[FieldOffset(0x2C * 11)] public MirageItem RingLeft;
+		[FieldOffset(Offsets.SlotSize * 00)] public MirageItem MainHand;
+		[FieldOffset(Offsets.SlotSize * 01)] public MirageItem OffHand;
+		[FieldOffset(Offsets.SlotSize * 02)] public MirageItem Head;
+		[FieldOffset(Offsets.SlotSize * 03)] public MirageItem Chest;
+		[FieldOffset(Offsets.SlotSize * 04)] public MirageItem Hands;
+		[FieldOffset(Offsets.SlotSize * 05)] public MirageItem Legs;
+		[FieldOffset(Offsets.SlotSize * 06)] public MirageItem Feet;
+		[FieldOffset(Offsets.SlotSize * 07)] public MirageItem Earring;
+		[FieldOffset(Offsets.SlotSize * 08)] public MirageItem Necklace;
+		[FieldOffset(Offsets.SlotSize * 09)] public MirageItem Bracelet;
+		[FieldOffset(Offsets.SlotSize * 10)] public MirageItem RingRight;
+		[FieldOffset(Offsets.SlotSize * 11)] public MirageItem RingLeft;
 
 		public Dictionary<GlamourPlateSlot, MirageItem> ToDictionary() {
 			Dictionary<GlamourPlateSlot, MirageItem> dic = new();
@@ -107,7 +107,7 @@ namespace Dresser.Structs.Dresser {
 
 	// Thanks to Anna's Glamaholic code
 	// for showing the logic behind the Glamour Plates <3
-	[StructLayout(LayoutKind.Explicit, Size = 44)]
+	[StructLayout(LayoutKind.Explicit, Size = Offsets.SlotSize)]
 	public struct MirageItem {
 		[FieldOffset(0)] public uint ItemId;
 		//[FieldOffset(4)] public uint Unk1; // > 0 when previewing an item
@@ -115,10 +115,10 @@ namespace Dresser.Structs.Dresser {
 		//[FieldOffset(12)] public uint Unk3;
 		//[FieldOffset(16)] public uint Unk4;
 		[FieldOffset(20)] public uint ItemType; // not item slot
-		[FieldOffset(24)] public byte DyeId;
-		[FieldOffset(25)] public byte DyePreviewId;
-		[FieldOffset(26)] public byte DyeId2;
-		[FieldOffset(27)] public byte DyePreviewId2;
+		[FieldOffset(Offsets.SlotOffsetStain1)] public byte DyeId;
+		[FieldOffset(Offsets.SlotOffsetStain2)] public byte DyeId2;
+		[FieldOffset(Offsets.SlotOffsetStain1Preview)] public byte DyePreviewId;
+		[FieldOffset(Offsets.SlotOffsetStain2Preview)] public byte DyePreviewId2;
 		//[FieldOffset(26)] public byte Unk5; // = 1 when previwing item
 		//[FieldOffset(28)] public uint Unk7; // > 0 when previewing item + dye
 		//[FieldOffset(39)] public byte Unk8; // = 1 when previewing item + dye

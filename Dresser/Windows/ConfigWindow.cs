@@ -479,6 +479,9 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("TestUld")) {
 			ImageGuiCrop.TestParts();
 		}
+		if (ImGui.CollapsingHeader("Glamour Plate")) {
+			GlamourPlateDebug.Draw();
+		}
 		if (ImGui.CollapsingHeader("Info")) {
 			ImGui.TextDisabled($"characters owned by player from AT IPC");
 

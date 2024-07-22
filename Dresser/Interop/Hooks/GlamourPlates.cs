@@ -38,8 +38,8 @@ namespace Dresser.Interop.Hooks {
 
 		[Signature(Signatures.SetGlamourPlateSlot)] private readonly SetGlamourPlateSlotDelegate _setGlamourPlateSlot = null!;
 		[Signature(Signatures.ModifyGlamourPlateSlot)] private readonly ModifyGlamourPlateSlotDelegate _modifyGlamourPlateSlot = null!;
-		[Signature(Signatures.ClearGlamourPlateSlot)] private readonly ClearGlamourPlateSlotDelegate _clearGlamourPlateSlot = null!;
-		[Signature(Signatures.IsInArmoire)] private readonly IsInArmoireDelegate _isInArmoire = null!;
+		/*[Signature(Signatures.ClearGlamourPlateSlot)]*/ private readonly ClearGlamourPlateSlotDelegate _clearGlamourPlateSlot = null!;
+		/*[Signature(Signatures.IsInArmoire)]*/ private readonly IsInArmoireDelegate _isInArmoire = null!;
 		[Signature(Signatures.ArmoirePointer, ScanType = ScanType.StaticAddress)] private readonly IntPtr _armoirePtr;
 
 
@@ -88,13 +88,13 @@ namespace Dresser.Interop.Hooks {
 				var dresserAgent = agents->GetAgentByInternalId(AgentId.MiragePrismPrismBox);
 
 				// these offsets in 6.3-HF1: AD2BEB
-				var itemsStart = *(IntPtr*)((IntPtr)dresserAgent + 0x28);
+				var itemsStart = *(IntPtr*)((IntPtr)dresserAgent + Offsets.HeadSize);
 				if (itemsStart == IntPtr.Zero) {
 					return _dresserContents ?? list;
 				}
 
-				for (var i = 0; i < 800; i++) {
-					var glamItem = *(GlamourPlateItem*)(itemsStart + i * 136);
+				for (var i = 0; i < Offsets.TotalBoxSlot; i++) {
+					var glamItem = *(GlamourPlateItem*)(itemsStart + i * Offsets.BoxSlotSize);
 					if (glamItem.ItemId == 0) {
 						continue;
 					}
@@ -150,14 +150,14 @@ namespace Dresser.Interop.Hooks {
 			}
 
 			// Updated: 6.11 C98BC0
-			var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.EditorInfo);
+			var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize);
 			if (editorInfo == IntPtr.Zero) {
 				return false;
 			}
 
 			// Updated: 6.11 C984CF
 			// current plate 6.11 C9AC9F
-			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentPlate);
+			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentSlot);
 			var initialSlot = *slotPtr;
 
 			if (item == null || item.ItemId == 0) {
@@ -240,7 +240,7 @@ namespace Dresser.Interop.Hooks {
 			}
 
 			// Updated: 6.11 C98BC0
-			var editorInfo = *(IntPtr*)((IntPtr)agent + 0x28);
+			var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize);
 			if (editorInfo == IntPtr.Zero) {
 				return successSlots;
 			}
@@ -251,7 +251,7 @@ namespace Dresser.Interop.Hooks {
 
 			// Updated: 6.11 C984CF
 			// current plate 6.11 C9AC9F
-			var slotPtr = (GlamourPlateSlot*)(editorInfo + 0x18);
+			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentSlot);
 			var initialSlot = *slotPtr;
 			var fakeEmptyItem = new SavedGlamourItem { ItemId = 0, StainId = 0 };
 			foreach (var (slot, item) in plate.Items) {
@@ -268,7 +268,7 @@ namespace Dresser.Interop.Hooks {
 
 				*slotPtr = slot;
 				if (item.ItemId == 0) {
-					this._clearGlamourPlateSlot((IntPtr)agent, slot);
+					//this._clearGlamourPlateSlot((IntPtr)agent, slot);
 					if (!Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)item))
 						successSlots.Add(slot);
 					continue;
@@ -408,6 +408,7 @@ namespace Dresser.Interop.Hooks {
 			}
 		}
 
+		public static int CountSlots => Enum.GetValues(typeof(GlamourPlateSlot)).Length;
 		internal static unsafe Dictionary<GlamourPlateSlot, SavedGlamourItem>? CurrentPlate {
 			get {
 				var agent = MiragePrismMiragePlateAgent;
@@ -415,7 +416,7 @@ namespace Dresser.Interop.Hooks {
 					return null;
 				}
 
-				var editorInfo = *(IntPtr*)((IntPtr)agent + 0x28);
+					var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize);
 				if (editorInfo == IntPtr.Zero) {
 					return null;
 				}
@@ -424,12 +425,15 @@ namespace Dresser.Interop.Hooks {
 				foreach (var slot in (GlamourPlateSlot[])Enum.GetValues(typeof(GlamourPlateSlot))) {
 					// Updated: 6.1
 					// from SetGlamourPlateSlot
-					var item = editorInfo + 44 * (int)slot + 10596;
+					var item = editorInfo + Offsets.SlotSize * (int)slot + (Offsets.HeadPostOffset + (Offsets.SlotSize * CountSlots * Storage.PlateNumber));
 
 					var itemId = *(uint*)item;
-					var stainId = *(byte*)(item + 24);
-					var stainPreviewId = *(byte*)(item + 25);
+					var stainId = *(byte*)(item + Offsets.SlotOffsetStain1);
+					var stainId2 = *(byte*)(item + Offsets.SlotOffsetStain2);
+					var stainPreviewId = *(byte*)(item + Offsets.SlotOffsetStain1Preview);
+					var stainPreviewId2 = *(byte*)(item + Offsets.SlotOffsetStain2Preview);
 					var actualStainId = stainPreviewId == 0 ? stainId : stainPreviewId;
+					var actualStainId2 = stainPreviewId2 == 0 ? stainId2 : stainPreviewId2;
 
 					if (itemId == 0) {
 						continue;
@@ -438,6 +442,7 @@ namespace Dresser.Interop.Hooks {
 					plate[slot] = new SavedGlamourItem {
 						ItemId = itemId,
 						StainId = actualStainId,
+						StainId2 = actualStainId2,
 					};
 				}
 
@@ -453,7 +458,7 @@ namespace Dresser.Interop.Hooks {
 
 		internal GlamourPlates() {
 
-			//Service.GameInteropProvider.InitializeFromAttributes(this);
+			Service.GameInteropProvider.InitializeFromAttributes(this);
 
 		}
 

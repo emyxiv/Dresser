@@ -12,10 +12,23 @@
 
 		// MiragePrismMiragePlate
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L164
-		internal const int EditorInfo = 0x28;
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L243
-		internal const int EditorCurrentPlate = 0x18;
-		internal const int GlamourPlateItem = 136;
+		//  box
+		internal const int TotalBoxSlot = 800;
+		internal const int BoxSlotSize = 136;
+
+		// plate
+		internal const int TotalPlates = 20;
+		internal const int EditorCurrentSlot = 0x18;
+
+		internal const int HeadSize = 40;
+		internal const int HeadPostOffset = 36;
+
+		internal const int SlotSize = 60;
+		internal const int SlotOffsetStain1 = 24;
+		internal const int SlotOffsetStain2 = 25;
+		internal const int SlotOffsetStain1Preview = 26;
+		internal const int SlotOffsetStain2Preview = 27;
 
 	}
 }

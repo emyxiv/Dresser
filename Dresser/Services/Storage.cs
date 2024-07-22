@@ -6,6 +6,7 @@ using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Textures;
 
 using Dresser.Extensions;
+using Dresser.Interop;
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
 
@@ -28,7 +29,7 @@ namespace Dresser.Services {
 		//public ExcelSheet<Dye>? Dyes = null;
 		public static string HighResolutionSufix = "_hr1";
 
-		public const int PlateNumber = 20;
+		public const int PlateNumber = Offsets.TotalPlates;
 		public Dictionary<GlamourPlateSlot, MirageItem> SlotMirageItems = new();
 		//public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
 		public MiragePage[]? Pages = null;

@@ -3,7 +3,7 @@
 using System.Runtime.InteropServices;
 
 namespace Dresser.Structs.Dresser {
-	[StructLayout(LayoutKind.Explicit, Size = Offsets.GlamourPlateItem)]
+	[StructLayout(LayoutKind.Explicit, Size = Offsets.BoxSlotSize)]
 	internal readonly struct GlamourPlateItem {
 		[FieldOffset(0x70)]
 		internal readonly uint Index;
