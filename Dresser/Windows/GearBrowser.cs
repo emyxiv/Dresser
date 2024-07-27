@@ -289,7 +289,7 @@ namespace Dresser.Windows {
 				}
 				ImGui.SameLine();
 				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if(filterChanged |= ImGui.DragFloat($"##Max##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.Y, 1, 1, 90, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
+				if(filterChanged |= ImGui.DragFloat($"##Max##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.Y, 1, 1, 200, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 					if (ConfigurationManager.Config.filterEquipLevel.X > ConfigurationManager.Config.filterEquipLevel.Y) ConfigurationManager.Config.filterEquipLevel.X = ConfigurationManager.Config.filterEquipLevel.Y;
 				}
 				ImGui.SameLine();
