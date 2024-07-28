@@ -186,9 +186,7 @@ public class CurrentGear : Window, IDisposable {
 
 			if (clicked) {
 				// Change selected plate
-				PluginServices.ApplyGearChange.UnApplyCurrentPendingPlateAppearance();
-				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
-				PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
+				PluginServices.ApplyGearChange.changeCurrentPendingPlate(plateNumber);
 			}
 			if (hovering) {
 				// save hovered button for later

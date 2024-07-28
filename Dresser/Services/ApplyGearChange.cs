@@ -34,7 +34,7 @@ namespace Dresser.Services {
 		private InventoryItemSet? BackedUpItems = null;
 
 		public void EnterBrowsingMode() {
-			ReApplyAppearanceAfterEquipUpdate();
+			Task.Run(ReApplyAppearanceAfterEquipUpdate);
 		}
 		public void ExitBrowsingMode() {
 			PluginLog.Verbose("Closing Dresser");
@@ -427,6 +427,15 @@ namespace Dresser.Services {
 				if (plateNumber != null && plateN != plateNumber) continue;
 				TasksOnCurrentPlate[plateN] = set.FindNotOwned();
 			}
+		}
+
+		public void changeCurrentPendingPlate(ushort plateNumber) {
+			Task.Run(delegate {
+				PluginServices.ApplyGearChange.UnApplyCurrentPendingPlateAppearance();
+				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
+				PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
+				return Task.CompletedTask;
+			});
 		}
 		public void UnApplyCurrentPendingPlateAppearance() {
 			ClearApplyAppearanceQueue();
