@@ -21,26 +21,22 @@ namespace Dresser.Interop.GameUi {
 		public override bool HasState { get; set; }
 		public override bool NeedsStateRefresh { get; set; }
 
-		public delegate void PlateChangedDelegate(ushort? newPlateIndex, ushort? oldPlateIndex);
-		public static event PlateChangedDelegate? OnPlateChanged;
-
-
 
 		public override void Update() {
-			//PluginLog.Debug($" Update === = = = = {!HasState} || {!HasAddon}");
+			//PluginLog.Debug($" Update === = = = = {!HasState} || {!HasAddon} {PluginServices.Context.IsApplyingIntoDresser}");
 			if (!HasState || !HasAddon) {
 				return;
 			}
 			var currentTab = this.AtkOverlay.CurrentPlate;
 			//PluginLog.Debug($"plate status === {currentTab} was {_storedTab} ");
 
-			if (currentTab != -1 && currentTab != _storedTab) {
+			if (PluginServices.Context.SelectedPlate != null && PluginServices.Context.SelectedPlate != PluginServices.Context.LastState_SelectedPlate) {
 				var previousTab = _storedTab;
 				_storedTab = (ushort)currentTab;
 				NeedsStateRefresh = true;
-				PluginServices.Context.SelectedPlate = _storedTab;
+				//PluginServices.Context.SelectedPlate = _storedTab;
 				PluginLog.Error($"plate changed from {previousTab} to {_storedTab} ");
-				OnPlateChanged?.Invoke(_storedTab, previousTab);
+				//AddonListeners.TriggerPlateChanged(_storedTab, previousTab);
 			}
 		}
 

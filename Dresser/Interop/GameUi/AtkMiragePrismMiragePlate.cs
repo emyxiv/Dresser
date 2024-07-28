@@ -41,7 +41,7 @@ namespace Dresser.Interop.GameUi {
 				if (radioButton == null || (ushort)radioButton->AtkResNode.Type < 1000) return;
 				var atkResNode = (AtkResNode*)radioButton;
 				if (newColour.HasValue) {
-					PluginLog.Debug($"Coloring tab {tab} into color {newColour * 255f}");
+					//PluginLog.Debug($"Coloring tab {tab} into color {newColour * 255f}");
 					atkResNode->Color.A = (byte)(newColour.Value.W * 255.0f);
 					atkResNode->AddBlue = (short)(newColour.Value.Z * 255.0f);
 					atkResNode->AddRed = (short)(newColour.Value.X * 255.0f);

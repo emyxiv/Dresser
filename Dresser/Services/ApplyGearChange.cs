@@ -596,6 +596,7 @@ namespace Dresser.Services {
 			// put all todo tab in Highlight_apply_todo color
 			HighlightPlatesRadio = DifferencesToApply.ToDictionary(p => p.Key, p => Highlight_apply_todo);
 			PluginServices.OverlayService.RefreshOverlayStates();
+			PluginServices.Context.HasConfirmedApplyIntoDresser = true;
 
 			ExecuteChangesOnSelectedPlate();
 		}
@@ -800,6 +801,7 @@ namespace Dresser.Services {
 
 		}
 		public void ClearApplyDresser() {
+			PluginServices.Context.HasConfirmedApplyIntoDresser = false;
 			PluginLog.Debug(" -- Clean apply dresser -- ");
 			CleanOverlayColors();
 			DifferencesToApply.Clear();

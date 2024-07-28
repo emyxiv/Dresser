@@ -1,4 +1,3 @@
-using Dresser.Interop.GameUi;
 using Dresser.Logic;
 using Dresser.Services;
 
@@ -18,7 +17,7 @@ namespace Dresser.Interop.Addons {
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent += OnMiragePrismPrismBoxReceiveEvent;
 
-			MiragePrismMiragePlateOverlay.OnPlateChanged += OnPlateChanged;
+			OnPlateChanged += OnPlateChangedDo;
 
 			OnLogin();
 		}
@@ -35,11 +34,15 @@ namespace Dresser.Interop.Addons {
 
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent -= OnMiragePrismPrismBoxReceiveEvent;
-			MiragePrismMiragePlateOverlay.OnPlateChanged -= OnPlateChanged;
+			OnPlateChanged -= OnPlateChangedDo;
 
 
 			OnLogout();
 		}
+
+		public delegate void PlateChangedDelegate(ushort? newPlateIndex, ushort? oldPlateIndex);
+		public static event PlateChangedDelegate? OnPlateChanged;
+
 
 		// Various event methods
 		private static void OnLogin() {
@@ -103,7 +106,11 @@ namespace Dresser.Interop.Addons {
 			//if (e.SenderID == 0 && e.EventArgs->Int == -2)
 			//	EventManager.GearSelectionClose?.Invoke();
 		}
-		private static void OnPlateChanged(ushort? newPlateIndex, ushort? oldPlateIndex) {
+		public static void TriggerPlateChanged(ushort? newPlateIndex, ushort? oldPlateIndex) {
+			if (!PluginServices.Context.IsApplyingIntoDresser) return;
+			OnPlateChanged?.Invoke(newPlateIndex, oldPlateIndex);
+		}
+		private static void OnPlateChangedDo(ushort? newPlateIndex, ushort? oldPlateIndex) {
 			PluginLog.Warning($"OnPlateChanged >>{newPlateIndex ?? -1}<< OnPlateChanged OnPlateChanged");
 
 			// close the failed popup on changing plate

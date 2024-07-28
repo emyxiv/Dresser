@@ -1,14 +1,12 @@
 ﻿using CriticalCommonLib;
-using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Enums;
 
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Windowing;
 
+using Dresser.Interop.Addons;
 using Dresser.Interop.Hooks;
-using Dresser.Logic;
-using Dresser.Windows;
 
 using Lumina.Excel.GeneratedSheets;
 
@@ -57,7 +55,11 @@ namespace Dresser.Services {
 			Every5seconds = null!;
 		}
 
+		public bool HasConfirmedApplyIntoDresser = false;
+		public bool IsApplyingIntoDresser => PluginServices.ApplyGearChange.DifferencesToApply.Count > 0 && HasConfirmedApplyIntoDresser;
+
 		private bool _lastState_IsGlamingAtDresser = false;
+		public ushort? LastState_SelectedPlate = null;
 		public delegate void OnChangeGlamingAtDresserDelegate(bool newIsGlamingAtDresser);
 		public static event OnChangeGlamingAtDresserDelegate? OnChangeGlamingAtDresser;
 
@@ -66,6 +68,17 @@ namespace Dresser.Services {
 			IsGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
 			if (IsGlamingAtDresser != _lastState_IsGlamingAtDresser) OnChangeGlamingAtDresser?.Invoke(IsGlamingAtDresser);
 			_lastState_IsGlamingAtDresser = IsGlamingAtDresser;
+
+			if (IsGlamingAtDresser) {
+				SelectedPlate = PluginServices.GlamourPlates.CurrentPlateIndex();
+				if(SelectedPlate != null && SelectedPlate != LastState_SelectedPlate) {
+					AddonListeners.TriggerPlateChanged(SelectedPlate, LastState_SelectedPlate);
+				}
+				LastState_SelectedPlate = SelectedPlate;
+			} else {
+				LastState_SelectedPlate = null;
+				SelectedPlate = null;
+			}
 
 			try { IsCurrentGearWindowOpen = Plugin.GetInstance()?.IsDresserVisible() ?? false; } catch (Exception) { IsCurrentGearWindowOpen = false; }
 
