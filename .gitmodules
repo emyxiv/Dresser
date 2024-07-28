@@ -1,15 +1,9 @@
 [submodule "FFXIVClientInterface"]
 	path = FFXIVClientInterface
 	url = https://github.com/Critical-Impact/FFXIVClientInterface.git
-[submodule "LuminaSupplemental"]
-	path = LuminaSupplemental
-	url = https://github.com/Critical-Impact/LuminaSupplemental
 [submodule "CriticalCommonLib"]
 	path = CriticalCommonLib
 	url = https://github.com/emyxiv/CriticalCommonLib.git
-[submodule "DalaMock"]
-	path = DalaMock
-	url = https://github.com/Critical-Impact/DalaMock.git
 [submodule "Penumbra.GameData"]
 	path = Penumbra.GameData
 	url = https://github.com/Ottermandias/Penumbra.GameData
