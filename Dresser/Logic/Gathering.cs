@@ -64,7 +64,8 @@ namespace Dresser.Logic {
 			var slot = item.Item.GlamourPlateSlot();
 			if (slot == null) return false;
 			var storedItem = ConfigurationManager.Config.DisplayPlateItems.GetSlot((GlamourPlateSlot)slot);
-			if ((storedItem?.ItemId ?? 0) == (item?.ItemId ?? 0) && (storedItem?.Stain ?? 0) == (item?.Stain ?? 0))
+			//if ((storedItem?.ItemId ?? 0) == (item?.ItemId ?? 0) && (storedItem?.Stain ?? 0) == (item?.Stain ?? 0))
+			if ((storedItem?.ItemId ?? 0) == (item?.ItemId ?? 0) && (storedItem?.Stain ?? 0) == (item?.Stain ?? 0) && (storedItem?.Stain2 ?? 0) == (item?.Stain2 ?? 0))
 				return true;
 			return false;
 		}

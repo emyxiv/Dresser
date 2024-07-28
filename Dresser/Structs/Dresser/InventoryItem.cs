@@ -63,7 +63,7 @@ namespace Dresser.Structs.Dresser {
 			return new CriticalInventoryItem(item);
 		}
 		public static InventoryItem FromCritical(CriticalInventoryItem item) {
-			return new InventoryItem { Container = item.Container, Slot = item.Slot, ItemId = item.ItemId, Quantity = item.Quantity, Spiritbond = item.Spiritbond, Condition = item.Condition, Flags = item.Flags, Materia0 = item.Materia0, Materia1 = item.Materia1, Materia2 = item.Materia2, Materia3 = item.Materia3, Materia4 = item.Materia4, MateriaLevel0 = item.MateriaLevel0, MateriaLevel1 = item.MateriaLevel1, MateriaLevel2 = item.MateriaLevel2, MateriaLevel3 = item.MateriaLevel3, MateriaLevel4 = item.MateriaLevel4, Stain = item.Stain, GlamourId = item.GlamourId, SortedContainer = item.SortedContainer, SortedCategory = item.SortedCategory, SortedSlotIndex = item.SortedSlotIndex, RetainerId = item.RetainerId, RetainerMarketPrice = item.RetainerMarketPrice, GearSets = item.GearSets, };
+			return new InventoryItem { Container = item.Container, Slot = item.Slot, ItemId = item.ItemId, Quantity = item.Quantity, Spiritbond = item.Spiritbond, Condition = item.Condition, Flags = item.Flags, Materia0 = item.Materia0, Materia1 = item.Materia1, Materia2 = item.Materia2, Materia3 = item.Materia3, Materia4 = item.Materia4, MateriaLevel0 = item.MateriaLevel0, MateriaLevel1 = item.MateriaLevel1, MateriaLevel2 = item.MateriaLevel2, MateriaLevel3 = item.MateriaLevel3, MateriaLevel4 = item.MateriaLevel4, Stain = item.Stain, Stain2 = item.Stain2, GlamourId = item.GlamourId, SortedContainer = item.SortedContainer, SortedCategory = item.SortedCategory, SortedSlotIndex = item.SortedSlotIndex, RetainerId = item.RetainerId, RetainerMarketPrice = item.RetainerMarketPrice, GearSets = item.GearSets, };
 		}
 		public static InventoryItem Zero => new InventoryItem();
 
@@ -87,6 +87,7 @@ namespace Dresser.Structs.Dresser {
 			this.MateriaLevel3 = 0;
 			this.MateriaLevel4 = 0;
 			this.Stain = 0;
+			this.Stain2 = 0;
 
 			this.ModName = null;
 			this.ModDirectory = null;
@@ -155,7 +156,8 @@ namespace Dresser.Structs.Dresser {
 
 			var dd = slot.ToWeaponIndex() == WeaponIndex.MainHand || weaponEquip.Value.IsMainModelOnOffhand() ? FromModelWeaponMain(weaponEquip.Value.ToModelId(), slot) : FromModelWeaponSub(weaponEquip.Value.ToModelId(), slot);
 			if (dd != null) return new InventoryItem(InventoryType.Bag0, dd.RowId) {
-				Stain = weaponEquip.Value.Dye
+				Stain = weaponEquip.Value.Dye,
+				Stain2 = weaponEquip.Value.Dye2
 			};
 			return null;
 		}

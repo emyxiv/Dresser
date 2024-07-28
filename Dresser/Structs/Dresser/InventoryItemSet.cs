@@ -42,7 +42,8 @@ namespace Dresser.Structs.Dresser {
 			=> new() {
 				Items = a.Items.ToDictionary(i => i.Key, i => new SavedGlamourItem() {
 					ItemId = i.Value?.ItemId ?? 0,
-					StainId = i.Value?.Stain ?? 0
+					StainId = i.Value?.Stain ?? 0,
+					StainId2 = i.Value?.Stain2 ?? 0
 				}),
 			};
 
@@ -124,7 +125,11 @@ namespace Dresser.Structs.Dresser {
 						if (item == null) continue;
 						if (item.IsModded()) continue;
 
-						var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+						var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain && i.Stain2 == item.Stain2);
+						if (!foundMatchingItem.Any())
+							foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+						if (!foundMatchingItem.Any())
+							foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain2 == item.Stain2);
 						if (!foundMatchingItem.Any())
 							foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
 
@@ -134,6 +139,8 @@ namespace Dresser.Structs.Dresser {
 								var matchingItemToProcess = matchingItem.Copy()!;
 								if (matchingItemToProcess.Stain != item.Stain)
 									matchingItemToProcess.Stain = item.Stain;
+								if (matchingItemToProcess.Stain2 != item.Stain2)
+									matchingItemToProcess.Stain2 = item.Stain2;
 
 								set.Items[slot] = matchingItemToProcess;
 							}
@@ -150,16 +157,22 @@ namespace Dresser.Structs.Dresser {
 
 			foreach ((var slot, var item) in Items) {
 				if (item == null) continue;
-				var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
-				if (!foundMatchingItem.Any()) {
+				var foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain && i.Stain2 == item.Stain2);
+				if (!foundMatchingItem.Any())
+					foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain == item.Stain);
+				if (!foundMatchingItem.Any())
+					foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId && i.Stain2 == item.Stain2);
+				if (!foundMatchingItem.Any())
 					foundMatchingItem = ownedItems.Where(i => i.ItemId == item.ItemId);
-					if( foundMatchingItem.Any()) {
-						// found items with unmatching dye
-						// check for dyes
-						// get only the first item found
-						list.Add(item.GetDyesInInventories(1).First());
 
-					}
+				if ( foundMatchingItem.Any(i=>i.Stain != item.Stain)) {
+					// found items with unmatching dye
+					// check for dyes
+					// get only the first item found
+					list.Add(item.GetDyesInInventories(1).First());
+				}
+				if ( foundMatchingItem.Any(i=>i.Stain2 != item.Stain2)) {
+					list.Add(item.GetDyesInInventories(2).First());
 				}
 				if(!foundMatchingItem.Any()) {
 					list.Add(item.Clone());

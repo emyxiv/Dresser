@@ -1,10 +1,13 @@
-﻿using CriticalCommonLib.Extensions;
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
 using Dalamud.Utility;
 
 using Dresser.Logic;
 using Dresser.Services;
+
+using System.Linq;
 
 using static Dresser.Services.Storage;
 
@@ -97,8 +100,11 @@ namespace Dresser.Extensions {
 
 		public static string StainName(this CriticalInventoryItem item) {
 			var stainEntry = item.StainEntry;
-			if (stainEntry == null) return "";
-			return stainEntry.Name.ToDalamudString().ToString();
+			return stainEntry?.Name.ToDalamudString().ToString() ?? "";
+		}
+		public static string Stain2Name(this CriticalInventoryItem item) {
+			var stainEntry = Service.ExcelCache.GetStainSheet().First(s => s.RowId == item.Stain2);
+			return stainEntry?.Name.ToDalamudString().ToString() ?? "";
 		}
 	}
 }

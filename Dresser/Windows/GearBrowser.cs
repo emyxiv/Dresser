@@ -607,6 +607,7 @@ namespace Dresser.Windows {
 				items = items.Where(i =>
 					i.FormattedName.Contains(Search, StringComparison.OrdinalIgnoreCase) // search for item name
 					|| i.StainName().Contains(Search, StringComparison.OrdinalIgnoreCase) // search for stain name
+					|| i.Stain2Name().Contains(Search, StringComparison.OrdinalIgnoreCase) // search for stain name
 					|| (i.ModName?.Contains(Search, StringComparison.OrdinalIgnoreCase)??false) // search for mod name
 					|| (i.ModAuthor?.Contains(Search, StringComparison.OrdinalIgnoreCase)??false) // search for mod author
 					);
