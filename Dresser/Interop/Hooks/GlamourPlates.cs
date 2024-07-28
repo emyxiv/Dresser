@@ -1,7 +1,4 @@
 ﻿using CriticalCommonLib;
-using CriticalCommonLib.Enums;
-using CriticalCommonLib.Extensions;
-using CriticalCommonLib.GameStructs;
 
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Utility.Signatures;
@@ -13,7 +10,6 @@ using Dresser.Structs.Dresser;
 
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 
 using Lumina.Excel.GeneratedSheets;
 
@@ -24,6 +20,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
 
 
 namespace Dresser.Interop.Hooks {
@@ -32,14 +29,14 @@ namespace Dresser.Interop.Hooks {
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/branch/main/Glamaholic/GameFunctions.cs
 
 		private delegate void SetGlamourPlateSlotDelegate(IntPtr agent, MirageSource mirageSource, int glamId, uint itemId, byte stainId, byte stainId2);
-		private delegate void ModifyGlamourPlateSlotDelegate(IntPtr agent, GlamourPlateSlot slot, byte stainId, IntPtr numbers, int stainItemId);
+		private delegate void ModifyGlamourPlateSlotDelegate(IntPtr agent, GlamourPlateSlot slot, byte stainId, IntPtr numbers, int stainItemId, int stainSlot);
 		private delegate void ClearGlamourPlateSlotDelegate(IntPtr agent, GlamourPlateSlot slot);
 		private delegate byte IsInArmoireDelegate(IntPtr armoire, int index);
 
 		[Signature(Signatures.SetGlamourPlateSlot)] private readonly SetGlamourPlateSlotDelegate _setGlamourPlateSlot = null!;
 		[Signature(Signatures.ModifyGlamourPlateSlot)] private readonly ModifyGlamourPlateSlotDelegate _modifyGlamourPlateSlot = null!;
-		/*[Signature(Signatures.ClearGlamourPlateSlot)]*/ private readonly ClearGlamourPlateSlotDelegate _clearGlamourPlateSlot = null!;
-		/*[Signature(Signatures.IsInArmoire)]*/ private readonly IsInArmoireDelegate _isInArmoire = null!;
+		[Signature(Signatures.ClearGlamourPlateSlot)] private readonly ClearGlamourPlateSlotDelegate _clearGlamourPlateSlot = null!;
+		[Signature(Signatures.IsInArmoire)] private readonly IsInArmoireDelegate _isInArmoire = null!;
 		[Signature(Signatures.ArmoirePointer, ScanType = ScanType.StaticAddress)] private readonly IntPtr _armoirePtr;
 
 
@@ -69,8 +66,46 @@ namespace Dresser.Interop.Hooks {
 			return MiragePrismMiragePlateAgent->IsAgentActive();
 		}
 
-		internal unsafe void SetGlamourPlateSlot(MirageSource container, int containerIndex, uint itemId, byte stainId, byte stainId2) {
-			this._setGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, container, containerIndex, itemId, stainId, stainId2);
+		internal unsafe ushort? CurrentPlateIndex() {
+
+			var agent = MiragePrismMiragePlateAgent;
+			if (agent == null) {
+				return null;
+			}
+
+			var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize);
+			if (editorInfo == IntPtr.Zero) {
+				return null;
+			}
+
+			var currentPlate = *(ushort*)(editorInfo + Offsets.EditorCurrentPlate);
+			if (currentPlate >= Offsets.TotalPlates && currentPlate < 0) return null;
+			return currentPlate;
+
+		}
+		internal IEnumerable<GlamourPlateSlot> SetGlamourPlateSlot(InventoryItemSet set) {
+			PluginLog.Error($"About to put info in glamour plate");
+
+			UsedStains usedStain = new();
+			HashSet<GlamourPlateSlot> successfullyApplied = new();
+			foreach ( (var slot, var item) in set.Items) {
+				InventoryItem item2;
+				if (item == null || item.ItemId == 0) {
+					item2 = InventoryItem.Zero;
+				} else {
+					item2 = item;
+				}
+				if (SetGlamourPlateSlot(item2, ref usedStain, slot)) {
+					successfullyApplied.Add(slot);
+					PluginLog.Debug($"apply into dresser ({slot}) SUCCESS");
+				} else {
+					PluginLog.Warning($"apply into dresser ({slot}) FAILLURE {item?.FormattedName}");
+				}
+				System.Threading.Tasks.Task.Run(async delegate {
+					await System.Threading.Tasks.Task.Delay(50);
+				});
+			}
+			return successfullyApplied;
 		}
 
 		private static readonly Stopwatch DresserTimer = new();
@@ -110,8 +145,11 @@ namespace Dresser.Interop.Hooks {
 		}
 
 
-		internal unsafe void ModifyGlamourPlateSlot(GlamourPlateSlot slot, byte stainId, IntPtr numbers, int stainItemId) {
-			this._modifyGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, slot, stainId, numbers, stainItemId);
+		internal unsafe void ModifyGlamourPlateSlot(GlamourPlateSlot slot, byte stainId, int stainSlot, ref UsedStains usedStains) {
+			if(CurrentPlate?.TryGetValue(slot, out var glamItem) != null && glamItem != null) {
+				glamItem.StainId = stainId;
+				this.ApplyStain(MiragePrismMiragePlateAgent, slot, glamItem, usedStains, stainSlot);
+			}
 		}
 		internal unsafe void ClearGlamourPlateSlot(GlamourPlateSlot slot) {
 			this._clearGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, slot);
@@ -140,98 +178,103 @@ namespace Dresser.Interop.Hooks {
 
 
 		internal const uint HqItemOffset = 1_000_000;
-
-		internal unsafe bool ModifyGlamourPlateSlot(InventoryItem? item, GlamourPlateSlot glamPlateSlotIfEmpty) {
-			PluginLog.Verbose($"start applying glam ({item?.ItemId ?? 0}) to plate");
-
+		internal unsafe bool SetGlamourPlateSlot(InventoryItem applyItem, ref UsedStains usedStains, GlamourPlateSlot? applyItemSlot = null) {
 			var agent = MiragePrismMiragePlateAgent;
 			if (agent == null) {
 				return false;
 			}
 
-			// Updated: 6.11 C98BC0
 			var editorInfo = *(IntPtr*)((IntPtr)agent + Offsets.HeadSize);
 			if (editorInfo == IntPtr.Zero) {
+				PluginLog.Error($"Glamour dresser not opened");
 				return false;
 			}
 
-			// Updated: 6.11 C984CF
-			// current plate 6.11 C9AC9F
-			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentSlot);
-			var initialSlot = *slotPtr;
 
-			if (item == null || item.ItemId == 0) {
-				ClearGlamourPlateSlot(glamPlateSlotIfEmpty);
+			// use the provided slot in priority, for the ring, try get glamour plate from item if none provided
+			applyItemSlot ??= applyItem.Item.GlamourPlateSlot();
+			if (applyItemSlot == null || (uint)applyItemSlot >= CountSlots) {
+				PluginLog.Error($"Invalid slot {applyItemSlot}");
+				return false;
+			}
+
+			// clean up the slot if item is 0
+			if (applyItem.ItemId == 0) {
+				this._clearGlamourPlateSlot((IntPtr)agent, applyItemSlot.Value);
+				PluginLog.Debug($"Is supposed to have emptied {applyItemSlot.Value}");
 				return true;
 			}
 
-
-
-			// get source
-			InventoryItem? itemTmp = null;
-			var matchingItemsInGlamourCest = DresserContents.FindAll(i => i.ItemId % HqItemOffset == i.ItemId);
-			// If the item is found in GlamourChest
-			if (matchingItemsInGlamourCest.Count != 0) {
-				var index = matchingItemsInGlamourCest.FindIndex(i => i.StainId == item.Stain);
-
-				itemTmp = item.Copy();
-				if (itemTmp != null) {
-					itemTmp.GlamourIndex = index == -1 ? 0 : index;
-					itemTmp.Container = InventoryType.GlamourChest;
+			// skip if already correct
+			var currentPlate = CurrentPlate;
+			if (currentPlate != null && currentPlate.TryGetValue(applyItemSlot.Value, out var currentItem)) {
+				if (currentItem.ItemId == applyItem.ItemId && currentItem.StainId == applyItem.Stain && currentItem.StainId2 == applyItem.Stain2) {
+					PluginLog.Verbose($"Item alread correct, ignoring");
+					return true;
 				}
-
-
 			}
-			// If not, search ins Armoire
-			else if (this.ArmoireIndexIfPresent(item.ItemId) is { } armoireIndex) {
 
-				itemTmp = item.Copy();
-				if (itemTmp != null) {
-					itemTmp.GlamourIndex = (int)armoireIndex;
-					itemTmp.Container = InventoryType.Armoire;
+
+
+			// prepare the item to feed to the game
+			var dresser = DresserContents;
+			(MirageSource container, int index, uint id, byte stain1, byte stain2) info = (0, 0, 0, 0, 0);
+
+			// check for items in glamour dresser, we want dyed ones in priority
+			var matchingIds = dresser.FindAll(mirage => mirage.ItemId % HqItemOffset == applyItem.ItemId);
+			if (matchingIds.Count != 0) {
+
+				var idx = matchingIds.FindIndex(mirage => mirage.StainId == applyItem.Stain && mirage.StainId2 == applyItem.Stain2);
+				if (idx == -1) idx = matchingIds.FindIndex(mirage => mirage.StainId == applyItem.Stain);
+				if (idx == -1) idx = matchingIds.FindIndex(mirage => mirage.StainId2 == applyItem.Stain2);
+				if (idx == -1) idx = 0;
+
+				var mirage = matchingIds[idx];
+				info = (MirageSource.GlamourDresser, (int)mirage.Index, mirage.ItemId, mirage.StainId, mirage.StainId2);
+			}
+
+			// if nothing found in glamour dresser, check for the armoire
+			if (info.container == 0) {
+				var armoireIndex = this.ArmoireIndexIfPresent(applyItem.ItemId);
+				if (armoireIndex != null && armoireIndex != 0) {
+					info = (MirageSource.Armoire, (int)armoireIndex, applyItem.ItemId, 0, 0);
 				}
-
 			}
 
-			if (itemTmp == null) return false;
-
-			MirageSource? source = itemTmp.Container switch {
-				InventoryType.GlamourChest => source = MirageSource.GlamourDresser,
-				InventoryType.Armoire => source = MirageSource.Armoire,
-				_ => null,
-			};
-
-			if (source == null) return false;
-
-
-			// Get slot from itemTmp
-			var slot = itemTmp.Item.GlamourPlateSlot();
-			if (slot == null) return false;
-
-			// change slot to the item's
-			*slotPtr = (GlamourPlateSlot)slot;
-
-			SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain, itemTmp.Stain2);
-
-			// todo: sometimes, it fails to apply the glamour, maybe it's because of ClearGlamourPlateSlot?
-			bool isApplied = false;
-			int maxTries = 3;
-			for (int i = 0; i < maxTries; i++) {
-				isApplied = Gathering.IsApplied(item);
-				if (isApplied) break;
-				if (!isApplied) PluginLog.Warning($"Glamour place change did not take effect ({i + 1} try)");
-				Wait(500);
-				SetGlamourPlateSlot((MirageSource)source, itemTmp.GlamourIndex, itemTmp.ItemId, itemTmp.Stain, itemTmp.Stain2);
+			// nothing found after all
+			if (info.container == 0 || info.id == 0) {
+				PluginLog.Warning($"Item seems not owned");
+				return false;
 			}
-			if (!isApplied) PluginLog.Error($"Error while applying item ({itemTmp.ItemId}) in glamour plate after {maxTries} tries");
 
-			// restore initial slot, since changing this does not update the ui
-			//*slotPtr = initialSlot;
+			// get MiragePlate current slot pointer
+			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentSlot);
 
-			return isApplied;
+			// save MiragePlate previous slot
+			var initialSlot = *slotPtr;
+
+			// set MiragePlate current slot to desired one
+			*slotPtr = (GlamourPlateSlot)applyItemSlot;
+
+			// apply the item
+			this._setGlamourPlateSlot((IntPtr)agent, info.container, info.index, info.id, info.stain1, info.stain2);
+
+			// put the MiragePlate current slot to previous slot
+			*slotPtr = initialSlot;
+
+
+			if (applyItem.Stain != info.stain1)
+				if (currentPlate?.TryGetValue(applyItemSlot.Value, out var glamItem) != null && glamItem != null) {
+					glamItem.StainId = applyItem.Stain;
+					this.ApplyStain(MiragePrismMiragePlateAgent, applyItemSlot.Value, glamItem, usedStains, 0);
+				}
+			if (applyItem.Stain2 != info.stain2)
+				if (currentPlate?.TryGetValue(applyItemSlot.Value, out var glamItem) != null && glamItem != null) {
+					glamItem.StainId = applyItem.Stain2;
+					this.ApplyStain(MiragePrismMiragePlateAgent, applyItemSlot.Value, glamItem, usedStains, 1);
+				}
+			return true;
 		}
-
-
 		internal unsafe IEnumerable<GlamourPlateSlot> LoadPlate(SavedPlate plate) {
 			HashSet<GlamourPlateSlot> successSlots = new();
 			var agent = MiragePrismMiragePlateAgent;
@@ -247,16 +290,16 @@ namespace Dresser.Interop.Hooks {
 
 			var dresser = DresserContents;
 			var current = CurrentPlate;
-			var usedStains = new Dictionary<(uint, uint), uint>();
+			var usedStains = new UsedStains();
 
 			// Updated: 6.11 C984CF
 			// current plate 6.11 C9AC9F
 			var slotPtr = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentSlot);
 			var initialSlot = *slotPtr;
-			var fakeEmptyItem = new SavedGlamourItem { ItemId = 0, StainId = 0 };
+			var fakeEmptyItem = new SavedGlamourItem { ItemId = 0, StainId = 0 , StainId2 = 0 };
 			foreach (var (slot, item) in plate.Items) {
 				if (current != null && current.TryGetValue(slot, out var currentItem)) {
-					if (currentItem.ItemId == item.ItemId && currentItem.StainId == item.StainId) {
+					if (currentItem.ItemId == item.ItemId && currentItem.StainId == item.StainId && currentItem.StainId2 == item.StainId2) {
 						// ignore already-correct items
 						continue;
 					}
@@ -268,7 +311,7 @@ namespace Dresser.Interop.Hooks {
 
 				*slotPtr = slot;
 				if (item.ItemId == 0) {
-					//this._clearGlamourPlateSlot((IntPtr)agent, slot);
+					this._clearGlamourPlateSlot((IntPtr)agent, slot);
 					if (!Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)item))
 						successSlots.Add(slot);
 					continue;
@@ -310,7 +353,7 @@ namespace Dresser.Interop.Hooks {
 
 				if (item.StainId != info.Item3) {
 					// mirage in dresser did not have stain for this item, so apply it
-					this.ApplyStain(agent, slot, item, usedStains);
+					this.ApplyStain(agent, slot, item, usedStains, 0);
 				}
 				if (!Gathering.VerifyItem(Storage.PlateNumber, slot, (InventoryItem)item))
 					successSlots.Add(slot);
@@ -329,10 +372,12 @@ namespace Dresser.Interop.Hooks {
 			FFXIVClientStructs.FFXIV.Client.Game.InventoryType.Inventory4,
 		};
 
-		private unsafe void ApplyStain(AgentInterface* editorAgent, GlamourPlateSlot slot, SavedGlamourItem item, Dictionary<(uint, uint), uint> usedStains) {
+		private unsafe void ApplyStain(AgentInterface* editorAgent, GlamourPlateSlot slot, SavedGlamourItem item, UsedStains usedStains, int stainSlot) {
 			// find the dye for this stain in the player's inventory
 			var inventory = FFXIVClientStructs.FFXIV.Client.Game.InventoryManager.Instance();
-			var transient = PluginServices.DataManager.GetExcelSheet<StainTransient>()!.GetRow(item.StainId);
+			var stainId = stainSlot switch { 1 => item.StainId2, _ => item.StainId };
+			var transient = PluginServices.DataManager.GetExcelSheet<StainTransient>()!.GetRow(stainId);
+
 			(int itemId, int qty, int inv, int slot) dyeInfo = (0, 0, -1, 0);
 			var items = new[] { transient?.Item1?.Value, transient?.Item2?.Value };
 			foreach (var dyeItem in items) {
@@ -400,7 +445,8 @@ namespace Dresser.Interop.Hooks {
 				slot,
 				item.StainId,
 				mem,
-				dyeInfo.Item1
+				dyeInfo.Item1,
+				stainSlot
 			);
 
 			if (mem != IntPtr.Zero) {

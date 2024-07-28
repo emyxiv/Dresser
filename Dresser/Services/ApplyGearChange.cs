@@ -57,18 +57,8 @@ namespace Dresser.Services {
 
 
 			var clonedItem = item.Clone();
-			if (Plugin.DyePicker.IsOpen && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
-				foreach ((var dyeIndex, var currentDye) in DyePicker.CurrentDyeList) {
-					if (currentDye == null) continue;
+			DyePickerRefreshNewItem(clonedItem,true);
 
-					switch (dyeIndex) {
-						case 1: clonedItem.Stain  = currentDye.Value; break;
-						case 2: clonedItem.Stain2 = currentDye.Value; break;
-					}
-				}
-			}
-
-			
 			var slot = GearBrowser.SelectedSlot;
 
 			if (slot != null) {
@@ -82,6 +72,22 @@ namespace Dresser.Services {
 				PrepareModsAndDo(clonedItem, slot.Value, ApplyItemAppearanceOnPlayer);
 				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 			}
+		}
+		public void DyePickerRefreshNewItem(InventoryItem? item, bool applyPreviousDyesToNewItem = false) {
+			if (applyPreviousDyesToNewItem && Plugin.DyePicker.IsOpen && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
+				foreach ((var dyeIndex, var currentDye) in DyePicker.CurrentDyeList) {
+					if (currentDye == null || item == null) continue;
+
+					switch (dyeIndex) {
+						case 1: item.Stain = currentDye.Value; break;
+						case 2: item.Stain2 = currentDye.Value; break;
+					}
+				}
+			}
+			DyePicker.CurrentItem = item;
+			if (item?.Item.DyeCount < DyePicker.DyeIndex) DyePicker.DyeIndex = item?.Item.DyeCount ?? 1;
+			if (item?.Item.DyeCount > 0 && DyePicker.DyeIndex == 0) DyePicker.DyeIndex = 1;
+
 		}
 
 		private void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
@@ -259,6 +265,8 @@ namespace Dresser.Services {
 		}
 		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
 			SelectCurrentSlot(slot);
+			DyePickerRefreshNewItem(GetCurrentPlateItem(slot));
+
 			Plugin.OpenGearBrowserIfClosed();
 			Plugin.UncollapseGearBrowserIfCollapsed();
 		}
@@ -347,6 +355,7 @@ namespace Dresser.Services {
 		}
 		public void ExecuteCurrentContextRemoveDye(InventoryItem item) {
 			item.Stain = 0;
+			item.Stain2 = 0;
 		}
 		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain, ushort stainIndex) {
 			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(PlateNumber, out var plate)) {
@@ -639,8 +648,11 @@ namespace Dresser.Services {
 		}
 		public void ExecuteChangesOnSelectedPlate() {
 			Task.Run(async delegate {
-				await Task.Delay(250);
-			}).Wait();
+				await Task.Delay(500);
+				ExecuteChangesOnSelectedPlateDelayed();
+			});
+		}
+		private void ExecuteChangesOnSelectedPlateDelayed() {
 
 			if (PluginServices.Context.SelectedPlate == null) return;
 			var plateIndex = (ushort)PluginServices.Context.SelectedPlate;
@@ -649,21 +661,7 @@ namespace Dresser.Services {
 			if (PluginServices.Context.SelectedPlate != plateIndex) return;
 			// todo change plate
 			if (DifferencesToApply.TryGetValue(plateIndex, out var replacementGlams)) {
-
-				//HashSet<GlamourPlateSlot> successfullyApplied = new();
-
-				var glamaholicPlate = new Interop.Hooks.SavedPlate();
-				foreach ((var slot, var replacementItem) in replacementGlams.Items) {
-					glamaholicPlate.Items.Add(slot, new Interop.Hooks.SavedGlamourItem {
-						ItemId = replacementItem?.ItemId ?? 0,
-						StainId = replacementItem?.Stain ?? 0
-					});
-					//if (PluginServices.GlamourPlates.ModifyGlamourPlateSlot(replacementItem, slot))
-					//	successfullyApplied.Add(slot);
-
-				}
-
-				var successfullyApplied = PluginServices.GlamourPlates.LoadPlate(glamaholicPlate);
+				var successfullyApplied = PluginServices.GlamourPlates.SetGlamourPlateSlot(replacementGlams);
 
 				if (successfullyApplied.Any()) {
 					AppliedPending[plateIndex] = replacementGlams.Copy();
