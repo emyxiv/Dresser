@@ -59,7 +59,7 @@ namespace Dresser {
 
 			dalamud.Create<Service>();
 			Service.ExcelCache = new ExcelCache(Service.Data, new Logger<ExcelCache>(new LoggerFactory()));
-			Service.ExcelCache.CalculateLookups(false, false); //if you want NPC or shop data loaded set these to true
+			Service.ExcelCache.CalculateLookups(true, true); //if you want NPC or shop data loaded set these to true
 			Service.ExcelCache.PreCacheItemData();
 
 			dalamud.Create<PluginServices>();
