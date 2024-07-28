@@ -19,6 +19,7 @@
 
 		// plate
 		internal const int TotalPlates = 20;
+		internal const int EditorCurrentPlate = 20;
 		internal const int EditorCurrentSlot = 0x18;
 
 		internal const int HeadSize = 40;
