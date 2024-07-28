@@ -108,7 +108,7 @@ namespace Dresser.Services {
 		public MinifyResolver() {
 			this.PropertyMappings = new(){
 				// from critical impact
-				{"Container", "con"},{"Slot", "sl"},{"ItemId", "iid"},{"Spiritbond", "sb"},{"Condition", "cnd"},{"Quantity", "qty"},{"Stain", "stn"},{"Flags", "flgs"},{"Materia0", "mat0"},{"Materia1", "mat1"},{"Materia2", "mat2"},{"Materia3", "mat3"},{"Materia4", "mat4"},{"MateriaLevel0", "matl0"},{"MateriaLevel1", "matl1"},{"MateriaLevel2", "matl2"},{"MateriaLevel3", "matl3"},{"MateriaLevel4", "matl4"},{"SortedCategory", "soc"},{"SortedSlotIndex", "ssi"},{"SortedContainer", "sc"},{"RetainerId", "retid"},{"GlamourId", "glmid"},
+				{"Container", "con"},{"Slot", "sl"},{"ItemId", "iid"},{"Spiritbond", "sb"},{"Condition", "cnd"},{"Quantity", "qty"},{"Stain", "stn"},{"Stain2", "stn2"},{"Flags", "flgs"},{"Materia0", "mat0"},{"Materia1", "mat1"},{"Materia2", "mat2"},{"Materia3", "mat3"},{"Materia4", "mat4"},{"MateriaLevel0", "matl0"},{"MateriaLevel1", "matl1"},{"MateriaLevel2", "matl2"},{"MateriaLevel3", "matl3"},{"MateriaLevel4", "matl4"},{"SortedCategory", "soc"},{"SortedSlotIndex", "ssi"},{"SortedContainer", "sc"},{"RetainerId", "retid"},{"GlamourId", "glmid"},
 
 				{"QuantityNeeded", "qtn"},
 				{"GearSetNames", "gsn"},
