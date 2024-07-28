@@ -216,8 +216,8 @@ public class ConfigWindow : Window, IDisposable {
 			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
-			ImGui.TextWrapped("To find items in inventories, please install Allagan Tools plugin from Critical Impact.");
 		}
+		ImGui.TextWrapped("Allagan Tools plugin is required to get the record of items in other inventories.");
 
 		if (PluginServices.Context.GlamourerState) {
 			ImGui.Spacing();
@@ -227,7 +227,13 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API connected (Version {glamourerVersions.Major}.{glamourerVersions.Minor})");
 
+		} else {
+			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
+			ImGui.SameLine();
+			ImGui.TextColored(ItemIcon.ColorBad, "Glamourer is not found");
+
 		}
+		ImGui.TextWrapped("Glamourer is required to display glamours directly on your character.");
 	}
 	private void OptionalPlugins() {
 /*
