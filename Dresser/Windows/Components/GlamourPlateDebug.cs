@@ -2,16 +2,20 @@
 using CriticalCommonLib.Enums;
 
 using Dresser.Extensions;
+using Dresser.Interop;
 using Dresser.Services;
+using Dresser.Structs.Dresser;
 
 using ImGuiNET;
 
 using Lumina.Excel.GeneratedSheets;
 
+
 using System;
 using System.Linq;
 
 using GlamourPlates = Dresser.Interop.Hooks.GlamourPlates;
+using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
 
 namespace Dresser.Windows.Components {
 	internal static class GlamourPlateDebug {
@@ -32,6 +36,13 @@ namespace Dresser.Windows.Components {
 			if (ImGui.CollapsingHeader("Show All")) {
 				DrawAllDataHex();
 			}
+			if (ImGui.CollapsingHeader("Test Functions")) {
+				DrawTestFunctions();
+			}
+			if (ImGui.CollapsingHeader("Test Dresser contents")) {
+				DrawDresserContentsChecks();
+			}
+
 		}
 
 		private unsafe static void CheckAgent() {
@@ -55,11 +66,13 @@ namespace Dresser.Windows.Components {
 			ImGui.TextColored(ConfigurationManager.Config.ColorGood, $"agent active");
 
 
-			ImGui.Text($"editorInfo: {editorInfo}");
-			if (ImGui.IsItemClicked()) editorInfo.ToString().ToClipboard();
-			ImGui.SameLine();
-			ImGui.Text($" {editorInfo:X8}");
-			if (ImGui.IsItemClicked()) editorInfo.ToString("X8").ToClipboard();
+			ImGui.Text($"editorInfo: {editorInfo}"); if (ImGui.IsItemClicked()) editorInfo.ToString().ToClipboard(); ImGui.SameLine(); ImGui.Text($" {editorInfo:X8}"); if (ImGui.IsItemClicked()) editorInfo.ToString("X8").ToClipboard();
+
+			var slotSelected = (GlamourPlateSlot*)(editorInfo + Offsets.EditorCurrentSlot);
+			var slotSelectedPtr = (IntPtr)slotSelected;
+			
+			ImGui.Text($"slot selected: {slotSelectedPtr}"); if (ImGui.IsItemClicked()) slotSelectedPtr.ToString().ToClipboard(); ImGui.SameLine(); ImGui.Text($" {slotSelectedPtr:X8}"); if (ImGui.IsItemClicked()) slotSelectedPtr.ToString("X8").ToClipboard();
+			ImGui.Text($"slot selected: {*slotSelected} {(uint)*slotSelected}");
 		}
 
 		private static string DataToHex(IntPtr baseAddress, int size) {
@@ -189,6 +202,74 @@ namespace Dresser.Windows.Components {
 						;
 					GuiHelpers.TextWithFont($"[{p:D2}:{s:D2}]{offset:D6}: {hexString}", GuiHelpers.Font.Mono);
 				}
+			}
+		}
+
+		private static void DrawTestFunctions() {
+			UsedStains usedStains = new();
+			if (ImGui.Button("Clean")) PluginServices.GlamourPlates.ClearGlamourPlateSlot(GlamourPlateSlot.Head);
+			ImGui.SameLine();
+
+			if (ImGui.Button("Set")) {
+				var inventoryItem = new InventoryItem(InventoryType.GlamourChest, 24591);
+				if (inventoryItem.ItemId != 0) {
+					PluginServices.GlamourPlates.SetGlamourPlateSlot(inventoryItem, ref usedStains);
+				}
+			}
+			ImGui.SameLine();
+
+			if (ImGui.Button("Set dyed")) {
+				var inventoryItem = new InventoryItem(InventoryType.GlamourChest, 24591) {
+					Stain = 16,
+					Stain2 = 82,
+				};
+				if (inventoryItem.ItemId != 0) {
+					PluginServices.GlamourPlates.SetGlamourPlateSlot(inventoryItem, ref usedStains);
+				}
+			}
+			ImGui.SameLine();
+
+			if (ImGui.Button("get armoire dyed")) {
+				var inventoryItem = new InventoryItem(InventoryType.GlamourChest, 20489) {
+					Stain = 12,
+					Stain2 = 96,
+				};
+				if (inventoryItem.ItemId != 0) {
+					PluginServices.GlamourPlates.SetGlamourPlateSlot(inventoryItem, ref usedStains);
+				}
+			}
+			ImGui.SameLine();
+
+			if (ImGui.Button("Dye 1")) {
+				PluginServices.GlamourPlates.ModifyGlamourPlateSlot(GlamourPlateSlot.Head, 87, 0, ref usedStains);
+			}
+			ImGui.SameLine();
+
+			if (ImGui.Button("Dye 2")) {
+				PluginServices.GlamourPlates.ModifyGlamourPlateSlot(GlamourPlateSlot.Head, 91, 1, ref usedStains);
+			}
+		}
+		private static void DrawDresserContentsChecks() {
+			var dresserContents = GlamourPlates.DresserContents;
+
+			if (ImGui.BeginTable("##DresserContents##DrawDresserDresserContentsChecks##GlamourPlateDebug", 3)) {
+				ImGui.TableSetupColumn("index");
+				ImGui.TableSetupColumn("id");
+				ImGui.TableSetupColumn("stains");
+				ImGui.TableHeadersRow();
+
+				for (var i=0; i < Offsets.TotalBoxSlot; i++) {
+					var item = dresserContents.FirstOrDefault(z=>z.Index == i);
+					var exists = item.ItemId != 0;
+					ImGui.TableNextColumn();
+					ImGui.TextUnformatted($"{(exists ? item.Index : "")}");
+					ImGui.TableNextColumn();
+					ImGui.TextUnformatted($"{(exists ? item.ItemId:"")}");
+					ImGui.TableNextColumn();
+					ImGui.TextUnformatted($"{(exists ? item.StainId:"")} + {(exists ? item.StainId2:"")}");
+				}
+
+				ImGui.EndTable();
 			}
 		}
 
