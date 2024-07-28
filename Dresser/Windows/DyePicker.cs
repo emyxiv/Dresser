@@ -70,6 +70,7 @@ public class DyePicker :  Window, IDisposable {
 	//public static Stain? CurrentDye2 = null;
 	public static Dictionary<ushort, Stain?> CurrentDyesInEditor = new();
 	public static Dictionary<ushort,byte?> CurrentDyeList = new();
+	public static InventoryItem? CurrentItem = null;
 	private string SearchBarLabel = $"##dye_search";
 	private string SearchBarHint = "Search...";
 	private string DyeNameSearch = "";
@@ -231,21 +232,24 @@ public class DyePicker :  Window, IDisposable {
 	}
 
 	public static ushort DyeIndex = 1;
-	public static List<ushort> DyeIndexList = new() {1,2};
 	private static void DrawDyePickerHeader() {
 		var spacingPrebuttons = ImGui.GetContentRegionAvail().X
 			- ConfigurationManager.Config.DyePickerDyeSize.X
 			- ImGui.GetStyle().ItemInnerSpacing.X * 3 // * by number of icon, cause it's between them (and left end item)
 			- (ImGui.GetStyle().FramePadding.X * 6); // * by number of icons x2, cause on each sides of the icon
 
-		foreach (var dyeIndex in DyeIndexList) {
+		var dyeCount = CurrentItem?.Item.DyeCount ?? 1;
+		var dyeIndexList = Enumerable.Range(1, dyeCount).Select(i => (ushort)i);
+
+
+		foreach (var dyeIndex in dyeIndexList) {
 			if (!CurrentDyesInEditor.TryGetValue(dyeIndex, out var i)) i = null;
 
 			Vector4? textCo = dyeIndex == DyeIndex ? ConfigurationManager.Config.DyePickerDye1Or2SelectedColor : null;
 			Vector4  BgCo   = dyeIndex == DyeIndex ? ConfigurationManager.Config.DyePickerDye1Or2SelectedBg : ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg];
 
 			var childFrameCol = ImRaii.PushColor(ImGuiCol.FrameBg, BgCo);
-			if (ImGui.BeginChildFrame(115919u + dyeIndex, new Vector2((spacingPrebuttons / 2) - (ImGui.GetStyle().FramePadding.X * 2), ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y*2)))){
+			if (ImGui.BeginChildFrame(115919u + dyeIndex, new Vector2((spacingPrebuttons / dyeCount) - (ImGui.GetStyle().FramePadding.X * 2 * dyeCount), ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y*2)))){
 
 				var clicked = false;
 
@@ -266,6 +270,13 @@ public class DyePicker :  Window, IDisposable {
 				ImGui.EndChildFrame();
 			}
 			childFrameCol.Dispose();
+			ImGui.SameLine();
+		}
+		if (dyeCount == 0) {
+			if (ImGui.BeginChildFrame(115919u + 0, new Vector2((spacingPrebuttons) - (ImGui.GetStyle().FramePadding.X * 2), ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y * 2)))) {
+				ImGui.TextDisabled($"Undyeable item selected");
+				ImGui.EndChildFrame();
+			}
 			ImGui.SameLine();
 		}
 

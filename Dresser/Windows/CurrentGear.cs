@@ -280,6 +280,7 @@ public class CurrentGear : Window, IDisposable {
 
 
 			if (slot.HasValue) PluginServices.ApplyGearChange.SelectCurrentSlot(slot.Value);
+			PluginServices.ApplyGearChange.DyePickerRefreshNewItem(item,false);
 			DyePicker.SetSelection(item);
 			Plugin.GetInstance().DyePicker.IsOpen = true;
 		}
