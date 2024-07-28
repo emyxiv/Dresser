@@ -218,8 +218,19 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
 			ImGui.TextWrapped("To find items in inventories, please install Allagan Tools plugin from Critical Impact.");
 		}
+
+		if (PluginServices.Context.GlamourerState) {
+			ImGui.Spacing();
+
+			var glamourerVersions = PluginServices.Glamourer.ApiVersions();
+			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
+			ImGui.SameLine();
+			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API connected (Version {glamourerVersions.Major}.{glamourerVersions.Minor})");
+
+		}
 	}
 	private void OptionalPlugins() {
+/*
 		if (PluginServices.Context.GlamourerState) {
 			var glamourerVersions = PluginServices.Glamourer.ApiVersions();
 			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
@@ -241,6 +252,7 @@ public class ConfigWindow : Window, IDisposable {
 			ConfigurationManager.Config.ForceStandaloneAppearanceApply = !useGlamourerToApplyAppearance;
 
 		}
+*/
 		if (PluginServices.Context.PenumbraState) {
 			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
 			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
@@ -456,7 +468,7 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawDebugSection() {
 		if (ImGui.CollapsingHeader("Toggle debug stuff")) {
 			ImGui.Checkbox($"Display debug info##Debug##GearBrowserConfig", ref ConfigurationManager.Config.IconTooltipShowDev);
-			ImGui.Checkbox($"Force Standalone Appearance Apply##Debug##GearBrowserConfig", ref ConfigurationManager.Config.ForceStandaloneAppearanceApply);
+			//ImGui.Checkbox($"Force Standalone Appearance Apply##Debug##GearBrowserConfig", ref ConfigurationManager.Config.ForceStandaloneAppearanceApply);
 
 
 		}
