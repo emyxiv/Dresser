@@ -3,6 +3,7 @@ using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
 using Dresser.Extensions;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
 using Dresser.Windows;

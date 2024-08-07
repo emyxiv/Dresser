@@ -20,6 +20,7 @@ using System.Linq;
 using System.Numerics;
 
 using static Dresser.Services.Storage;
+using Dresser.Interop.Hooks;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IWindowWithHotkey, IDisposable {

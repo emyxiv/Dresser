@@ -38,21 +38,14 @@ namespace Dresser.Structs.Dresser {
 		public InventoryItemSet(GlamourPlateSlot slot, InventoryItem item) {
 			Items = new Dictionary<GlamourPlateSlot, InventoryItem?> { { slot, item } };
 		}
-		public static explicit operator SavedPlate(InventoryItemSet a)
-			=> new() {
-				Items = a.Items.ToDictionary(i => i.Key, i => new SavedGlamourItem() {
-					ItemId = i.Value?.ItemId ?? 0,
-					StainId = i.Value?.Stain ?? 0,
-					StainId2 = i.Value?.Stain2 ?? 0
-				}),
-			};
-
-		public static explicit operator InventoryItemSet(SavedPlate a)
-			=> new() {
-				Items = a.Items.ToDictionary(i => i.Key, i => i.Value.ItemId == 0 ? null : new InventoryItem(0, 0, i.Value.ItemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, i.Value.StainId, i.Value.StainId2, 0)),
-			};
-		public static explicit operator InventoryItemSet(MiragePage a)
-			 => new InventoryItemSet(a.ToDictionary().ToDictionary(p => p.Key, p => (InventoryItem?)p.Value));
+		public static explicit operator InventoryItemSet(MiragePlate a) {
+			Dictionary<GlamourPlateSlot, InventoryItem?> dictionary = new();
+			var array = a.Items.ToArray();
+			for (int i = 0; i < array.Length; i++) {
+				dictionary.Add((GlamourPlateSlot)i, (InventoryItem?)array[i]);
+			}
+			return new InventoryItemSet(dictionary);
+		}
 
 		public void SetSlot(GlamourPlateSlot slot, InventoryItem? item)
 			=> Items[slot] = item;

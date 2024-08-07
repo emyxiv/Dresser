@@ -16,6 +16,7 @@ using System.Numerics;
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using static Dresser.Windows.GearBrowser;
 using System.Text.Json.Serialization;
+using Dresser.Interop.Hooks;
 
 namespace Dresser {
 	[Serializable]

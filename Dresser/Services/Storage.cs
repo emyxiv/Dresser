@@ -7,6 +7,7 @@ using Dalamud.Interface.Textures;
 
 using Dresser.Extensions;
 using Dresser.Interop;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
 
@@ -30,10 +31,10 @@ namespace Dresser.Services {
 		public static string HighResolutionSufix = "_hr1";
 
 		public const int PlateNumber = Offsets.TotalPlates;
-		public Dictionary<GlamourPlateSlot, MirageItem> SlotMirageItems = new();
+		public Dictionary<GlamourPlateSlot, MiragePlateItem> SlotMirageItems = new();
 		//public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
-		public MiragePage[]? Pages = null;
-		public MiragePage? DisplayPage = null;
+		public MiragePlate[]? Pages = null;
+		public MiragePlate? DisplayPage = null;
 		public Dictionary<byte, Vector4> RarityColors = new();
 		public HashSet<byte> RarityAllowed = new() { 1, 2, 3, 4, 7 };
 

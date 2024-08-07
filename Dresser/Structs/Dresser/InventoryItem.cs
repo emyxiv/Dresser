@@ -5,6 +5,7 @@ using CriticalCommonLib.Extensions;
 using Dalamud.Utility;
 
 using Dresser.Extensions;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Actor;

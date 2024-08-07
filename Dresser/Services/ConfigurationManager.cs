@@ -1,5 +1,6 @@
 using Dispatch;
 
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
 

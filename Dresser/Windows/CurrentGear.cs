@@ -4,6 +4,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Extensions;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;

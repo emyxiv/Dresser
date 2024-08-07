@@ -10,17 +10,17 @@
 		internal const int Equipment = ActorDrawData + 0x148;
 		internal const int Customize = ActorDrawData + 0x170;
 
-		// MiragePrismMiragePlate
+		// MiragePrism
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L164
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L243
 		//  box
 		internal const int TotalBoxSlot = 800;
-		internal const int BoxSlotSize = 136;
+		//internal const int BoxSlotSize = 136;
 
 		// plate
 		internal const int TotalPlates = 20;
-		internal const int EditorCurrentPlate = 20;
-		internal const int EditorCurrentSlot = 0x18;
+		//internal const int EditorCurrentPlate = 20;
+		//internal const int EditorCurrentSlot = 0x18;
 
 		internal const int HeadSize = 40;
 		internal const int HeadPostOffset = 36;
@@ -30,6 +30,7 @@
 		internal const int SlotOffsetStain2 = 25;
 		internal const int SlotOffsetStain1Preview = 26;
 		internal const int SlotOffsetStain2Preview = 27;
+		internal const uint ItemModifierMod = 500_000;
 
 	}
 }

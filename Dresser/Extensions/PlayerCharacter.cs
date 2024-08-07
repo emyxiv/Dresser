@@ -1,4 +1,5 @@
 ﻿using Dresser.Interop;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Actor;
@@ -30,7 +31,7 @@ namespace Dresser.Extensions {
 		}
 
 		// apply appearance of single item
-		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, GlamourPlateSlot slot) {
 			if (PluginServices.Context.MustGlamourerApply()) {
 				//PluginLog.Debug($"Apply Item set with EquipGlamourer through Equip {slot}, {item.FormattedName}");
 				//playerCharacter.EquipGlamourer(new Structs.Dresser.InventoryItemSet(slot, item));
@@ -45,14 +46,14 @@ namespace Dresser.Extensions {
 				else playerCharacter.Equip(item, slot);
 			}
 		}
-		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, Structs.Dresser.GlamourPlateSlot slot) {
+		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, GlamourPlateSlot slot) {
 			PluginLog.Debug($"Apply Item with EquipStandalone");
 			if (slot.IsWeapon()) {
 				var weaponIndex = slot.ToWeaponIndex();
 				if (weaponIndex != null) {
 					playerCharacter.Equip(weaponIndex.Value, item.ToWeaponEquip(weaponIndex.Value));
 					//PluginLog.Debug($"item {item.DebugName} = {item.Item.ToFullEquipType(true)}");
-					if (slot == Structs.Dresser.GlamourPlateSlot.MainHand && !item.Item.IsMainModelOnOffhand()) { // TODO: if item is not a shield or tool, don't do that (also equip offhand sub)
+					if (slot == Interop.Hooks.GlamourPlateSlot.MainHand && !item.Item.IsMainModelOnOffhand()) { // TODO: if item is not a shield or tool, don't do that (also equip offhand sub)
 						playerCharacter.Equip(WeaponIndex.OffHand, item.ToWeaponEquipSub());
 					}
 				}

@@ -1,19 +1,17 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Enums;
-using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Sheets;
 
 using Dalamud.Game.Text;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.Textures.TextureWraps;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Interface.Textures;
 
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Logic.Glamourer;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
-using Dresser.Structs.Dresser;
-
 
 using Lumina.Data;
 
@@ -26,44 +24,44 @@ using System.Linq;
 
 using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
-using Dalamud.Interface.Textures;
+using InteropGlamourPlateSlot = Dresser.Interop.Hooks.GlamourPlateSlot;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
 		public static GlamourPlateSlot? GlamourPlateSlot(this CriticalItemEx item) {
 			var slot = item.EquipSlotCategoryEx;
 			if (slot == null) return null;
-			if (slot.MainHand == 1) return Structs.Dresser.GlamourPlateSlot.MainHand;
-			if (slot.OffHand == 1) return Structs.Dresser.GlamourPlateSlot.OffHand;
-			if (slot.Head == 1) return Structs.Dresser.GlamourPlateSlot.Head;
-			if (slot.Body == 1) return Structs.Dresser.GlamourPlateSlot.Body;
-			if (slot.Gloves == 1) return Structs.Dresser.GlamourPlateSlot.Hands;
-			if (slot.Legs == 1) return Structs.Dresser.GlamourPlateSlot.Legs;
-			if (slot.Feet == 1) return Structs.Dresser.GlamourPlateSlot.Feet;
-			if (slot.Ears == 1) return Structs.Dresser.GlamourPlateSlot.Ears;
-			if (slot.Neck == 1) return Structs.Dresser.GlamourPlateSlot.Neck;
-			if (slot.Wrists == 1) return Structs.Dresser.GlamourPlateSlot.Wrists;
-			if (slot.FingerR == 1) return Structs.Dresser.GlamourPlateSlot.RightRing;
-			if (slot.FingerL == 1) return Structs.Dresser.GlamourPlateSlot.LeftRing;
+			if (slot.MainHand == 1) return InteropGlamourPlateSlot.MainHand;
+			if (slot.OffHand == 1) return InteropGlamourPlateSlot.OffHand;
+			if (slot.Head == 1) return InteropGlamourPlateSlot.Head;
+			if (slot.Body == 1) return InteropGlamourPlateSlot.Body;
+			if (slot.Gloves == 1) return InteropGlamourPlateSlot.Hands;
+			if (slot.Legs == 1) return InteropGlamourPlateSlot.Legs;
+			if (slot.Feet == 1) return InteropGlamourPlateSlot.Feet;
+			if (slot.Ears == 1) return InteropGlamourPlateSlot.Ears;
+			if (slot.Neck == 1) return InteropGlamourPlateSlot.Neck;
+			if (slot.Wrists == 1) return InteropGlamourPlateSlot.Wrists;
+			if (slot.FingerR == 1) return InteropGlamourPlateSlot.RightRing;
+			if (slot.FingerL == 1) return InteropGlamourPlateSlot.LeftRing;
 			return null;
 			//throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
 		}
 		public static byte ToEquipSlotCategoryByte(this GlamourPlateSlot slot) {
 			return slot switch {
-				Structs.Dresser.GlamourPlateSlot.MainHand => 0 + 1,
-				Structs.Dresser.GlamourPlateSlot.OffHand => 1 + 1,
-				Structs.Dresser.GlamourPlateSlot.Head => 2 + 1,
-				Structs.Dresser.GlamourPlateSlot.Body => 3 + 1,
-				Structs.Dresser.GlamourPlateSlot.Hands => 4 + 1,
-				//Structs.Dresser.GlamourPlateSlot.Waist => 5 + 1,
-				Structs.Dresser.GlamourPlateSlot.Legs => 6 + 1,
-				Structs.Dresser.GlamourPlateSlot.Feet => 7 + 1,
-				Structs.Dresser.GlamourPlateSlot.Ears => 8 + 1,
-				Structs.Dresser.GlamourPlateSlot.Neck => 9 + 1,
-				Structs.Dresser.GlamourPlateSlot.Wrists => 10 + 1,
-				Structs.Dresser.GlamourPlateSlot.LeftRing => 11 + 1,
-				Structs.Dresser.GlamourPlateSlot.RightRing => 12 + 1,
-				//Structs.Dresser.GlamourPlateSlot.SoulCrystal => 13 + 1,
+				InteropGlamourPlateSlot.MainHand => 0 + 1,
+				InteropGlamourPlateSlot.OffHand => 1 + 1,
+				InteropGlamourPlateSlot.Head => 2 + 1,
+				InteropGlamourPlateSlot.Body => 3 + 1,
+				InteropGlamourPlateSlot.Hands => 4 + 1,
+				//InteropGlamourPlateSlot.Waist => 5 + 1,
+				InteropGlamourPlateSlot.Legs => 6 + 1,
+				InteropGlamourPlateSlot.Feet => 7 + 1,
+				InteropGlamourPlateSlot.Ears => 8 + 1,
+				InteropGlamourPlateSlot.Neck => 9 + 1,
+				InteropGlamourPlateSlot.Wrists => 10 + 1,
+				InteropGlamourPlateSlot.LeftRing => 11 + 1,
+				InteropGlamourPlateSlot.RightRing => 12 + 1,
+				//InteropGlamourPlateSlot.SoulCrystal => 13 + 1,
 				_ => throw new Exception($"Unidentified GlamourPlateSlot: {slot}")
 			};
 		}
@@ -109,10 +107,10 @@ namespace Dresser.Extensions {
 			var weapon = (WeaponCategory)item.ItemUICategory.Row;
 			return slot.ToEquipType(weapon, isMainHand);
 		}
-		public static Structs.Dresser.GlamourPlateSlot? ToWeaponSlot(this CriticalItemEx item) {
+		public static InteropGlamourPlateSlot? ToWeaponSlot(this CriticalItemEx item) {
 			return item.ToFullEquipType(true).ToSlot() switch {
-				Penumbra.GameData.Enums.EquipSlot.MainHand => Structs.Dresser.GlamourPlateSlot.MainHand,
-				Penumbra.GameData.Enums.EquipSlot.OffHand => Structs.Dresser.GlamourPlateSlot.OffHand,
+				Penumbra.GameData.Enums.EquipSlot.MainHand => InteropGlamourPlateSlot.MainHand,
+				Penumbra.GameData.Enums.EquipSlot.OffHand => InteropGlamourPlateSlot.OffHand,
 				_ => null
 			};
 		}

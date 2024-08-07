@@ -2,6 +2,7 @@
 using Dalamud.Plugin;
 
 using Dresser.Extensions;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Logic.Glamourer;
 using Dresser.Structs.Dresser;

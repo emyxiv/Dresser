@@ -1,8 +1,12 @@
 ﻿using CriticalCommonLib.Enums;
 
 using Dresser.Extensions;
+using Dresser.Interop;
+using Dresser.Interop.Hooks;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
+
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +23,7 @@ namespace Dresser.Logic {
 			PluginServices.Storage.Pages = GetDataFromDresser();
 			PluginServices.Storage.DisplayPage = PluginServices.Storage.Pages?.Last();
 			if (PluginServices.Storage.DisplayPage == null) return;
-			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(MiragePage)PluginServices.Storage.DisplayPage;
+			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(MiragePlate)PluginServices.Storage.DisplayPage;
 		}
 		public static InventoryItemSet EmptyGlamourPlate() {
 			return new() {
@@ -40,21 +44,16 @@ namespace Dresser.Logic {
 				ParseGlamourPlates();
 				PluginServices.ApplyGearChange.CheckModificationsOnPendingPlates();
 			});
-		private unsafe static MiragePage[]? GetDataFromDresser() {
-			var agent = MiragePrismMiragePlate.MiragePlateAgent();
+		private unsafe static MiragePlate[]? GetDataFromDresser() {
+			var agent = AgentMiragePrismMiragePlate.Instance();
 			if (agent == null) return null;
-			var miragePlates = (MiragePrismMiragePlate*)agent;
-			if (!miragePlates->AgentInterface.IsAgentActive()) return null;
+			if (!agent->IsAgentActive()) return null;
 
-			return miragePlates->Pages;
-		}
-		public unsafe static bool VerifyItem(ushort plateNumber, GlamourPlateSlot slot, InventoryItem item) {
-			var agent = MiragePrismMiragePlate.MiragePlateAgent();
-			if (agent == null) return false;
-			var miragePlates = (MiragePrismMiragePlate*)agent;
-			if (!miragePlates->AgentInterface.IsAgentActive()) return false;
+			var data = *(AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+			if (data == null) return null;
 
-			return miragePlates->VerifyItem(plateNumber, slot, item);
+
+			return data->Plates.ToArray();
 		}
 		public static bool IsApplied(InventoryItem item) {
 
