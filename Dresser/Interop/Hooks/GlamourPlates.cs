@@ -2,6 +2,7 @@
 
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
+using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 
 using Dresser.Extensions;
@@ -174,7 +175,6 @@ namespace Dresser.Interop.Hooks {
 
 
 
-		internal const uint HqItemOffset = 1_000_000;
 		internal enum SetGlamourPlateSlotReturn {
 			failed,
 			success,
@@ -218,7 +218,7 @@ namespace Dresser.Interop.Hooks {
 				//data->SelectedItemIndex = initialSlot;
 				//data->HasChanges = true;
 
-				PluginLog.Debug($"Is supposed to have emptied {applyItemSlot.Value}");
+				//PluginLog.Debug($"Is supposed to have emptied {applyItemSlot.Value}");
 				return SetGlamourPlateSlotReturn.success;
 			}
 
@@ -240,24 +240,35 @@ namespace Dresser.Interop.Hooks {
 			var dresser = DresserContents;
 			(MirageSource? container, int index, uint id, byte stain1, byte stain2) info = (null, 0, 0, 0, 0);
 
-			// check for items in glamour dresser, we want dyed ones in priority
+			// check for items in glamour dresser
+			//PluginLog.Verbose($"Searching for {applyItemSlot} {applyItem.ItemId} ({applyItem.Stain}, {applyItem.Stain2})");
 			var matchingIds = dresser.FindAll(mirage => mirage.ItemId % Offsets.ItemModifierMod == applyItem.ItemId);
-			if (matchingIds.Count != 0) {
 
+			//PluginLog.Verbose($"Dresser has {matchingIds.Count} items matching {applyItem.ItemId}");
+
+			if (matchingIds.Count != 0) {
+				//PluginLog.Debug($"zzz {dresser.Count} {matchingIds.Count } ");
+
+				// we want dyed ones in priority
 				var idx = matchingIds.FindIndex(mirage => mirage.Stain1 == applyItem.Stain && mirage.Stain2 == applyItem.Stain2);
 				if (idx == -1) idx = matchingIds.FindIndex(mirage => mirage.Stain1 == applyItem.Stain);
 				if (idx == -1) idx = matchingIds.FindIndex(mirage => mirage.Stain2 == applyItem.Stain2);
 				if (idx == -1) idx = 0;
 
-				var mirage = matchingIds[idx];
-				info = (MirageSource.GlamourDresser, (int)mirage.Slot, mirage.ItemId, mirage.Stain1, mirage.Stain2);
+				if(idx > -1) {
+					var mirage = matchingIds[idx];
+					//PluginLog.Debug($" >> {mirage.ItemId} {idx}");
+					info = (MirageSource.GlamourDresser, (int)mirage.Slot, mirage.ItemId, mirage.Stain1, mirage.Stain2);
+				}
 			}
 
 			// if nothing found in glamour dresser, check for the armoire
 			if (info.container == null) {
-				int cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
-				if (cabinetId != 0) {
-					info = (MirageSource.Armoire, cabinetId, applyItem.ItemId, 0, 0);
+
+				var cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
+				//var cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
+				if (cabinetId != -1 && this.Armoire->IsItemInCabinet(cabinetId)) {
+					info = (MirageSource.Armoire, (int)cabinetId, applyItem.ItemId, 0, 0);
 					//PluginLog.Verbose($"Item Found in {MirageSource.Armoire} slot {cabinetId}");
 				}
 			}
@@ -267,6 +278,9 @@ namespace Dresser.Interop.Hooks {
 				PluginLog.Warning($"Item seems not owned");
 				return SetGlamourPlateSlotReturn.failed;
 			}
+
+
+			//PluginLog.Debug($"=>>> send item info {info.container.Value} | {info.index} | {info.id} | {info.stain1} | {info.stain2}");
 
 			// apply the item
 			SetGlamourPlateSlotItem(
@@ -430,22 +444,27 @@ namespace Dresser.Interop.Hooks {
 		private static int _dresserItemSlotsUsed = 0;
 
 		private unsafe void OnFrameworkUpdate(IFramework framework) {
+			GetPrismBoxContents();
+		}
+		private unsafe List<PrismBoxCachedItem> GetPrismBoxContents() {
 			var agent = AgentMiragePrismPrismBox.Instance();
 			if (agent == null)
-				return;
+				return new();
 
 			if (!agent->IsAddonReady() || agent->Data == null)
-				return;
+				return new();
 
 			if (agent->Data->UsedSlots == _dresserItemSlotsUsed)
-				return;
+				return new();
 
-			_cachedDresserItems.Clear();
+			List<PrismBoxCachedItem> items = new();
+			//PluginLog.Verbose($"refreshing dresser contents");
 			foreach (var item in agent->Data->PrismBoxItems) {
 				if (item.ItemId == 0 || item.Slot >= Offsets.TotalBoxSlot)
 					continue;
 
-				_cachedDresserItems.Add(new PrismBoxCachedItem {
+				//PluginLog.Verbose($"PrismBox item: {item.ItemId} {item.Slot}");
+				items.Add(new PrismBoxCachedItem {
 					Name = item.Name.ToString(),
 					Slot = item.Slot,
 					ItemId = item.ItemId,
@@ -455,7 +474,10 @@ namespace Dresser.Interop.Hooks {
 				});
 			}
 
+			_cachedDresserItems = items;
 			_dresserItemSlotsUsed = agent->Data->UsedSlots;
+
+			return items;
 		}
 	}
 

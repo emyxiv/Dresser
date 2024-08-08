@@ -31,6 +31,7 @@
 		internal const int SlotOffsetStain1Preview = 26;
 		internal const int SlotOffsetStain2Preview = 27;
 		internal const uint ItemModifierMod = 500_000;
+		internal const uint ItemModifierHQ = 1_000_000;
 
 	}
 }
