@@ -82,6 +82,10 @@ namespace Dresser {
 		public bool CurrentGearPortablePlateJobBgColors = false;
 		public GlamourPlateSlot CurrentGearSelectedSlot = GlamourPlateSlot.Body;
 
+		public bool OfferApplyAllPlatesOnDresserOpen = false;
+		public bool OfferOverwritePendingPlatesAfterApplyAll = false;
+
+
 		public bool CurrentGearDisplayGear = false;
 		public bool CurrentGearDisplayHat = true;
 		public bool CurrentGearDisplayWeapon = true;

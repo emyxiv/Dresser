@@ -69,7 +69,7 @@ namespace Dresser.Interop.Addons {
 			if (e.SenderID == 0 && e.EventArgs->Int == 18) {
 				// used "Close" button, the (X) button, Close UI Component keybind, Cancel Keybind. NOT when using the "Glamour Plate" toggle skill to close it.
 				Logic.Gathering.DelayParseGlamPlates();
-				PluginServices.ApplyGearChange.Popup_AllDone();
+				PluginServices.ApplyGearChange.LeaveGlamourPlateDresser();
 			}
 			if (e.SenderID == 0 && e.EventArgs->Int == 17) {
 				// Change Glamour Plate Page

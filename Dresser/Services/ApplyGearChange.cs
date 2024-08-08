@@ -515,7 +515,7 @@ namespace Dresser.Services {
 			if (differencesToApply.Count == 0) return;
 
 			DifferencesToApply = differencesToApply;
-			Popup_AskApplyOnPlates();
+			if(ConfigurationManager.Config.OfferApplyAllPlatesOnDresserOpen) Popup_AskApplyOnPlates();
 		}
 
 
@@ -656,29 +656,29 @@ namespace Dresser.Services {
 			}
 			return true;
 		}
-		public void ExecuteChangesOnSelectedPlate() {
+		public void ExecuteChangesOnSelectedPlate(bool ignorePlateDifference = false) {
 			Task.Run(async delegate {
 				await Task.Delay(500);
-				ExecuteChangesOnSelectedPlateDelayed();
+				ExecuteChangesOnSelectedPlateDelayed(ignorePlateDifference);
 			});
 		}
-		private void ExecuteChangesOnSelectedPlateDelayed() {
-
+		private void ExecuteChangesOnSelectedPlateDelayed(bool ignorePlateDifference) {
+			PluginLog.Debug($"zzz 1");
 			if (PluginServices.Context.SelectedPlate == null) return;
+			PluginLog.Debug($"zzz 2");
 			var plateIndex = (ushort)PluginServices.Context.SelectedPlate;
+
+
+			if (ignorePlateDifference) {
+				ApplyToDresserPlateAndRecord(GetCurrentPlate() ?? new(), plateIndex);
+				return;
+			}
 			if (!DifferencesToApply.ContainsKey(plateIndex)) return;
 
 			if (PluginServices.Context.SelectedPlate != plateIndex) return;
 			// todo change plate
 			if (DifferencesToApply.TryGetValue(plateIndex, out var replacementGlams)) {
-				var successfullyApplied = PluginServices.GlamourPlates.SetGlamourPlateSlot(replacementGlams);
-
-				if (successfullyApplied.Any()) {
-					AppliedPending[plateIndex] = replacementGlams.Copy();
-					foreach (var slotDone in successfullyApplied) {
-						AppliedPending[plateIndex].RemoveSlot(slotDone);
-					}
-				}
+				var successfullyApplied = ApplyToDresserPlateAndRecord(replacementGlams, plateIndex);
 
 				if (successfullyApplied.Count() == replacementGlams.Items.Count) {
 					PluginLog.Verbose($"Apply Glame to plate: success all");
@@ -715,6 +715,18 @@ namespace Dresser.Services {
 			// todo apply actual plate number change
 
 		}
+		private IEnumerable<GlamourPlateSlot> ApplyToDresserPlateAndRecord(InventoryItemSet set, ushort plateIndex) {
+			var successfullyApplied = PluginServices.GlamourPlates.SetGlamourPlateSlot(set);
+
+			if (successfullyApplied.Any()) {
+				AppliedPending[plateIndex] = set.Copy();
+				foreach (var slotDone in successfullyApplied) {
+					AppliedPending[plateIndex].RemoveSlot(slotDone);
+				}
+			}
+			return successfullyApplied;
+		}
+
 		public HashSet<ushort> PlatesFailed = new();
 		public void Popup_FailedSomeAskWhatToDo(ushort plateIndex) {
 			var dialog = new DialogInfo("FailedSomeAskWhatToDo",
@@ -763,8 +775,11 @@ namespace Dresser.Services {
 				PluginServices.ApplyGearChange.Popup_AllDone();
 			}
 		}
-		public void Popup_AllDone() {
+		public void LeaveGlamourPlateDresser() {
 			CleanOverlayColors();
+			if(ConfigurationManager.Config.OfferOverwritePendingPlatesAfterApplyAll) Popup_AllDone();
+		}
+		public void Popup_AllDone() {
 			if (DifferencesToApply.Any()) {
 
 				var dialog = new DialogInfo("AllDone",

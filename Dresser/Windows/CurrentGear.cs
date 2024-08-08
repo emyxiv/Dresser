@@ -78,41 +78,58 @@ public class CurrentGear : Window, IDisposable {
 		if (PluginServices.Context.LocalPlayer == null) return;
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+		ImGui.BeginGroup();
+		try {
 
-		//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
-		//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
-		//ImGui.SameLine();
+			//if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleUp, "Apply plate appearance", default))
+			//	PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
+			//ImGui.SameLine();
 
 
-		if (GuiHelpers.GameButton(UldBundle.CircleLargeQuestionMark, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
-			Help.Open();
-		}
-		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallWeapon, ref ConfigurationManager.Config.CurrentGearDisplayWeapon, "Display Sheathed Arms##CurrentGear", "Display Sheathed Arms", SizeGameCircleIcons)) {
-			PluginServices.Context.LocalPlayer.RedrawWeapon();
-		}
-		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallHat, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
-			PluginServices.Context.LocalPlayer.RedrawHeadGear();
-		}
-		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallVisor, ref ConfigurationManager.Config.CurrentGearDisplayVisor, "Manually adjust visor##CurrentGear", "Manually adjust visor", SizeGameCircleIcons)) {
-			PluginServices.Context.LocalPlayer.RedrawHeadGear();
-		}
-		ImGui.SameLine();
-		if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallDisplayGear, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {
-			PluginServices.ApplyGearChange.ToggleDisplayGear();
-		}
-		if (PluginServices.Context.IsAnyPlateSelectionOpen) {
-			ImGui.SameLine();
-			if (GuiHelpers.GameButton(UldBundle.CircleLargeRefresh2, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill", SizeGameCircleIcons)) {
-				PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
+			//if (GuiHelpers.GameButton(UldBundle.CircleLargeQuestionMark, "OpenHelp##CurrentGear", $"Show helps and tricks", SizeGameCircleIcons)) {
+			//	Help.Open();
+			//}
+			//ImGui.SameLine();
+			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallWeapon, ref ConfigurationManager.Config.CurrentGearDisplayWeapon, "Display Sheathed Arms##CurrentGear", "Display Sheathed Arms", SizeGameCircleIcons)) {
+				PluginServices.Context.LocalPlayer.RedrawWeapon();
 			}
+			ImGui.SameLine();
+			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallHat, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
+				PluginServices.Context.LocalPlayer.RedrawHeadGear();
+			}
+			ImGui.SameLine();
+			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallVisor, ref ConfigurationManager.Config.CurrentGearDisplayVisor, "Manually adjust visor##CurrentGear", "Manually adjust visor", SizeGameCircleIcons)) {
+				PluginServices.Context.LocalPlayer.RedrawHeadGear();
+			}
+			ImGui.SameLine();
+			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallDisplayGear, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {
+				PluginServices.ApplyGearChange.ToggleDisplayGear();
+			}
+
+
+			// new line (not sameline)
+			if (PluginServices.Context.IsAnyPlateSelectionOpen) {
+				if (GuiHelpers.GameButton(UldBundle.CircleLargeRefresh2, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill", SizeGameCircleIcons)) {
+					PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
+				}
+				ImGui.SameLine();
+			}
+			if (PluginServices.Context.IsGlamingAtDresser) {
+				if (GuiHelpers.GameButton(UldBundle.CircleLargeCheckbox, "ApplyCurrentPendingPlateToGlamourPreview##CurrentGear", $"Apply current portable plate ({ConfigurationManager.Config.SelectedCurrentPlate + 1}) to current glamour dresser plate", SizeGameCircleIcons)) {
+					PluginServices.ApplyGearChange.ExecuteChangesOnSelectedPlate(true);
+				}
+				ImGui.SameLine();
+			}
+
+			if(!DrawTasks()) ImGui.NewLine();
+
+
+		} catch (Exception e) {
+			PluginLog.Error(e, "Error during render of DrawBottomButtons");
+		} finally {
+			ImGui.EndGroup();
+			ImGui.PopStyleVar();
 		}
-
-
-		ImGui.PopStyleVar();
-		DrawTasks();
 	}
 
 	private void DrawPlateSelector(ImDrawListPtr draw) {
@@ -223,6 +240,7 @@ public class CurrentGear : Window, IDisposable {
 		};
 
 	private void DrawSlots() {
+		PostSlotPosition = null;
 
 		if (PluginServices.Storage.DisplayPage != null && ConfigurationManager.Config.DisplayPlateItems.Items.Count == 0) return;
 		ImGui.BeginGroup();
@@ -267,10 +285,12 @@ public class CurrentGear : Window, IDisposable {
 
 		} catch (Exception ex) {
 			PluginLog.Error(ex, "Error in DrawSlots");
+		} finally {
+			PostSlotPosition = ImGui.GetCursorPos();
+			ImGui.EndGroup();
 		}
-		ImGui.EndGroup();
 	}
-
+	private Vector2? PostSlotPosition;
 	private static void ContextMenuCurrent(InventoryItem item, GlamourPlateSlot? slot) {
 		if (ImGui.Selectable("Remove Item Image from Plate"))
 			PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item,slot);
@@ -332,29 +352,32 @@ public class CurrentGear : Window, IDisposable {
 		return null;
 	}
 
-	public static void DrawTasks() {
-		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
-			if (taskedItems.Any()) {
-				ImGui.BeginGroup();
-				var tint = ItemIcon.ColorBad * new Vector4(1.75f, 1.75f, 1.75f, 1);
-				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(-5* ConfigurationManager.Config.IconSizeMult, 0));
+	public static bool DrawTasks() {
+		if (!PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems) || taskedItems.Count == 0) return false;
 
-				GuiHelpers.GameButton(UldBundle.CircleLargeExclamationMark, "OverwritePendingWithCurrent##CurrentGear", "", SizeGameCircleIcons, tint);
-				ImGui.SameLine();
+		ImGui.BeginGroup();
+		var tint = ItemIcon.ColorBad * new Vector4(1.75f, 1.75f, 1.75f, 1);
+		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(-5* ConfigurationManager.Config.IconSizeMult, 0));
+		try {
+			GuiHelpers.GameButton(UldBundle.CircleLargeExclamationMark, "OverwritePendingWithCurrent##CurrentGear", "", SizeGameCircleIcons, tint);
+			ImGui.SameLine();
 
-				var tasksText = $"{taskedItems.Count} Task{(taskedItems.Count > 1 ? "s" : "")}";
-				GuiHelpers.TextWithFontDrawlist(
-					tasksText,
-					GuiHelpers.Font.Task,
-					ConfigurationManager.Config.PlateSelectorColorRadio,
-					SizeGameCircleIcons.Y);
+			//var tasksText = $"{taskedItems.Count} Task{(taskedItems.Count > 1 ? "s" : "")}";
+			var tasksText = taskedItems.Count.ToString();
+			GuiHelpers.TextWithFontDrawlist(
+				tasksText,
+				GuiHelpers.Font.Task,
+				ConfigurationManager.Config.PlateSelectorColorRadio,
+				SizeGameCircleIcons.Y);
 
-				ImGui.PopStyleVar();
-				ImGui.EndGroup();
-				GuiHelpers.Tooltip(DrawTasksTooltip);
-			}
+		} catch (Exception e) {
+			PluginLog.Error(e, $"Error during DrawTasks");
+		}	finally {
+			ImGui.PopStyleVar();
+			ImGui.EndGroup();
 		}
-
+		GuiHelpers.Tooltip(DrawTasksTooltip);
+		return true;
 	}
 	private static void DrawTasksTooltip() {
 		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
@@ -389,11 +412,16 @@ public class CurrentGear : Window, IDisposable {
 			}
 		}
 	}
-	private static void DrawChildren() {
+	private void DrawChildren() {
 		Styler.PopStyleCollection();
 
-		DrawBottomButtons();
+		if(PostSlotPosition != null) {
+			//var savePos = ImGui.GetCursorPos();
+			ImGui.SetCursorPos(PostSlotPosition.Value);
+			DrawBottomButtons();
+			//ImGui.SetCursorPos(savePos);
 
+		} else { DrawBottomButtons(); }
 
 		if (!Plugin.GetInstance().DyePicker.IsOpen && Plugin.GetInstance().DyePicker.MustDraw) Plugin.GetInstance().DyePicker.IsOpen = true;
 

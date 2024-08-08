@@ -208,9 +208,10 @@ namespace Dresser.Windows.Components {
 						//ImGui.Text($"Sell for {item.SellToVendorPrice:n0} gil");
 					} catch (Exception ex) {
 						PluginLog.Warning($"Error when displaying item ToolTip\n{ex}");
+					} finally {
+						ImGui.PopStyleVar(2);
 					}
 
-					ImGui.PopStyleVar(2);
 				});
 			isTooltipActive = isTooltipActive2;
 
