@@ -79,7 +79,7 @@ namespace Dresser.Interop.Addons {
 
 				//	EventManager.GearSelectionClose?.Invoke();
 			}
-			if (e.SenderID == 1 && e.EventArgs->Int == 0) {
+			if (e.SenderID == 5 && e.EventArgs->Int == 0) {
 				// if change plate + discards
 				PluginServices.OverlayService.RefreshOverlayStates();
 			}
