@@ -15,7 +15,7 @@ using Dalamud.Interface.Textures;
 namespace Dresser.Logic {
 	public class IconWrapper {
 
-		public static ISharedImmediateTexture Get(int? id) {
+		public static ISharedImmediateTexture Get(uint? id) {
 			if (id == null) return null;
 			return PluginServices.TextureProvider.GetFromGameIcon(new GameIconLookup((uint)id));
 				//.GetIcon((uint)id); ;

@@ -58,11 +58,11 @@ namespace Dresser.Logic {
 			});
 		public unsafe static IEnumerable<byte> RelatedGearSetClassJob(ushort plateNumber)
 			=> RelatedGearSets(plateNumber).Select(g => g.ClassJob);
-		public unsafe static int? GetClassJobIconForPlate(ushort plateNumber) {
+		public unsafe static uint? GetClassJobIconForPlate(ushort plateNumber) {
 			var gearsets = RelatedGearSets(plateNumber);
 			if(gearsets.Count == 0) return null;
 			var gearset = gearsets.First();
-			return RaptureGearsetModule.Instance()->GetClassJobIconForGearset(gearset.Id);
+			return (uint)RaptureGearsetModule.Instance()->GetClassJobIconForGearset(gearset.Id);
 		}
 		public static ClassJobRole? RelatedGearSetRole(ushort plateNumber) {
 			var gearsets = RelatedGearSetClassJob(plateNumber);

@@ -4,6 +4,7 @@ using CriticalCommonLib.Enums;
 using Dresser.Extensions;
 using Dresser.Interop;
 using Dresser.Interop.Hooks;
+using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
 
@@ -14,6 +15,7 @@ using Lumina.Excel.GeneratedSheets;
 
 using System;
 using System.Linq;
+using System.Numerics;
 
 using GlamourPlates = Dresser.Interop.Hooks.GlamourPlates;
 using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
@@ -265,6 +267,9 @@ namespace Dresser.Windows.Components {
 					ImGui.TableNextColumn();
 					ImGui.TextUnformatted($"{(exists ? item.Slot : "")}");
 					ImGui.TableNextColumn();
+					var icon = IconWrapper.Get(item.IconId);
+					ImGui.Image(icon.GetWrapOrEmpty().ImGuiHandle, new Vector2(ImGui.GetFontSize()));
+					ImGui.SameLine();
 					ImGui.TextUnformatted($"{(exists ? item.ItemId:"")}");
 					ImGui.TableNextColumn();
 					ImGui.TextUnformatted($"{(exists ? item.Stain1:"")} + {(exists ? item.Stain2:"")}");
