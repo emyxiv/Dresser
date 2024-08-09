@@ -371,6 +371,24 @@ namespace Dresser.Services {
 			}
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
+		public bool swapDyes() {
+			if (GearBrowser.SelectedSlot == null) return false;
+			var slot = GearBrowser.SelectedSlot.Value;
+			var plateNumber = ConfigurationManager.Config.SelectedCurrentPlate;
+
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var plate)) return false;
+			var item = plate.GetSlot(slot);
+			if (item == null) return false;
+
+			var s1 = item.Stain;
+			var s2 = item.Stain2;
+			item.Stain = s2;
+			item.Stain2 = s1;
+
+			ApplyItemAppearanceOnPlayerWithMods(item, slot);
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+			return true;
+		}
 
 		public void OpenGlamourDresser() {
 			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.Any(s=>!s.Value.IsEmpty())) {

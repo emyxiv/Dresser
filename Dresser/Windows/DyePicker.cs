@@ -21,15 +21,17 @@ namespace Dresser.Windows;
 public class DyePicker :  Window, IDisposable {
 
 	Plugin Plugin;
+	const float _multiplicatorDyeSpacing = 0.15f;
 	public DyePicker(Plugin plugin) : base(
 		"Dye Picker",
-		ImGuiWindowFlags.AlwaysAutoResize
-		| ImGuiWindowFlags.NoScrollbar) {
+		ImGuiWindowFlags.None
+		) {
 		this.RespectCloseHotkey = true;
 		this.SizeConstraints = new WindowSizeConstraints {
-			MinimumSize = new Vector2(10),
+			MinimumSize = new Vector2(ImGui.GetFontSize()),
 			MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 		};
+		this.SizeCondition = ImGuiCond.Once;
 		Plugin = plugin;
 	}
 
@@ -100,7 +102,7 @@ public class DyePicker :  Window, IDisposable {
 
 	private void DrawLogic() {
 
-		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - (ImGui.GetFontSize() *0.15f));
+		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - (ImGui.GetFontSize() * _multiplicatorDyeSpacing));
 		SearchBarValidated = ImGui.InputTextWithHint(SearchBarLabel, SearchBarHint, ref DyeNameSearch, 32, ImGuiInputTextFlags.EnterReturnsTrue);
 
 		if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) && !ImGui.IsAnyItemActive() && !ImGui.IsMouseClicked(ImGuiMouseButton.Left))
@@ -116,7 +118,7 @@ public class DyePicker :  Window, IDisposable {
 			dyesFiltered = Dyes.Where(i => i.Name.ToString().Contains(DyeNameSearch2, StringComparison.OrdinalIgnoreCase));
 		}
 
-		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ConfigurationManager.Config.DyePickerDyeSize * 0.15f);
+		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ConfigurationManager.Config.DyePickerDyeSize * _multiplicatorDyeSpacing);
 		ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 100);
 		try {
 
@@ -233,15 +235,37 @@ public class DyePicker :  Window, IDisposable {
 
 	public static ushort DyeIndex = 1;
 	private static void DrawDyePickerHeader() {
-		var spacingPrebuttons = ImGui.GetContentRegionAvail().X
-			- ConfigurationManager.Config.DyePickerDyeSize.X
-			- ImGui.GetStyle().ItemInnerSpacing.X * 3 // * by number of icon, cause it's between them (and left end item)
-			- (ImGui.GetStyle().FramePadding.X * 6); // * by number of icons x2, cause on each sides of the icon
 
 		var dyeCount = CurrentItem?.Item.DyeCount ?? 1;
+		var numberOfIconButtons = 2; // swapDye and keepDying
+
+		var iwd = ConfigurationManager.Config.DyePickerDyeSize.X;
+		//var iis = ImGui.GetStyle().ItemInnerSpacing.X; // child frame border ? idk
+		var isp = ImGui.GetStyle().ItemSpacing.X; // space between 2 items, usually from a SameLine
+		//var fpd = ImGui.GetStyle().FramePadding.X; // spacing inside a child frame, appears on both sides
+		//var wpd = ImGui.GetStyle().WindowPadding.X; // window
+		var mrg = ImGui.GetFontSize() * 0.5f; // some extra margin because it only shrinks below the window size, not equal
+
+
+		var widthOfRightSide =
+			//(wpd * 0)                         // window, actually it's already in GetContentRegionAvail()
+			+ (isp * (numberOfIconButtons - 1)) // number of SameLine ?
+			+ (iwd * numberOfIconButtons)       // buttons size
+			+ mrg                               // extra margin to force shrink and prevent invinite size
+			;
+
+		var widthOfLeftSide = ImGui.GetContentRegionAvail().X
+			- (isp * dyeCount) // here we don't have -1 because we always put a SameLine() after the dye selectors
+			- widthOfRightSide
+			;
+
+		var widthOfOneDyeSelectorButton =
+			(widthOfLeftSide / dyeCount) // just divide  the left side by number of dyes
+			- (isp * dyeCount);          // we exclude margins as they will be added outside
+
+
+
 		var dyeIndexList = Enumerable.Range(1, dyeCount).Select(i => (ushort)i);
-
-
 		foreach (var dyeIndex in dyeIndexList) {
 			if (!CurrentDyesInEditor.TryGetValue(dyeIndex, out var i)) i = null;
 
@@ -249,7 +273,7 @@ public class DyePicker :  Window, IDisposable {
 			Vector4  BgCo   = dyeIndex == DyeIndex ? ConfigurationManager.Config.DyePickerDye1Or2SelectedBg : ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg];
 
 			var childFrameCol = ImRaii.PushColor(ImGuiCol.FrameBg, BgCo);
-			if (ImGui.BeginChildFrame(115919u + dyeIndex, new Vector2((spacingPrebuttons / dyeCount) - (ImGui.GetStyle().FramePadding.X * 2 * dyeCount), ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y*2)))){
+			if (ImGui.BeginChildFrame(115919u + dyeIndex, new Vector2(widthOfOneDyeSelectorButton, ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y*2)))){
 
 				var clicked = false;
 
@@ -273,21 +297,31 @@ public class DyePicker :  Window, IDisposable {
 			ImGui.SameLine();
 		}
 		if (dyeCount == 0) {
-			if (ImGui.BeginChildFrame(115919u + 0, new Vector2((spacingPrebuttons) - (ImGui.GetStyle().FramePadding.X * 2), ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y * 2)))) {
+			if (ImGui.BeginChildFrame(115919u + 0, new Vector2(widthOfOneDyeSelectorButton, ConfigurationManager.Config.DyePickerDyeSize.Y + (ImGui.GetStyle().FramePadding.Y * 2)))) {
 				ImGui.TextDisabled($"Undyeable item selected");
 				ImGui.EndChildFrame();
 			}
 			ImGui.SameLine();
 		}
 
-		var spacing = ImGui.GetContentRegionAvail().X
-			- ConfigurationManager.Config.DyePickerDyeSize.X
-			//- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.PaintRoller).X // setting icon
-			//- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.Cog).X // setting icon
-			- ImGui.GetStyle().ItemInnerSpacing.X * 1 // * by number of icon, cause it's between them (and left end item)
-			- (ImGui.GetStyle().FramePadding.X * 2); // * by number of icons x2, cause on each sides of the icon
+		var spacing = ImGui.GetContentRegionAvail().X - widthOfRightSide;
 		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
 
+		if (dyeCount != 2) ImGui.BeginDisabled();
+		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.CodeCompare, "##SwapDyes##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize)) {
+			if (PluginServices.ApplyGearChange.swapDyes()) { // swap dyes for pending glam plate
+															 // also swap dyes in dye picker
+				if(CurrentDyesInEditor.TryGetValue(1, out var s1) && CurrentDyesInEditor.TryGetValue(2, out var s2) && s1 != null && s2 != null) {
+					CurrentDyesInEditor[1] = s2;
+					CurrentDyesInEditor[2] = s1;
+					CurrentDyeList[1] = (byte)s2.RowId;
+					CurrentDyeList[2] = (byte)s1.RowId;
+				}
+			}
+		}
+		if (dyeCount != 2) ImGui.EndDisabled();
+		GuiHelpers.Tooltip("Swap dyes between dye 1 and dye 2");
+		ImGui.SameLine();
 		GuiHelpers.IconToggleButtonNoBg(Dalamud.Interface.FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
 	}
 }
