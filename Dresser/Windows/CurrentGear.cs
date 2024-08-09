@@ -64,9 +64,9 @@ public class CurrentGear : Window, IDisposable {
 	private static ushort? PlateSlotButtonHovering = null;
 	public override void Draw() {
 
-		var draw = TitleBar.Draw(this);
+		TitleBar.Draw(this, "Plate Creation");
 
-		DrawPlateSelector(draw);
+		DrawPlateSelector();
 		DrawSlots();
 
 
@@ -132,7 +132,8 @@ public class CurrentGear : Window, IDisposable {
 		}
 	}
 
-	private void DrawPlateSelector(ImDrawListPtr draw) {
+	private void DrawPlateSelector() {
+		var draw = ImGui.GetWindowDrawList();
 		GearSets.FetchGearSets();
 
 		ImGui.BeginGroup();

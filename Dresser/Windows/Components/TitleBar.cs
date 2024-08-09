@@ -15,15 +15,14 @@ namespace Dresser.Windows.Components {
 
 		private static Dictionary<Window, bool> IsHoveringCloseButton = new();
 
-		public static ImDrawListPtr Draw(Window window) {
+		public static void Draw(Window window, string title) {
 			var draw = ImGui.GetWindowDrawList();
 
 			var collectionColorTitleV4 = ConfigurationManager.Config.PlateSelectorColorTitle;
 			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(collectionColorTitleV4);
-			var hoverTextColor = ImGui.ColorConvertFloat4ToU32(GuiHelpers.ColorAddHSV(Styler.CollectionColorBackground * new Vector4(1, 1, 1, 0) + new Vector4(0.2f, 0.2f, 0.2f, 1),0, 0.2f,0.2f));
 
 			GuiHelpers.TextWithFontDrawlist(
-				"Plate Creation",
+				title,
 				GuiHelpers.Font.Title,
 				collectionColorTitleV4,
 				HeaderFontSize * ConfigurationManager.Config.IconSizeMult,
@@ -35,8 +34,29 @@ namespace Dresser.Windows.Components {
 
 			draw.AddLine(start, end, collectionColorTitleU32, HeaderBarThickness * ConfigurationManager.Config.IconSizeMult);
 
+			CloseButton(window, end);
+			ImGui.Spacing();
 
-			var closeButtonSize = Vector2.One * 40 * ConfigurationManager.Config.IconSizeMult;
+			ImGui.SetCursorScreenPos(start + new Vector2(0, HeaderBarThickness));
+		}
+
+		public static Vector2 CloseButtonSize => Vector2.One* 40 * ConfigurationManager.Config.IconSizeMult;
+
+		public static void CloseButton(Window window, Vector2 end = default, bool hollow = false) {
+			var initialPos = ImGui.GetCursorPos();
+			if (end == default) {
+				var avail = ImGui.GetContentRegionAvail();
+				var start = ImGui.GetCursorScreenPos() + new Vector2(0, ConfigurationManager.Config.IconSizeMult * (HeaderFontSize * 0.75f));
+				end = start + new Vector2(avail.X, 0);
+			}
+
+			var draw = ImGui.GetWindowDrawList();
+			var hoverTextColor = ImGui.ColorConvertFloat4ToU32(GuiHelpers.ColorAddHSV(Styler.CollectionColorBackground * new Vector4(1, 1, 1, 0) + new Vector4(0.2f, 0.2f, 0.2f, 1), 0, 0.2f, 0.2f));
+			var collectionColorTitleV4 = ConfigurationManager.Config.PlateSelectorColorTitle;
+			var collectionColorTitleU32 = ImGui.ColorConvertFloat4ToU32(collectionColorTitleV4);
+
+
+			var closeButtonSize = CloseButtonSize;
 			var closeButtonPosBotRight = end - new Vector2(ConfigurationManager.Config.IconSizeMult * (HeaderFontSize * 0.15f));
 			var closeButtonPosBotLeft = closeButtonPosBotRight - new Vector2(closeButtonSize.X, 0);
 			var closeButtonPosTopRight = closeButtonPosBotRight - new Vector2(0, closeButtonSize.Y);
@@ -55,10 +75,7 @@ namespace Dresser.Windows.Components {
 			}
 			IsHoveringCloseButton[window] = ImGui.IsItemHovered();
 
-
-			ImGui.SetCursorScreenPos(start + new Vector2(0, HeaderBarThickness));
-			ImGui.Spacing();
-			return draw;
+			if(hollow)  ImGui.SetCursorPos(initialPos);
 		}
 	}
 }

@@ -24,7 +24,7 @@ public class DyePicker :  Window, IDisposable {
 	const float _multiplicatorDyeSpacing = 0.15f;
 	public DyePicker(Plugin plugin) : base(
 		"Dye Picker",
-		ImGuiWindowFlags.None
+		ImGuiWindowFlags.NoTitleBar
 		) {
 		this.RespectCloseHotkey = true;
 		this.SizeConstraints = new WindowSizeConstraints {
@@ -36,8 +36,14 @@ public class DyePicker :  Window, IDisposable {
 	}
 
 	public void Dispose() { }
+	public override void PreDraw()
+		=> Styler.PushStyleCollection();
+	public override void PostDraw()
+		=> Styler.PopStyleCollection();
 
 	public override void Draw() {
+		TitleBar.CloseButton(this,default,true);
+
 		DrawLogic();
 		if(ImGui.IsKeyPressed(ImGuiKey.Escape)) this.IsOpen = false;
 	}
@@ -102,14 +108,35 @@ public class DyePicker :  Window, IDisposable {
 
 	private void DrawLogic() {
 
-		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - (ImGui.GetFontSize() * _multiplicatorDyeSpacing));
-		SearchBarValidated = ImGui.InputTextWithHint(SearchBarLabel, SearchBarHint, ref DyeNameSearch, 32, ImGuiInputTextFlags.EnterReturnsTrue);
 
-		if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) && !ImGui.IsAnyItemActive() && !ImGui.IsMouseClicked(ImGuiMouseButton.Left))
-			ImGui.SetKeyboardFocusHere(-1);
+		ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
+		ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ConfigurationManager.Config.DyePickerDyeSize * _multiplicatorDyeSpacing);
 
+		try {
 
-		DrawDyePickerHeader();
+			ImGui.PushStyleColor(ImGuiCol.Text, ConfigurationManager.Config.PlateSelectorColorTitle);
+			try {
+
+				ImGui.Spacing();
+				var zz = TitleBar.CloseButtonSize;
+				ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - zz.X - (ImGui.GetStyle().FramePadding.X  *  2) - (ImGui.GetStyle().ItemSpacing.X * 2) );
+				SearchBarValidated = ImGui.InputTextWithHint(SearchBarLabel, SearchBarHint, ref DyeNameSearch, 32, ImGuiInputTextFlags.EnterReturnsTrue);
+
+				if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) && !ImGui.IsAnyItemActive() && !ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+					ImGui.SetKeyboardFocusHere(-1);
+
+			} catch (Exception e) {
+				PluginLog.Error(e, "Error while drawing dye picker header line 1");
+			} finally {
+				ImGui.PopStyleColor(1);
+			}
+
+			DrawDyePickerHeader();
+		} catch(Exception e) {
+			PluginLog.Error(e, "Error while drawing dye picker header line 2");
+		}finally {
+			ImGui.PopStyleVar(2);
+		}
 
 
 		IEnumerable<Stain> dyesFiltered = Dyes;

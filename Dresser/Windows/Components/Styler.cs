@@ -20,18 +20,19 @@ namespace Dresser.Windows.Components {
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 10 * ConfigurationManager.Config.IconSizeMult);
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 3 * ConfigurationManager.Config.IconSizeMult);
 			ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 7 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleColor(ImGuiCol.FrameBg, ImGui.ColorConvertFloat4ToU32(CollectionColorBackground));
-			ImGui.PushStyleColor(ImGuiCol.Border, ImGui.ColorConvertFloat4ToU32(CollectionColorBorder));
-			ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, ImGui.ColorConvertFloat4ToU32(CollectionColorScrollbar));
+			ImGui.PushStyleColor(ImGuiCol.FrameBg, CollectionColorBackground);
+			ImGui.PushStyleColor(ImGuiCol.Border, CollectionColorBorder);
+			ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, CollectionColorScrollbar);
+			ImGui.PushStyleColor(ImGuiCol.FrameBgActive, CollectionColorBackground);
 
 
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 10 * ConfigurationManager.Config.IconSizeMult);
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, ItemIcon.IconSize / 8f);
 			ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 3 * ConfigurationManager.Config.IconSizeMult);
-			ImGui.PushStyleColor(ImGuiCol.WindowBg, ImGui.ColorConvertFloat4ToU32(CollectionColorBackground));
+			ImGui.PushStyleColor(ImGuiCol.WindowBg, CollectionColorBackground);
 		}
 		public static void PopStyleCollection() {
-			ImGui.PopStyleColor(4);
+			ImGui.PopStyleColor(5);
 			ImGui.PopStyleVar(8);
 		}
 	}
