@@ -158,6 +158,12 @@ namespace Dresser.Windows.Components {
 			ImGui.Text(text);
 			fontHandle.Pop();
 		}
+		public static void TextWrappedWithFont(string text, Font font) {
+			var fontHandle = FontHandle(font,null,text);
+			fontHandle.Push();
+			ImGui.TextWrapped(text);
+			fontHandle.Pop();
+		}
 
 		private static IFontHandle FontHandle(Font font, float? size = null,string someText = "") {
 			if(font == Font.Icon) return PluginServices.PluginInterface.UiBuilder.IconFontHandle;
