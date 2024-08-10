@@ -159,14 +159,22 @@ namespace Dresser.Windows {
 
 			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? Dalamud.Interface.FontAwesomeIcon.Columns : Dalamud.Interface.FontAwesomeIcon.Expand;
 
+			var numberOfButtons = 3;
+
 			var spacing = ImGui.GetContentRegionAvail().X
+
+				- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.ArrowDownUpLock).X // setting icon
 				- GuiHelpers.CalcIconSize(sidebarShowHideIcon).X // setting icon
 				- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.Cog).X // setting icon
-				- ImGui.GetStyle().ItemInnerSpacing.X * 2 // * by number of icon, cause it's between them (and left end item)
-				- (ImGui.GetStyle().FramePadding.X * 4); // * by number of icons x2, cause on each sides of the icon
+
+				- ImGui.GetStyle().ItemSpacing.X * (numberOfButtons -1 ) // * by number of icon -1, cause it's between them
+				- ImGui.GetStyle().FramePadding.X * 2 * numberOfButtons; // * by number of icons x2, cause on each sides of the icon
+
 			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
 
 
+			GuiHelpers.IconToggleButton(Dalamud.Interface.FontAwesomeIcon.ArrowDownUpLock, ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus, "##EnableKeyOnLostFocus##GearBrowser", "Allow using keybinds when the window is not focused\nThis allows to keep using directionnal keys to browse items while moving the camera");
+			ImGui.SameLine();
 			if (GuiHelpers.IconButton(sidebarShowHideIcon)) {
 				ConfigurationManager.Config.GearBrowserSideBarHide = !ConfigurationManager.Config.GearBrowserSideBarHide;
 			}

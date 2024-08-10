@@ -37,6 +37,17 @@ namespace Dresser.Windows.Components {
 			ImGui.PopFont();
 			return accepting;
 		}
+		public static bool IconToggleButton(FontAwesomeIcon icon, ref bool valueToggled, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+			var textColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
+			if (!valueToggled) textColor *= new Vector4(1, 1, 1, 0.5f);
+
+			ImGui.PushStyleColor(ImGuiCol.Text, textColor);
+			var toggled = IconButton(icon, size, hiddenLabel); //tooltip, , textColor
+			ImGui.PopStyleColor();
+			if (toggled) valueToggled = !valueToggled;
+			Tooltip(tooltip);
+			return toggled;
+		}
 
 
 		private static readonly Vector4 invisible = new(1, 1, 1, 0);
