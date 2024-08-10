@@ -39,8 +39,8 @@ public class ConfigWindow : Window, IDisposable {
 				{ "Behaviors", DrawBehaviourConfigs },
 			}},
 			{"Style",new () {
-				{ "Colors", DrawColorStyleConfig },
 				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
+				{ "Colors", DrawColorStyleConfig },
 			}},
 			{"Mod Browser",new () {
 				{ "Penumbra", DrawPenumbraConfigs },
