@@ -8,6 +8,7 @@ using Dresser.Logic.Glamourer;
 using Dresser.Structs.Dresser;
 
 using Glamourer.Api.Enums;
+using Newtonsoft.Json.Linq;
 
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
@@ -23,12 +24,17 @@ namespace Dresser.Services {
 		private Glamourer.Api.IpcSubscribers.RevertState RevertStateSubscriber;
 		private Glamourer.Api.IpcSubscribers.RevertToAutomation RevertToAutomationSubscriber;
 
+		private Glamourer.Api.IpcSubscribers.GetState GetStateSubscriber;
+		private Glamourer.Api.IpcSubscribers.ApplyState ApplyStateSubscriber;
+
 		public GlamourerService(IDalamudPluginInterface pluginInterface) {
 
 			ApiVersionSubscriber = new global::Glamourer.Api.IpcSubscribers.ApiVersion(pluginInterface);
 			SetItemSubscriber = new global::Glamourer.Api.IpcSubscribers.SetItem(pluginInterface);
 			RevertStateSubscriber = new global::Glamourer.Api.IpcSubscribers.RevertState(pluginInterface);
 			RevertToAutomationSubscriber = new global::Glamourer.Api.IpcSubscribers.RevertToAutomation(pluginInterface);
+			GetStateSubscriber = new global::Glamourer.Api.IpcSubscribers.GetState(pluginInterface);
+			ApplyStateSubscriber = new global::Glamourer.Api.IpcSubscribers.ApplyState(pluginInterface);
 
 		}
 		public bool IsInitialized() { try { return ApiVersions().Major >= 0; } catch (Exception) { return false; } }
@@ -49,6 +55,55 @@ namespace Dresser.Services {
 		}
 		public bool SetItem(ICharacter character, InventoryItem item, GlamourPlateSlot slot) {
 			return SetItem(character, slot.ToPenumbraEquipSlot(), item.Item.ToCustomItemId(slot), item.Stain, item.Stain2) == GlamourerApiEc.Success;
+		}
+		public Newtonsoft.Json.Linq.JObject? GetState() {
+			var index = PluginServices.Context.LocalPlayer?.ObjectIndex;
+			if(index == null) return null;
+
+			(GlamourerApiEc response, Newtonsoft.Json.Linq.JObject? charaState) result = GetStateSubscriber.Invoke((int)index);
+			if(result.response != GlamourerApiEc.Success) return null;
+
+			return result.charaState;
+		}
+
+		public enum MetaData {
+			Hat,
+			Visor,
+			Weapon,
+		}
+		public bool SetMetaData(ICharacter character, MetaData metaData, bool? forceState = null) {
+			return SetMetaData(character, new() { { metaData, forceState } });
+		}
+		public bool SetMetaData(ICharacter character, Dictionary<MetaData, bool?> metaDataStates) {
+			var index = character.ObjectIndex;
+
+			var originalState = GetState();
+			if (originalState == null) return false;
+
+			RecursivelyModifyParam(originalState!, "Apply", false);
+
+			foreach ((var metaData, var forceState) in metaDataStates) {
+				var showFieldName = metaData == MetaData.Visor ? "IsToggled" : "Show";
+				var newValue = forceState ?? !(((bool?)originalState?["Equipment"]?[metaData.ToString()]?[showFieldName]) ?? false);
+
+				originalState!["Equipment"]![metaData.ToString()]![showFieldName] = newValue;
+				originalState!["Equipment"]![metaData.ToString()]!["Apply"] = true;
+			}
+
+			var ret = ApplyStateSubscriber.Invoke(originalState, index);
+
+			return ret == GlamourerApiEc.Success;
+		}
+
+
+		public void RecursivelyModifyParam(JToken token, string key, bool newValue) {
+			if (token.HasValues) {
+				foreach (JToken child in token.Children()) {
+					RecursivelyModifyParam(child, key, newValue);
+				}
+			} else if (token.Parent != null && token.ToString() == key) {
+				token.Parent[key] = newValue;
+			}
 		}
 
 		public void Dispose() {

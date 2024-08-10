@@ -149,6 +149,22 @@ namespace Dresser.Extensions {
 			//playerCharacter.Equip(WeaponIndex.MainHand, playerCharacter.MainHandModels().Equip);
 			//playerCharacter.Equip(WeaponIndex.OffHand, playerCharacter.OffHandModels().Equip);
 		}
+		public static void SetWeaponVisibility(this SubKindsPlayerCharacter playerCharacter) {
+			PluginServices.Glamourer.SetMetaData(playerCharacter, GlamourerService.MetaData.Weapon, ConfigurationManager.Config.CurrentGearDisplayWeapon);
+		}
+		public static void SetHatVisibility(this SubKindsPlayerCharacter playerCharacter) {
+			PluginServices.Glamourer.SetMetaData(playerCharacter, GlamourerService.MetaData.Hat, ConfigurationManager.Config.CurrentGearDisplayHat);
+		}
+		public static void SetVisorVisibility(this SubKindsPlayerCharacter playerCharacter) {
+			PluginServices.Glamourer.SetMetaData(playerCharacter, GlamourerService.MetaData.Visor, ConfigurationManager.Config.CurrentGearDisplayVisor);
+		}
+		public static void SetMetaVisibility(this SubKindsPlayerCharacter playerCharacter) {
+			PluginServices.Glamourer.SetMetaData(playerCharacter, new() {
+				{ GlamourerService.MetaData.Weapon, ConfigurationManager.Config.CurrentGearDisplayWeapon},
+				{ GlamourerService.MetaData.Hat, ConfigurationManager.Config.CurrentGearDisplayHat},
+				{ GlamourerService.MetaData.Visor, ConfigurationManager.Config.CurrentGearDisplayVisor},
+			});
+		}
 
 
 	}

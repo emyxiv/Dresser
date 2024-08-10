@@ -91,15 +91,15 @@ public class CurrentGear : Window, IDisposable {
 			//}
 			//ImGui.SameLine();
 			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallWeapon, ref ConfigurationManager.Config.CurrentGearDisplayWeapon, "Display Sheathed Arms##CurrentGear", "Display Sheathed Arms", SizeGameCircleIcons)) {
-				PluginServices.Context.LocalPlayer.RedrawWeapon();
+				PluginServices.Context.LocalPlayer.SetWeaponVisibility();
 			}
 			ImGui.SameLine();
 			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallHat, ref ConfigurationManager.Config.CurrentGearDisplayHat, "Display Headgear##CurrentGear", "Display Headgear", SizeGameCircleIcons)) {
-				PluginServices.Context.LocalPlayer.RedrawHeadGear();
+				PluginServices.Context.LocalPlayer.SetHatVisibility();
 			}
 			ImGui.SameLine();
 			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallVisor, ref ConfigurationManager.Config.CurrentGearDisplayVisor, "Manually adjust visor##CurrentGear", "Manually adjust visor", SizeGameCircleIcons)) {
-				PluginServices.Context.LocalPlayer.RedrawHeadGear();
+				PluginServices.Context.LocalPlayer.SetVisorVisibility();
 			}
 			ImGui.SameLine();
 			if (GuiHelpers.GameButtonCircleToggle(UldBundle.CircleSmallDisplayGear, ref ConfigurationManager.Config.CurrentGearDisplayGear, "DisplayGear##CurrentGear", "Display Gear", SizeGameCircleIcons)) {

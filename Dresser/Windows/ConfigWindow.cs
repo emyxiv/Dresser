@@ -501,10 +501,13 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("TestUld")) {
 			ImageGuiCrop.TestParts();
 		}
-		if (ImGui.CollapsingHeader("Glamour Plate")) {
+		if (ImGui.CollapsingHeader("Glamour Plate Interop")) {
 			GlamourPlateDebug.Draw();
 		}
-		if (ImGui.CollapsingHeader("Info")) {
+		if (ImGui.CollapsingHeader("Glamourer IPC")) {
+			DrawGlamourerIpcDebug();
+		}
+		if (ImGui.CollapsingHeader("Allagan Tools IPC")) {
 			ImGui.TextDisabled($"characters owned by player from AT IPC");
 
 			ImGui.BeginTable("##tablecharacterIdsFromATIPC##Info##Debug##ConfigWindow", 2);
@@ -550,6 +553,26 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.EndTable();
 
 		}
+	}
+
+	private void DrawGlamourerIpcDebug() {
+		if(PluginServices.Context.LocalPlayer == null) return;
+
+		if (ImGui.Button("GetState##GlamourerIPC##Debug##ConfigWindow")) {
+			PluginLog.Debug($"{PluginServices.Glamourer.GetState()}");
+		}
+		if (ImGui.Button("SetMetaData Hat##GlamourerIPC##Debug##ConfigWindow")) {
+			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Hat)}");
+		}
+		ImGui.SameLine();
+		if (ImGui.Button("SetMetaData Visor##GlamourerIPC##Debug##ConfigWindow")) {
+			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Visor)}");
+		}
+		ImGui.SameLine();
+		if (ImGui.Button("SetMetaData Weapon##GlamourerIPC##Debug##ConfigWindow")) {
+			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Weapon)}");
+		}
+
 	}
 
 	private void DrawColorStyleConfig() {

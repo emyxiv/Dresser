@@ -35,6 +35,7 @@ namespace Dresser.Services {
 		private InventoryItemSet? BackedUpItems = null;
 
 		public void EnterBrowsingMode() {
+			PluginServices.Context.LocalPlayer?.SetMetaVisibility();
 			Task.Run(ReApplyAppearanceAfterEquipUpdate);
 		}
 		public void ExitBrowsingMode() {
