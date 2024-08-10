@@ -297,17 +297,21 @@ namespace Dresser.Windows {
 					if (ConfigurationManager.Config.filterEquipLevel.Y < ConfigurationManager.Config.filterEquipLevel.X) ConfigurationManager.Config.filterEquipLevel.Y = ConfigurationManager.Config.filterEquipLevel.X;
 				}
 				ImGui.SameLine();
+				ImGui.TextUnformatted("-");
+				ImGui.SameLine();
 				ImGui.SetNextItemWidth(numberInputFrameWidth);
 				if(filterChanged |= ImGui.DragFloat($"##Max##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.Y, 1, 1, 200, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 					if (ConfigurationManager.Config.filterEquipLevel.X > ConfigurationManager.Config.filterEquipLevel.Y) ConfigurationManager.Config.filterEquipLevel.X = ConfigurationManager.Config.filterEquipLevel.Y;
 				}
 				ImGui.SameLine();
-				ImGui.Text("Equip Level");
+				ImGui.Text("Job Level");
 				// todo: ilvl
 				ImGui.SetNextItemWidth(numberInputFrameWidth);
 				if (filterChanged |= ImGui.DragFloat($"##Min##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.X, 1, 1, 1000, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
 					if (ConfigurationManager.Config.filterItemLevel.Y < ConfigurationManager.Config.filterItemLevel.X) ConfigurationManager.Config.filterItemLevel.Y = ConfigurationManager.Config.filterItemLevel.X;
 				}
+				ImGui.SameLine();
+				ImGui.TextUnformatted("-");
 				ImGui.SameLine();
 				ImGui.SetNextItemWidth(numberInputFrameWidth);
 				if (filterChanged |= ImGui.DragFloat($"##Max##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.Y, 1, 1, 1000, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
@@ -330,7 +334,7 @@ namespace Dresser.Windows {
 				}
 
 				ImGui.SetNextItemWidth(numberInputFrameWidth * 2 + ImGui.GetStyle().ItemSpacing.X);
-				if (ImGui.BeginCombo("Rarity##Filters##GearBrowser", selectedRarityColor.HasValue ? "" : "Any")) {
+				if (ImGui.BeginCombo(" Gear Color##Filters##GearBrowser", selectedRarityColor.HasValue ? "" : "Any")) {
 					var newItemSpacing = new Vector2(ImGui.GetFontSize() * 0.2f);
 					ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, newItemSpacing);
 					if (filterChanged |= ImGui.Selectable($"##Any##Rarity##Filters##GearBrowser"))

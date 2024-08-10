@@ -36,7 +36,7 @@ namespace Dresser.Services {
 		public MiragePlate[]? Pages = null;
 		public MiragePlate? DisplayPage = null;
 		public Dictionary<byte, Vector4> RarityColors = new();
-		public HashSet<byte> RarityAllowed = new() { 1, 2, 3, 4, 7 };
+		public HashSet<byte> RarityAllowed = new() { 1, 2, 3, 4 };
 
 		public Dictionary<Font, (IFontHandle handle, float size)> FontHandles = new();
 
