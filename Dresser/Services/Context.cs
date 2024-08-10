@@ -114,7 +114,9 @@ namespace Dresser.Services {
 			PenumbraModCountInApplyCollection = PluginServices.Penumbra.CountModsDresserApplyCollection();
 		}
 		public bool MustGlamourerApply() {
-			return GlamourerState
+			return
+				true
+				//GlamourerState
 				//&& !ConfigurationManager.Config.ForceStandaloneAppearanceApply
 				;
 		}
