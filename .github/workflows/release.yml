@@ -111,3 +111,9 @@ jobs:
           git commit -m "Update repo.json for ${{ github.ref_name }}"
           
           git push origin HEAD:master
+
+      - name: Delete old releases
+        uses: Nats-ji/delete-old-releases@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          keep-count: 3
