@@ -1,4 +1,6 @@
 .vs/
 obj/
 bin/
+.idea/
 *.user
+debug.log
