@@ -27,6 +27,7 @@ jobs:
       appdata: /tmp/appdata
       dalamud_appdata: /tmp/appdata/XIVLauncher/addon/Hooks
       DALAMUD_HOME: /tmp/dalamud
+      DalamudLibPath: /tmp/dalamud
       IsCI: true
     steps:
       - name: Checkout Repository
