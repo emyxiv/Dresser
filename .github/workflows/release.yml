@@ -48,7 +48,8 @@ jobs:
         run: |
           mkdir -p $dalamud_appdata
           ln -s $DALAMUD_HOME ${dalamud_appdata}/dev
-          ln -s $HOME/.xlcore/dalamud/Hooks/dev $DALAMUD_HOME
+          mkdir -p $HOME/.xlcore/dalamud/Hooks/
+          ln -s $DALAMUD_HOME $HOME/.xlcore/dalamud/Hooks/dev
 
       - name: Restore Dependencies
         run: dotnet restore
