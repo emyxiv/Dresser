@@ -2,9 +2,6 @@
 
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
-using Dresser.Logic;
-using Dresser.Services;
-using Dresser.Structs.Dresser;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
