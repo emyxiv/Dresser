@@ -42,6 +42,7 @@ namespace Dresser.Services {
 				if (uld.Valid) {
 					texture = uld.LoadTexturePart(uldBundle.Tex, uldBundle.Part);
 					if (texture != null) {
+						// PluginLog.Debug($"ULD tex {uldBundle.Uld} loaded but unable to LoadTexturePart");
 						Textures.Add(uldBundle.GetHashCode(), texture);
 						return texture;
 					}
@@ -50,7 +51,7 @@ namespace Dresser.Services {
 				// if uld not found, make it
 				MakeUld(uldBundle);
 			}
-			PluginLog.Warning($"Unable to load Uld texture {uldBundle.Handle}");
+			//PluginLog.Warning($"Unable to load Uld texture {uldBundle.Handle}");
 			return null;
 		}
 
@@ -95,8 +96,34 @@ namespace Dresser.Services {
 			var parts = new List<UldBundle>();
 			foreach (var pi in prepertiesInfo) if(pi.PropertyType == uldBundleType) parts.Add((UldBundle)pi.GetValue(null)!);
 
+			string? lastUld = null;
+			string? lastTex = null;
 			foreach (var uldBundle in parts) {
-				ImGui.Text($"[{uldBundle.Uld}]       [{uldBundle.Tex}]      [{uldBundle.Part}]");
+
+				if(uldBundle.Uld != lastUld) {
+					ImGui.Spacing();
+					var uldFileExists = PluginServices.DataManager.FileExists(uldBundle.Uld);
+					ImGui.TextColored(uldFileExists ? ItemIcon.ColorGood : ItemIcon.ColorBad, $"[{uldBundle.Uld}]");
+					if (PluginServices.ImageGuiCrop.Ulds.TryGetValue(uldBundle.Uld, out var uld)) {
+
+						ImGui.Text($"uld valid: {uld.Valid}");
+
+						if(uld.Uld != null) {
+							foreach (var z in uld.Uld.AssetData) {
+								ImGui.Text($"{z.Id:D2} {z.Unk1} {z.Unk2} path: {new string(z.Path)}");
+							}
+						}
+					} else {
+						ImGui.Text("UldWrapper not found");
+					}
+					ImGui.Spacing();
+				}
+				if(uldBundle.Tex != lastTex) {
+					var texFileExists = PluginServices.DataManager.FileExists(uldBundle.Tex);
+					ImGui.TextColored(texFileExists ? ItemIcon.ColorGood : ItemIcon.ColorBad, $"[{uldBundle.Tex}]");
+				}
+
+
 				var texture = PluginServices.ImageGuiCrop.GetPart(uldBundle);
 				if (texture?.Size.X > ImGui.GetContentRegionAvail().X) ImGui.NewLine();
 				if (texture == null) {
@@ -105,7 +132,12 @@ namespace Dresser.Services {
 					ImGui.Image(texture.ImGuiHandle, texture.Size);
 				}
 				ImGui.SameLine();
+				ImGui.Text($"[{uldBundle.Part}]");
+				ImGui.SameLine();
 				ImGui.TextWrapped(uldBundle.Handle);
+
+				lastUld = uldBundle.Uld;
+				lastTex = uldBundle.Tex;
 
 			}
 		}
@@ -154,6 +186,9 @@ namespace Dresser.Services {
 		// add:  texturePath = texturePath.Replace("fourth/", string.Empty); // fix alt themes
 		private static string ThemePathPart
 			=> "";
+		//=> "dark/";
+		//=> "light/";
+		//=> "third/";
 		//=> "fourth/";
 
 
@@ -228,6 +263,31 @@ namespace Dresser.Services {
 		// handle: mirage_prism_plate2
 		public static UldBundle MiragePlateRadio         => new($"ui/uld/MiragePrismPlate2{Storage.HighResolutionSufix}.tex", "ui/uld/MiragePrismPlate.uld", 4,"MiragePlateRadio"); // OK
 		public static UldBundle MiragePlateRadioSelected => new($"ui/uld/MiragePrismPlate2{Storage.HighResolutionSufix}.tex", "ui/uld/MiragePrismPlate.uld", 5,"MiragePlateRadioSelected"); // 
+
+
+
+
+		public static UldBundle RecipeNoteBook_1 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 1, "RecipeNoteBook_1");
+		public static UldBundle RecipeNoteBook_2 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 2, "RecipeNoteBook_2");
+		public static UldBundle RecipeNoteBook_3 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 3, "RecipeNoteBook_3");
+		public static UldBundle RecipeNoteBook_4 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 4, "RecipeNoteBook_4");
+		public static UldBundle RecipeNoteBook_5 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 5, "RecipeNoteBook_5");
+		public static UldBundle RecipeNoteBook_6 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 6, "RecipeNoteBook_6");
+		public static UldBundle RecipeNoteBook_7 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 7, "RecipeNoteBook_7");
+		public static UldBundle RecipeNoteBook_8 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 8, "RecipeNoteBook_8");
+		public static UldBundle RecipeNoteBook_9 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 9, "RecipeNoteBook_9");
+		public static UldBundle RecipeNoteBook_10 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 10, "RecipeNoteBook_10");
+		public static UldBundle RecipeNoteBook_11 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 11, "RecipeNoteBook_11");
+		public static UldBundle RecipeNoteBook_ObtainedCheckMark => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 12, "RecipeNoteBook_ObtainedCheckMark");
+		public static UldBundle RecipeNoteBook_13 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 13, "RecipeNoteBook_13");
+		public static UldBundle RecipeNoteBook_14 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 14, "RecipeNoteBook_14");
+		public static UldBundle RecipeNoteBook_15 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 15, "RecipeNoteBook_15");
+		public static UldBundle RecipeNoteBook_16 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 16, "RecipeNoteBook_16");
+		public static UldBundle RecipeNoteBook_17 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 17, "RecipeNoteBook_17");
+		public static UldBundle RecipeNoteBook_18 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 18, "RecipeNoteBook_18");
+		public static UldBundle RecipeNoteBook_19 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 19, "RecipeNoteBook_19");
+		public static UldBundle RecipeNoteBook_20 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 20, "RecipeNoteBook_20");
+		public static UldBundle RecipeNoteBook_21 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 21, "RecipeNoteBook_21");
 
 
 	}
