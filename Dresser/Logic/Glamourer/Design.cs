@@ -13,12 +13,13 @@ using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
 using System;
+using System.Collections.Generic;
 
 namespace Dresser.Logic.Glamourer;
 
 public static class Design {
 
-
+/*
 	public static string PrepareDesign(JObject design, InventoryItemSet set) {
 
 		design["Name"] = "DresserAnywhere Auto Apply";
@@ -68,7 +69,7 @@ public static class Design {
 				ret[slot.ToPenumbraEquipSlot().ToString()] = SerializeItem(mainItem.Value, item.Stain, false, true, true, false);
 				if (slot == GlamourPlateSlot.MainHand) {
 					//&& !item.Item.IsMainModelOnOffhand()
-					var sameItemOnOffhand = item.Item.ToFullEquipType(false).IsOffhandType();
+					var sameItemOnOffhand = item.Item.ToFullEquipType2(false).IsOffhandType();
 
 					if (sameItemOnOffhand) {
 						ret[EquipSlot.OffHand.ToString()] = SerializeItem(EquipItem.FromOffhand(item.Item).Id, item.Stain, false, true, true, false);
@@ -87,11 +88,57 @@ public static class Design {
 		design["Equipment"] = ret;
 
 	}
-	public static CustomItemId FromInventoryItem(ItemEx item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
+*/
+	public static Dictionary<Penumbra.GameData.Enums.EquipSlot,CustomItemId> FromInventoryItem(ItemEx item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
 		var equipItem = slot switch {
-			GlamourPlateSlot.MainHand or GlamourPlateSlot.OffHand => EquipItem.FromMainhand(item),
+			GlamourPlateSlot.MainHand  => EquipItem.FromMainhand(item),
+			GlamourPlateSlot.OffHand => EquipItem.FromOffhand(item),
 			_ => EquipItem.FromArmor(item),
 		};
+		var penumbraEquipSlot = slot.ToPenumbraEquipSlot();
+		var returningItemIds = new Dictionary<EquipSlot, CustomItemId>();
+
+
+		// if (equipItem.Type.AllowsNothing()) return null;
+
+		if (slot == GlamourPlateSlot.OffHand && item.RowId == 0)
+		{
+			// prevent inserting an item in offhand if it is not allowed
+			var mainhandItem = PluginServices.Glamourer.GetMainHandItem();
+			if (mainhandItem != null)
+			{
+				var mainHandEquipItem = EquipItem.FromMainhand(mainhandItem);
+				var validOffhand = mainHandEquipItem.Type.Offhand().AllowsNothing();
+				if (!validOffhand) return new();
+			}
+		}
+
+		CustomItemId? possibleOffhand = null;
+		if (slot == GlamourPlateSlot.MainHand && item.RowId != 0)
+		{
+			var mainHandEquipItem = EquipItem.FromMainhand(item);
+			PluginLog.Debug($"Check if MainHand is equippable {mainHandEquipItem.Type}");
+			// verify if item is compatible with job
+			if(!item.CanBeEquipedByPlayedJob()) return new();
+			// also put offhand if it is including an offhand
+			PluginLog.Debug("Yes");
+
+			PluginLog.Debug("Check if OffHand should be added");
+			var offHandEquipItem = mainHandEquipItem.Type.Offhand();
+			if (offHandEquipItem.IsOffhandType())
+			{
+				PluginLog.Debug("Yes");
+				possibleOffhand = item.RowId;
+				// possibleOffhand = new CustomItemId(equipItem.PrimaryId, equipItem.SecondaryId, equipItem.Variant, equipItem.Type);
+			}
+		}
+
+		// if (slot == GlamourPlateSlot.OffHand || slot == GlamourPlateSlot.MainHand)
+		// {
+		//
+		// 	PluginLog.Debug($"tried to equip {equipItem.Type.ToName()} on {slot} with {item.RowId}");
+		// 	return new ();
+		// }
 
 		//if (slot == GlamourPlateSlot.MainHand) {
 		//	PluginLog.Debug($"mainhand => {equipItem.ModelId}, {equipItem.WeaponType}, {equipItem.Variant}, {equipItem.Type}");
@@ -101,19 +148,23 @@ public static class Design {
 		//PluginLog.Debug($"weapon => {manualUlong}");
 		//manualUlong |= (ulong)equipItem.Type << 42;
 		//PluginLog.Debug($"weapon + type => {manualUlong}");
-		var mainItem = new CustomItemId(equipItem.PrimaryId, equipItem.SecondaryId, equipItem.Variant, equipItem.Type);
-		if (item.RowId == 0) mainItem = NothingId(slot.ToPenumbraEquipSlot());
+		returningItemIds.Add(penumbraEquipSlot,
+			item.RowId
+			// item.RowId == 0 ? NothingId(penumbraEquipSlot) : new CustomItemId(equipItem.PrimaryId, equipItem.SecondaryId, equipItem.Variant, equipItem.Type)
+			);
+		if(possibleOffhand != null) returningItemIds.Add(EquipSlot.OffHand, possibleOffhand.Value);
+		return returningItemIds;
 		//mainItem = new CustomItemId(manualUlong);
 
 		//if (slot == GlamourPlateSlot.MainHand) {
-		//	PluginLog.Debug($"mainhand ({slot})>({slot.ToPenumbraEquipSlot()}) => {mainItem.Id} > {mainItem.Item.Id}, {(mainItem.IsItem ? "is": "not")} an item");
+		//	PluginLog.Debug($"mainhand ({slot})>({penumbraEquipSlot}) => {mainItem.Id} > {mainItem.Item.Id}, {(mainItem.IsItem ? "is": "not")} an item");
 		//}
 		//PluginLog.Debug($"new  = > jr:{equipItem.JobRestrictions}");
 
 
 
 		// below is attempt to check if weapon should be set or now, depending on item's weapon type and current's glamourer weapon type
-		if (equipmentDesign != null && equipmentDesign.TryGetValue(slot.ToPenumbraEquipSlot().ToString(), out var slotObject)) {
+		if (equipmentDesign != null && equipmentDesign.TryGetValue(penumbraEquipSlot.ToString(), out var slotObject)) {
 
 			var id = (ulong)(((JObject?)slotObject)?["ItemId"] ?? 0);
 			var cId = new CustomItemId(id);
@@ -138,7 +189,7 @@ public static class Design {
 
 		}
 
-		return mainItem;
+		return returningItemIds;
 
 	}
 

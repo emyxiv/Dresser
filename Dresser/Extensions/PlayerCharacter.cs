@@ -16,7 +16,7 @@ namespace Dresser.Extensions {
 
 
 		// apply appearance of set items
-		public unsafe static void EquipSet(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
+		/*public unsafe static void EquipSet(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
 			if (PluginServices.Context.MustGlamourerApply())
 				playerCharacter.EquipGlamourer(set);
 			else {
@@ -28,7 +28,7 @@ namespace Dresser.Extensions {
 					playerCharacter.EquipStandalone(item, slot);
 				}
 			}
-		}
+		}*/
 
 		// apply appearance of single item
 		public unsafe static void Equip(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, GlamourPlateSlot slot) {
@@ -37,16 +37,16 @@ namespace Dresser.Extensions {
 				//playerCharacter.EquipGlamourer(new Structs.Dresser.InventoryItemSet(slot, item));
 				PluginServices.Glamourer.SetItem(playerCharacter, item, slot);
 			} else {
-				playerCharacter.EquipStandalone(item, slot);
+				// playerCharacter.EquipStandalone(item, slot);
 			}
 		}
-		public unsafe static void EquipGlamourer(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
+		/*public unsafe static void EquipGlamourer(this SubKindsPlayerCharacter playerCharacter, Structs.Dresser.InventoryItemSet set) {
 			foreach ((var slot, var item) in set.Items) {
 				if (item == null) playerCharacter.Equip(InventoryItem.Zero, slot);
 				else playerCharacter.Equip(item, slot);
 			}
-		}
-		public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, GlamourPlateSlot slot) {
+		}*/
+		/*public unsafe static void EquipStandalone(this SubKindsPlayerCharacter playerCharacter, InventoryItem item, GlamourPlateSlot slot) {
 			PluginLog.Debug($"Apply Item with EquipStandalone");
 			if (slot.IsWeapon()) {
 				var weaponIndex = slot.ToWeaponIndex();
@@ -63,7 +63,7 @@ namespace Dresser.Extensions {
 
 				if (index != null) playerCharacter.Equip(index.Value, item.ToItemEquip());
 			}
-		}
+		}*/
 
 		public unsafe static Equipment EquipmentModels(this SubKindsPlayerCharacter playerCharacter)
 			=> *(Equipment*)(playerCharacter.Address + Offsets.Equipment);
@@ -76,19 +76,19 @@ namespace Dresser.Extensions {
 		public static Weapon OffHandModels(this SubKindsPlayerCharacter playerCharacter)
 			=> playerCharacter.WeaponModels(WeaponIndex.OffHand);
 
-		public static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
+		/*public static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
 			if (Methods.ActorChangeEquip == null) return;
 			Methods.ChangeEquip(playerCharacter.Address + Offsets.ActorDrawData, index, item);
 			if(index == EquipIndex.Head) playerCharacter.DisplayHeadGearIfHidden();
-		}
+		}*/
 
-		public static void Equip(this SubKindsPlayerCharacter playerCharacter, WeaponIndex slot, WeaponEquip item) {
+		/*public static void Equip(this SubKindsPlayerCharacter playerCharacter, WeaponIndex slot, WeaponEquip item) {
 			if (Methods.ActorChangeWeapon == null) return;
 			Methods.ChangeWeapon(playerCharacter.Address + Offsets.ActorDrawData, slot, item);
 			//playerCharacter.DisplayWeaponIfHidden();
-		}
+		}*/
 
-		public unsafe static void DisplayHeadGearIfHidden(this SubKindsPlayerCharacter playerCharacter) {
+		/*public unsafe static void DisplayHeadGearIfHidden(this SubKindsPlayerCharacter playerCharacter) {
 			if (PluginServices.Context.MustGlamourerApply()) return;
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
 			bool mustResetHat = !drawData.IsHatHidden != ConfigurationManager.Config.CurrentGearDisplayHat;
@@ -98,8 +98,8 @@ namespace Dresser.Extensions {
 			// drawData.IsVisorToggled doesn't seem to react properly so we can't use the reset
 			// as it is done for hats
 			drawData.SetVisor(ConfigurationManager.Config.CurrentGearDisplayVisor);
-		}
-		public static void RedrawHeadGear(this SubKindsPlayerCharacter playerCharacter) {
+		}*/
+		/*public static void RedrawHeadGear(this SubKindsPlayerCharacter playerCharacter) {
 			ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
 
 			if (PluginServices.Context.MustGlamourerApply() && !plate.HasModdedItem()) {
@@ -109,12 +109,12 @@ namespace Dresser.Extensions {
 
 			var currentHat = plate.GetSlot(GlamourPlateSlot.Head);
 			if (currentHat != null) PluginServices.ApplyGearChange.ApplyItemAppearanceOnPlayerWithMods(currentHat, GlamourPlateSlot.Head);
-		}
-		public unsafe static void DisplayWeaponIfHidden(this SubKindsPlayerCharacter playerCharacter) {
+		}*/
+		/*public unsafe static void DisplayWeaponIfHidden(this SubKindsPlayerCharacter playerCharacter) {
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
 			drawData.HideWeapons(!ConfigurationManager.Config.CurrentGearDisplayWeapon);
-		}
-		public static void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
+		}*/
+		/*public static void RedrawWeapon(this SubKindsPlayerCharacter playerCharacter) {
 
 			var didGetValue = ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate);
 
@@ -148,7 +148,7 @@ namespace Dresser.Extensions {
 
 			//playerCharacter.Equip(WeaponIndex.MainHand, playerCharacter.MainHandModels().Equip);
 			//playerCharacter.Equip(WeaponIndex.OffHand, playerCharacter.OffHandModels().Equip);
-		}
+		}*/
 		public static void SetWeaponVisibility(this SubKindsPlayerCharacter playerCharacter) {
 			PluginServices.Glamourer.SetMetaData(playerCharacter, GlamourerService.MetaData.Weapon, ConfigurationManager.Config.CurrentGearDisplayWeapon);
 		}

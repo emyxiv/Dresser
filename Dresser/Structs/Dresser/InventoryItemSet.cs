@@ -50,8 +50,7 @@ namespace Dresser.Structs.Dresser {
 		public void SetSlot(GlamourPlateSlot slot, InventoryItem? item)
 			=> Items[slot] = item;
 		public InventoryItem? GetSlot(GlamourPlateSlot slot) {
-			if (!Items.TryGetValue(slot, out var item)) return null;
-			return item;
+			return Items.GetValueOrDefault(slot);
 		}
 		public void RemoveSlot(GlamourPlateSlot slot)
 			=> Items.Remove(slot);
@@ -205,7 +204,11 @@ namespace Dresser.Structs.Dresser {
 			return Items.Where(i => i.Value?.IsModded() ?? false).Select(i => i.Value?.GetMod()).Distinct();
 		}
 		public readonly void ApplyAppearance() {
-			PluginServices.Context.LocalPlayer?.EquipSet(this);
+			var character = PluginServices.Context.LocalPlayer;
+			if(character == null) return;
+			// PluginLog.Debug($"================== > SET SET ITEM ApplyAppearance =============");
+			PluginServices.Glamourer.SetSet(character, this);
+			// PluginServices.Context.LocalPlayer?.EquipSet(this);
 		}
 
 		public readonly override string ToString() {

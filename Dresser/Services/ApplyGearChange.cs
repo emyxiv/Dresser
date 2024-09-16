@@ -1,4 +1,4 @@
-﻿using CriticalCommonLib;
+using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
@@ -35,7 +35,7 @@ namespace Dresser.Services {
 		private InventoryItemSet? BackedUpItems = null;
 
 		public void EnterBrowsingMode() {
-			PluginServices.Context.LocalPlayer?.SetMetaVisibility();
+			// PluginServices.Context.LocalPlayer?.SetMetaVisibility();
 			Task.Run(ReApplyAppearanceAfterEquipUpdate);
 		}
 		public void ExitBrowsingMode() {
@@ -92,7 +92,9 @@ namespace Dresser.Services {
 
 		}
 
-		private void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
+		private async void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
+			set.ApplyAppearance();
+			// return;
 			//foreach ((var s, var item) in set.Items)
 			//	if (item != null) PrepareModsAndDo(item);
 
@@ -101,6 +103,7 @@ namespace Dresser.Services {
 
 			var mods = set.Items.Where(i => i.Value?.IsModded() ?? false).DistinctBy(i => i.Value?.GetMod()).Select(i=>i.Value?.GetMod());
 			var numberOfMods = mods.Count();
+			if (numberOfMods == 0) return;
 			bool isModInstant = !ConfigurationManager.Config.PenumbraDisableModRightAfterApply || numberOfMods <= 1;
 
 			//PluginLog.Debug($"numberOfMods: {numberOfMods} => {(isModInstant ? "instant" : "notinstant")}");
@@ -122,14 +125,27 @@ namespace Dresser.Services {
 					AddToApplyAppearanceQueue(itemsForThisMod);
 				ApplyAppearanceQueueTick(true);
 			} else {
+				PrepareMods(set);
+				var character = PluginServices.Context.LocalPlayer;
+				foreach ((var s, var item) in set.Items)
+				{
+					
+					if(item == null || !item.IsModded() || character == null) continue;
+				
+					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
+					// PluginLog.Debug($"==============> SetItem HERE {item.ItemId} {item.ModName} <============");
+					// PluginServices.Glamourer.SetItem(character, item, s);
+					
+
+				}
 				//Task.Run(async delegate {
 					//PluginServices.Penumbra.CleanDresserApplyCollection();
 					//await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
 
-					PrepareMods(set);
+					// PrepareMods(set);
 					//await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
 
-					set.ApplyAppearance();
+					// set.ApplyAppearance();
 				//});
 			}
 		}
@@ -293,7 +309,10 @@ namespace Dresser.Services {
 		public void ApplyItemAppearanceOnPlayer(InventoryItem item, GlamourPlateSlot slot) {
 			//if(forceStandalone) Service.ClientState.LocalPlayer?.EquipStandalone(item, slot);
 			//else
-				Service.ClientState.LocalPlayer?.Equip(item,slot);
+			var character = PluginServices.Context.LocalPlayer;
+			if(character == null) return;
+			PluginServices.Glamourer.SetItem(character, item, slot);
+				// Service.ClientState.LocalPlayer?.Equip(item,slot);
 		}
 
 		public InventoryItemSet? GetCurrentPlate() {
@@ -402,10 +421,12 @@ namespace Dresser.Services {
 			PluginLog.Verbose("Backing up appearance");
 			BackedUpItems = GetCurrentAppearance();
 		}
-		public InventoryItem? GetCurrentAppearanceSlot(GlamourPlateSlot slot) {
+		/*public InventoryItem? GetCurrentAppearanceSlot(GlamourPlateSlot slot) {
 			return GetCurrentAppearance(slot).GetSlot(slot);
-		}
-		public InventoryItemSet GetCurrentAppearance(GlamourPlateSlot? slot = null) {
+		}*/
+		public InventoryItemSet GetCurrentAppearance(GlamourPlateSlot? slot = null)
+		{
+			return PluginServices.Glamourer.GetSet();
 			InventoryItemSet foundAppearance;
 
 			if(slot == null || !slot.Value.IsWeapon()) {
@@ -438,6 +459,7 @@ namespace Dresser.Services {
 			BackedUpItems?.ApplyAppearance();
 			BackedUpItems = null;
 		}
+		public InventoryItemSet? GetBackedUpAppearance() => BackedUpItems;
 
 
 
@@ -479,11 +501,12 @@ namespace Dresser.Services {
 			BackupAppearance();
 			//PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
 			ApplyCurrentPendingPlateAppearance();
-			PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
+			// PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
 
 		}
 		public void ToggleDisplayGear() {
-			PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
+			ApplyCurrentPendingPlateAppearance();
+			// PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
 		}
 
 		public void OverwritePendingWithCurrentPlate() {

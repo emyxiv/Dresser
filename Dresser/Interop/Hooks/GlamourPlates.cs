@@ -316,7 +316,7 @@ namespace Dresser.Interop.Hooks {
 		private unsafe void ApplyStains(GlamourPlateSlot slot, InventoryItemDr item, ref UsedStains usedStains) {
 			var stain1Item = SelectStainItem(item.Stain,  ref usedStains, out var stain1ItemId);
 			var stain2Item = SelectStainItem(item.Stain2, ref usedStains, out var stain2ItemId);
-			
+
 			PluginLog.Verbose($"SetGlamourPlateSlotStains({(stain1Item != null ? stain1Item->Slot : 0)}, {item.Stain}, {stain1ItemId}, {(stain2Item != null ? stain2Item->Slot : 0)}, {item.Stain2}, {stain2ItemId})");
 			SetGlamourPlateSlotStainsNative(MiragePlateAgent, stain1Item, item.Stain, stain1ItemId, stain2Item, item.Stain2, stain2ItemId);
 		}
