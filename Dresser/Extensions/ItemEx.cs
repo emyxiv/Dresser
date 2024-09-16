@@ -1,4 +1,4 @@
-﻿using CriticalCommonLib;
+using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Sheets;
 
@@ -219,7 +219,7 @@ namespace Dresser.Extensions {
 		public static bool IsSoldByAnyVendor(this CriticalItemEx item, IEnumerable<string> vendorNames)
 			=> Service.ExcelCache.ShopCollection?.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular))) ?? false;
 
-		public static CustomItemId ToCustomItemId(this CriticalItemEx item, GlamourPlateSlot slot)
+		public static Dictionary<Penumbra.GameData.Enums.EquipSlot,CustomItemId> ToCustomItemId(this CriticalItemEx item, GlamourPlateSlot slot)
 			=> Design.FromInventoryItem(item, slot);
 
 		public static bool IsDyeable1(this CriticalItemEx item) {
