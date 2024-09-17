@@ -179,6 +179,7 @@ namespace Dresser.Services {
 				var zffff = Enum.GetValues<GlamourPlateSlot>();
 				foreach (var slot in Enum.GetValues<GlamourPlateSlot>())
 				{
+					if(!EnableWeaponsApply) if(slot is GlamourPlateSlot.MainHand or GlamourPlateSlot.OffHand) continue;
 					var item = set.GetSlot(slot);
 
 					if (item == null || item.ItemId == 0)
@@ -191,8 +192,8 @@ namespace Dresser.Services {
 							item = backedUpItems?.GetSlot(slot) ?? InventoryItem.Zero;
 
 
-							var ofdsf = (backedUpItems?.Items.Select(p => p.Value?.ItemId ?? 0) ?? new List<uint>());
-							var dddsqsdqs = string.Join(",",(ofdsf));
+							// var ofdsf = (backedUpItems?.Items.Select(p => p.Value?.ItemId ?? 0) ?? new List<uint>());
+							// var dddsqsdqs = string.Join(",",(ofdsf));
 							// PluginLog.Debug($"choose {item.ItemId} ({dddsqsdqs})");
 							// PluginLog.Debug($"choose {item.ItemId} ({backedUpItems?.Items.Count})");
 						}
@@ -205,27 +206,29 @@ namespace Dresser.Services {
 					}
 
 
-					var vvvv = Design.FromInventoryItem(item.Item, slot);
-					foreach (var z in vvvv)
+					var customeItemIdsForItem = Design.FromInventoryItem(item.Item, slot);
+					foreach ((var s,var ci) in customeItemIdsForItem)
 					{
-						if (!customItems.ContainsKey(z.Key))
+						if (!customItems.ContainsKey(s))
 						{
-							customItems.Add(z.Key, z.Value);
+							try
+							{
+								state!["Equipment"]![s.ToString()]!["ItemId"] = NothingOrItem(s, ci).ToString();
+								state!["Equipment"]![s.ToString()]!["Apply"] = "true";
+								state!["Equipment"]![s.ToString()]!["Stain"] = item.Stain.ToString();
+								state!["Equipment"]![s.ToString()]!["Stain2"] = item.Stain2.ToString();
+								customItems.Add(s, ci);
+							}
+							catch (Exception e)
+							{
+								PluginLog.Error(e, $"Failed create Glamourer entry for {s} ({item.FormattedName})");
+							}
 						}
 					}
 				}
 
-				// RecursivelyModifyParam(state!, "Apply", "false");
-				foreach ((var slot, var customItemId) in customItems)
-				{
-					if(!EnableWeaponsApply) if(slot is EquipSlot.MainHand or  EquipSlot.OffHand) continue;
-					state!["Equipment"]![slot.ToString()]!["ItemId"] = NothingOrItem(slot, customItemId).ToString();
-					state!["Equipment"]![slot.ToString()]!["Apply"] = "true";
-				}
-
 				return state;
 			});
-
 		}
 
 		public void SetItem(ICharacter character, InventoryItem item, GlamourPlateSlot slot)
@@ -298,9 +301,12 @@ namespace Dresser.Services {
 
 				var showFieldName = metaData == MetaData.Visor ? "IsToggled" : "Show";
 				var newValue = forceState ?? !(((bool?)state?["Equipment"]?[metaData.ToString()]?[showFieldName]) ?? false);
-
-				state!["Equipment"]![metaData.ToString()]![showFieldName] = newValue ? "true" : "false";
-				state!["Equipment"]![metaData.ToString()]!["Apply"] = "true";
+				try {
+					state!["Equipment"]![metaData.ToString()]![showFieldName] = newValue ? "true" : "false";
+					state!["Equipment"]![metaData.ToString()]!["Apply"] = "true";
+				} catch (Exception e) {
+					PluginLog.Error(e, $"Failed create Glamourer entry for {metaData}");
+				}
 			}
 		}
 
@@ -313,11 +319,15 @@ namespace Dresser.Services {
 
 				foreach ((var slot, var itemId) in items)
 				{
-					// PluginLog.Debug($"test DesignWithMod {slot.ToString()} =| {state!["Equipment"]![slot.ToString()]!["ItemId"]}");
-					state!["Equipment"]![slot.ToString()]!["ItemId"] = itemId.ToString();
-					state!["Equipment"]![slot.ToString()]!["Apply"] = "true";
-					// PluginLog.Debug($"TO   DesignWithMod {slot.ToString()} => {itemId}");
-					// PluginLog.Debug($"TO   DesignWithMod {slot.ToString()} => {state!["Equipment"]![slot.ToString()]!["ItemId"]}");
+					try {
+						// PluginLog.Debug($"test DesignWithMod {slot.ToString()} =| {state!["Equipment"]![slot.ToString()]!["ItemId"]}");
+						state!["Equipment"]![slot.ToString()]!["ItemId"] = itemId.ToString();
+						state!["Equipment"]![slot.ToString()]!["Apply"] = "true";
+						// PluginLog.Debug($"TO   DesignWithMod {slot.ToString()} => {itemId}");
+						// PluginLog.Debug($"TO   DesignWithMod {slot.ToString()} => {state!["Equipment"]![slot.ToString()]!["ItemId"]}");
+					} catch (Exception e) {
+						PluginLog.Error(e, $"Failed create Glamourer entry for {slot} ({itemId})");
+					}
 				}
 				return state;
 			});
