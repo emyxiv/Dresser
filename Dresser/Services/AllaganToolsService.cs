@@ -37,7 +37,12 @@ namespace Dresser.Services {
 
 		public HashSet<ulong[]> GetCharacterItemsSerialized(ulong characterId)       { try { return _getCharacterItems.       InvokeFunc(characterId                 ); } catch (Exception e){ PluginLog.Error(e, "Error on GetCharacterItems1"); return new(); }}
 		public HashSet<ulong> GetCharactersOwnedByActive(bool includeOwner)          { try { return _getCharactersOwnedByActive.InvokeFunc(includeOwner              ); } catch (Exception e){ PluginLog.Error(e, "Error on GetCharactersOwnedByActive"); return new(); }}
-		public bool IsInitialized()                                                  { try { return _isInitialized.           InvokeFunc(                            ); } catch(Exception e) { PluginLog.Error(e, "Error on IsInitialized"); return false; }}
+		public bool IsInitialized() {
+            try {
+                return _pluginInterface.InstalledPlugins.Any(x => x.Name == "AllaganTools" && x.IsLoaded);
+                // return _isInitialized.InvokeFunc();
+            } catch(Exception e) { PluginLog.Error(e, "Error on IsInitialized"); return false; }
+        }
 
 		public IEnumerable<CriticalCommonLib.Models.InventoryItem> GetCharacterItems(ulong characterId)
 			=> GetCharacterItemsSerialized(characterId).Select(CriticalCommonLib.Models.InventoryItem.FromNumeric);
