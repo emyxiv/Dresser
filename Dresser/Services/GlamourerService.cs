@@ -69,6 +69,8 @@ namespace Dresser.Services {
 		{
 			var state = GetState();
 			var equipment = (uint?)(state?["Equipment"]?["MainHand"]?["ItemId"]);
+			state?.Remove("Customize");
+			state?.Remove("Parameters");
 
 			PluginLog.Debug($"test GetMainHandInfo: {equipment}");
 
@@ -135,19 +137,21 @@ namespace Dresser.Services {
 		// Apply stuff
 		// //////////////////////////////////////
 
-		private bool ModifyAndSendState(ICharacter character, Func<JObject, JObject> callback)
+		private bool ModifyAndSendState(ICharacter character, Func<JObject, JObject?> callback)
 		{
 			var originalState = GetState();
 			if (originalState == null) return false;
 
+			if (!EnableAllApply) return true;
+			var newState = callback.Invoke(originalState);
+			if(newState == null) return true;
+
 			_throttler.Throttle(() =>
 			{
 				// PluginLog.Warning($"                         ---        Set State 2     ---                                   \n{new StackTrace()}");
-				if (!EnableAllApply) return;
-				var newState = callback.Invoke(originalState);
 				Service.Framework.RunOnFrameworkThread(() =>
 				{
-					ApplyStateSubscriber.Invoke(newState, character.ObjectIndex);
+					ApplyStateSubscriber.Invoke(newState, character.ObjectIndex, 0U, ApplyFlag.Equipment |  ApplyFlag.Customization  | ApplyFlag.Once);
 				});
 			});
 			return true;
@@ -281,7 +285,7 @@ namespace Dresser.Services {
 
 			return ModifyAndSendState(character, state =>
 			{
-				RecursivelyModifyParam(state, "Apply", "false");
+				// RecursivelyModifyParam(state, "Apply", "true");
 				ApplyMetaDataToState(ref state, metaDataStates);
 
 				return state;
@@ -303,7 +307,7 @@ namespace Dresser.Services {
 				var newValue = forceState ?? !(((bool?)state?["Equipment"]?[metaData.ToString()]?[showFieldName]) ?? false);
 				try {
 					state!["Equipment"]![metaData.ToString()]![showFieldName] = newValue ? "true" : "false";
-					state!["Equipment"]![metaData.ToString()]!["Apply"] = "true";
+					// state!["Equipment"]![metaData.ToString()]!["Apply"] = "true";
 				} catch (Exception e) {
 					PluginLog.Error(e, $"Failed create Glamourer entry for {metaData}");
 				}
@@ -315,14 +319,14 @@ namespace Dresser.Services {
 			// return false;
 			return ModifyAndSendState(character, state =>
 			{
-				RecursivelyModifyParam(state!, "Apply", "false");
+				// RecursivelyModifyParam(state!, "Apply", "true");
 
 				foreach ((var slot, var itemId) in items)
 				{
 					try {
 						// PluginLog.Debug($"test DesignWithMod {slot.ToString()} =| {state!["Equipment"]![slot.ToString()]!["ItemId"]}");
 						state!["Equipment"]![slot.ToString()]!["ItemId"] = itemId.ToString();
-						state!["Equipment"]![slot.ToString()]!["Apply"] = "true";
+						// state!["Equipment"]![slot.ToString()]!["Apply"] = "true";
 						// PluginLog.Debug($"TO   DesignWithMod {slot.ToString()} => {itemId}");
 						// PluginLog.Debug($"TO   DesignWithMod {slot.ToString()} => {state!["Equipment"]![slot.ToString()]!["ItemId"]}");
 					} catch (Exception e) {
