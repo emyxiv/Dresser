@@ -484,10 +484,12 @@ namespace Dresser.Services {
 
 		public Dictionary<ushort, List<InventoryItem>> TasksOnCurrentPlate = new();
 		public void CompileTodoTasks(ushort? plateNumber = null) {
-			foreach((var plateN, var set) in ConfigurationManager.Config.PendingPlateItemsCurrentChar) {
-				if (plateNumber != null && plateN != plateNumber) continue;
-				TasksOnCurrentPlate[plateN] = set.FindNotOwned();
-			}
+			Task.Run(delegate {
+				foreach((var plateN, var set) in ConfigurationManager.Config.PendingPlateItemsCurrentChar) {
+					if (plateNumber != null && plateN != plateNumber) continue;
+					TasksOnCurrentPlate[plateN] = set.FindNotOwned();
+				}
+			});
 		}
 
 		public void changeCurrentPendingPlate(ushort plateNumber) {

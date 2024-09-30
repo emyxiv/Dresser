@@ -141,16 +141,15 @@ namespace Dresser.Services {
 		{
 			var originalState = GetState();
 			if (originalState == null) return false;
-
 			if (!EnableAllApply) return true;
-			var newState = callback.Invoke(originalState);
-			if(newState == null) return true;
 
 			_throttler.Throttle(() =>
 			{
 				// PluginLog.Warning($"                         ---        Set State 2     ---                                   \n{new StackTrace()}");
 				Service.Framework.RunOnFrameworkThread(() =>
 				{
+					var newState = callback.Invoke(originalState);
+					if(newState == null) return;
 					ApplyStateSubscriber.Invoke(newState, character.ObjectIndex, 0U, ApplyFlag.Equipment |  ApplyFlag.Customization  | ApplyFlag.Once);
 				});
 			});
