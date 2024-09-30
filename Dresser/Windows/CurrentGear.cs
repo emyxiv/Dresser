@@ -17,6 +17,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+using Dalamud.Interface.Components;
+using Dalamud.Interface.Textures.TextureWraps;
+
 namespace Dresser.Windows;
 
 public class CurrentGear : Window, IDisposable {
@@ -132,102 +135,142 @@ public class CurrentGear : Window, IDisposable {
 		}
 	}
 
+	private IDalamudTextureWrap? RadioActive = null;
+	private IDalamudTextureWrap? RadioInActive = null;
 	private void DrawPlateSelector() {
-		var draw = ImGui.GetWindowDrawList();
 		GearSets.FetchGearSets();
 
-		ImGui.BeginGroup();
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0));
+		try
+		{
+			RadioActive = PluginServices.ImageGuiCrop.GetPart(UldBundle.MiragePlateRadioSelected);
+			RadioInActive = PluginServices.ImageGuiCrop.GetPart(UldBundle.MiragePlateRadio);
 
-		var radioActive = PluginServices.ImageGuiCrop.GetPart(UldBundle.MiragePlateRadioSelected);
-		var radioInActive = PluginServices.ImageGuiCrop.GetPart(UldBundle.MiragePlateRadio);
+			var radioOiriginalSize = (RadioInActive?.Size ?? Vector2.One) * ConfigurationManager.Config.IconSizeMult;
+			var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
+			//var radioSize = RadioInActive.Item4 * new Vector2(0.75f, 0.85f);
 
-		var radioOiriginalSize = (radioInActive?.Size ?? Vector2.One) * ConfigurationManager.Config.IconSizeMult;
-		var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
-		//var radioSize = radioInActive.Item4 * new Vector2(0.75f, 0.85f);
+			ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates + 1u);
+			bool anythingHovered = false;
+
+			var questionMarkPos = ImGui.GetCursorPos() + new Vector2(radioSize.X, - (SizeGameCircleIcons.Y * 0.05f));
+			DrawPlateButton(ushort.MaxValue, radioSize, ref anythingHovered, maxPlates);
+			var nextPlatesPos = ImGui.GetCursorPos();
+
+			ImGui.SetCursorPos(questionMarkPos);
+			GuiHelpers.GameButton(UldBundle.CircleLargeQuestionMark, "HelpHint##PlateSelector##ContextMenu##CurrentGear",
+				$"Plate: Referring to the {Storage.PlateNumber} plates from the game." +
+				$"\nSandBox Plate: not saved" +
+				$"\nFree Plate: independent plates, saved",SizeGameCircleIcons * new Vector2(0.75f));
+
+			ImGui.SetCursorPos(nextPlatesPos);
+
+			ImGui.BeginGroup();
+
+			for (ushort plateNumber = 0; plateNumber < maxPlates; plateNumber++)
+			{
+				DrawPlateButton(plateNumber, radioSize, ref anythingHovered, maxPlates);
+			}
+			if (!anythingHovered) PlateSlotButtonHovering = null;
+			ImGui.EndGroup();
+		}
+		catch (Exception e)
+		{
+			PluginLog.Warning(e, "Error during drawing PlateSelector");
+		}
+		finally
+		{
+			ImGui.PopStyleVar();
+		}
+
+		ImGui.SameLine();
+	}
+	private void DrawPlateButton(ushort plateNumber, Vector2 radioSize,ref bool anythingHovered, ushort maxPlates)
+	{
+		var isSandboxPlate = plateNumber == ushort.MaxValue;
+		var isFreePlate = plateNumber + 1 > Storage.PlateNumber;
+		var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
+		var imageInfo = isActive ? RadioActive : RadioInActive;
+
+		int plateNumberForHuman = isFreePlate ? (plateNumber + 1 - Storage.PlateNumber) : plateNumber + 1;
+
+
+		// fixed vars (could be moved outside of the loop)
 		var fontSize = 28f * ConfigurationManager.Config.IconSizeMult;
 		var textOffset = new Vector2(28f, -36f);
 		if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) textOffset += new Vector2(-10f, 0);
-		var textPlacement = textOffset * ConfigurationManager.Config.IconSizeMult;
 		var textPlacementFreePOffset = new Vector2(12.5f, 0f) * ConfigurationManager.Config.IconSizeMult;
+		var textPlacement2 = (textOffset * ConfigurationManager.Config.IconSizeMult) + (isFreePlate ? textPlacementFreePOffset : Vector2.Zero);
+		// end of fixed vars
 
-		ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates);
-		bool anythingHovered = false;
-		for (ushort plateNumber = 0; plateNumber < maxPlates; plateNumber++) {
-			var isFreePlate = plateNumber + 1 > Storage.PlateNumber;
-			var isActive = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
-			var imageInfo = isActive ? radioActive : radioInActive;
-			var plateNumberForHuman = isFreePlate ? (plateNumber + 1 - Storage.PlateNumber) : plateNumber + 1;
-
-			Vector4? roleColor = null;
-			Vector4? roleColor1 = null;
-			if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors || ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) {
-				roleColor1 = GearSets.RelatedGearSetClassJobCategoryColor(plateNumber);
-				if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors && roleColor1 != null) roleColor = roleColor1 + new Vector4(0.6f, 0.6f, 0.6f, -0.1f);
-			}
-
-			var tint = PlateSlotButtonHovering == plateNumber ? ConfigurationManager.Config.PlateSelectorHoverColor : roleColor??ConfigurationManager.Config.PlateSelectorRestColor;
-			if (isActive) tint = ConfigurationManager.Config.PlateSelectorActiveColor;
-			if (imageInfo != null) ImGui.Image(imageInfo.ImGuiHandle, radioSize, Vector2.Zero, Vector2.One, tint);
-			var clicked = ImGui.IsItemClicked();
-			var hovering = ImGui.IsItemHovered();
-			if (ImGui.BeginPopupContextItem($"{plateNumber}##PlateSelector##ContextMenu##CurrentGear")) {
-				ContextMenuPlateSelector(plateNumber);
-				ImGui.EndPopup();
-			}
-			GuiHelpers.Tooltip(() => {
-				var plateName = $"{(isFreePlate ? "Free " : "")}Plate {plateNumberForHuman}";
-				GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.BubblePlateNumber);
-				if (!isFreePlate) GearSets.RelatedGearSetNamesImgui(plateNumber);
-				ImGui.Spacing();
-			});
-
-			var classJobTexture = GearSets.GetClassJobIconTextureForPlate(plateNumber);
-			if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons && classJobTexture != null) {
-				var cjt_ratio = 0.8f;
-				var cjt_p_min = ImGui.GetCursorScreenPos() + new Vector2(radioSize.X - (radioSize.Y * 0.8f), - radioSize.Y + (radioSize.Y * ((1 - cjt_ratio)/2)));
-				var cjt_p_max = cjt_p_min + new Vector2(radioSize.Y * cjt_ratio);
-
-				var jobIconColor1 = !ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors ? roleColor1 ?? new Vector4(0, 0, 0, 1) : new Vector4(1, 1, 1, 1);
-				var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.35f);
-
-				draw.AddImage(classJobTexture.GetWrapOrEmpty().ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
-			}
-
-			var spacer = plateNumberForHuman < 10 ? " " : "";
-			GuiHelpers.TextWithFontDrawlist(
-				$"{spacer}{plateNumberForHuman}",
-				GuiHelpers.Font.Radio,
-				ConfigurationManager.Config.PlateSelectorColorRadio,
-				fontSize,
-				textPlacement + (isFreePlate ? textPlacementFreePOffset : Vector2.Zero));
-
-			if (clicked) {
-				// Change selected plate
-				PluginServices.ApplyGearChange.changeCurrentPendingPlate(plateNumber);
-			}
-			if (hovering) {
-				// save hovered button for later
-				anythingHovered |= true;
-				PlateSlotButtonHovering = plateNumber;
-			}
-			if ((plateNumber + 1) % ConfigurationManager.Config.NumberofPendingPlateNextColumn == 0 && plateNumber + 1 != maxPlates) {
-				ImGui.EndGroup();
-				ImGui.SameLine();
-
-				var cp = ImGui.GetCursorPos();
-				ImGui.SetCursorPosX(cp.X - (radioSize.X * 0.2f));
-				ImGui.SetCursorPosY(cp.Y + (radioSize.Y * 0.22f));
-				ImGui.BeginGroup();
-			}
-
+		Vector4? roleColor = null;
+		Vector4? roleColor1 = null;
+		if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors || ConfigurationManager.Config.CurrentGearPortablePlateJobIcons) {
+			roleColor1 = GearSets.RelatedGearSetClassJobCategoryColor(plateNumber);
+			if (ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors && roleColor1 != null) roleColor = roleColor1 + new Vector4(0.6f, 0.6f, 0.6f, -0.1f);
 		}
-		if (!anythingHovered) PlateSlotButtonHovering = null;
 
-		ImGui.PopStyleVar();
-		ImGui.EndGroup();
-		ImGui.SameLine();
+		var tint = PlateSlotButtonHovering == plateNumber ? ConfigurationManager.Config.PlateSelectorHoverColor : roleColor??ConfigurationManager.Config.PlateSelectorRestColor;
+		if (isActive) tint = ConfigurationManager.Config.PlateSelectorActiveColor;
+		if (imageInfo != null) ImGui.Image(imageInfo.ImGuiHandle, radioSize, Vector2.Zero, Vector2.One, tint);
+		var clicked = ImGui.IsItemClicked();
+		var hovering = ImGui.IsItemHovered();
+		if (ImGui.BeginPopupContextItem($"{plateNumber}##PlateSelector##ContextMenu##CurrentGear")) {
+			ContextMenuPlateSelector(plateNumber);
+			ImGui.EndPopup();
+		}
+		GuiHelpers.Tooltip(() => {
+			var plateName = $"{(isFreePlate ? "Free " : "")}Plate {plateNumberForHuman}";
+			if(isSandboxPlate) plateName = "SandBox Plate";
+			GuiHelpers.TextWithFont(plateName, GuiHelpers.Font.BubblePlateNumber);
+			if (!isFreePlate) GearSets.RelatedGearSetNamesImgui(plateNumber);
+			ImGui.Spacing();
+		});
+
+		if (ConfigurationManager.Config.CurrentGearPortablePlateJobIcons && GearSets.TryGetClassJobIconTextureForPlate(plateNumber, out var classJobTexture)) {
+			var cjt_ratio = 0.8f;
+			var cjt_p_min = ImGui.GetCursorScreenPos() + new Vector2(radioSize.X - (radioSize.Y * 0.8f), - radioSize.Y + (radioSize.Y * ((1 - cjt_ratio)/2)));
+			var cjt_p_max = cjt_p_min + new Vector2(radioSize.Y * cjt_ratio);
+
+			var jobIconColor1 = !ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors ? roleColor1 ?? new Vector4(0, 0, 0, 1) : new Vector4(1, 1, 1, 1);
+			var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.35f);
+
+			ImGui.GetWindowDrawList().AddImage(classJobTexture.GetWrapOrEmpty().ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
+		}
+
+		var spacer = plateNumberForHuman < 10 ? " " : "";
+		string plateText = $"{spacer}{plateNumberForHuman}";
+		if(isSandboxPlate) plateText = "";
+		GuiHelpers.TextWithFontDrawlist(
+			plateText,
+			GuiHelpers.Font.Radio,
+			ConfigurationManager.Config.PlateSelectorColorRadio,
+			fontSize,
+			textPlacement2);
+
+		if (clicked) {
+			// Change selected plate
+			PluginServices.ApplyGearChange.changeCurrentPendingPlate(plateNumber);
+		}
+		if (hovering) {
+			// save hovered button for later
+			anythingHovered = true;
+			PlateSlotButtonHovering = plateNumber;
+		}
+		if ((plateNumber + 1) % ConfigurationManager.Config.NumberofPendingPlateNextColumn == 0 && plateNumber + 1 != maxPlates) {
+			ImGui.EndGroup();
+			ImGui.SameLine();
+
+			var cp = ImGui.GetCursorPos();
+			// this optimizes space but overlapping sucks
+			// ImGui.SetCursorPosX(cp.X - (radioSize.X * 0.2f));
+			// ImGui.SetCursorPosY(cp.Y + (radioSize.Y * 0.22f));
+			// this aligns stuff
+			ImGui.SetCursorPosX(cp.X - (radioSize.X * 0.15f));
+			ImGui.SetCursorPosY(cp.Y);
+			ImGui.BeginGroup();
+		}
 	}
 
 	private static GlamourPlateSlot? HoveredSlot = null;

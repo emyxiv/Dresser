@@ -16,6 +16,8 @@ using System.Numerics;
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 using static Dresser.Windows.GearBrowser;
 using System.Text.Json.Serialization;
+
+using Dresser.Enums;
 using Dresser.Interop.Hooks;
 
 namespace Dresser {
@@ -84,6 +86,7 @@ namespace Dresser {
 
 		public bool OfferApplyAllPlatesOnDresserOpen = false;
 		public bool OfferOverwritePendingPlatesAfterApplyAll = false;
+		public BehaviorOnOpen BehaviorOnOpen = BehaviorOnOpen.SandboxPlateWithWearingGlam;
 
 
 		public bool CurrentGearDisplayGear = false;

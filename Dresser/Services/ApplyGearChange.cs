@@ -19,6 +19,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using Dresser.Enums;
+
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 namespace Dresser.Services {
@@ -36,6 +38,23 @@ namespace Dresser.Services {
 
 		public void EnterBrowsingMode() {
 			// PluginServices.Context.LocalPlayer?.SetMetaVisibility();
+			switch (ConfigurationManager.Config.BehaviorOnOpen)
+			{
+				case BehaviorOnOpen.LastOpenedPortablePlate:
+					// this was the default, so the logic is based on "last open", there is nothing to do here
+					break;
+				case BehaviorOnOpen.SandboxPlateAndStrip:
+					// set the last open and gear to reflect sandbox plate and strip behavior
+					ConfigurationManager.Config.SelectedCurrentPlate = ushort.MaxValue;
+					ConfigurationManager.Config.CurrentGearDisplayGear = false;
+					ConfigurationManager.Config.PendingPlateItemsCurrentChar[ushort.MaxValue] = new();
+					break;
+				case BehaviorOnOpen.SandboxPlateWithWearingGlam:
+					// set the last open and gear to reflect sandbox plate and display wearing gear
+					ConfigurationManager.Config.PendingPlateItemsCurrentChar[ushort.MaxValue] = GetCurrentAppearance();
+					ConfigurationManager.Config.SelectedCurrentPlate = ushort.MaxValue;
+					break;
+			}
 			Task.Run(ReApplyAppearanceAfterEquipUpdate);
 		}
 		public void ExitBrowsingMode() {

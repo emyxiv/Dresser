@@ -5,6 +5,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 
+using Dresser.Enums;
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
@@ -35,8 +36,8 @@ public class ConfigWindow : Window, IDisposable {
 			}},
 			{"General",new () {
 				{ "Portable Plates", DrawPlatesConfig },
-				{ "Icons", DrawIconsConfigs },
 				{ "Behaviors", DrawBehaviourConfigs },
+				{ "Icons", DrawIconsConfigs },
 			}},
 			{"Style",new () {
 				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
@@ -113,6 +114,13 @@ public class ConfigWindow : Window, IDisposable {
 	}
 
 	private void DrawBehaviourConfigs() {
+		var behavioursOnOpen = Enum.GetValues<BehaviorOnOpen>();
+		var currentIndexBehavioursOnOpen = Array.IndexOf(behavioursOnOpen, ConfigurationManager.Config.BehaviorOnOpen);
+		if(currentIndexBehavioursOnOpen < 0) currentIndexBehavioursOnOpen = 0;
+		if (ImGui.Combo("Behavior on open##Behaviours##Behaviours##Config", ref currentIndexBehavioursOnOpen, behavioursOnOpen.Select(i => i.ToString().AddSpaceBeforeCapital()).ToArray(), behavioursOnOpen.Length)) {
+			ConfigurationManager.Config.BehaviorOnOpen = behavioursOnOpen[currentIndexBehavioursOnOpen];
+		}
+
 		ImGui.Checkbox($"Select plate linked to current gearset on open##Behaviours##Config", ref ConfigurationManager.Config.SelectCurrentGearsetOnOpenCurrentGearWindow);
 		ImGui.Checkbox($"Hide empty owned item types##Behaviours##Config", ref ConfigurationManager.Config.GearBrowserSourceHideEmpty);
 		ImGui.Checkbox($"(Experimental) Hotkeys after loosing window focus##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus);

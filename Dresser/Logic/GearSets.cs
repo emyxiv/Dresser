@@ -86,6 +86,10 @@ namespace Dresser.Logic {
 			if(!iconId.HasValue) return null;
 			return IconWrapper.Get(iconId.Value);
 		}
+		public static bool TryGetClassJobIconTextureForPlate(ushort plateNumber, out ISharedImmediateTexture icon) {
+			icon = GetClassJobIconTextureForPlate(plateNumber);
+			return icon != null;
+		}
 
 
 		public unsafe static void RelatedGearSetNamesImgui(ushort plateNumber) {
