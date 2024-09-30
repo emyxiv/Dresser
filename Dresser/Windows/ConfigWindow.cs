@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
 namespace Dresser.Windows;
 
 public class ConfigWindow : Window, IDisposable {
@@ -132,7 +133,7 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Checkbox($"Enable Debug##Behaviours##Config", ref ConfigurationManager.Config.Debug);
 
 
-		ImGui.Checkbox($"Offer Apply All lates On Dresser Open##Behaviours##Config", ref ConfigurationManager.Config.OfferApplyAllPlatesOnDresserOpen);
+		ImGui.Checkbox($"Offer Apply All plates On Dresser Open##Behaviours##Config", ref ConfigurationManager.Config.OfferApplyAllPlatesOnDresserOpen);
 		ImGui.Checkbox($"Offer Overwrite Pending Plates After Apply All##Behaviours##Config", ref ConfigurationManager.Config.OfferOverwritePendingPlatesAfterApplyAll);
 
 
