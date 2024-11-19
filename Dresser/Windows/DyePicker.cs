@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 
@@ -9,12 +15,7 @@ using Dresser.Windows.Components;
 
 using ImGuiNET;
 
-using Lumina.Excel.GeneratedSheets;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
+using Lumina.Excel.Sheets;
 
 namespace Dresser.Windows;
 
@@ -263,7 +264,7 @@ public class DyePicker :  Window, IDisposable {
 	public static ushort DyeIndex = 1;
 	private static void DrawDyePickerHeader() {
 
-		var dyeCount = CurrentItem?.Item.DyeCount ?? 1;
+		var dyeCount = CurrentItem?.Item.Base.DyeCount ?? 1;
 		var numberOfIconButtons = 2; // swapDye and keepDying
 
 		var iwd = ConfigurationManager.Config.DyePickerDyeSize.X;
@@ -335,20 +336,20 @@ public class DyePicker :  Window, IDisposable {
 		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
 
 		if (dyeCount != 2) ImGui.BeginDisabled();
-		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.CodeCompare, "##SwapDyes##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize)) {
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.CodeCompare, "##SwapDyes##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize)) {
 			if (PluginServices.ApplyGearChange.swapDyes()) { // swap dyes for pending glam plate
 															 // also swap dyes in dye picker
 				if(CurrentDyesInEditor.TryGetValue(1, out var s1) && CurrentDyesInEditor.TryGetValue(2, out var s2) && s1 != null && s2 != null) {
 					CurrentDyesInEditor[1] = s2;
 					CurrentDyesInEditor[2] = s1;
-					CurrentDyeList[1] = (byte)s2.RowId;
-					CurrentDyeList[2] = (byte)s1.RowId;
+					CurrentDyeList[1] = (byte)s2.Value.RowId;
+					CurrentDyeList[2] = (byte)s1.Value.RowId;
 				}
 			}
 		}
 		if (dyeCount != 2) ImGui.EndDisabled();
 		GuiHelpers.Tooltip("Swap dyes between dye 1 and dye 2");
 		ImGui.SameLine();
-		GuiHelpers.IconToggleButtonNoBg(Dalamud.Interface.FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
+		GuiHelpers.IconToggleButtonNoBg(FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
 	}
 }

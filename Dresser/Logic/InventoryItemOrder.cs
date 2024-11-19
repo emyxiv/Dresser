@@ -1,12 +1,8 @@
-﻿using CriticalCommonLib.Models;
-
-using Dresser.Logic;
-
-using Dresser.Services;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Dresser.Services;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
@@ -78,12 +74,12 @@ namespace Dresser.Logic {
 		}
 
 		private static uint Level(InventoryItem i)
-			=> i.Item.LevelEquip;
+			=> i.Item.Base.LevelEquip;
 		private static uint ItemLevel(InventoryItem i)
-			=> i.Item.LevelItem.Row;
+			=> i.Item.Base.LevelItem.RowId;
 		private static uint ItemId(InventoryItem i)
 			=> i.ItemId;
 		private static uint ItemPatch(InventoryItem i)
-			=> (uint)(i.Item.GetPatch() * 100);
+			=> (uint)(i.Item.Patch * 100);
 	}
 }

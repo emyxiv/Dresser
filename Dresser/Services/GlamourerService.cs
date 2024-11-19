@@ -1,4 +1,11 @@
-﻿using Dalamud.Game.ClientState.Objects.Types;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using CriticalCommonLib;
+
+using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin;
 
 using Dresser.Extensions;
@@ -8,18 +15,14 @@ using Dresser.Logic.Glamourer;
 using Dresser.Structs.Dresser;
 
 using Glamourer.Api.Enums;
+using Glamourer.Api.IpcSubscribers;
+
+using Lumina.Excel.Sheets;
+
 using Newtonsoft.Json.Linq;
 
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using CriticalCommonLib;
-
-using Lumina.Excel.GeneratedSheets;
 
 namespace Dresser.Services {
 	internal class GlamourerService : IDisposable {
@@ -27,25 +30,25 @@ namespace Dresser.Services {
 
 		private const bool EnableAllApply = true;
 		private const bool EnableWeaponsApply = true;
-		Throttler _throttler;
+		Throttler<Task> _throttler;
 
-		private Glamourer.Api.IpcSubscribers.ApiVersion ApiVersionSubscriber;
-		private Glamourer.Api.IpcSubscribers.SetItem SetItemSubscriber;
-		private Glamourer.Api.IpcSubscribers.RevertState RevertStateSubscriber;
-		private Glamourer.Api.IpcSubscribers.RevertToAutomation RevertToAutomationSubscriber;
+		private ApiVersion ApiVersionSubscriber;
+		private SetItem SetItemSubscriber;
+		private RevertState RevertStateSubscriber;
+		private RevertToAutomation RevertToAutomationSubscriber;
 
-		private Glamourer.Api.IpcSubscribers.GetState GetStateSubscriber;
-		private Glamourer.Api.IpcSubscribers.ApplyState ApplyStateSubscriber;
+		private GetState GetStateSubscriber;
+		private ApplyState ApplyStateSubscriber;
 
 		public GlamourerService(IDalamudPluginInterface pluginInterface) {
 
-			ApiVersionSubscriber = new global::Glamourer.Api.IpcSubscribers.ApiVersion(pluginInterface);
-			SetItemSubscriber = new global::Glamourer.Api.IpcSubscribers.SetItem(pluginInterface);
-			RevertStateSubscriber = new global::Glamourer.Api.IpcSubscribers.RevertState(pluginInterface);
-			RevertToAutomationSubscriber = new global::Glamourer.Api.IpcSubscribers.RevertToAutomation(pluginInterface);
-			GetStateSubscriber = new global::Glamourer.Api.IpcSubscribers.GetState(pluginInterface);
-			ApplyStateSubscriber = new global::Glamourer.Api.IpcSubscribers.ApplyState(pluginInterface);
-			_throttler = new Throttler();
+			ApiVersionSubscriber = new ApiVersion(pluginInterface);
+			SetItemSubscriber = new SetItem(pluginInterface);
+			RevertStateSubscriber = new RevertState(pluginInterface);
+			RevertToAutomationSubscriber = new RevertToAutomation(pluginInterface);
+			GetStateSubscriber = new GetState(pluginInterface);
+			ApplyStateSubscriber = new ApplyState(pluginInterface);
+			_throttler = new Throttler<Task>(0);
 
 		}
 		public void Dispose() {}
@@ -56,16 +59,16 @@ namespace Dresser.Services {
 		public void RevertCharacter(ICharacter? character) { if (character == null) return; try { RevertStateSubscriber.Invoke(character.ObjectIndex); } catch (Exception e) { PluginLog.Error(e, "Failed to contact RevertCharacter"); } }
 		public bool RevertToAutomationCharacter(ICharacter? character) { if (character == null) return false; try { return RevertToAutomationSubscriber.Invoke(character.ObjectIndex) == GlamourerApiEc.Success; } catch (Exception e) { PluginLog.Error(e, "Failed to contact RevertToAutomation"); return false; } }
 
-		public Newtonsoft.Json.Linq.JObject? GetState() {
+		public JObject? GetState() {
 			var index = PluginServices.Context.LocalPlayer?.ObjectIndex;
 			if(index == null) return null;
 
-			(GlamourerApiEc response, Newtonsoft.Json.Linq.JObject? charaState) result = GetStateSubscriber.Invoke((int)index);
+			(GlamourerApiEc response, JObject? charaState) result = GetStateSubscriber.Invoke((int)index);
 			if(result.response != GlamourerApiEc.Success) return null;
 
 			return result.charaState;
 		}
-				public Item? GetMainHandItem()
+		public Item? GetMainHandItem()
 		{
 			var state = GetState();
 			var equipment = (uint?)(state?["Equipment"]?["MainHand"]?["ItemId"]);
@@ -76,8 +79,7 @@ namespace Dresser.Services {
 
 			if (equipment != null)
 			{
-				if(Service.ExcelCache.AllItems.TryGetValue(equipment.Value, out var result))
-					return result;
+				return Service.ExcelCache.GameData.Excel.GetSheet<Item>().GetRowOrDefault(equipment.Value);
 			}
 
 			return null;
@@ -104,7 +106,7 @@ namespace Dresser.Services {
 
 				if (slot == GlamourPlateSlot.OffHand) {
 					var fifif = set.GetSlot(GlamourPlateSlot.MainHand);
-					if (fifif != null && !EquipItem.FromOffhand(fifif.Item).Type.AllowsNothing()) {
+					if (fifif != null && !EquipItem.FromOffhand(fifif.Item.Base).Type.AllowsNothing()) {
 						continue;
 					}
 				}
@@ -146,7 +148,7 @@ namespace Dresser.Services {
 			_throttler.Throttle(() =>
 			{
 				// PluginLog.Warning($"                         ---        Set State 2     ---                                   \n{new StackTrace()}");
-				Service.Framework.RunOnFrameworkThread(() =>
+				return Service.Framework.RunOnFrameworkThread(() =>
 				{
 					var newState = callback.Invoke(originalState);
 					if(newState == null) return;
@@ -161,7 +163,7 @@ namespace Dresser.Services {
 				{
 					// PluginLog.Warning($"                         ---        SetItem      ---                                   \n{new StackTrace()}");
 					// if (!EnableAllApply) return;
-					Service.Framework.RunOnFrameworkThread(() =>
+					return Service.Framework.RunOnFrameworkThread(() =>
 					{
 						SetItemSubscriber.Invoke(character.ObjectIndex, (ApiEquipSlot)slot, NothingOrItem(slot, itemId), new List<byte>() {stainId, stainId2});
 					});
@@ -209,7 +211,7 @@ namespace Dresser.Services {
 					}
 
 
-					var customeItemIdsForItem = Design.FromInventoryItem(item.Item, slot);
+					var customeItemIdsForItem = Design.FromInventoryItem(item.Item.Base, slot);
 					foreach ((var s,var ci) in customeItemIdsForItem)
 					{
 						if (!customItems.ContainsKey(s))
@@ -246,9 +248,9 @@ namespace Dresser.Services {
 				_throttler.Throttle(() =>
 				{
 					// PluginLog.Warning($"                         ---        Set State 1     ---                                   \n{new StackTrace()}");
-					if(!EnableAllApply) return;
+					if(!EnableAllApply) return new Task(()=>{});
 
-					Service.Framework.RunOnFrameworkThread(() =>
+					return Service.Framework.RunOnFrameworkThread(() =>
 					{
 						var items = customItemIds.ToDictionary(f => f.Key, f => f.Value.Item.Id);
 						DesignWithMod(character, items);
@@ -295,9 +297,9 @@ namespace Dresser.Services {
 		{
 			metaDataStates = metaDataStates.Count != 0 ?  metaDataStates : new Dictionary<MetaData, bool?>()
 			{
-				{GlamourerService.MetaData.Weapon, ConfigurationManager.Config.CurrentGearDisplayWeapon},
-				{GlamourerService.MetaData.Hat, ConfigurationManager.Config.CurrentGearDisplayHat},
-				{GlamourerService.MetaData.Visor, ConfigurationManager.Config.CurrentGearDisplayVisor},
+				{MetaData.Weapon, ConfigurationManager.Config.CurrentGearDisplayWeapon},
+				{MetaData.Hat, ConfigurationManager.Config.CurrentGearDisplayHat},
+				{MetaData.Visor, ConfigurationManager.Config.CurrentGearDisplayVisor},
 			};
 
 			foreach ((var metaData, var forceState) in metaDataStates) {

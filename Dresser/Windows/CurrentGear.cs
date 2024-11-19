@@ -1,6 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
 using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Models;
 
 using Dalamud.Interface;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Extensions;
@@ -12,13 +19,9 @@ using Dresser.Windows.Components;
 
 using ImGuiNET;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
+using Lumina.Excel.Sheets;
 
-using Dalamud.Interface.Components;
-using Dalamud.Interface.Textures.TextureWraps;
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 namespace Dresser.Windows;
 
@@ -426,7 +429,7 @@ public class CurrentGear : Window, IDisposable {
 	private static void DrawTasksTooltip() {
 		if (PluginServices.ApplyGearChange.TasksOnCurrentPlate.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var taskedItems)) {
 			if(taskedItems.Any()) {
-				ImGui.TextDisabled($"Some items are neither in {CriticalCommonLib.Models.InventoryCategory.GlamourChest.FormattedName()} or {CriticalCommonLib.Models.InventoryCategory.Armoire.FormattedName()}");
+				ImGui.TextDisabled($"Some items are neither in {InventoryCategory.GlamourChest.FormattedName()} or {InventoryCategory.Armoire.FormattedName()}");
 				ImGui.Spacing();
 				if(ImGui.BeginTable("TaskTooltip##CurrentGear", 2)) {
 
@@ -434,13 +437,17 @@ public class CurrentGear : Window, IDisposable {
 					ImGui.TableSetupColumn("Where", ImGuiTableColumnFlags.WidthStretch, 100.0f, 1);
 					ImGui.TableHeadersRow();
 
+					var ddd = PluginServices.DataManager.Excel.GetSheet<StainTransient>();
 					foreach (var taskedItem in taskedItems) {
 						ImGui.TableNextRow();
 						ImGui.TableNextColumn();
 						ImGui.AlignTextToFramePadding();
 						ImGui.Text($"{taskedItem.FormattedName}");
 
-						if(taskedItem.ItemSortCategory?.RowId == 11) { // sort category 11 seems to be dyes
+						if(PluginServices.DataManager.Excel.GetSheet<StainTransient>()
+							.Any(t=>t.Item1.RowId == taskedItem.ItemId
+									|| t.Item2.RowId == taskedItem.ItemId)) {
+
 							ImGui.SameLine();
 							ImGui.Text($" ( {taskedItem.Quantity}");
 							ImGui.SameLine();

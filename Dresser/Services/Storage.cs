@@ -1,6 +1,14 @@
-﻿using CriticalCommonLib;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
+
+using AllaganLib.GameSheets.Caches;
+using AllaganLib.GameSheets.Sheets.Rows;
+
+using CriticalCommonLib;
 using CriticalCommonLib.Enums;
-using CriticalCommonLib.Sheets;
 
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Textures;
@@ -10,14 +18,10 @@ using Dresser.Interop;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
+using Dresser.Windows;
 
 using Lumina.Data.Files;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
+using Lumina.Excel.Sheets;
 
 using static Dresser.Windows.Components.GuiHelpers;
 
@@ -48,7 +52,7 @@ namespace Dresser.Services {
 			// ui colors:
 			// bad: 14
 
-			var uicolorsheet = PluginServices.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.UIColor>()!;
+			var uicolorsheet = PluginServices.DataManager.GetExcelSheet<UIColor>()!;
 
 			RarityColors = new(){
 				// items colors:
@@ -89,8 +93,8 @@ namespace Dresser.Services {
 			return PluginServices.DataManager.GetFile<TexFile>(path)!;
 		}
 
-		public static Vector4 RarityColor(ItemEx itemEx) {
-			if (!PluginServices.Storage.RarityColors.TryGetValue(itemEx.Rarity, out var rarityColor))
+		public static Vector4 RarityColor(ItemRow itemEx) {
+			if (!PluginServices.Storage.RarityColors.TryGetValue(itemEx.Base.Rarity, out var rarityColor))
 				rarityColor = Vector4.One;
 			return rarityColor;
 		}
@@ -115,8 +119,8 @@ namespace Dresser.Services {
 			AllButSqStore = 1000001,
 
 			CalamityVendors = 2000001,
-			RelicVendors = 2000002,
-			SquareStore = 2000003,
+			RelicVendors = 2000022,
+			SquareStore = 2000033,
 
 			//StormSeal = 3000020,
 			//SerpentSeal = 3000021,
@@ -125,15 +129,18 @@ namespace Dresser.Services {
 			AlliedSeals = 3000027,
 			Poetics = 3000028,
 			MandervilleGoldsaucerPoints = 3000029,
-			AllaganTomestonesOfCausality = 3000044,
+			AllaganTomestonesPreviousTier = 3000046,
+			AllaganTomestonesCurrentTier = 3000047,
 			CenturioSeals = 3010307,
-			WhiteCraftersScrips = 3025199,
-			WhiteGaterersScrips = 3025200,
+			// WhiteCraftersScrips = 3025199,
+			// WhiteGaterersScrips = 3025200,
 			SackOfNuts = 3026533,
+			// BicolorGemstones = 3026807,
 			PurpleCraftersScripts = 3033913,
 			PurpleGatherersScripts = 3033914,
 			TrophyCrystal = 3036656,
 			SeafarersCowrie = 3037549,
+			// IslanderCowrie = 3037550,
 
 			ModdedItems = 7000000,
 
@@ -159,7 +166,7 @@ namespace Dresser.Services {
 
 				if (additionalItem == AdditionalItem.Currency) {
 					FilterCurrencyIds.Add((InventoryType)invTypeExtra, itemId);
-					var itemEx = Service.ExcelCache.GetItemExSheet().First(i => i.RowId == itemId);
+					var itemEx = Service.ExcelCache.GetItemSheet().First(i => i.RowId == itemId);
 					FilterCurrencyItemEx.Add((InventoryType)invTypeExtra, itemEx);
 					FilterCurrencyIconTexture.Add((InventoryType)invTypeExtra, itemEx.IconTextureWrap());
 				}
@@ -175,27 +182,27 @@ namespace Dresser.Services {
 		// all items
 		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems, (InventoryType)InventoryTypeExtra.AllButSqStore };
 		// vendor
-		public static Dictionary<InventoryType, Func<ItemEx, bool>> FilterUnobtainedFromCustomSource = new() {
-			{ (InventoryType) InventoryTypeExtra.CalamityVendors , (i) => {return i.IsSoldByAnyVendor(new string[] {"Calamity salvager", "journeyman salvager"}); } },
+		public static Dictionary<InventoryType, Func<ItemRow, bool>> FilterUnobtainedFromCustomSource = new() {
+			{ (InventoryType) InventoryTypeExtra.CalamityVendors , (i) => {return i.HasSourcesByType(ItemInfoType.CalamitySalvagerShop); } },
 			{ (InventoryType) InventoryTypeExtra.RelicVendors , (i) => {return i.IsSoldByAnyVendor(new string[] {"Drake", "restoration node", "staelhundr", "Regana", "House Manderville vendor"}); } },
-			{ (InventoryType) InventoryTypeExtra.SquareStore , i => i.PurchasedSQStore },
+			{ (InventoryType) InventoryTypeExtra.SquareStore , i => i.HasSourcesByCategory(ItemInfoCategory.Shop) },
 		};
 		// currency
 		public Dictionary<InventoryType, uint> FilterCurrencyIds;
-		public Dictionary<InventoryType, ItemEx> FilterCurrencyItemEx;
+		public Dictionary<InventoryType, ItemRow> FilterCurrencyItemEx;
 		public Dictionary<InventoryType, ISharedImmediateTexture> FilterCurrencyIconTexture;
 		private void LoadAdditional_All() {
 			foreach (var inventoryType in FilterAll) {
 				// at least filter glam items
-				PluginLog.Debug($"================= item numbers all: {Service.ExcelCache.AllItems.Count}");
+				PluginLog.Debug($"================= item numbers all: {Service.ExcelCache.GetItemSheet().Count}");
 
-				var q = Service.ExcelCache.AllItems
+				var q = Service.ExcelCache.GetItemSheet()
 					//.DistinctBy(i=>i.Value.GetSharedModels())
-					.Where((itemPair) => itemPair.Value.ModelMain != 0);
+					.Where((itemPair) => itemPair.Base.ModelMain != 0);
 
-				if (inventoryType == (InventoryType)InventoryTypeExtra.AllButSqStore) q = q.Where(p => !p.Value.PurchasedSQStore); // for AllButSqStore
+				if (inventoryType == (InventoryType)InventoryTypeExtra.AllButSqStore) q = q.Where(p => !p.HasSourcesByCategory(ItemInfoCategory.Shop)); // for AllButSqStore
 
-				AdditionalItems[inventoryType] = q.Select(i => new InventoryItem(inventoryType, i.Key)).ToList();
+				AdditionalItems[inventoryType] = q.Select(i => new InventoryItem(inventoryType, i.RowId)).ToList();
 
 				var a = FilterNames[AdditionalItem.All][inventoryType];
 				var b = AdditionalItems[inventoryType].Count;
@@ -205,18 +212,18 @@ namespace Dresser.Services {
 		private void LoadAdditional_Custom() {
 
 			foreach ((var inventoryType, var filterFunction) in FilterUnobtainedFromCustomSource) {
-				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems.Where((itemPair) => {
-					return itemPair.Value.ModelMain != 0 && filterFunction(itemPair.Value);
-				}).Select(i => new InventoryItem(inventoryType, i.Key)).ToList();
+				AdditionalItems[inventoryType] = Service.ExcelCache.GetItemSheet().Where((itemPair) => {
+					return itemPair.Base.ModelMain != 0 && filterFunction(itemPair);
+				}).Select(i => new InventoryItem(inventoryType, i.RowId)).ToList();
 
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.ObtainedAt][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
 		}
 		private void LoadAdditional_Currency() {
 			foreach ((var inventoryType, var currencyId) in FilterCurrencyIds) {
-				AdditionalItems[inventoryType] = Service.ExcelCache.AllItems
-					.Where((itemPair) => itemPair.Value.ModelMain != 0 && itemPair.Value.ObtainedWithSpecialShopCurrency2(currencyId))
-					.Select(i => new InventoryItem(inventoryType, i.Key))
+				AdditionalItems[inventoryType] = Service.ExcelCache.GetItemSheet()
+					.Where((itemPair) => itemPair.Base.ModelMain != 0 && itemPair.ObtainedWithSpecialShopCurrency2(currencyId))
+					.Select(i => new InventoryItem(inventoryType, i.RowId))
 					.ToList();
 				PluginLog.Debug($" Loaded {FilterNames[AdditionalItem.Currency][inventoryType]} ({inventoryType}): {AdditionalItems[inventoryType].Count} items");
 			}
@@ -260,7 +267,7 @@ namespace Dresser.Services {
 			PluginLog.Debug($"------------ END - PENUMBRA --------------------------");
 			IsReloadingMods = false;
 
-			if(Plugin.GetInstance().GearBrowser.IsOpen) Windows.GearBrowser.RecomputeItems();
+			if(Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
 		}
 
 

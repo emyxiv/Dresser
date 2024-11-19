@@ -1,4 +1,7 @@
+using Autofac;
+
 using CriticalCommonLib;
+using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 
 using Dalamud.Game;
@@ -8,10 +11,11 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
 using Dresser.Interop.Addons;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 
-using Microsoft.Extensions.Logging;
+using AlGsService = AllaganLib.GameSheets.Service;
 
 namespace Dresser {
 	internal class PluginServices {
@@ -45,7 +49,7 @@ namespace Dresser {
 
 
 		internal static AddonManager AddonManager = null!;
-		internal static Interop.Hooks.GlamourPlates GlamourPlates = null!;
+		internal static GlamourPlates GlamourPlates = null!;
 		internal static Storage Storage = null!;
 		internal static ApplyGearChange ApplyGearChange = null!;
 		internal static Context Context = null!;
@@ -58,11 +62,24 @@ namespace Dresser {
 		public static void Init(IDalamudPluginInterface dalamud, Plugin plugin) {
 
 			dalamud.Create<Service>();
-			Service.ExcelCache = new ExcelCache(Service.Data, new Logger<ExcelCache>(new LoggerFactory()));
-			Service.ExcelCache.CalculateLookups(true, true); //if you want NPC or shop data loaded set these to true
-			Service.ExcelCache.PreCacheItemData();
-
 			dalamud.Create<PluginServices>();
+
+
+			var gd = DataManager.GameData;
+			var smso = new AlGsService.SheetManagerStartupOptions()
+			{
+				BuildNpcLevels = true,
+				BuildNpcShops = true,
+				BuildItemInfoCache = true,
+				CalculateLookups = true,
+				// ContainerBuilderHook = builder =>
+				// {
+				// 	builder.RegisterType<uint>().AsSelf().as
+				// }
+			};
+			var sm = new AlGsService.SheetManager(gd, smso);
+			var cc = new CraftingCache(sm);
+			Service.ExcelCache = new ExcelCache(sm,cc,gd);
 
 			Context = new Context();
 
@@ -106,7 +123,6 @@ namespace Dresser {
 
 			Context.Dispose();
 
-			Service.ExcelCache.Destroy();
 			//GameInterface.Dispose();
 			HotkeyService.Dispose();
 			ImageGuiCrop.Dispose();

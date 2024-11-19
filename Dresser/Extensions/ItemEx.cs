@@ -1,52 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using AllaganLib.GameSheets.Model;
+using AllaganLib.GameSheets.Sheets.Helpers;
+using AllaganLib.GameSheets.Sheets.Rows;
+
 using CriticalCommonLib;
 using CriticalCommonLib.Enums;
-using CriticalCommonLib.Sheets;
 
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Textures;
+using Dalamud.Utility;
 
-using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Logic.Glamourer;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
 
 using Lumina.Data;
+using Lumina.Excel.Sheets;
 
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
-using CriticalItemEx = CriticalCommonLib.Sheets.ItemEx;
+using EquipSlot = Penumbra.GameData.Enums.EquipSlot;
 using InteropGlamourPlateSlot = Dresser.Interop.Hooks.GlamourPlateSlot;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
-		public static GlamourPlateSlot? GlamourPlateSlot(this CriticalItemEx item) {
-			var slot = item.EquipSlotCategoryEx;
-			if (slot == null) return null;
-			if (slot.MainHand == 1) return InteropGlamourPlateSlot.MainHand;
-			if (slot.OffHand == 1) return InteropGlamourPlateSlot.OffHand;
-			if (slot.Head == 1) return InteropGlamourPlateSlot.Head;
-			if (slot.Body == 1) return InteropGlamourPlateSlot.Body;
-			if (slot.Gloves == 1) return InteropGlamourPlateSlot.Hands;
-			if (slot.Legs == 1) return InteropGlamourPlateSlot.Legs;
-			if (slot.Feet == 1) return InteropGlamourPlateSlot.Feet;
-			if (slot.Ears == 1) return InteropGlamourPlateSlot.Ears;
-			if (slot.Neck == 1) return InteropGlamourPlateSlot.Neck;
-			if (slot.Wrists == 1) return InteropGlamourPlateSlot.Wrists;
-			if (slot.FingerR == 1) return InteropGlamourPlateSlot.RightRing;
-			if (slot.FingerL == 1) return InteropGlamourPlateSlot.LeftRing;
+		public static InteropGlamourPlateSlot? GlamourPlateSlot(this ItemRow item)
+		{
+			var slot = item.EquipSlotCategory?.Base;
+			if(slot == null) return null;
+
+			if (slot.Value.MainHand == 1) return InteropGlamourPlateSlot.MainHand;
+			if (slot.Value.OffHand == 1) return InteropGlamourPlateSlot.OffHand;
+			if (slot.Value.Head == 1) return InteropGlamourPlateSlot.Head;
+			if (slot.Value.Body == 1) return InteropGlamourPlateSlot.Body;
+			if (slot.Value.Gloves == 1) return InteropGlamourPlateSlot.Hands;
+			if (slot.Value.Legs == 1) return InteropGlamourPlateSlot.Legs;
+			if (slot.Value.Feet == 1) return InteropGlamourPlateSlot.Feet;
+			if (slot.Value.Ears == 1) return InteropGlamourPlateSlot.Ears;
+			if (slot.Value.Neck == 1) return InteropGlamourPlateSlot.Neck;
+			if (slot.Value.Wrists == 1) return InteropGlamourPlateSlot.Wrists;
+			if (slot.Value.FingerR == 1) return InteropGlamourPlateSlot.RightRing;
+			if (slot.Value.FingerL == 1) return InteropGlamourPlateSlot.LeftRing;
 			return null;
 			//throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
 		}
-		public static byte ToEquipSlotCategoryByte(this GlamourPlateSlot slot) {
+		public static byte ToEquipSlotCategoryByte(this InteropGlamourPlateSlot slot) {
 			return slot switch {
 				InteropGlamourPlateSlot.MainHand => 0 + 1,
 				InteropGlamourPlateSlot.OffHand => 1 + 1,
@@ -65,137 +71,151 @@ namespace Dresser.Extensions {
 				_ => throw new Exception($"Unidentified GlamourPlateSlot: {slot}")
 			};
 		}
-		public static EquipIndex? EquipIndex(this CriticalItemEx item) {
-			var slot = item.EquipSlotCategoryEx;
-			if (slot == null) return null;
-			//if (slot.MainHand == 1) return EquipIndex.MainHand;
-			//if (slot.OffHand == 1) return EquipIndex.OffHand;
-			if (slot.Head == 1) return Structs.Actor.EquipIndex.Head;
-			if (slot.Body == 1) return Structs.Actor.EquipIndex.Chest;
-			if (slot.Gloves == 1) return Structs.Actor.EquipIndex.Hands;
-			if (slot.Legs == 1) return Structs.Actor.EquipIndex.Legs;
-			if (slot.Feet == 1) return Structs.Actor.EquipIndex.Feet;
-			if (slot.Ears == 1) return Structs.Actor.EquipIndex.Earring;
-			if (slot.Neck == 1) return Structs.Actor.EquipIndex.Necklace;
-			if (slot.Wrists == 1) return Structs.Actor.EquipIndex.Bracelet;
-			if (slot.FingerR == 1) return Structs.Actor.EquipIndex.RingRight;
-			if (slot.FingerL == 1) return Structs.Actor.EquipIndex.RingLeft;
+		public static EquipIndex? EquipIndex(this ItemRow item) {
+			var slot = item.EquipSlotCategory?.Base;
+			if(slot == null) return null;
+
+			//if (slot.Value.MainHand == 1) return EquipIndex.MainHand;
+			//if (slot.Value.OffHand == 1) return EquipIndex.OffHand;
+			if (slot.Value.Head == 1) return Structs.Actor.EquipIndex.Head;
+			if (slot.Value.Body == 1) return Structs.Actor.EquipIndex.Chest;
+			if (slot.Value.Gloves == 1) return Structs.Actor.EquipIndex.Hands;
+			if (slot.Value.Legs == 1) return Structs.Actor.EquipIndex.Legs;
+			if (slot.Value.Feet == 1) return Structs.Actor.EquipIndex.Feet;
+			if (slot.Value.Ears == 1) return Structs.Actor.EquipIndex.Earring;
+			if (slot.Value.Neck == 1) return Structs.Actor.EquipIndex.Necklace;
+			if (slot.Value.Wrists == 1) return Structs.Actor.EquipIndex.Bracelet;
+			if (slot.Value.FingerR == 1) return Structs.Actor.EquipIndex.RingRight;
+			if (slot.Value.FingerL == 1) return Structs.Actor.EquipIndex.RingLeft;
 			return null;
 		}
 
-		public static Penumbra.GameData.Enums.EquipSlot? PenumbraEquipIndex(this CriticalItemEx item) {
+		public static EquipSlot? PenumbraEquipIndex(this ItemRow item) {
+			var slot = item.EquipSlotCategory?.Base;
+			if(slot == null) return null;
 
-			var slot = item.EquipSlotCategoryEx;
-			if (slot == null) return null;
-			if (slot.MainHand == 1) return Penumbra.GameData.Enums.EquipSlot.MainHand;
-			if (slot.OffHand == 1) return Penumbra.GameData.Enums.EquipSlot.OffHand;
-			if (slot.Head == 1) return Penumbra.GameData.Enums.EquipSlot.Head;
-			if (slot.Body == 1) return Penumbra.GameData.Enums.EquipSlot.Body;
-			if (slot.Gloves == 1) return Penumbra.GameData.Enums.EquipSlot.Hands;
-			if (slot.Legs == 1) return Penumbra.GameData.Enums.EquipSlot.Legs;
-			if (slot.Feet == 1) return Penumbra.GameData.Enums.EquipSlot.Feet;
-			if (slot.Ears == 1) return Penumbra.GameData.Enums.EquipSlot.Ears;
-			if (slot.Neck == 1) return Penumbra.GameData.Enums.EquipSlot.Neck;
-			if (slot.Wrists == 1) return Penumbra.GameData.Enums.EquipSlot.Wrists;
-			if (slot.FingerR == 1) return Penumbra.GameData.Enums.EquipSlot.RFinger;
-			if (slot.FingerL == 1) return Penumbra.GameData.Enums.EquipSlot.LFinger;
+			if (slot.Value.MainHand == 1) return EquipSlot.MainHand;
+			if (slot.Value.OffHand == 1) return EquipSlot.OffHand;
+			if (slot.Value.Head == 1) return EquipSlot.Head;
+			if (slot.Value.Body == 1) return EquipSlot.Body;
+			if (slot.Value.Gloves == 1) return EquipSlot.Hands;
+			if (slot.Value.Legs == 1) return EquipSlot.Legs;
+			if (slot.Value.Feet == 1) return EquipSlot.Feet;
+			if (slot.Value.Ears == 1) return EquipSlot.Ears;
+			if (slot.Value.Neck == 1) return EquipSlot.Neck;
+			if (slot.Value.Wrists == 1) return EquipSlot.Wrists;
+			if (slot.Value.FingerR == 1) return EquipSlot.RFinger;
+			if (slot.Value.FingerL == 1) return EquipSlot.LFinger;
 			return null;
 		}
 
-		public static FullEquipType ToFullEquipType(this CriticalItemEx item, bool isMainHand) {
-			var slot = (Penumbra.GameData.Enums.EquipSlot)item.EquipSlotCategory.Row;
-			var weapon = (WeaponCategory)item.ItemUICategory.Row;
+		public static FullEquipType ToFullEquipType(this ItemRow item, bool isMainHand) {
+			var slot = (EquipSlot)item.EquipSlotCategory.RowId;
+			var weapon = (WeaponCategory)item.Base.ItemUICategory.RowId;
 			return slot.ToEquipType(weapon, isMainHand);
 		}
-		public static InteropGlamourPlateSlot? ToWeaponSlot(this CriticalItemEx item) {
+		public static InteropGlamourPlateSlot? ToWeaponSlot(this ItemRow item) {
 			return item.ToFullEquipType(true).ToSlot() switch {
-				Penumbra.GameData.Enums.EquipSlot.MainHand => InteropGlamourPlateSlot.MainHand,
-				Penumbra.GameData.Enums.EquipSlot.OffHand => InteropGlamourPlateSlot.OffHand,
+				EquipSlot.MainHand => InteropGlamourPlateSlot.MainHand,
+				EquipSlot.OffHand => InteropGlamourPlateSlot.OffHand,
 				_ => null
 			};
 		}
-		public static bool IsMainModelOnOffhand(this CriticalItemEx item) {
-			return item.ToFullEquipType(true).ToSlot() == Penumbra.GameData.Enums.EquipSlot.OffHand;
+		public static bool IsMainModelOnOffhand(this ItemRow item) {
+			return item.ToFullEquipType(true).ToSlot() == EquipSlot.OffHand;
 		}
 
 
 
 
 
-		private static ItemModel ItemModelFromUlong(this CriticalItemEx item, ulong model, bool isWeapon)
+		private static ItemModel ItemModelFromUlong(this ItemRow item, ulong model, bool isWeapon)
 			=> new(model, isWeapon);
-		public static ItemModel ModelMainItemModel(this CriticalItemEx item)
-			=> item.ItemModelFromUlong(item.ModelMain, item.IsWeapon());
-		public static ItemModel ModelSubItemModel(this CriticalItemEx item)
-			=> item.ItemModelFromUlong(item.ModelSub, item.IsWeapon());
+		public static ItemModel ModelMainItemModel(this ItemRow item)
+			=> item.ItemModelFromUlong(item.Base.ModelMain, item.IsWeapon());
+		public static ItemModel ModelSubItemModel(this ItemRow item)
+			=> item.ItemModelFromUlong(item.Base.ModelSub, item.IsWeapon());
 
 
-		public static bool IsWeapon(this CriticalItemEx item)
-			=> item.EquipSlotCategoryEx?.MainHand == 1 || item.EquipSlotCategoryEx?.OffHand == 1;
-		public static bool CanBeEquipedByPlayedRaceGender(this CriticalItemEx item) {
+		public static bool IsWeapon(this ItemRow item)
+			=> item.EquipSlotCategory?.Base.MainHand == 1 || item.EquipSlotCategory?.Base.OffHand == 1;
+		public static bool CanBeEquipedByPlayedRaceGender(this ItemRow item) {
 			var gender = PluginServices.Context.LocalPlayerGender;
 			var race = PluginServices.Context.LocalPlayerRace;
 			if (gender == null || race == null) return false;
 
 			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
 		}
-		public static bool CanBeEquipedByPlayedJob(this CriticalItemEx item, bool strict = false) {
+		public static bool CanBeEquipedByPlayedJob(this ItemRow item, bool strict = false)
+			=> item.Base.CanBeEquipedByPlayedJob(strict);
+		public static bool CanBeEquipedByPlayedJob(this Item item, bool strict = false) {
 			var job = PluginServices.Context.LocalPlayerClass;
 			if (job == null) return false;
-			var categoryId = item.ClassJobCategory.Row;
+			var jobCategory = item.ClassJobCategory;
+			// if (jobCategory == null) return false;
 
-
-			var isEquipable = Service.ExcelCache.IsItemEquippableBy(categoryId, job.RowId);
-			if(!strict || !isEquipable) return isEquipable;
-
-			// ensure there there is only one category
-			return Service.ExcelCache.ClassJobCategoryLookup[categoryId].Count == 1;
+			var isEquipable = Service.ExcelCache.GetClassJobCategorySheet().IsItemEquippableBy(jobCategory.RowId, job.Value.RowId);
+			if (isEquipable && strict) {
+				// ensure there is only one category
+				isEquipable = Service.ExcelCache
+					.GetClassJobCategorySheet()
+					.Any(jc=> jc.RowId == jobCategory.RowId && jc.ClassJobIds.Count == 1);
+					//was before 7.1: .ClassJobCategoryLookup[categoryId].Count == 1;
+			}
+			return isEquipable;
 		}
-		public static CriticalInventoryItem ToInventoryItem(this CriticalItemEx itemEx, InventoryType inventoryType) {
+		public static CriticalInventoryItem ToInventoryItem(this ItemRow itemEx, InventoryType inventoryType) {
 			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		}
 
-		public static bool ObtainedWithSpecialShopCurrency2(this CriticalItemEx itemEx, uint currencyItemId) {
-			if (Service.ExcelCache.SpecialShopItemRewardCostLookup.TryGetValue(itemEx.RowId, out var specialShop)) {
-				return specialShop.Any(c => c.Item2 == currencyItemId);
-			}
+		public static bool ObtainedWithSpecialShopCurrency2(this ItemRow itemEx, uint currencyItemId)
+		{
+			return itemEx.Sources.Any(s=>s.CostItems.Any(c=>c.RowId == currencyItemId));
+			// return Service.ExcelCache.GetSpecialShopSheet().Any(u => u.CostItems.Any(c => c.RowId == currencyItemId) && u.Items.Any(i => i == itemEx));
 
-			return false;
+			// if (Service.ExcelCache.SpecialShopItemRewardCostLookup.TryGetValue(itemEx.RowId, out var specialShop)) {
+			// 	return specialShop.Any(c => c.Item2 == currencyItemId);
+			// }
+			//
+			// return false;
 		}
-		public static ISharedImmediateTexture IconTextureWrap(this CriticalItemEx itemEx) {
+		public static ISharedImmediateTexture IconTextureWrap(this ItemRow itemEx) {
 			return IconWrapper.Get(itemEx);
 		}
 
 
 
-		public static void OpenInGarlandTools(this CriticalItemEx item)
+		public static void OpenInGarlandTools(this ItemRow item)
 			=> $"https://www.garlandtools.org/db/#item/{item.RowId}".OpenBrowser();
-		public static void OpenInTeamcraft(this CriticalItemEx item)
+		public static void OpenInTeamcraft(this ItemRow item)
 			=> $"https://ffxivteamcraft.com/db/en/item/{item.RowId}".OpenBrowser();
 
-		public static void OpenInGamerEscape(this CriticalItemEx item) {
-			var enItem = Service.Data.Excel.GetSheet<CriticalItemEx>(Language.English)?.GetRow(item.RowId);
+		public static void OpenInGamerEscape(this ItemRow item) {
+
+			var enItem = Service.Data.GameData.Excel.GetSheet<Item>(Language.English).GetRowOrDefault(item.RowId);
+				// .GetSheet<ItemSheet>(Language.English)?.GetRow(item.RowId);
+
 			if (enItem != null)
-				$"https://ffxiv.gamerescape.com/w/index.php?search={Uri.EscapeDataString(enItem.NameString)}".OpenBrowser();
+				$"https://ffxiv.gamerescape.com/w/index.php?search={Uri.EscapeDataString(enItem.Value.Name.ToDalamudString().ToString())}".OpenBrowser();
 		}
-		public static void OpenInUniversalis(this CriticalItemEx item)
+		public static void OpenInUniversalis(this ItemRow item)
 			=> $"https://universalis.app/market/{item.RowId}".OpenBrowser();
-		public static void CopyNameToClipboard(this CriticalItemEx item)
+		public static void CopyNameToClipboard(this ItemRow item)
 			=> item.NameString.ToClipboard();
-		public static void LinkInChatHistory(this CriticalItemEx item) {
-			if (item.RowId == ItemEx.FreeCompanyCreditItemId) {
+		public static void LinkInChatHistory(this ItemRow item) {
+			if (item.RowId == HardcodedItems.FreeCompanyCreditItemId) {
 				return;
 			}
 			var payloadList = new List<Payload> {
-				new UIForegroundPayload((ushort) (0x223 + item.Rarity * 2)),
-				new UIGlowPayload((ushort) (0x224 + item.Rarity * 2)),
-				new ItemPayload(item.RowId, item.CanBeHq && Service.KeyState[0x11]),
+				new UIForegroundPayload((ushort) (0x223 + item.Base.Rarity * 2)),
+				new UIGlowPayload((ushort) (0x224 + item.Base.Rarity * 2)),
+				new ItemPayload(item.RowId, item.Base.CanBeHq && Service.KeyState[0x11]),
 				new UIForegroundPayload(500),
 				new UIGlowPayload(501),
 				new TextPayload($"{(char) SeIconChar.LinkMarker}"),
 				new UIForegroundPayload(0),
 				new UIGlowPayload(0),
-				new TextPayload(item.Name + (item.CanBeHq && Service.KeyState[0x11] ? $" {(char)SeIconChar.HighQuality}" : "")),
+				new TextPayload(item.NameString + (item.Base.CanBeHq && Service.KeyState[0x11] ? $" {(char)SeIconChar.HighQuality}" : "")),
 				new RawPayload(new byte[] {0x02, 0x27, 0x07, 0xCF, 0x01, 0x01, 0x01, 0xFF, 0x01, 0x03}),
 				new RawPayload(new byte[] {0x02, 0x13, 0x02, 0xEC, 0x03})
 			};
@@ -207,26 +227,28 @@ namespace Dresser.Extensions {
 			});
 		}
 		//=> PluginServices.ChatUtilities.LinkItem(item);
-		public static void TryOn(this CriticalItemEx item) {
+		public static void TryOn(this ItemRow item) {
 			if (item.CanTryOn && PluginServices.TryOn.CanUseTryOn)
 				PluginServices.TryOn.TryOnItem(item);
 		}
-		//public static void OpenCraftingLog(this CriticalItemEx item) {
+		//public static void OpenCraftingLog(this ItemRow item) {
 		//	if (item.CanOpenCraftLog)
 		//		PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 		//}
 
-		public static bool IsSoldByAnyVendor(this CriticalItemEx item, IEnumerable<string> vendorNames)
-			=> Service.ExcelCache.ShopCollection?.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular))) ?? false;
+		public static bool IsSoldByAnyVendor(this ItemRow item, IEnumerable<string> vendorNames)
+			=> item.GilShops.Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident.Value.Singular)));
+				// Service.ExcelCache.GetGilShopItemSheet()
+				// .ShopCollection?.GetShops(item.RowId).Any(s => s.ENpcs.Any(n => vendorNames.Any(av => av == n.Resident!.Singular))) ?? false;
 
-		public static Dictionary<Penumbra.GameData.Enums.EquipSlot,CustomItemId> ToCustomItemId(this CriticalItemEx item, GlamourPlateSlot slot)
-			=> Design.FromInventoryItem(item, slot);
+		public static Dictionary<EquipSlot,CustomItemId> ToCustomItemId(this ItemRow item, InteropGlamourPlateSlot slot)
+			=> Design.FromInventoryItem(item.Base, slot);
 
-		public static bool IsDyeable1(this CriticalItemEx item) {
-			return item.DyeCount > 0;
+		public static bool IsDyeable1(this ItemRow item) {
+			return item.Base.DyeCount > 0;
 		}
-		public static bool IsDyeable2(this CriticalItemEx item) {
-			return item.DyeCount > 1;
+		public static bool IsDyeable2(this ItemRow item) {
+			return item.Base.DyeCount > 1;
 		}
 	}
 }

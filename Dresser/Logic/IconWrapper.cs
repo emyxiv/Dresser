@@ -1,16 +1,10 @@
-﻿using CriticalCommonLib.Sheets;
+﻿using AllaganLib.GameSheets.Sheets.Rows;
 
-using Dalamud.Utility;
-using Dalamud.Plugin.Services;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Textures.TextureWraps;
+using Dalamud.Interface.Textures;
 
 using Dresser.Structs.Dresser;
-using Lumina.Data.Files;
 
-using System;
-using System.Collections.Generic;
-using Dalamud.Interface.Textures;
+using Lumina.Data.Files;
 
 namespace Dresser.Logic {
 	public class IconWrapper {
@@ -20,7 +14,7 @@ namespace Dresser.Logic {
 			return PluginServices.TextureProvider.GetFromGameIcon(new GameIconLookup((uint)id));
 				//.GetIcon((uint)id); ;
 		}
-		public static ISharedImmediateTexture Get(ItemEx? itemEx) {
+		public static ISharedImmediateTexture Get(ItemRow? itemEx) {
 			if (itemEx == null)
 				return null;
 			return PluginServices.TextureProvider.GetFromGameIcon(new GameIconLookup(itemEx.Icon));

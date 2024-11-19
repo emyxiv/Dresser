@@ -1,7 +1,15 @@
-using CriticalCommonLib;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
+
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
+using Dalamud.Interface;
+
+using Dresser.Enums;
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
@@ -11,15 +19,7 @@ using Dresser.Windows.Components;
 
 using ImGuiNET;
 
-using Penumbra.GameData.Enums;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-
-using Dresser.Enums;
+using Penumbra.Api.Enums;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
@@ -106,8 +106,8 @@ namespace Dresser.Services {
 				}
 			}
 			DyePicker.CurrentItem = item;
-			if (item?.Item.DyeCount < DyePicker.DyeIndex) DyePicker.DyeIndex = item?.Item.DyeCount ?? 1;
-			if (item?.Item.DyeCount > 0 && DyePicker.DyeIndex == 0) DyePicker.DyeIndex = 1;
+			if (item?.Item.Base.DyeCount < DyePicker.DyeIndex) DyePicker.DyeIndex = item?.Item.Base.DyeCount ?? 1;
+			if (item?.Item.Base.DyeCount > 0 && DyePicker.DyeIndex == 0) DyePicker.DyeIndex = 1;
 
 		}
 
@@ -209,7 +209,7 @@ namespace Dresser.Services {
 			//modSettings.Item2.Value.Priority
 
 			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-			if (modSettings.Item1 == Penumbra.Api.Enums.PenumbraApiEc.Success && modSettings.Item2.HasValue) {
+			if (modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue) {
 				foreach ((var optionGroup, var options) in modSettings.Item2.Value.EnabledOptions) {
 					var res1 = PluginServices.Penumbra.TrySetModSettings(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, optionGroup, options.ToList());
 					//PluginLog.Debug($"TrySetModSettings: {res1} | {item.ModName}");
@@ -258,7 +258,7 @@ namespace Dresser.Services {
 		private async void RemoveModFromPenumbra((string Path, string Name)? mod) {
 			if (mod == null) return;
 			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
-			Penumbra.Api.Enums.PenumbraApiEc res3 = Penumbra.Api.Enums.PenumbraApiEc.UnknownError;
+			PenumbraApiEc res3 = PenumbraApiEc.UnknownError;
 			for (var i = 0; i < 10; i++) {
 
 				try {
@@ -607,7 +607,7 @@ namespace Dresser.Services {
 					iconKey++;
 
 					ImGui.BeginDisabled();
-					ImGui.SameLine(); GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ChevronRight); ImGui.SameLine();
+					ImGui.SameLine(); GuiHelpers.Icon(FontAwesomeIcon.ChevronRight); ImGui.SameLine();
 					ImGui.EndDisabled();
 
 
@@ -855,7 +855,7 @@ namespace Dresser.Services {
 					ImGui.TextWrapped($"\"Forget\" will copy the contents of the plates into portable plates.");
 					ImGui.EndDisabled();
 
-					if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Trash, $"CTRL + Shift to \"Forget\".\nIt will copy the contents of the plates into portable plates.")) {
+					if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Trash, $"CTRL + Shift to \"Forget\".\nIt will copy the contents of the plates into portable plates.")) {
 						return 2;
 					}
 					ImGui.SameLine();

@@ -1,34 +1,49 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace Dresser.Logic
 {
-    internal class Throttler
+    internal class Throttler<T>
     {
-        private ConcurrentQueue<Action> _actions = new ConcurrentQueue<Action>();
+        private ConcurrentQueue<Func<T>> _actions = new ConcurrentQueue<Func<T>>();
         private Timer? _timer;
         private Stopwatch _stopwatch = new Stopwatch();
         private int _delayInMilliseconds;
 
-        public Throttler()
+        public Throttler(int seconds)
         {
-            _delayInMilliseconds = 0;
+            _delayInMilliseconds = seconds;
             if (_delayInMilliseconds == 0) return;
             _timer = new Timer(_delayInMilliseconds); // 1 second
             _timer.Elapsed += (sender, e) => ExecuteAction();
             _timer.AutoReset = true;
         }
 
-        public void Throttle(Action action)
+        public T Throttle(Func<T> action)
         {
             if (_delayInMilliseconds == 0)
             {
-                action();
-                return;
+                return action();
             }
-            _actions.Enqueue(action);
+
+            var tcs = new TaskCompletionSource<T>();
+            _actions.Enqueue(() =>
+            {
+                try
+                {
+                    var result = action();
+                    tcs.SetResult(result);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+                return default!;
+            });
+
             if (_timer != null && !_timer.Enabled)
             {
                 if (_stopwatch.IsRunning && _stopwatch.ElapsedMilliseconds < _delayInMilliseconds)
@@ -42,11 +57,13 @@ namespace Dresser.Logic
                 }
                 _stopwatch.Restart();
             }
+
+            return tcs.Task.Result;
         }
-        
+
         private void ExecuteAction()
         {
-            if (_actions.TryDequeue(out Action? action))
+            if (_actions.TryDequeue(out Func<T>? action))
             {
                 PluginLog.Debug($"Executing action at {DateTime.Now} ");
                 action();

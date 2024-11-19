@@ -1,4 +1,8 @@
-﻿using CriticalCommonLib;
+﻿using System;
+using System.Linq;
+using System.Numerics;
+
+using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 
 using Dresser.Extensions;
@@ -10,12 +14,7 @@ using Dresser.Structs.Dresser;
 
 using ImGuiNET;
 
-using Lumina.Excel.GeneratedSheets;
-
-
-using System;
-using System.Linq;
-using System.Numerics;
+using Lumina.Excel.Sheets;
 
 using GlamourPlates = Dresser.Interop.Hooks.GlamourPlates;
 using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
@@ -133,7 +132,7 @@ namespace Dresser.Windows.Components {
 				var stain = PluginServices.DataManager.Excel.GetSheet<Stain>()?.First(s => s.RowId == stainId);
 				if (stain != null) {
 					ImGui.SameLine();
-					ImGui.TextColored(stain.ColorVector4(), stain.Name);
+					ImGui.TextColored(stain.Value.ColorVector4(), stain.Value.Name.ToString());
 				}
 			}
 
@@ -142,7 +141,7 @@ namespace Dresser.Windows.Components {
 				var stain2 = PluginServices.DataManager.Excel.GetSheet<Stain>()?.First(s => s.RowId == stainId2);
 				if (stain2 != null) {
 					ImGui.SameLine();
-					ImGui.TextColored(stain2.ColorVector4(), stain2.Name);
+					ImGui.TextColored(stain2.Value.ColorVector4(), stain2.Value.Name.ToString());
 				}
 			}
 
@@ -152,7 +151,7 @@ namespace Dresser.Windows.Components {
 				var stainPreview = PluginServices.DataManager.Excel.GetSheet<Stain>()?.First(s => s.RowId == stainPreviewId);
 				if (stainPreview != null) {
 					ImGui.SameLine();
-					ImGui.TextColored(stainPreview.ColorVector4(), stainPreview.Name);
+					ImGui.TextColored(stainPreview.Value.ColorVector4(), stainPreview.Value.Name.ToString());
 				}
 			}
 			ImGui.Text($"stainPreviewId2: {stainPreviewId2} 0x{stainPreviewId2:X}");
@@ -160,7 +159,7 @@ namespace Dresser.Windows.Components {
 				var stainPreview = PluginServices.DataManager.Excel.GetSheet<Stain>()?.First(s => s.RowId == stainPreviewId2);
 				if (stainPreview != null) {
 					ImGui.SameLine();
-					ImGui.TextColored(stainPreview.ColorVector4(), stainPreview.Name);
+					ImGui.TextColored(stainPreview.Value.ColorVector4(), stainPreview.Value.Name.ToString());
 				}
 			}
 			ImGui.Text($"actualStainId: {actualStainId} 0x{actualStainId:X}");
@@ -169,7 +168,7 @@ namespace Dresser.Windows.Components {
 
 			ImGui.Text($"itemId: {itemId} 0x{itemId:X}");
 			if (itemId != 0) {
-				var item = Service.ExcelCache.AllItems[itemId];
+				var item = Service.ExcelCache.GetItemSheet().GetRowOrDefault(itemId);
 				if (item != null) {
 
 					var invItem = item.ToInventoryItem(InventoryType.Bag0);

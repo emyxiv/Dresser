@@ -1,4 +1,10 @@
-﻿using CriticalCommonLib;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
+
+using AllaganLib.GameSheets.Sheets.Rows;
+
+using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
@@ -11,11 +17,7 @@ using Dresser.Services;
 using Dresser.Structs.Actor;
 using Dresser.Windows;
 
-using Lumina.Excel.GeneratedSheets;
-
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
+using Lumina.Excel.Sheets;
 
 using static Dresser.Services.Storage;
 
@@ -162,30 +164,30 @@ namespace Dresser.Structs.Dresser {
 			};
 			return null;
 		}
-		public static CriticalCommonLib.Sheets.ItemEx? FromModelMain(ulong model, GlamourPlateSlot slot) {
+		public static ItemRow? FromModelMain(ulong model, GlamourPlateSlot slot) {
 
 			var equipSlotCategory = slot.ToEquipSlotCategoryByte();
-			var ddddd = Service.ExcelCache.AllItems.Where(item => item.Value.ModelMain == model && item.Value.EquipSlotCategory.Row == equipSlotCategory);
+			var ddddd = Service.ExcelCache.GetItemSheet().Where(item => item.Base.ModelMain == model && item.Base.EquipSlotCategory.RowId == equipSlotCategory);
 			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
 			//foreach((var id,var item) in ddddd) {
 			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
 
 			//}
-			return ddddd.FirstOrDefault().Value;
+			return ddddd.FirstOrDefault();
 		}
-		public static CriticalCommonLib.Sheets.ItemEx? FromModelWeaponMain(ulong model, GlamourPlateSlot slot) {
+		public static ItemRow? FromModelWeaponMain(ulong model, GlamourPlateSlot slot) {
 
 			//var equipSlotCategory = slot.ToEquipSlotCategoryByte();
-			var ddddd = Service.ExcelCache.AllItems.Where(item => item.Value.ModelMain == model);
+			var ddddd = Service.ExcelCache.GetItemSheet().Where(item => item.Base.ModelMain == model);
 			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
 			//foreach ((var id, var item) in ddddd) {
 			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
 
 			//}
-			return ddddd.FirstOrDefault().Value;
+			return ddddd.FirstOrDefault();
 		}
-		public static CriticalCommonLib.Sheets.ItemEx? FromModelWeaponSub(ulong model, GlamourPlateSlot slot) {
-			return Service.ExcelCache.AllItems.Where(item => item.Value.ModelSub == model).FirstOrDefault().Value;
+		public static ItemRow? FromModelWeaponSub(ulong model, GlamourPlateSlot slot) {
+			return Service.ExcelCache.GetItemSheet().Where(item => item.Base.ModelSub == model).FirstOrDefault();
 		}
 
 
@@ -194,13 +196,13 @@ namespace Dresser.Structs.Dresser {
 		public WeaponEquip ToWeaponEquipSub()
 			=> ToWeaponEquip(WeaponIndex.OffHand);
 		public IEnumerable<InventoryItem> GetDyesInInventories(int dyeIndex) {
-			var stainTransient = Service.ExcelCache.GetSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
+			var stainTransient = PluginServices.DataManager.GetExcelSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
 
 			var inventories = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true);
-			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient?.Item1.Value?.RowId || v.ItemId == stainTransient?.Item2.Value?.RowId)).Where(i=>i.ItemId != 0);
+			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient.Item1.RowId || v.ItemId == stainTransient.Item2.RowId)).Where(i=>i.ItemId != 0);
 
 			if(!foundDyes.Any()) {
-				var defaultStainRowId = stainTransient?.Item1.Value?.RowId;
+				var defaultStainRowId = stainTransient.Item1.RowId;
 				if(defaultStainRowId != null) {
 					var unobtainedDye = new InventoryItem((InventoryType)InventoryTypeExtra.AllItems, (uint)defaultStainRowId);
 

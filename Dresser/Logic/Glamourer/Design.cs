@@ -1,16 +1,16 @@
-﻿using CriticalCommonLib.Sheets;
+﻿using System;
+using System.Collections.Generic;
 
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
+
+using Lumina.Excel.Sheets;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
-
-using System;
-using System.Collections.Generic;
 
 namespace Dresser.Logic.Glamourer;
 
@@ -86,7 +86,7 @@ public static class Design {
 
 	}
 */
-	public static Dictionary<Penumbra.GameData.Enums.EquipSlot,CustomItemId> FromInventoryItem(ItemEx item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
+	public static Dictionary<EquipSlot,CustomItemId> FromInventoryItem(Item item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
 		var equipItem = slot switch {
 			GlamourPlateSlot.MainHand  => EquipItem.FromMainhand(item),
 			GlamourPlateSlot.OffHand => EquipItem.FromOffhand(item),
@@ -104,7 +104,7 @@ public static class Design {
 			var mainhandItem = PluginServices.Glamourer.GetMainHandItem();
 			if (mainhandItem != null)
 			{
-				var mainHandEquipItem = EquipItem.FromMainhand(mainhandItem);
+				var mainHandEquipItem = EquipItem.FromMainhand(mainhandItem.Value);
 				var validOffhand = mainHandEquipItem.Type.Offhand().AllowsNothing();
 				if (!validOffhand) return new();
 			}

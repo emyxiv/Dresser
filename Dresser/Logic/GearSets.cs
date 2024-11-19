@@ -1,18 +1,15 @@
-﻿using CriticalCommonLib;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+using CriticalCommonLib;
 
 using Dalamud.Interface.Textures;
-using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Structs;
 using Dresser.Windows.Components;
 
-using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-
 using ImGuiNET;
-
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
 
 using static FFXIVClientStructs.FFXIV.Client.UI.Misc.RaptureGearsetModule;
 
@@ -62,7 +59,7 @@ namespace Dresser.Logic {
 			var gearsets = RelatedGearSets(plateNumber);
 			if(gearsets.Count == 0) return null;
 			var gearset = gearsets.First();
-			return (uint)RaptureGearsetModule.Instance()->GetClassJobIconForGearset(gearset.Id);
+			return (uint)Instance()->GetClassJobIconForGearset(gearset.Id);
 		}
 		public static ClassJobRole? RelatedGearSetRole(ushort plateNumber) {
 			var gearsets = RelatedGearSetClassJob(plateNumber);
@@ -70,7 +67,7 @@ namespace Dresser.Logic {
 			var classjobByte = gearsets.First();
 			var classJob = Service.ExcelCache.GetClassJobSheet().GetRow(classjobByte);
 			if (classJob == null) return null;
-			return (ClassJobRole)classJob.Role;
+			return (ClassJobRole)classJob.Base.Role;
 		}
 		public static Vector4? RelatedGearSetClassJobCategoryColor(ushort plateNumber)
 			=> RelatedGearSetRole(plateNumber) switch {

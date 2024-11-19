@@ -20,6 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+using Autofac.Core;
+
+using CriticalCommonLib.Services;
+
+using Service = CriticalCommonLib.Service;
+
 namespace Dresser.Windows;
 
 public class ConfigWindow : Window, IDisposable {
@@ -507,6 +513,10 @@ public class ConfigWindow : Window, IDisposable {
 
 
 		}
+		if (ImGui.CollapsingHeader("Test Currencies"))
+		{
+			DrawDebugCurrencies();
+		}
 		if (ImGui.CollapsingHeader("TestUld")) {
 			ImageGuiCrop.TestParts();
 		}
@@ -639,5 +649,27 @@ public class ConfigWindow : Window, IDisposable {
 		}
 
 		fieldInfo?.SetValue(ConfigurationManager.Config, color);
+	}
+
+	private void DrawDebugCurrencies()
+	{
+		var currencyUsed = Service.ExcelCache.ItemInfoCache.GetNpcShops()?.Values.SelectMany(v=>v.SelectMany(fg=>fg.CostItems)).Distinct() ?? [];
+		currencyUsed = currencyUsed.Where(c => 
+			c.IsCurrency
+			// !c.CanBeAcquired
+			// && !c.CanTryOn
+			// && !c.CanBeDesynthed
+			// && !c.CanBeCrafted
+			// && !c.CanBeGathered
+			);
+		currencyUsed = currencyUsed.OrderBy(c => c.RowId);
+		foreach (var currency in currencyUsed)
+		{
+			ImGui.Image(currency.IconTextureWrap().GetWrapOrEmpty().ImGuiHandle, ItemIcon.IconSize * 0.4f);
+			ImGui.SameLine();
+			ImGui.Text(currency.RowId.ToString());
+			ImGui.SameLine();
+			ImGui.Text(currency.NameString);
+		}
 	}
 }

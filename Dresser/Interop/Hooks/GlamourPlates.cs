@@ -1,8 +1,14 @@
-﻿using CriticalCommonLib;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+
+using CriticalCommonLib;
 
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
-using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 
 using Dresser.Extensions;
@@ -14,13 +20,11 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using Lumina.Excel.Sheets;
+using Lumina.Extensions;
 
+using Cabinet = Lumina.Excel.Sheets.Cabinet;
+using InventoryItem = FFXIVClientStructs.FFXIV.Client.Game.InventoryItem;
 using InventoryItemDr = Dresser.Structs.Dresser.InventoryItem;
 using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
 
@@ -31,7 +35,7 @@ namespace Dresser.Interop.Hooks {
 		// https://github.com/caitlyn-gg/Glamaholic/blob/main/Glamaholic/GameFunctions.cs
 
 		private unsafe delegate void SetGlamourPlateSlotDelegate(AgentMiragePrismMiragePlate* agent, MirageSource mirageSource, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2);
-		private unsafe delegate void SetGlamourPlateSlotStainsDelegate(AgentMiragePrismMiragePlate* agent, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem* stain1Item, byte stain1Idx, uint stain1ItemId, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem* stain2Item, byte stain2Idx, uint stain2ItemId);
+		private unsafe delegate void SetGlamourPlateSlotStainsDelegate(AgentMiragePrismMiragePlate* agent, InventoryItem* stain1Item, byte stain1Idx, uint stain1ItemId, InventoryItem* stain2Item, byte stain2Idx, uint stain2ItemId);
 		private unsafe delegate int GetCabinetItemIdDelegate(FFXIVClientStructs.FFXIV.Client.Game.UI.Cabinet* armoire, uint baseItemId);
 
 		[Signature(Signatures.SetGlamourPlateSlot)] private readonly SetGlamourPlateSlotDelegate SetGlamourPlateSlotNative = null!;
@@ -44,6 +48,8 @@ namespace Dresser.Interop.Hooks {
 		internal unsafe bool ArmoireLoaded => this.Armoire->IsCabinetLoaded();
 		internal unsafe static AgentMiragePrismPrismBox* PrismBoxAgent => AgentMiragePrismPrismBox.Instance();
 		internal unsafe static AgentCabinet* CabinetAgent => AgentCabinet.Instance();
+		private Throttler<Task<SetGlamourPlateSlotReturn>> _glamourDresserApplyThrottler;
+
 
 		internal unsafe static bool IsGlamingAtDresser() {
 
@@ -88,7 +94,7 @@ namespace Dresser.Interop.Hooks {
 
 
 
-			PluginLog.Error($"About to put info in glamour plate");
+			// PluginLog.Error($"About to put info in glamour plate");
 
 			UsedStains usedStain = new();
 			HashSet<GlamourPlateSlot> successfullyApplied = new();
@@ -118,9 +124,9 @@ namespace Dresser.Interop.Hooks {
 				if (zzz == SetGlamourPlateSlotReturn.success) changedCount++;
 				if (zzz == SetGlamourPlateSlotReturn.success || zzz == SetGlamourPlateSlotReturn.same) {
 					successfullyApplied.Add(slot);
-					PluginLog.Debug($"apply into dresser ({slot}) SUCCESS");
+					PluginLog.Debug($"apply into dresser ({slot}) SUCCESS{(zzz == SetGlamourPlateSlotReturn.same? " (Same)": "")}");
 				} else {
-					PluginLog.Warning($"apply into dresser ({slot}) FAILLURE {item?.FormattedName}");
+					PluginLog.Warning($"apply into dresser ({slot}) FAILURE {item?.FormattedName}");
 				}
 				//System.Threading.Tasks.Task.Run(async delegate {
 				//	await System.Threading.Tasks.Task.Delay(50);
@@ -153,23 +159,23 @@ namespace Dresser.Interop.Hooks {
 			//this._clearGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, slot);
 		}
 		internal unsafe bool IsInArmoire(uint itemId) {
-			var row = PluginServices.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Cabinet>()!.FirstOrDefault(row => row.Item.Row == itemId);
+			var row = PluginServices.DataManager.GetExcelSheet<Cabinet>().FirstOrNull(row => row.Item.RowId == itemId);
 			if (row == null) {
 				return false;
 			}
 
-			return this.Armoire->IsItemInCabinet((int)row.RowId);
+			return this.Armoire->IsItemInCabinet((int)row.Value.RowId);
 		}
 
 		internal unsafe uint? ArmoireIndexIfPresent(uint itemId) {
-			var row = PluginServices.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.Cabinet>()!.FirstOrDefault(row => row.Item.Row == itemId);
+			var row = PluginServices.DataManager.GetExcelSheet<Cabinet>().FirstOrNull(row => row.Item.RowId == itemId);
 			if (row == null) {
 				return null;
 			}
 
-			var isInArmoire = this.Armoire->IsItemInCabinet((int)row.RowId);
+			var isInArmoire = this.Armoire->IsItemInCabinet((int)row.Value.RowId);
 			return isInArmoire
-				? row.RowId
+				? row.Value.RowId
 				: null;
 		}
 
@@ -180,7 +186,21 @@ namespace Dresser.Interop.Hooks {
 			success,
 			same
 		}
-		internal unsafe SetGlamourPlateSlotReturn SetGlamourPlateSlot(InventoryItemDr applyItem, ref UsedStains usedStains, GlamourPlateSlot? applyItemSlot = null) {
+		internal SetGlamourPlateSlotReturn SetGlamourPlateSlot(InventoryItemDr applyItem, ref UsedStains usedStains, GlamourPlateSlot? applyItemSlot = null)
+		{
+			var vvv = usedStains;
+			Task<SetGlamourPlateSlotReturn> task = _glamourDresserApplyThrottler.Throttle(() =>
+			{
+				task = PluginServices.Framework.RunOnFrameworkThread(() => SetGlamourPlateSlotFramework(applyItem, ref vvv, applyItemSlot));
+				task.Wait();
+
+				return task;
+
+			});
+			usedStains = vvv;
+			return task.Result;
+		}
+		private unsafe SetGlamourPlateSlotReturn SetGlamourPlateSlotFramework(InventoryItemDr applyItem, ref UsedStains usedStains, GlamourPlateSlot? applyItemSlot = null) {
 			var agent = MiragePlateAgent;
 			if (agent == null) {
 				return SetGlamourPlateSlotReturn.failed;
@@ -228,9 +248,9 @@ namespace Dresser.Interop.Hooks {
 				if (currentItem.ItemId == applyItem.ItemId
 					&& currentItem.Stain1 == applyItem.Stain
 					&& currentItem.Stain2 == applyItem.Stain2) {
-					PluginLog.Verbose($"Item alread correct, ignoring");
+					// PluginLog.Verbose($"Item alread correct, ignoring");
 					//data->SelectedItemIndex = initialSlot;
-					return SetGlamourPlateSlotReturn.success;
+					return SetGlamourPlateSlotReturn.same;
 				}
 			}
 
@@ -288,7 +308,7 @@ namespace Dresser.Interop.Hooks {
 				info.index, // slot or cabinet id
 				info.id, // item id
 				info.stain1, // stain 1
-				info.stain2  // stain 2
+				info.stain2 // stain 2
 			);
 
 			if (applyItem.Stain != info.stain1 || applyItem.Stain2 != info.stain2) {
@@ -308,6 +328,19 @@ namespace Dresser.Interop.Hooks {
 
 
 			}
+			
+			
+			
+			// PluginLog.Debug("zzz vvv");
+			var zzz = data->Plates;
+
+			var fff = data->SelectedMiragePlateIndex;
+			var plat = zzz[(int)fff];
+			// PluginLog.Debug("zzz");
+			var it = plat.Items[(int)applyItemSlot.Value];
+			// if(it.ItemId != info.id) PluginLog.Error($"failed to apply {info.id}=>{it.ItemId} on {applyItemSlot.Value}");
+			
+			
 
 			return SetGlamourPlateSlotReturn.success;
 		}
@@ -321,24 +354,25 @@ namespace Dresser.Interop.Hooks {
 			SetGlamourPlateSlotStainsNative(MiragePlateAgent, stain1Item, item.Stain, stain1ItemId, stain2Item, item.Stain2, stain2ItemId);
 		}
 
-		private static readonly FFXIVClientStructs.FFXIV.Client.Game.InventoryType[] PlayerInventories = {
-			FFXIVClientStructs.FFXIV.Client.Game.InventoryType.Inventory1,
-			FFXIVClientStructs.FFXIV.Client.Game.InventoryType.Inventory2,
-			FFXIVClientStructs.FFXIV.Client.Game.InventoryType.Inventory3,
-			FFXIVClientStructs.FFXIV.Client.Game.InventoryType.Inventory4,
+		private static readonly InventoryType[] PlayerInventories = {
+			InventoryType.Inventory1,
+			InventoryType.Inventory2,
+			InventoryType.Inventory3,
+			InventoryType.Inventory4,
 		};
 
-		private unsafe FFXIVClientStructs.FFXIV.Client.Game.InventoryItem* SelectStainItem(byte stainId, ref UsedStains usedStains, out uint bestItemId) {
+		private unsafe InventoryItem* SelectStainItem(byte stainId, ref UsedStains usedStains, out uint bestItemId) {
 			var inventory = InventoryManager.Instance();
-			var transient = PluginServices.DataManager.GetExcelSheet<Lumina.Excel.GeneratedSheets.StainTransient>()!.GetRow(stainId);
 
-			FFXIVClientStructs.FFXIV.Client.Game.InventoryItem* item = null;
+			var transient = PluginServices.DataManager.GetExcelSheet<StainTransient>().GetRowOrDefault(stainId);
 
-			bestItemId = transient?.Item1?.Value?.RowId ?? (transient?.Item2?.Value?.RowId ?? 0);
+			InventoryItem* item = null;
 
-			var items = new[] { transient?.Item1?.Value, transient?.Item2?.Value };
+			bestItemId = transient?.Item1.RowId ?? (transient?.Item2.RowId ?? 0);
+
+			var items = new[] { transient?.Item1, transient?.Item2 };
 			foreach (var dyeItem in items) {
-				if (dyeItem == null || dyeItem.RowId == 0) {
+				if (dyeItem == null || dyeItem.Value.RowId == 0) {
 					continue;
 				}
 
@@ -352,7 +386,7 @@ namespace Dresser.Interop.Hooks {
 						var address = ((uint)type, (uint)i);
 						var invItem = inv->Items[i];
 
-						if (invItem.ItemId != dyeItem.RowId) {
+						if (invItem.ItemId != dyeItem.Value.RowId) {
 							continue;
 						}
 
@@ -424,11 +458,12 @@ namespace Dresser.Interop.Hooks {
 
 
 		private static void Wait(int ms) {
-			System.Threading.Tasks.Task.Run(async delegate { await System.Threading.Tasks.Task.Delay(ms); }).Wait();
+			Task.Run(async delegate { await Task.Delay(ms); }).Wait();
 		}
 
 
 		internal GlamourPlates() {
+			_glamourDresserApplyThrottler = new Throttler<Task<SetGlamourPlateSlotReturn>>(0);
 
 			Service.GameInteropProvider.InitializeFromAttributes(this);
 			Service.Framework.Update += OnFrameworkUpdate;
@@ -504,7 +539,7 @@ namespace Dresser.Interop.Hooks {
 			};
 		}
 		public static explicit operator InventoryItemDr(SavedGlamourItem item)
-			=> Extensions.InventoryItemExtensions.New(item.ItemId, item.Stain1, item.Stain2);
+			=> InventoryItemExtensions.New(item.ItemId, item.Stain1, item.Stain2);
 
 	}
 	public enum GlamourPlateSlot : uint {

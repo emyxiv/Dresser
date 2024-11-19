@@ -1,13 +1,14 @@
-﻿using CriticalCommonLib;
+﻿using System.Linq;
+
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
 using Dalamud.Utility;
 
-using Dresser.Logic;
 using Dresser.Services;
 
-using System.Linq;
+using Lumina.Excel.Sheets;
 
 using static Dresser.Services.Storage;
 
@@ -16,7 +17,7 @@ using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {
 		public static bool IsGlamourPlateApplicable(this CriticalInventoryItem item)
-			=> item.SortedContainer == CriticalCommonLib.Enums.InventoryType.GlamourChest || item.SortedContainer == CriticalCommonLib.Enums.InventoryType.Armoire;
+			=> item.SortedContainer == InventoryType.GlamourChest || item.SortedContainer == InventoryType.Armoire;
 		public static bool IsFadedInBrowser(this CriticalInventoryItem item)
 			=> ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip && !item.IsGlamourPlateApplicable();
 
@@ -43,12 +44,12 @@ namespace Dresser.Extensions {
 		public static bool IsAppearanceDifferent(this CriticalInventoryItem item, CriticalInventoryItem? item2)
 			=> (item?.ItemId ?? 0) != (item2?.ItemId ?? 0) || (item?.Stain ?? 0) != (item2?.Stain ?? 0);
 		public static bool IsInFilterLevelRanges(this CriticalInventoryItem item) {
-			var elmin = ConfigurationManager.Config.filterEquipLevel.X;
-			var elmax = ConfigurationManager.Config.filterEquipLevel.Y;
-			var el = item.Item.LevelEquip;
-			var ilmin = ConfigurationManager.Config.filterItemLevel.X;
-			var ilmax = ConfigurationManager.Config.filterItemLevel.Y;
-			var il = item.Item.LevelItem.Row;
+			var elmin = (int)ConfigurationManager.Config.filterEquipLevel.X;
+			var elmax = (int)ConfigurationManager.Config.filterEquipLevel.Y;
+			var el = item.Item.Base.LevelEquip;
+			var ilmin = (int)ConfigurationManager.Config.filterItemLevel.X;
+			var ilmax = (int)ConfigurationManager.Config.filterItemLevel.Y;
+			var il = item.Item.Base.LevelItem.RowId;
 
 			return elmin <= el && el <= elmax && ilmin <= il && il <= ilmax;
 		}
@@ -102,9 +103,10 @@ namespace Dresser.Extensions {
 			var stainEntry = item.StainEntry;
 			return stainEntry?.Name.ToDalamudString().ToString() ?? "";
 		}
-		public static string Stain2Name(this CriticalInventoryItem item) {
-			var stainEntry = Service.ExcelCache.GetStainSheet().First(s => s.RowId == item.Stain2);
-			return stainEntry?.Name.ToDalamudString().ToString() ?? "";
+		public static string Stain2Name(this CriticalInventoryItem item)
+		{
+			var stainEntry = PluginServices.DataManager.GetExcelSheet<Stain>().First(s => s.RowId == item.Stain2);
+			return stainEntry.Name.ToDalamudString().ToString() ?? "";
 		}
 	}
 }

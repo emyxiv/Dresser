@@ -1,6 +1,6 @@
 ﻿using ImGuiNET;
 
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 
 using System.Numerics;
 

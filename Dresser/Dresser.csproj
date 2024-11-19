@@ -33,25 +33,24 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Optimize>False</Optimize>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|AnyCPU'">
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.13" />
-    <PackageReference Include="LuminaSupplemental.Excel" Version="2.0.6" />
-    <PackageReference Include="SerialQueue" Version="2.1.0" />
+    <PackageReference Include="AllaganLib.Shared" Version="1.1.6" />
+    <PackageReference Include="DalamudPackager" Version="11.0.0" />
     <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\Glamourer.Api\Glamourer.Api.csproj" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
@@ -83,7 +82,7 @@
 
   <ProjectExtensions>
     <DalamudPlugin>
-      <ApiLevel>9</ApiLevel>
+      <ApiLevel>11</ApiLevel>
       <Author>emyxiv</Author>
       <Name>Dresser</Name>
       <Punchline>Make glamouring more enjoyable</Punchline>

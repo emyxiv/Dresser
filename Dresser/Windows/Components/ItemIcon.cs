@@ -1,5 +1,10 @@
-﻿using CriticalCommonLib;
-using CriticalCommonLib.Enums;
+﻿using System;
+using System.Linq;
+using System.Numerics;
+
+using AllaganLib.GameSheets.Model;
+
+using CriticalCommonLib;
 using CriticalCommonLib.Extensions;
 
 using Dalamud.Game.ClientState.Keys;
@@ -13,13 +18,11 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
 
+using Humanizer;
+
 using ImGuiNET;
 
-using Lumina.Excel.GeneratedSheets;
-
-using System;
-using System.Linq;
-using System.Numerics;
+using Lumina.Excel.Sheets;
 
 using static Dresser.Services.Storage;
 
@@ -55,7 +58,7 @@ namespace Dresser.Windows.Components {
 			bool __ = false;
 			DrawIcon(item, ref _, ref __, out __);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, GlamourPlateSlot? emptySlot = null, System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, GlamourPlateSlot? emptySlot = null, Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
 			clickedMiddle = false;
 
 			if (PluginServices.Context.LocalPlayer == null
@@ -70,9 +73,10 @@ namespace Dresser.Windows.Components {
 			//var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
-			var isEquippableByCurrentClass = Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
+			var isEquippableByCurrentClass = item?.Item.CanBeEquipedByPlayedJob();
+			// Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
-			var DyeCount = item.Item.DyeCount;
+			var DyeCount = item.Item.Base.DyeCount;
 			var isApplicable = !item.IsFadedInBrowser();
 			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
 
@@ -96,7 +100,7 @@ namespace Dresser.Windows.Components {
 						if (image == null && !ConfigurationManager.Config.ShowImagesInBrowser) image = IconWrapper.Get(item);
 						DrawImage(image!, item);
 
-						var rarityColor = Storage.RarityColor(item.Item);
+						var rarityColor = RarityColor(item.Item);
 
 						// Side of the icon
 						ImGui.SameLine();
@@ -130,33 +134,37 @@ namespace Dresser.Windows.Components {
 						if (ConfigurationManager.Config.IconTooltipShowDev) {
 							ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
 							ImGui.SameLine();
-							ImGui.TextColored(rarityColor, $"{item.Item.Rarity}");
+							ImGui.TextColored(rarityColor, $"{item.Item.Base.Rarity}");
 							ImGui.SameLine();
 							ImGui.TextColored(ColorGreyDark, $"]");
 
-							ImGui.TextColored(ColorGreyDark, $"MM: [{item.Item.ModelMain}] {item.Item.ModelMainItemModel()}");
+							ImGui.TextColored(ColorGreyDark, $"MM: [{item.Item.Base.ModelMain}] {item.Item.ModelMainItemModel()}");
 							ImGui.SameLine();
-							ImGui.TextColored(ColorGreyDark, $"MS: [{item.Item.ModelSub}] {item.Item.ModelSubItemModel()}");
+							ImGui.TextColored(ColorGreyDark, $"MS: [{item.Item.Base.ModelSub}] {item.Item.ModelSubItemModel()}");
 						}
-						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.GetPatch()}]");
-						if (item.Item.DyeCount > 0) ImGui.TextColored(item.Stain  != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GetStainSheet().First(i => i.RowId == item.Stain )?.Name}");
-						if (item.Item.DyeCount > 1) ImGui.TextColored(item.Stain2 != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GetStainSheet().First(i => i.RowId == item.Stain2)?.Name}");
+						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.Patch}]");
+						if (item.Item.Base.DyeCount > 0) ImGui.TextColored(item.Stain  != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain ).Name}");
+						if (item.Item.Base.DyeCount > 1) ImGui.TextColored(item.Stain2 != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain2).Name}");
 
 						ImGui.EndGroup();
 
 						// type of item (body, legs, etc) under the icon
-						ImGui.TextColored(ColorGrey, item.FormattedUiCategory);
+						ImGui.TextColored(ColorGrey, string.Join(", ",item.Item.EquipSlotCategory?.PossibleSlots.Select(s=>s.Humanize())));
+						ImGui.SameLine();
+						if ((item.Item.EquipSlotCategory?.BlockedSlots.Count?? 0) > 0) {
+							ImGui.TextColored(ColorBad, "Locks: " + string.Join(", ", item.Item.EquipSlotCategory?.BlockedSlots.Select(s => s.Humanize())));
+						}
 						//PluginLog.Debug($"ui category: {item.ItemUICategory} {item.EquipSlotCategory!.RowId}");
 						ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.FormattedInventoryCategoryType());
 
 						// Equip Conditions
 						ImGui.Separator();
 
-						ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.LevelEquip}");
+						ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.Base.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.Base.LevelEquip}");
 						ImGui.SameLine();
-						ImGui.Text($"ilvl: {item.Item.LevelItem.Row}");
+						ImGui.Text($"ilvl: {item.Item.Base.LevelItem.RowId}");
 
-						ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.ClassJobCategory.Value?.Name}");
+						ImGui.TextColored(isEquippableByCurrentClass.Value ? ColorGood : ColorBad, $"{item.Item.Base.ClassJobCategory.Value.Name}");
 
 						var genderRaceColor = isEquippableByGenderRace ? ColorBronze : ColorBad;
 						if (item.Item.EquippableByGender != CharacterSex.Both || item.Item.EquipRace != CharacterRace.Any) {
@@ -223,7 +231,7 @@ namespace Dresser.Windows.Components {
 			bool _ = false;
 			return DrawImage(image, ref _, out _, iconImageFlag, item);
 		}
-		private static bool DrawImage(ISharedImmediateTexture image, ref bool hovering, out bool clickedMiddle, IconImageFlag iconImageFlag, InventoryItem item,System.Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
+		private static bool DrawImage(ISharedImmediateTexture image, ref bool hovering, out bool clickedMiddle, IconImageFlag iconImageFlag, InventoryItem item,Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
 			clickedMiddle = false;
 			var iconSize = IconSize * sizeMod;
@@ -316,16 +324,16 @@ namespace Dresser.Windows.Components {
 		public static void DrawStains(InventoryItem item, float sizeMod = 1) {
 
 			if (!item.Item.IsDyeable1()) return;
-			var stain1 = Service.ExcelCache.GetStainSheet().First(i=>i.RowId == item.Stain);
+			var stain1 = Service.ExcelCache.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain);
 			//if(item.FormattedName == "Thavnairian Bustier") PluginLog.Debug($"DYE: {stain1.Name} {stain1.RowId}");
 			if(stain1 == null) return;
-			DrawStain(stain1, 1, sizeMod);
+			DrawStain(stain1.Value, 1, sizeMod);
 
 
 			if (!item.Item.IsDyeable2()) return;
-			var stain2 = Service.ExcelCache.GetStainSheet().First(i => i.RowId == item.Stain2);
+			var stain2 = Service.ExcelCache.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain2);
 			if (stain2 == null) return;
-			DrawStain(stain2, 2, sizeMod);
+			DrawStain(stain2.Value, 2, sizeMod);
 		}
 		public static void DrawStain(Stain stain, ushort dyeIndex, float sizeMod = 1) {
 			ImGui.SameLine();

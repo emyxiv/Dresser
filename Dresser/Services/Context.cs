@@ -1,5 +1,10 @@
-﻿using CriticalCommonLib;
-using CriticalCommonLib.Enums;
+﻿using System;
+using System.Linq;
+using System.Threading;
+
+using AllaganLib.GameSheets.Model;
+
+using CriticalCommonLib;
 
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
@@ -8,11 +13,7 @@ using Dalamud.Interface.Windowing;
 using Dresser.Interop.Addons;
 using Dresser.Interop.Hooks;
 
-using Lumina.Excel.GeneratedSheets;
-
-using System;
-using System.Linq;
-using System.Threading;
+using Lumina.Excel.Sheets;
 
 namespace Dresser.Services {
 	internal class Context : IDisposable {
@@ -100,7 +101,7 @@ namespace Dresser.Services {
 				LocalPlayerCharacterId = PluginServices.ClientState.LocalContentId;
 				LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];
 				LocalPlayerGender = LocalPlayer.Customize[(int)CustomizeIndex.Gender] == 0 ? CharacterSex.Male : CharacterSex.Female;
-				LocalPlayerClass = LocalPlayer.ClassJob.GameData;
+				LocalPlayerClass = LocalPlayer.ClassJob.Value;
 				LocalPlayerLevel = LocalPlayer.Level;
 			}
 

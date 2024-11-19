@@ -1,26 +1,29 @@
-using CriticalCommonLib.Enums;
-using CriticalCommonLib.Models;
-using CriticalCommonLib.Sheets;
-
-using Dalamud.Interface.Windowing;
-using Dalamud.Utility;
-
-using Dresser.Extensions;
-using Dresser.Logic;
-using Dresser.Services;
-using Dresser.Structs.Dresser;
-using Dresser.Windows.Components;
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-
-using ImGuiNET;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using static Dresser.Services.Storage;
+using AllaganLib.GameSheets.Sheets.Rows;
+
+using CriticalCommonLib.Enums;
+using CriticalCommonLib.Models;
+
+using Dalamud.Interface;
+using Dalamud.Interface.Windowing;
+using Dalamud.Utility;
+
+using Dresser.Extensions;
 using Dresser.Interop.Hooks;
+using Dresser.Logic;
+using Dresser.Services;
+using Dresser.Structs.Dresser;
+using Dresser.Windows.Components;
+
+using ImGuiNET;
+
+using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+
+using static Dresser.Services.Storage;
 
 namespace Dresser.Windows {
 	public class GearBrowser : Window, IWindowWithHotkey, IDisposable {
@@ -157,15 +160,15 @@ namespace Dresser.Windows {
 
 			ImGui.SameLine();
 
-			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? Dalamud.Interface.FontAwesomeIcon.Columns : Dalamud.Interface.FontAwesomeIcon.Expand;
+			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? FontAwesomeIcon.Columns : FontAwesomeIcon.Expand;
 
 			var numberOfButtons = 3;
 
 			var spacing = ImGui.GetContentRegionAvail().X
 
-				- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.ArrowDownUpLock).X // setting icon
+				- GuiHelpers.CalcIconSize(FontAwesomeIcon.ArrowDownUpLock).X // setting icon
 				- GuiHelpers.CalcIconSize(sidebarShowHideIcon).X // setting icon
-				- GuiHelpers.CalcIconSize(Dalamud.Interface.FontAwesomeIcon.Cog).X // setting icon
+				- GuiHelpers.CalcIconSize(FontAwesomeIcon.Cog).X // setting icon
 
 				- ImGui.GetStyle().ItemSpacing.X * (numberOfButtons -1 ) // * by number of icon -1, cause it's between them
 				- ImGui.GetStyle().FramePadding.X * 2 * numberOfButtons; // * by number of icons x2, cause on each sides of the icon
@@ -173,13 +176,13 @@ namespace Dresser.Windows {
 			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
 
 
-			GuiHelpers.IconToggleButton(Dalamud.Interface.FontAwesomeIcon.ArrowDownUpLock, ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus, "##EnableKeyOnLostFocus##GearBrowser", "Allow using keybinds when the window is not focused\nThis allows to keep using directionnal keys to browse items while moving the camera");
+			GuiHelpers.IconToggleButton(FontAwesomeIcon.ArrowDownUpLock, ref ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus, "##EnableKeyOnLostFocus##GearBrowser", "Allow using keybinds when the window is not focused\nThis allows to keep using directionnal keys to browse items while moving the camera");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButton(sidebarShowHideIcon)) {
 				ConfigurationManager.Config.GearBrowserSideBarHide = !ConfigurationManager.Config.GearBrowserSideBarHide;
 			}
 			ImGui.SameLine();
-			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog)) {
+			if (GuiHelpers.IconButton(FontAwesomeIcon.Cog)) {
 				this.Plugin.ToggleConfigUI();
 			}
 
@@ -399,7 +402,7 @@ namespace Dresser.Windows {
 
 
 					var text = $"{method.ToString().AddSpaceBeforeCapital()}";
-					var iconDirection = direction == InventoryItemOrder.OrderDirection.Ascending ? Dalamud.Interface.FontAwesomeIcon.SortAlphaUp : Dalamud.Interface.FontAwesomeIcon.SortAlphaDown;
+					var iconDirection = direction == InventoryItemOrder.OrderDirection.Ascending ? FontAwesomeIcon.SortAlphaUp : FontAwesomeIcon.SortAlphaDown;
 
 					ImGui.AlignTextToFramePadding();
 					GuiHelpers.Icon(iconDirection);
@@ -433,7 +436,7 @@ namespace Dresser.Windows {
 						}
 
 						ImGui.SameLine();
-						if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{j}")) {
+						if (GuiHelpers.IconButton(FontAwesomeIcon.Trash, default, $"RemoveSortSorter##{j}")) {
 							ConfigurationManager.Config.SortOrder.RemoveAt(j);
 							recompute = true;
 							ImGui.CloseCurrentPopup();
@@ -476,7 +479,7 @@ namespace Dresser.Windows {
 			ImGui.Separator();
 			ImGui.Spacing();
 
-			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Plus, default, "AddSortSorter")) {
+			if (GuiHelpers.IconButton(FontAwesomeIcon.Plus, default, "AddSortSorter")) {
 				if (ConfigurationManager.Config.SortOrder != null) {
 					var used = ConfigurationManager.Config.SortOrder.Select(s => s.Method);
 					var available = Enum.GetValues<InventoryItemOrder.OrderMethod>().ToHashSet();
@@ -488,7 +491,7 @@ namespace Dresser.Windows {
 			ImGui.SameLine();
 			if (ConfigurationManager.Config.SavedSortOrders == null) ConfigurationManager.Config.SavedSortOrders = new();
 
-			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Save, default, "AddSortSorter")) {
+			if (GuiHelpers.IconButton(FontAwesomeIcon.Save, default, "AddSortSorter")) {
 				var random = new Random();
 				const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 				var newKey = "";
@@ -498,7 +501,7 @@ namespace Dresser.Windows {
 				ConfigurationManager.Config.SavedSortOrders.Add(newKey, ConfigurationManager.Config.SortOrder!);
 			}
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonTooltip(Dalamud.Interface.FontAwesomeIcon.Recycle, "Restore default order sets", default, "RestoreDefaultSorters")) {
+			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.Recycle, "Restore default order sets", default, "RestoreDefaultSorters")) {
 				if (ConfigurationManager.Config.SavedSortOrders == null)
 					ConfigurationManager.Config.SavedSortOrders = new();
 				ConfigurationManager.Config.SavedSortOrders = ConfigurationManager.Config.SavedSortOrders.Concat(InventoryItemOrder.DefaultSets()).ToLookup(pair => pair.Key, pair => pair.Value).ToDictionary(group=>group.Key,group=>group.First());
@@ -529,7 +532,7 @@ namespace Dresser.Windows {
 						if (ImGui.InputText($"##EditKey##{key}##SavedSortOrders", ref editedKey, 20, ImGuiInputTextFlags.EnterReturnsTrue)) {
 							keyToRename = (key, editedKey);
 						}
-						if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Trash, "Hold Ctrl + Shift and Click to delete this saved preset", default, $"RemoveSavedSortOrders##{key}")) {
+						if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Trash, "Hold Ctrl + Shift and Click to delete this saved preset", default, $"RemoveSavedSortOrders##{key}")) {
 							ConfigurationManager.Config.SavedSortOrders.Remove(key);
 							ImGui.CloseCurrentPopup();
 						}
@@ -600,17 +603,17 @@ namespace Dresser.Windows {
 			// items from saved inventory (critical impact lib)
 			items = items.Concat(PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true).SelectMany(t => t.Value));
 
-			items = items.Where(i => !i.IsEmpty && i.Item.ModelMain != 0);
+			items = items.Where(i => !i.IsEmpty && i.Item.Base.ModelMain != 0).ToArray();
 
 			SavedQuantityCacheMake(items);
-
+PluginLog.Debug($"filterCurrentJobStrict: {ConfigurationManager.Config.filterCurrentJobStrict}");
 			items = items.Where(i =>
 					(!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
 					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob(ConfigurationManager.Config.filterCurrentJobStrict))
 					&& i.IsInGearBrowserSelectedSlot()
 					&& i.IsFilterDisplayable()
 					&& i.IsInFilterLevelRanges()
-					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Rarity == ConfigurationManager.Config.filterRarity)
+					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Base.Rarity == ConfigurationManager.Config.filterRarity)
 					&& i.Item.CanBeEquipedByPlayedRaceGender()
 					&& i.IsNotInBlackList()
 				);
@@ -786,7 +789,7 @@ namespace Dresser.Windows {
 		}
 
 		private static int DrawListOfItemIconsHoveredIcon = -1;
-		public static void DrawListOfItemIcons(List<ItemEx> items)
+		public static void DrawListOfItemIcons(List<ItemRow> items)
 			=> DrawListOfItemIcons(items.Select(i => InventoryItemExtensions.New(i.RowId, 0, 0)).ToList());
 		public static void DrawListOfItemIcons(List<InventoryItem> items) {
 			if (!items.Any()) return;
