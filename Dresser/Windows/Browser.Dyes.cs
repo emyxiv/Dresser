@@ -8,8 +8,10 @@ namespace Dresser.Windows
 {
 	public partial class GearBrowser : Window, IWindowWithHotkey, IDisposable
 	{
-			private void DrawDyes() {
-			ImGui.Text("Placeholder");
+		private DyePicker _dyePicker;
+
+		private void DrawDyes() {
+			_dyePicker.Draw();
 		}
 	}
 }

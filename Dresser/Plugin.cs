@@ -52,12 +52,12 @@ namespace Dresser {
 			ConfigWindow = new ConfigWindow(this);
 			GearBrowser = new GearBrowser(this);
 			CurrentGear = new CurrentGear(this);
-			DyePicker = new DyePicker(this);
+			// DyePicker = new DyePicker(this);
 			Dialogs = new Dialogs(this);
 			WindowSystem.AddWindow(ConfigWindow);
 			WindowSystem.AddWindow(GearBrowser);
 			WindowSystem.AddWindow(CurrentGear);
-			WindowSystem.AddWindow(DyePicker);
+			// WindowSystem.AddWindow(DyePicker);
 			WindowSystem.AddWindow(Dialogs);
 
 
@@ -81,7 +81,7 @@ namespace Dresser {
 			GearBrowser.Dispose();
 			CurrentGear.Dispose();
 			Dialogs?.Dispose();
-			DyePicker.Dispose();
+			// DyePicker.Dispose();
 
 			this.WindowSystem.RemoveAllWindows();
 			PluginServices.CommandManager.RemoveHandler(CommandName);

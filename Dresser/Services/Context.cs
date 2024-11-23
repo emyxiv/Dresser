@@ -85,14 +85,12 @@ namespace Dresser.Services {
 
 			if (IsCurrentGearWindowOpen) {
 				IsBrowserWindowOpen = Plugin.GetInstance()?.IsBrowserVisible() ?? false;
-				IsDyePickerPopupOpen = Plugin.GetInstance().DyePicker.IsOpen;
 				var windowSystem = Plugin.GetInstance().WindowSystem;
 				if (windowSystem.HasAnyFocus)
 					LastFocusedWindow = windowSystem.Windows.FirstOrDefault(w => w.IsFocused);
 			} else {
 				LastFocusedWindow = null;
 				IsBrowserWindowOpen = false;
-				IsDyePickerPopupOpen = false;
 			}
 
 

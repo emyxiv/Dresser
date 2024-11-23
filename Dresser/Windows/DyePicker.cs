@@ -19,46 +19,21 @@ using Lumina.Excel.Sheets;
 
 namespace Dresser.Windows;
 
-public class DyePicker :  Window, IDisposable {
+public class DyePicker {
 
-	Plugin Plugin;
 	const float _multiplicatorDyeSpacing = 0.15f;
-	public DyePicker(Plugin plugin) : base(
-		"Dye Picker",
-		ImGuiWindowFlags.NoTitleBar
-		) {
-		this.RespectCloseHotkey = true;
-		this.SizeConstraints = new WindowSizeConstraints {
-			MinimumSize = new Vector2(ImGui.GetFontSize()),
-			MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-		};
-		this.SizeCondition = ImGuiCond.Once;
-		Plugin = plugin;
-	}
 
-	public void Dispose() { }
-	public override void PreDraw()
-		=> Styler.PushStyleCollection();
-	public override void PostDraw()
-		=> Styler.PopStyleCollection();
 
-	public override void Draw() {
-		TitleBar.CloseButton(this,default,true);
+
+	public void Draw() {
+		// TitleBar.CloseButton(this,default,true);
 
 		DrawLogic();
-		if(ImGui.IsKeyPressed(ImGuiKey.Escape)) this.IsOpen = false;
+		// if(ImGui.IsKeyPressed(ImGuiKey.Escape)) this.IsOpen = false;
 	}
 
-	public bool MustDraw = false;
-	public override bool DrawConditions() {
-		return PluginServices.Context.IsCurrentGearWindowOpen;
-	}
 
-	public override void OnClose() {
-		MustDraw = false;
-		this.IsOpen = false;
-		base.OnClose();
-	}
+
 
 
 	//  Method

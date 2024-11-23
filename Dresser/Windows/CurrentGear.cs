@@ -348,7 +348,7 @@ public class CurrentGear : Window, IDisposable {
 			if (slot.HasValue) PluginServices.ApplyGearChange.SelectCurrentSlot(slot.Value);
 			PluginServices.ApplyGearChange.DyePickerRefreshNewItem(item,false);
 			DyePicker.SetSelection(item);
-			Plugin.GetInstance().DyePicker.IsOpen = true;
+			Plugin.GetInstance().GearBrowser.SwitchToDyesMode();
 		}
 
 		if (ImGui.Selectable("Remove Dye"))
@@ -474,7 +474,7 @@ public class CurrentGear : Window, IDisposable {
 
 		} else { DrawBottomButtons(); }
 
-		if (!Plugin.GetInstance().DyePicker.IsOpen && Plugin.GetInstance().DyePicker.MustDraw) Plugin.GetInstance().DyePicker.IsOpen = true;
+		// if (!Plugin.GetInstance().DyePicker.IsOpen && Plugin.GetInstance().DyePicker.MustDraw) Plugin.GetInstance().DyePicker.IsOpen = true;
 
 		Styler.PushStyleCollection();
 	}

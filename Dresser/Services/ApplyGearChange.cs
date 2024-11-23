@@ -95,7 +95,7 @@ namespace Dresser.Services {
 			}
 		}
 		public void DyePickerRefreshNewItem(InventoryItem? item, bool applyPreviousDyesToNewItem = false) {
-			if (applyPreviousDyesToNewItem && Plugin.DyePicker.IsOpen && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
+			if (applyPreviousDyesToNewItem && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
 				foreach ((var dyeIndex, var currentDye) in DyePicker.CurrentDyeList) {
 					if (currentDye == null || item == null) continue;
 
@@ -295,17 +295,22 @@ namespace Dresser.Services {
 		public void FrameworkUpdate() {
 		}
 		public void SelectCurrentSlot(GlamourPlateSlot slot) {
+			Plugin.GetInstance().GearBrowser.SwitchToClothesMode();
 			GearBrowser.SelectedSlot = slot;
 			ConfigurationManager.Config.CurrentGearSelectedSlot = slot;
 			DyePicker.SetSelection(GetCurrentPlateItem(slot));
 			GearBrowser.RecomputeItems();
 		}
+		public void OpenBrowserAndUncollapse()
+		{
+			Plugin.OpenGearBrowserIfClosed();
+			Plugin.UncollapseGearBrowserIfCollapsed();
+		}
 		public void ExecuteCurrentItem(GlamourPlateSlot slot) {
 			SelectCurrentSlot(slot);
 			DyePickerRefreshNewItem(GetCurrentPlateItem(slot));
 
-			Plugin.OpenGearBrowserIfClosed();
-			Plugin.UncollapseGearBrowserIfCollapsed();
+			OpenBrowserAndUncollapse();
 		}
 		public void ExecuteCurrentContextRemoveItem(InventoryItem item, GlamourPlateSlot? slot) {
 			if (slot == null) return;

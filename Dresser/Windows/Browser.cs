@@ -1,29 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-
-using AllaganLib.GameSheets.Sheets.Rows;
-
-using CriticalCommonLib.Enums;
-using CriticalCommonLib.Models;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using Dalamud.Utility;
 
-using Dresser.Extensions;
-using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
-using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
 using ImGuiNET;
-
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-
-using static Dresser.Services.Storage;
 
 namespace Dresser.Windows {
 	public partial class GearBrowser : Window, IWindowWithHotkey, IDisposable {
@@ -36,6 +21,7 @@ namespace Dresser.Windows {
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 			};
 			this.Plugin = plugin;
+			this._dyePicker = new DyePicker();
 		}
 		public void Dispose() { }
 
@@ -64,13 +50,56 @@ namespace Dresser.Windows {
 			}
 		}
 
+		private enum VerticalTab
+		{
+			Clothes,
+			Dyes,
+		}
+		private VerticalTab CurrentVerticalTab = VerticalTab.Clothes;
+		public void SwitchToDyesMode() => CurrentVerticalTab = VerticalTab.Dyes;
+		public void SwitchToClothesMode() => CurrentVerticalTab = VerticalTab.Clothes;
 		public override void Draw() {
 			if (this.Collapsed == false) this.Collapsed = null; // restore collapsed state after uncollapse
 
 
 			DrawSearchBar();
 
-			DrawClothes();
+			var fontSize = ImGui.GetFontSize();
+
+			ImGui.BeginGroup();
+			// ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, Vector2.Zero);
+			// ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+			// ImGui.PushStyleVar(ImGuiStyleVar.ItemInnerSpacing, Vector2.Zero);
+
+			var buttonSize = new Vector2(
+					fontSize * 1.25f,
+					(
+					ImGui.GetContentRegionAvail().Y
+					// - ImGui.GetStyle().FramePadding.Y
+					- ImGui.GetStyle().ItemSpacing.Y
+					) / 2f
+				);
+
+			foreach (var vB in Enum.GetValues<VerticalTab>()) {
+				if(vB == CurrentVerticalTab) ImGui.PushStyleColor(ImGuiCol.Button, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg);
+				var isClicked = ImGui.Button($"{vB}", buttonSize);
+				if(vB == CurrentVerticalTab) ImGui.PopStyleColor();
+				if(isClicked) CurrentVerticalTab = vB;
+			}
+
+			// ImGui.PopStyleVar(3);
+			ImGui.EndGroup();
+
+			ImGui.SameLine();
+
+			ImGui.BeginGroup();
+			switch (CurrentVerticalTab)
+			{
+				case VerticalTab.Clothes: DrawClothes(); break;
+				case VerticalTab.Dyes: DrawDyes(); break;
+			}
+			ImGui.EndGroup();
+
 		}
 
 		private void DrawSearchBar() {
