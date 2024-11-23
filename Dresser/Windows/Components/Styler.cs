@@ -15,7 +15,7 @@ namespace Dresser.Windows.Components {
 		public static Vector4 DiscordColor = new Vector4(86, 98, 246, 255) / 255;
 
 		public static void PushStyleCollection() {
-			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 5f);
+			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 12f);
 			ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ItemIcon.IconSize / 8f);
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 10 * ConfigurationManager.Config.IconSizeMult);
 			ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 3 * ConfigurationManager.Config.IconSizeMult);
