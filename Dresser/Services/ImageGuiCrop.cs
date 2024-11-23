@@ -40,7 +40,7 @@ namespace Dresser.Services {
 			if (Ulds.TryGetValue(uldBundle.Uld, out var uld)) {
 
 				if (uld.Valid) {
-					texture = uld.LoadTexturePart(uldBundle.Tex, uldBundle.Part);
+					texture = uld.LoadTexturePart(uldBundle.Tex, uldBundle.Index);
 					if (texture != null) {
 						// PluginLog.Debug($"ULD tex {uldBundle.Uld} loaded but unable to LoadTexturePart");
 						Textures.Add(uldBundle.GetHashCode(), texture);
@@ -61,7 +61,7 @@ namespace Dresser.Services {
 
 		public ImageGuiCrop() { }
 		private void MakeUld(UldBundle uldBundle) {
-			PluginLog.Warning($"creating {uldBundle.Tex} {uldBundle.Uld} {uldBundle.Part} {uldBundle.Handle}");
+			PluginLog.Warning($"creating {uldBundle.Tex} {uldBundle.Uld} {uldBundle.Index} {uldBundle.Handle}");
 
 			if (Ulds.ContainsKey(uldBundle.Uld)) return;
 			if (!PluginServices.DataManager.FileExists(uldBundle.Uld)) return;
@@ -132,7 +132,7 @@ namespace Dresser.Services {
 					ImGui.Image(texture.ImGuiHandle, texture.Size);
 				}
 				ImGui.SameLine();
-				ImGui.Text($"[{uldBundle.Part}]");
+				ImGui.Text($"[{uldBundle.Index}]");
 				ImGui.SameLine();
 				ImGui.TextWrapped(uldBundle.Handle);
 
@@ -151,14 +151,14 @@ namespace Dresser.Services {
 	internal class UldBundle {
 		public string Tex;
 		public string Uld;
-		public int Part;
+		public int Index; // index
 		public string Handle;
 
 
-		public UldBundle(string tex, string uld, int part, string handle) {
+		public UldBundle(string tex, string uld, int index, string handle) {
 			Tex = tex;
 			Uld = uld;
-			Part = part;
+			Index = index;
 			Handle = handle;
 		}
 
@@ -177,7 +177,7 @@ namespace Dresser.Services {
 		//	return (Tex, Uld, Part).GetHashCode().ToString();
 		//}
 		public override int GetHashCode() {
-			return (Tex, Uld, Part).GetHashCode();
+			return (Tex, Uld, Part: Index).GetHashCode();
 		}
 
 		// this is blocked by UldWrapper.GetTexture(string texturePath)  only allowing tex in the list of Uld.AssetData
@@ -267,28 +267,31 @@ namespace Dresser.Services {
 
 
 
-		public static UldBundle RecipeNoteBook_1 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 1, "RecipeNoteBook_1");
-		public static UldBundle RecipeNoteBook_2 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 2, "RecipeNoteBook_2");
-		public static UldBundle RecipeNoteBook_3 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 3, "RecipeNoteBook_3");
-		public static UldBundle RecipeNoteBook_4 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 4, "RecipeNoteBook_4");
-		public static UldBundle RecipeNoteBook_5 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 5, "RecipeNoteBook_5");
-		public static UldBundle RecipeNoteBook_6 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 6, "RecipeNoteBook_6");
-		public static UldBundle RecipeNoteBook_7 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 7, "RecipeNoteBook_7");
-		public static UldBundle RecipeNoteBook_8 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 8, "RecipeNoteBook_8");
-		public static UldBundle RecipeNoteBook_9 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 9, "RecipeNoteBook_9");
-		public static UldBundle RecipeNoteBook_10 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 10, "RecipeNoteBook_10");
-		public static UldBundle RecipeNoteBook_11 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 11, "RecipeNoteBook_11");
-		public static UldBundle RecipeNoteBook_ObtainedCheckMark => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 12, "RecipeNoteBook_ObtainedCheckMark");
-		public static UldBundle RecipeNoteBook_13 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 13, "RecipeNoteBook_13");
-		public static UldBundle RecipeNoteBook_14 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 14, "RecipeNoteBook_14");
-		public static UldBundle RecipeNoteBook_15 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 15, "RecipeNoteBook_15");
-		public static UldBundle RecipeNoteBook_16 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 16, "RecipeNoteBook_16");
-		public static UldBundle RecipeNoteBook_17 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 17, "RecipeNoteBook_17");
-		public static UldBundle RecipeNoteBook_18 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 18, "RecipeNoteBook_18");
-		public static UldBundle RecipeNoteBook_19 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 19, "RecipeNoteBook_19");
-		public static UldBundle RecipeNoteBook_20 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 20, "RecipeNoteBook_20");
-		public static UldBundle RecipeNoteBook_21 => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 21, "RecipeNoteBook_21");
+		public static UldBundle RecipeNoteBook_ObtainedCheckMark => new($"ui/uld/{ThemePathPart}RecipeNoteBook{Storage.HighResolutionSufix}.tex", "ui/uld/ItemDetail.uld", 0, "RecipeNoteBook_ObtainedCheckMark");
 
+
+		public static UldBundle ColorChooser_ShadeColor => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 0, "ColorChooser_ShadeColor");
+		public static UldBundle ColorChooser_ShadeOutline => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 1, "ColorChooser_ShadeOutline");
+		public static UldBundle ColorChooser_ShadeHover => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 2, "ColorChooser_ShadeHover");
+		public static UldBundle ColorChooser_StainColor => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 3, "ColorChooser_StainColor");
+		public static UldBundle ColorChooser_StainOutline => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 4, "ColorChooser_StainOutline");
+		public static UldBundle ColorChooser_StainHover => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 5, "ColorChooser_StainHover");
+		public static UldBundle ColorChooser_NotOwned => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 6, "ColorChooser_NotOwned");
+		public static UldBundle ColorChooser_Active => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 7, "ColorChooser_Active");
+		public static UldBundle ColorChooser_ShadeMulticolor => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 8, "ColorChooser_ShadeMulticolor");
+		public static UldBundle ColorChooser_StainMetallic => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 9, "ColorChooser_StainMetallic");
+		public static UldBundle ColorChooser_StainActive => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 10, "ColorChooser_StainActive");
+		public static UldBundle ColorChooser_StainNotStained => new($"ui/uld/{ThemePathPart}ListColorChooser{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 11, "ColorChooser_StainNotStained");
+
+		public static UldBundle ColorantButton_Switch1 => new($"ui/uld/{ThemePathPart}ColorantButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 0, "ColorantButton_Switch1");
+		public static UldBundle ColorantButton_Switch2 => new($"ui/uld/{ThemePathPart}ColorantButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 1, "ColorantButton_Switch2");
+		public static UldBundle ColorantButton_Swap => new($"ui/uld/{ThemePathPart}ColorantButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 2, "ColorantButton_Swap");
+		public static UldBundle ColorantButton_Redo => new($"ui/uld/{ThemePathPart}ColorantButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 3, "ColorantButton_Redo");
+		public static UldBundle ColorantButton_Undo => new($"ui/uld/{ThemePathPart}ColorantButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 4, "ColorantButton_Undo");
+
+		public static UldBundle ColorantToggleButton_DyeIndicatorInactive => new($"ui/uld/{ThemePathPart}ToggleButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 16, "ColorantToggleButton_DyeIndicatorInactive");
+		public static UldBundle ColorantToggleButton_DyeIndicatorActive => new($"ui/uld/{ThemePathPart}ToggleButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 17, "ColorantToggleButton_DyeIndicatorActive");
+		public static UldBundle ColorantToggleButton_IntoDye => new($"ui/uld/{ThemePathPart}ToggleButton{Storage.HighResolutionSufix}.tex", "ui/uld/ColorantColoringSelector.uld", 18, "ColorantToggleButton_IntoDye");
 
 	}
 }
