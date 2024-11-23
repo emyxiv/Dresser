@@ -102,49 +102,68 @@ namespace Dresser.Windows {
 
 		}
 
+		private static string Search = "";
+		private static int JustErasedSearch = 0;
+		public static string SearchText() => JustErasedSearch>1?"":Search;
+		public static void EraseSearchText() {
+			Search = "";
+			JustErasedSearch = 2;
+		}
 		private void DrawSearchBar() {
 
 			ImGui.AlignTextToFramePadding();
 			var available = ImGui.GetContentRegionAvail().X;
-			float sideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
+			// float searchFrameMult = isSidebarFitting ? 2.5f : 1f;
+			float searchFrameMult = 2.5f;
 
-			var isSidebarFitting = available > sideBarSize;
-			float searchFrameMult = isSidebarFitting ? 2.5f : 1f;
-			if (ConfigurationManager.Config.GearBrowserSideBarHide) isSidebarFitting = false;
-			var size = isSidebarFitting ? available - sideBarSize : available;
 			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding * searchFrameMult);
-			ImGui.SetNextItemWidth(size);
-			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100))
+
+
+			// calculate right size icon size
+			var numberOfButtons = 3;
+			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? FontAwesomeIcon.Columns : FontAwesomeIcon.Expand;
+			var rightButtonWidth = GuiHelpers.CalcIconSize(FontAwesomeIcon.ArrowDownUpLock).X // setting icon
+				+ GuiHelpers.CalcIconSize(sidebarShowHideIcon).X // setting icon
+				+ GuiHelpers.CalcIconSize(FontAwesomeIcon.Cog).X // setting icon
+
+				+ ImGui.GetStyle().ItemSpacing.X * (numberOfButtons -1 ) // * by number of icon -1, cause it's between them
+				+ ImGui.GetStyle().FramePadding.X * 2 * numberOfButtons; // * by number of icons x2, cause on each sides of the icon
+
+			// the buttons on the left will only be displayed if they fit + 4 characters font size for the search bar
+			var isSidebarFitting = available > rightButtonWidth + (ImGui.GetFontSize() * 4);
+			if (ConfigurationManager.Config.GearBrowserSideBarHide) isSidebarFitting = false;
+
+
+			float sizeSearchBar = isSidebarFitting ? (available - rightButtonWidth - ImGui.GetStyle().ItemSpacing.X) : available;
+			var posInfoSearchInitial = ImGui.GetCursorScreenPos() + new Vector2(sizeSearchBar,ImGui.GetStyle().FramePadding.Y * 0.05f);
+
+
+			ImGui.SetNextItemWidth(sizeSearchBar);
+			if (ImGui.InputTextWithHint("##SearchByName##GearBrowser", "Search", ref Search, 100) && JustErasedSearch == 0) {
 				RecomputeItems();
-
-			if(isSidebarFitting) ImGui.SameLine();
-			ImGui.Text($"{ItemsCount}");
-			GuiHelpers.Tooltip($"{ItemsCount} items found with the selected filters");
-
-			if (ConfigurationManager.Config.DebugDisplayModedInTitleBar) {
-				ImGui.SameLine();
-				var modedItemsCountInApplyCollection = PluginServices.Context.PenumbraModCountInApplyCollection;
-				if (modedItemsCountInApplyCollection > 0) {
-					ImGui.TextColored(ConfigurationManager.Config.ModdedItemColor, $" {modedItemsCountInApplyCollection}");
-					GuiHelpers.Tooltip($"{ItemsCount} modded items are applied in {ConfigurationManager.Config.PenumbraCollectionApply} collection");
-				}
+			} else if (JustErasedSearch > 1) {
+				// on first frame after reset, focus somewhere else because if we stay focused, the search content goes back to before erase ...
+				ImGui.SetKeyboardFocusHere(2);
+				Search = "";
+				JustErasedSearch = 1;
+			} else if (JustErasedSearch == 1) {
+				// on second frame after erase, focus the textbox again
+				ImGui.SetKeyboardFocusHere(-1);
+				JustErasedSearch = 0;
 			}
 
+			// draw searchbar info bits
+			var fontHandle = GuiHelpers.FontHandle(GuiHelpers.Font.Title);
+			fontHandle.Push();
+			try {
+				DrawInfoSearchBar(posInfoSearchInitial, 0.4f);
+			} finally {
+				fontHandle.Pop();
+			}
 
-			ImGui.SameLine();
+			if(isSidebarFitting) ImGui.SameLine();
 
-			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? FontAwesomeIcon.Columns : FontAwesomeIcon.Expand;
-
-			var numberOfButtons = 3;
-
-			var spacing = ImGui.GetContentRegionAvail().X
-
-				- GuiHelpers.CalcIconSize(FontAwesomeIcon.ArrowDownUpLock).X // setting icon
-				- GuiHelpers.CalcIconSize(sidebarShowHideIcon).X // setting icon
-				- GuiHelpers.CalcIconSize(FontAwesomeIcon.Cog).X // setting icon
-
-				- ImGui.GetStyle().ItemSpacing.X * (numberOfButtons -1 ) // * by number of icon -1, cause it's between them
-				- ImGui.GetStyle().FramePadding.X * 2 * numberOfButtons; // * by number of icons x2, cause on each sides of the icon
+			var spacing = ImGui.GetContentRegionAvail().X - rightButtonWidth;
 
 			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + spacing);
 
@@ -161,6 +180,45 @@ namespace Dresser.Windows {
 
 			ImGui.PopStyleVar();
 
+		}
+		private Vector2 DrawInfoSearchBar(Vector2 posInfoSearchInitial, float darkenAmount) {
+
+			Vector2 newPos = CurrentVerticalTab switch {
+				VerticalTab.Clothes => DrawInfoSearchBarClothes(posInfoSearchInitial, darkenAmount),
+				VerticalTab.Dyes => DrawInfoSearchBarDyes(posInfoSearchInitial, darkenAmount),
+				var _ => posInfoSearchInitial
+			};
+
+			var fontHandle = GuiHelpers.FontHandle(GuiHelpers.Font.Icon);
+
+			var eraserLabel = "##Eraser##Browser";
+			fontHandle.Push();
+			var eraserText = FontAwesomeIcon.Backspace.ToIconString();
+
+			var eraserSize = ImGui.CalcTextSize(eraserText);
+			var eraserPos = newPos - new Vector2(eraserSize.X + (ImGui.GetStyle().ItemSpacing.X*4), -ImGui.GetStyle().FramePadding.Y);
+			var isHovered = GuiHelpers.IsHovered(eraserLabel);
+
+			ImGui.GetWindowDrawList().AddText(eraserPos, ImGui.ColorConvertFloat4ToU32(Vector4.One.WithAlpha(isHovered?1f:0.8f)), eraserText);
+
+
+
+			fontHandle.Pop();
+
+
+			var isHovering = ImGui.IsMouseHoveringRect(eraserPos, eraserPos + eraserSize);
+			GuiHelpers.Hovering(eraserLabel, isHovering);
+
+			var clickedEraser = isHovering && ImGui.IsItemClicked();
+
+			if (clickedEraser) {
+				PluginLog.Debug("Erase text in searchbar");
+				EraseSearchText();
+				RecomputeItems();
+			}
+
+
+			return newPos;
 		}
 
 	}

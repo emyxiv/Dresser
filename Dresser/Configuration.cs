@@ -155,7 +155,7 @@ namespace Dresser {
 		public float FilterInventoryCategoryColumnDistribution { get; set; } = 1.5f;
 		public int FilterInventoryCategoryColumnNumber { get; set; } = 1;
 		public int FilterInventoryTypeColumnNumber { get; set; } = 1;
-		public float GearBrowserSideBarSize { get; set; } = 300f;
+		public float GearBrowserSideBarSizePercent { get; set; } = 0.33f;
 		public bool GearBrowserSideBarHide = false;
 		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnRight;
 

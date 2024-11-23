@@ -1,13 +1,12 @@
-using System;
-using Dalamud.Interface.Windowing;
-using Dresser.Logic;
-
-using ImGuiNET;
+using System.Numerics;
 
 namespace Dresser.Windows
 {
-	public partial class GearBrowser : Window, IWindowWithHotkey, IDisposable
+	public partial class GearBrowser
 	{
+		private Vector2 DrawInfoSearchBarDyes(Vector2 posInfoSearchInitial, float darkenAmount) {
+			return posInfoSearchInitial;
+		}
 		private DyePicker _dyePicker;
 
 		private void DrawDyes() {

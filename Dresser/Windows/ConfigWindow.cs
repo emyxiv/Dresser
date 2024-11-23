@@ -171,9 +171,9 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.Combo("Display mode##GearBrowserConfig", ref GearBrowserDisplayMode, GearBrowserDisplayMode_items, GearBrowserDisplayMode_items.Count())) {
 			ConfigurationManager.Config.GearBrowserDisplayMode = (GearBrowser.DisplayMode)GearBrowserDisplayMode;
 		}
-		var GearBrowserSideBarSize = ConfigurationManager.Config.GearBrowserSideBarSize;
-		if (ImGui.DragFloat("size - Sidebar##GearBrowserConfig", ref GearBrowserSideBarSize, 10f, 20, 2000,"%.1f", ImGuiSliderFlags.AlwaysClamp))
-			ConfigurationManager.Config.GearBrowserSideBarSize = GearBrowserSideBarSize;
+		var GearBrowserSideBarSizePercent = ConfigurationManager.Config.GearBrowserSideBarSizePercent * 100f;
+		if (ImGui.DragFloat("size - Sidebar##GearBrowserConfig", ref GearBrowserSideBarSizePercent, 0.1f, 0.01f, 100f,"%.1f %%", ImGuiSliderFlags.AlwaysClamp))
+			ConfigurationManager.Config.GearBrowserSideBarSizePercent = float.Clamp(GearBrowserSideBarSizePercent / 100f,0.001f, 1f);
 		//var FilterInventoryCategoryColumnDistribution = ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution;
 		//if(ImGui.DragFloat("Source - column distribution##GearBrowserConfig", ref FilterInventoryCategoryColumnDistribution, 0.005f, -5f, 15f))
 		//	ConfigurationManager.Config.FilterInventoryCategoryColumnDistribution = FilterInventoryCategoryColumnDistribution;

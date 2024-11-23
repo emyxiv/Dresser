@@ -53,6 +53,9 @@ namespace Dresser.Windows.Components {
 		private static readonly Vector4 invisible = new(1, 1, 1, 0);
 		private static readonly Vector4 hoveredAlpha = new(1, 1, 1, 0.7f);
 		private static readonly Dictionary<string, bool> IconButtonNoBgHovers = new();
+		public static bool IsHovered(string label) => IconButtonNoBgHovers.TryGetValue(label, out bool wasHovered) && wasHovered;
+		public static void Hovering(string label, bool isHovering) => IconButtonNoBgHovers[label] = isHovering;
+
 		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? textColor = null) {
 			return ButtonNoBg((label,h) => IconButton(icon, size, label), hiddenLabel, tooltip, textColor);
 		}
@@ -66,16 +69,18 @@ namespace Dresser.Windows.Components {
 				return ImGui.InvisibleButton(hiddenLabel, size);
 			}, hiddenLabel, tooltip, Vector4.Zero);
 		}
-		public static bool GameButtonCircleToggle(UldBundle cropCircleBUttonItemId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+		public static bool GameButtonCircleToggle(UldBundle cropCircleBUttonItemId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default)
+			=> GameButtonToggle(cropCircleBUttonItemId, UldBundle.CircleLargeHighlight, ref value, hiddenLabel, tooltip, size);
+		public static bool GameButtonToggle(UldBundle cropCircleBUttonItemId, UldBundle activeIcon, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null) {
 
 			if (value) {
-				var z = PluginServices.ImageGuiCrop.GetPart(UldBundle.CircleLargeHighlight);
+				var z = PluginServices.ImageGuiCrop.GetPart(activeIcon);
 				if (z != null) {
 					var pos = ImGui.GetCursorScreenPos();
 					ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size);
 				}
 			}
-			var accepting = GameButton(cropCircleBUttonItemId, hiddenLabel, tooltip, size);
+			var accepting = GameButton(cropCircleBUttonItemId, hiddenLabel, tooltip, size, color);
 			if (accepting) {
 				value = !value;
 			}
@@ -84,7 +89,7 @@ namespace Dresser.Windows.Components {
 		}
 
 		public static bool ButtonNoBg(Func<string,bool, bool> buttonFunc, string hiddenLabel, string tooltip = "", Vector4? textColor = null) {
-			IconButtonNoBgHovers.TryGetValue(hiddenLabel, out bool wasHovered);
+			var wasHovered = IsHovered(hiddenLabel);
 			if(textColor.HasValue) ImGui.PushStyleColor(ImGuiCol.Text, textColor.Value);
 			if (wasHovered) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] * hoveredAlpha);
 			ImGui.PushStyleColor(ImGuiCol.Button, invisible);
@@ -95,7 +100,7 @@ namespace Dresser.Windows.Components {
 			if (wasHovered) ImGui.PopStyleColor();
 			if (textColor.HasValue) ImGui.PopStyleColor();
 
-			IconButtonNoBgHovers[hiddenLabel] = ImGui.IsItemHovered();
+			Hovering(hiddenLabel, ImGui.IsItemHovered());
 			Tooltip(tooltip);
 			return accepting;
 		}
@@ -176,7 +181,7 @@ namespace Dresser.Windows.Components {
 			fontHandle.Pop();
 		}
 
-		private static IFontHandle FontHandle(Font font, float? size = null,string someText = "") {
+		public static IFontHandle FontHandle(Font font, float? size = null,string someText = "") {
 			if(font == Font.Icon) return PluginServices.PluginInterface.UiBuilder.IconFontHandle;
 			if(font == Font.Mono) return PluginServices.PluginInterface.UiBuilder.MonoFontHandle;
 
@@ -273,6 +278,16 @@ namespace Dresser.Windows.Components {
 		}
 		public static void Tooltip(Action action) {
 			if (!AnyItemTooltiping && ImGui.IsItemHovered()) {
+				AnyItemTooltiping = true;
+				ImGui.BeginTooltip();
+				ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);
+				action();
+				ImGui.EndTooltip();
+			} else
+				AnyItemTooltiping = false;
+		}
+		public static void Tooltip(Action action, bool customHoverToggle) {
+			if (!AnyItemTooltiping && customHoverToggle) {
 				AnyItemTooltiping = true;
 				ImGui.BeginTooltip();
 				ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35.0f);

@@ -27,11 +27,45 @@ using static Dresser.Services.Storage;
 
 namespace Dresser.Windows
 {
-	public partial class GearBrowser : Window, IWindowWithHotkey, IDisposable
+	public partial class GearBrowser
 	{
-		
+		private Vector2 DrawInfoSearchBarClothes(Vector2 posInfoSearchInitial, float darkenAmount) {
+
+			string infoSearchTextPart1 = ItemsCount.ToString();
+			string infoSearchTextPart2 = "";
+			if (ConfigurationManager.Config.DebugDisplayModedInTitleBar && ItemCountModded > 0) {
+				infoSearchTextPart2 = "(" + ItemCountModded + ")";
+			}
+
+			var sizeInfoSearchPart2 = ImGui.CalcTextSize(infoSearchTextPart2);
+			var sizeInfoSearchPart1 = ImGui.CalcTextSize(infoSearchTextPart1);
+
+			var posInfoSearchPart2 = posInfoSearchInitial - (infoSearchTextPart2.Length > 0 ? new Vector2(sizeInfoSearchPart2.X + ImGui.GetStyle().ItemSpacing.X, 0) : Vector2.Zero);
+			var posInfoSearchPart1 = posInfoSearchPart2 - new Vector2(sizeInfoSearchPart1.X + ImGui.GetStyle().ItemSpacing.X, 0);
+
+			// part 2
+			if (ConfigurationManager.Config.DebugDisplayModedInTitleBar && ItemCountModded > 0) {
+				ImGui.GetWindowDrawList().AddText(
+					posInfoSearchPart2,
+					ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.ModdedItemColor.Darken(darkenAmount)),
+					infoSearchTextPart2);
+				GuiHelpers.Tooltip(() => {
+					ImGui.Text($"{ItemsCount} modded items are applied in {ConfigurationManager.Config.PenumbraCollectionApply} collection");
+				}, ImGui.IsMouseHoveringRect(posInfoSearchPart2, posInfoSearchPart2 + sizeInfoSearchPart2));
+			}
+
+			// part 1
+			ImGui.GetWindowDrawList().AddText(
+				posInfoSearchPart1,
+				ImGui.ColorConvertFloat4ToU32(Vector4.One.Darken(darkenAmount)),
+				infoSearchTextPart1);
+			GuiHelpers.Tooltip(() => {
+				ImGui.TextUnformatted($"{ItemsCount} items found with the selected filters");
+			}, ImGui.IsMouseHoveringRect(posInfoSearchPart1, posInfoSearchPart1 + sizeInfoSearchPart1));
+
+			return posInfoSearchPart1;
+		}
 		private static BrowserIndex? HoveredItem = null;
-		private static string Search = "";
 		public static List<InventoryCategory> AllowedCategories = new() {
 			InventoryCategory.GlamourChest,
 			InventoryCategory.Armoire,
@@ -481,6 +515,7 @@ namespace Dresser.Windows
 
 		public static IEnumerable<InventoryItem>? Items = null;
 		private static int ItemsCount = 0;
+		private static int ItemCountModded = 0;
 		private static bool JustRecomputed = false;
 		public static void RecomputeItems() {
 
@@ -542,6 +577,7 @@ PluginLog.Debug($"filterCurrentJobStrict: {ConfigurationManager.Config.filterCur
 		private static void FinishRecomputeItems() {
 
 			ItemsCount = Items?.Count() ?? 0;
+			ItemCountModded = Items?.Count(i => i.IsModded()) ?? 0;
 			JustRecomputed = true;
 		}
 
@@ -559,13 +595,38 @@ PluginLog.Debug($"filterCurrentJobStrict: {ConfigurationManager.Config.filterCur
 		public int? HotkeyNextSelect = null;
 		public void DrawItems() {
 			Styler.PushStyleCollection();
-			Vector2 sideBarSize = new(ConfigurationManager.Config.GearBrowserSideBarSize, 0);
 			Vector2 available = ImGui.GetContentRegionAvail();
-			var isSidebarFitting = available.X > sideBarSize.X;
+			var isSidebarFitting = available.X > (ImGui.GetFontSize() * 25);
 			if (ConfigurationManager.Config.GearBrowserSideBarHide) isSidebarFitting = false;
-			var size = isSidebarFitting ? available - sideBarSize : available;
-			ImGui.BeginChildFrame(76, size);
-			//ImGui.BeginChildFrame(76, ImGui.GetContentRegionAvail());
+			if (ConfigurationManager.Config.GearBrowserDisplayMode == DisplayMode.Vertical) isSidebarFitting = false;
+
+			var sidebarPercent = ConfigurationManager.Config.GearBrowserSideBarSizePercent;
+
+			var maxIcons = 1;
+			if (isSidebarFitting) {
+				maxIcons = (int)(((available.X * (1-sidebarPercent) )/ ItemIcon.IconSize.X));
+			} else {
+				maxIcons = int.Clamp(maxIcons-1,1,int.MaxValue);
+			}
+
+			RowSize = maxIcons;
+			float widthAdjusted;
+
+			// Calculate Gear slot frame width
+			if (isSidebarFitting) {
+				widthAdjusted =
+					((maxIcons) * ItemIcon.IconSize.X)
+					// +((ImGui.GetStyle().WindowPadding.X ) * 2)
+					+ ((ImGui.GetStyle().ScrollbarSize) * 1)
+					+ ((ImGui.GetStyle().ItemSpacing.X) * (maxIcons - 1))
+					// +((ImGui.GetStyle().FramePadding.X *2 ) * (maxIcons-1))
+					+ (ImGui.GetStyle().FramePadding.X * 2);
+
+			} else {
+				widthAdjusted = available.X;
+			}
+
+			ImGui.BeginChildFrame(76,  new Vector2(widthAdjusted, available.Y));
 
 			BrowserIndex? selectedItemHash = SelectedInventoryItem == null ? null : (BrowserIndex)SelectedInventoryItem;
 			if (Items != null && ItemsCount > 0)
@@ -573,6 +634,7 @@ PluginLog.Debug($"filterCurrentJobStrict: {ConfigurationManager.Config.filterCur
 
 					bool isTooltipActive = false;
 					var i = 0;
+					var r = 0;
 					bool rowSizeChecked = false;
 					bool hotkeySelected = false;
 
@@ -606,14 +668,24 @@ PluginLog.Debug($"filterCurrentJobStrict: {ConfigurationManager.Config.filterCur
 							ImGui.SetScrollHereY();
 						}
 
+						// break row if sidebar
+						if (isSidebarFitting) {
+							r++;
+							if (r >= maxIcons) {
+								r = 0;
+							} else ImGui.SameLine();
 
-						ImGui.SameLine();
-						if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X) {
-							if (!rowSizeChecked) {
-								rowSizeChecked = true;
-								RowSize = i + 1;
+						}
+						// break row if no sidebar
+						else {
+							ImGui.SameLine();
+							if (ImGui.GetContentRegionAvail().X < ItemIcon.IconSize.X) {
+								if (!rowSizeChecked) {
+									rowSizeChecked = true;
+									RowSize = i + 1;
+								}
+								ImGui.NewLine();
 							}
-							ImGui.NewLine();
 						}
 
 						i++;

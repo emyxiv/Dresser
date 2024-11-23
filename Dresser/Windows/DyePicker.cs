@@ -21,7 +21,7 @@ namespace Dresser.Windows;
 
 public class DyePicker {
 
-	const float _multiplicatorDyeSpacing = 0.15f;
+	const float _multiplicatorDyeSpacing = 0.00001f;
 
 
 
@@ -57,7 +57,7 @@ public class DyePicker {
 	public static InventoryItem? CurrentItem = null;
 	private string SearchBarLabel = $"##dye_search";
 	private string SearchBarHint = "Search...";
-	private string DyeNameSearch = "";
+	private string DyeNameSearch => GearBrowser.SearchText();
 
 	private static int RowFromKey(int key) => (int)Math.Floor((double)(key / Columns));
 	private static int ColFromKey(int key) => key % Columns;
@@ -90,7 +90,8 @@ public class DyePicker {
 
 		try {
 
-			ImGui.PushStyleColor(ImGuiCol.Text, ConfigurationManager.Config.PlateSelectorColorTitle);
+			// ImGui.PushStyleColor(ImGuiCol.Text, ConfigurationManager.Config.PlateSelectorColorTitle);
+			/*
 			try {
 
 				ImGui.Spacing();
@@ -106,6 +107,7 @@ public class DyePicker {
 			} finally {
 				ImGui.PopStyleColor(1);
 			}
+			*/
 
 			DrawDyePickerHeader();
 		} catch(Exception e) {
@@ -116,10 +118,9 @@ public class DyePicker {
 
 
 		IEnumerable<Stain> dyesFiltered = Dyes;
-		if (DyeNameSearch.Length > 0) {
-			var DyeNameSearch2 = DyeNameSearch;
-			dyesFiltered = Dyes.Where(i => i.Name.ToString().Contains(DyeNameSearch2, StringComparison.OrdinalIgnoreCase));
-		}
+		// if (DyeNameSearch.Length > 0) {
+		// 	dyesFiltered = Dyes.Where(i => i.Name.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase));
+		// }
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ConfigurationManager.Config.DyePickerDyeSize * _multiplicatorDyeSpacing);
 		ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 100);
@@ -131,8 +132,9 @@ public class DyePicker {
 			foreach (var i in dyesFiltered) {
 				bool selecting = false;
 				bool isCurrentActive = IndexKey == LastSelectedItemKey;
+				bool isMatchingSearch = DyeNameSearch.Length == 0 || (i.Name.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase) || i.Name2.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase));
 
-				var drawnLineTurpe = DrawDyePickerItem(i, isCurrentActive);
+				var drawnLineTurpe = DrawDyePickerItem(i, isCurrentActive, !isMatchingSearch);
 				selecting |= drawnLineTurpe.Item1;
 
 				if (!isOneSelected) {
@@ -173,7 +175,7 @@ public class DyePicker {
 
 	private static int DyeLastSubOrder = -1;
 
-	private static (bool, bool) DrawDyePickerItem(Stain i, bool isActive) {
+	private static (bool, bool) DrawDyePickerItem(Stain i, bool isActive, bool faded) {
 		bool isThisRealNewLine = IndexKey % Columns == 0;
 		bool isThisANewShade = i.SubOrder == 1;
 
@@ -192,48 +194,119 @@ public class DyePicker {
 		if (LastSelectedItemKey == null && CurrentDyeList.TryGetValue(DyeIndex, out var stain) && stain != null) isActive = i.RowId == stain.Value;
 		else isActive = IndexKey == LastSelectedItemKey;
 
-		Vector2 startPos = default;
-		if (isActive) {
-			startPos = ImGui.GetCursorScreenPos();
-		}
-		var selecting = false;
-		try {
-			selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4(), ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
-			selecting |= !CurrentDyeList.ContainsValue((byte)i.RowId) && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
-
-		} catch (Exception e) {
-			PluginLog.Error(e, "Error in DrawDyePickerItem");
-		}
-		if (isActive) {
-			var draw = ImGui.GetWindowDrawList();
-			var endPos = startPos + ConfigurationManager.Config.DyePickerDyeSize;
-			var thicknessOutter = ConfigurationManager.Config.DyePickerDyeSize.X * 0.3f;
-			var thicknessInner = thicknessOutter * 0.4f;
-			var selectionColorOutter = ConfigurationManager.Config.DyePickerHighlightSelection;
-			var selectionColorInner = new Vector4(selectionColorOutter.X * 0.8f, selectionColorOutter.Y * 0.8f, selectionColorOutter.Z * 0.8f, 0.9f);
-
-			draw.AddRect(
-				startPos,
-				endPos,
-				ImGui.ColorConvertFloat4ToU32(selectionColorOutter),
-				ConfigurationManager.Config.DyePickerDyeSize.X / 5,
-				ImDrawFlags.None,
-				thicknessOutter
-				);
-
-
-			draw.AddRect(
-				startPos,
-				endPos,
-				ImGui.ColorConvertFloat4ToU32(selectionColorInner),
-				ConfigurationManager.Config.DyePickerDyeSize.X / 5,
-				ImDrawFlags.None,
-				thicknessInner
-				);
-
-		}
+		var selecting = DrawStainIcon(i, isActive, faded);
+		selecting |= !CurrentDyeList.ContainsValue((byte)i.RowId) && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
+		// try {
+		//
+		// } catch (Exception e) {
+		// 	PluginLog.Error(e, "Error in DrawDyePickerItem");
+		// }
 
 		return (selecting, ImGui.IsItemFocused());
+	}
+
+	private static bool DrawStainIcon(Stain i, bool isActive, bool faded) {
+
+		var bordSize = ConfigurationManager.Config.DyePickerDyeSize * 1.28f;
+		var overflowSize = (bordSize - ConfigurationManager.Config.DyePickerDyeSize) / 2;
+
+		var startPos = ImGui.GetCursorScreenPos() - overflowSize;
+		var endPos = startPos + bordSize;
+
+		var draw = ImGui.GetWindowDrawList();
+		// selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4(), ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
+		// var selecting = GuiHelpers.GameButton(UldBundle.ColorChooser_StainColor, $"{i.Name}##{i.RowId}","",ConfigurationManager.Config.DyePickerDyeSize,i.ColorVector4());
+
+		var size = ConfigurationManager.Config.DyePickerDyeSize;
+		var tint = i.ColorVector4();
+		var hiddenLabel = $"{i.Name}##{i.RowId}##InvisibleButton";
+		var z = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainColor);
+		if (z == null) return false;
+		var pos = ImGui.GetCursorScreenPos();
+		var wasHovered = GuiHelpers.IsHovered(hiddenLabel);
+
+		var colorStain = i.ColorVector4();
+		var colorBorder = Vector4.One.Darken(0.3f);
+		var colorMetal = i.ColorVector4().Saturate(0.5f).Lighten(0.7f).WithAlpha(0.78f);
+		var colorSearchMatch = Vector4.One.WithAlpha(0.4f);
+
+		if (faded) {
+			colorStain = colorStain.WithAlpha(0.25f);
+			colorMetal = colorMetal.WithAlpha(0.15f);
+		}
+
+		draw.AddImage(z.ImGuiHandle, startPos, endPos, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorStain));
+		// var hovered = ImGui.IsMouseHoveringRect(pos, pos + size);
+
+		var selecting = ImGui.InvisibleButton(hiddenLabel,size);
+		var hovered = ImGui.IsItemHovered();
+
+		GuiHelpers.Hovering(hiddenLabel, ImGui.IsItemHovered());
+
+		GuiHelpers.Tooltip(() => {
+			ImGui.Text($"{i.Name}");
+		});
+
+		// if dye is metallic, put some gloss
+		if (i.Unknown1) {
+			var stainMetalTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainMetallic);
+			// if (stainMetalTex != null) draw.AddImage(
+			// 	stainMetalTex.ImGuiHandle,
+			// 	startPos,
+			// 	endPos,
+			// 	Vector2.One,
+			// 	Vector2.Zero,
+			// 	ImGui.ColorConvertFloat4ToU32(Vector4.One.Darken(0.3f).WithAlpha(0.9f)));
+			if (stainMetalTex != null) draw.AddImage(
+				stainMetalTex.ImGuiHandle,
+				startPos,
+				endPos,
+				Vector2.One,
+				Vector2.Zero,
+				ImGui.ColorConvertFloat4ToU32(colorMetal));
+			// if (stainMetalTex != null) draw.AddImage(
+			// 	stainMetalTex.ImGuiHandle,
+			// 	startPos,
+			// 	endPos,
+			// 	Vector2.One,
+			// 	Vector2.Zero,
+			// 	ImGui.ColorConvertFloat4ToU32(i.ColorVector4().Darken(0f).WithAlpha(0.3f)));
+
+		}
+		// put a border
+		var stainBorderTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainOutline);
+		if (stainBorderTex != null) draw.AddImage(
+			stainBorderTex.ImGuiHandle,
+			startPos,
+			endPos,
+			Vector2.Zero,
+			Vector2.One,
+			ImGui.ColorConvertFloat4ToU32(colorBorder));
+
+		// if is active, put the outline effect
+		if (isActive || wasHovered || GearBrowser.SearchText().Length > 0) {
+
+			var stainHoverTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainHover);
+			if (isActive || wasHovered) {
+				if (stainHoverTex != null) draw.AddImage(
+					stainHoverTex.ImGuiHandle,
+					startPos,
+					endPos);
+			}
+
+			// highlight not faded when searching
+			if (GearBrowser.SearchText().Length > 0 && !faded) {
+				if (stainHoverTex != null) draw.AddImage(
+					stainHoverTex.ImGuiHandle,
+					startPos,
+					endPos,
+					Vector2.Zero,
+					Vector2.One,
+					ImGui.ColorConvertFloat4ToU32(colorSearchMatch));
+			}
+		}
+
+		return selecting;
 	}
 
 	public static ushort DyeIndex = 1;
