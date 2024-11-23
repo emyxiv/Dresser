@@ -54,12 +54,13 @@ namespace Dresser.Windows.Components {
 		//	=> DrawIcon(image, dye, DyeCount, item, out bool _);
 
 		public static void DrawIcon(InventoryItem? item) {
-			bool _ = false;
 			bool __ = false;
-			DrawIcon(item, ref _, ref __, out __);
+			bool ___ = false;
+			DrawIcon(item, ref ___, ref __, out var _, out var _);
 		}
-		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, GlamourPlateSlot? emptySlot = null, Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
+		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, out bool clickedStain, GlamourPlateSlot? emptySlot = null, Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
 			clickedMiddle = false;
+			clickedStain = false;
 
 			if (PluginServices.Context.LocalPlayer == null
 				|| PluginServices.Context.LocalPlayerRace == null
@@ -82,7 +83,7 @@ namespace Dresser.Windows.Components {
 
 			if (item.ItemId == 0)
 				image = null;
-			var clicked = DrawImage(image, ref isHovered, out clickedMiddle, iconImageFlag, item,contextAction, emptySlot, sizeMod);
+			var clicked = DrawImage(image, ref isHovered, out clickedMiddle, out clickedStain, iconImageFlag, item,contextAction, emptySlot, sizeMod);
 			var isTooltipActive2 = isTooltipActive;
 
 			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
@@ -227,13 +228,15 @@ namespace Dresser.Windows.Components {
 
 			return clicked;
 		}
-		private static bool DrawImage(ISharedImmediateTexture image, InventoryItem item, IconImageFlag iconImageFlag = 0) {
-			bool _ = false;
-			return DrawImage(image, ref _, out _, iconImageFlag, item);
+		private static bool DrawImage(ISharedImmediateTexture image, InventoryItem item, IconImageFlag iconImageFlag = 0)
+		{
+			bool __ = false;
+			return DrawImage(image, ref __, out var _, out var _, iconImageFlag, item);
 		}
-		private static bool DrawImage(ISharedImmediateTexture image, ref bool hovering, out bool clickedMiddle, IconImageFlag iconImageFlag, InventoryItem item,Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
+		private static bool DrawImage(ISharedImmediateTexture image, ref bool hovering, out bool clickedMiddle, out bool clickedStain, IconImageFlag iconImageFlag, InventoryItem item,Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, GlamourPlateSlot? emptySlot = null, float sizeMod = 1) {
 			ImGui.BeginGroup();
 			clickedMiddle = false;
+			clickedStain = false;
 			var iconSize = IconSize * sizeMod;
 
 			bool wasHovered = hovering;
@@ -276,7 +279,7 @@ namespace Dresser.Windows.Components {
 					ImGui.EndPopup();
 				}
 
-				DrawStains(item, sizeMod);
+				clickedStain = DrawStains(item, sizeMod);
 
 				ImGui.SetCursorPos(initialPosition);
 				ImGui.SetCursorPos(ImGui.GetCursorPos() - (difference / 2));
@@ -321,21 +324,24 @@ namespace Dresser.Windows.Components {
 			return clicked;
 		}
 
-		public static void DrawStains(InventoryItem item, float sizeMod = 1) {
+		public static bool DrawStains(InventoryItem item, float sizeMod = 1)
+		{
 
-			if (!item.Item.IsDyeable1()) return;
+			bool wasClicked = false;
+			if (!item.Item.IsDyeable1()) return wasClicked;
 			var stain1 = Service.ExcelCache.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain);
 			//if(item.FormattedName == "Thavnairian Bustier") PluginLog.Debug($"DYE: {stain1.Name} {stain1.RowId}");
-			if(stain1 == null) return;
-			DrawStain(stain1.Value, 1, sizeMod);
+			if(stain1 == null) return wasClicked;
+			wasClicked |= DrawStain(stain1.Value, 1, sizeMod);
 
 
-			if (!item.Item.IsDyeable2()) return;
+			if (!item.Item.IsDyeable2()) return wasClicked;
 			var stain2 = Service.ExcelCache.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain2);
-			if (stain2 == null) return;
-			DrawStain(stain2.Value, 2, sizeMod);
+			if (stain2 == null) return wasClicked;
+			wasClicked |= DrawStain(stain2.Value, 2, sizeMod);
+			return wasClicked;
 		}
-		public static void DrawStain(Stain stain, ushort dyeIndex, float sizeMod = 1) {
+		public static bool DrawStain(Stain stain, ushort dyeIndex, float sizeMod = 1) {
 			ImGui.SameLine();
 			Vector2 cursorScreenPos = ImGui.GetCursorScreenPos();
 
@@ -350,6 +356,10 @@ namespace Dresser.Windows.Components {
 			var draw = ImGui.GetWindowDrawList();
 			draw.AddCircleFilled(pos, radius, ImGui.ColorConvertFloat4ToU32(color));
 			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder * sizeMod);
+
+			var posSquare = pos - new Vector2(radius);
+			var wasClicked = ImGui.IsMouseHoveringRect(posSquare, posSquare + new Vector2(radius * 2)) && ImGui.IsItemClicked();
+			return wasClicked;
 		}
 	}
 	[Flags]

@@ -314,7 +314,7 @@ public class CurrentGear : Window, IDisposable {
 				bool isHovered = slot == HoveredSlot;
 				bool wasHovered = isHovered;
 				isHovered |= GearBrowser.SelectedSlot == slot;
-				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, out bool clickedMiddle, slot, ContextMenuCurrent);
+				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, out bool clickedMiddle, out bool clickedStain, slot, ContextMenuCurrent);
 				if (isHovered)
 					HoveredSlot = slot;
 				else if (!isHovered && wasHovered)
@@ -324,6 +324,11 @@ public class CurrentGear : Window, IDisposable {
 				}
 				if (clickedMiddle && item != null)
 					PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item, slot);
+				if (clickedStain)
+				{
+					Plugin.GetInstance().GearBrowser.SwitchToDyesMode();
+					PluginServices.ApplyGearChange.OpenBrowserAndUncollapse();
+				}
 
 				if (i % 2 == 0)
 					ImGui.SameLine();
