@@ -15,7 +15,7 @@ namespace Dresser.Windows {
 		private Plugin Plugin;
 
 		public GearBrowser(Plugin plugin) : base(
-			"Gear Browser", ImGuiWindowFlags.None) {
+			"Gear Browser", ImGuiWindowFlags.NoScrollbar) {
 			this.SizeConstraints = new WindowSizeConstraints {
 				MinimumSize = new Vector2(ImGui.GetFontSize() * 4),
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
