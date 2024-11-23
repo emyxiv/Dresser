@@ -64,30 +64,9 @@ namespace Dresser.Windows {
 
 			DrawSearchBar();
 
-			var fontSize = ImGui.GetFontSize();
 
 			ImGui.BeginGroup();
-			// ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, Vector2.Zero);
-			// ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
-			// ImGui.PushStyleVar(ImGuiStyleVar.ItemInnerSpacing, Vector2.Zero);
-
-			var buttonSize = new Vector2(
-					fontSize * 1.25f,
-					(
-					ImGui.GetContentRegionAvail().Y
-					// - ImGui.GetStyle().FramePadding.Y
-					- ImGui.GetStyle().ItemSpacing.Y
-					) / 2f
-				);
-
-			foreach (var vB in Enum.GetValues<VerticalTab>()) {
-				if(vB == CurrentVerticalTab) ImGui.PushStyleColor(ImGuiCol.Button, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg);
-				var isClicked = ImGui.Button($"{vB}", buttonSize);
-				if(vB == CurrentVerticalTab) ImGui.PopStyleColor();
-				if(isClicked) CurrentVerticalTab = vB;
-			}
-
-			// ImGui.PopStyleVar(3);
+			DrawVerticalTab();
 			ImGui.EndGroup();
 
 			ImGui.SameLine();
@@ -99,6 +78,27 @@ namespace Dresser.Windows {
 				case VerticalTab.Dyes: DrawDyes(); break;
 			}
 			ImGui.EndGroup();
+
+		}
+
+		private void DrawVerticalTab() {
+			var fontSize = ImGui.GetFontSize();
+
+			var buttonSize = new Vector2(
+				fontSize * 1.25f,
+				(
+				ImGui.GetContentRegionAvail().Y
+				// - ImGui.GetStyle().FramePadding.Y
+				- ImGui.GetStyle().ItemSpacing.Y
+				) / 2f
+			);
+
+			foreach (var vB in Enum.GetValues<VerticalTab>()) {
+				if(vB == CurrentVerticalTab) ImGui.PushStyleColor(ImGuiCol.Button, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg);
+				var isClicked = ImGui.Button($"{vB}", buttonSize);
+				if(vB == CurrentVerticalTab) ImGui.PopStyleColor();
+				if(isClicked) CurrentVerticalTab = vB;
+			}
 
 		}
 
