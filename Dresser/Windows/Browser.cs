@@ -196,7 +196,7 @@ namespace Dresser.Windows {
 			var eraserText = FontAwesomeIcon.Backspace.ToIconString();
 
 			var eraserSize = ImGui.CalcTextSize(eraserText);
-			var eraserPos = newPos - new Vector2(eraserSize.X + (ImGui.GetStyle().ItemSpacing.X*4), -ImGui.GetStyle().FramePadding.Y);
+			var eraserPos = newPos - new Vector2(eraserSize.X + (ImGui.GetStyle().ItemSpacing.X * 1), -ImGui.GetStyle().FramePadding.Y);
 			var isHovered = GuiHelpers.IsHovered(eraserLabel);
 
 			ImGui.GetWindowDrawList().AddText(eraserPos, ImGui.ColorConvertFloat4ToU32(Vector4.One.WithAlpha(isHovered?1f:0.8f)), eraserText);
