@@ -82,10 +82,9 @@ namespace Dresser.Windows {
 		}
 
 		private void DrawVerticalTab() {
-			var fontSize = ImGui.GetFontSize();
 
 			var buttonSize = new Vector2(
-				fontSize * 1.25f,
+				ItemIcon.IconSize.X * 0.33f,
 				(
 				ImGui.GetContentRegionAvail().Y
 				// - ImGui.GetStyle().FramePadding.Y
@@ -93,10 +92,37 @@ namespace Dresser.Windows {
 				) / 2f
 			);
 
+			var rounding = ItemIcon.IconSize.X * 0.1f;
+
 			foreach (var vB in Enum.GetValues<VerticalTab>()) {
-				if(vB == CurrentVerticalTab) ImGui.PushStyleColor(ImGuiCol.Button, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg);
-				var isClicked = ImGui.Button($"{vB}", buttonSize);
-				if(vB == CurrentVerticalTab) ImGui.PopStyleColor();
+				var label = $"##{vB}##VerticalTab#Browser";
+				var isHovered = GuiHelpers.IsHovered(label);
+				var isActive = vB == CurrentVerticalTab;
+				var pos = ImGui.GetCursorScreenPos();
+
+				// draw the tab
+				var isClicked = GuiHelpers.ButtonDrawList(label, buttonSize, ConfigurationManager.Config.BrowserVerticalTabButtonsBg, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg, rounding, isActive);
+				var hovered = ImGui.IsItemHovered();
+				GuiHelpers.Hovering(label,hovered);
+
+				// draw the icon
+				var colorIcon = Vector4.One;
+				if(!isHovered) colorIcon = colorIcon.WithAlpha(0.8f);
+				var iconUld =  vB switch {
+					VerticalTab.Clothes => UldBundle.ArmouryBoard_ChestPiece,
+					VerticalTab.Dyes => UldBundle.ColorantToggleButton_DyeIndicatorActive,
+				};
+
+				var iconTexWrap = PluginServices.ImageGuiCrop.GetPart(iconUld);
+				if (iconTexWrap != null) ImGui.GetWindowDrawList().AddImage(
+					iconTexWrap.ImGuiHandle,
+					pos,
+					pos + new Vector2(buttonSize.X, buttonSize.X * ((float)iconTexWrap.Width / iconTexWrap.Height)),
+					Vector2.Zero,
+					Vector2.One,
+					ImGui.ColorConvertFloat4ToU32(colorIcon));
+
+				// change tab if clicked
 				if(isClicked) CurrentVerticalTab = vB;
 			}
 
