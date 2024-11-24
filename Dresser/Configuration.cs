@@ -138,6 +138,9 @@ namespace Dresser {
 		public Vector4 DyePickerDye1Or2SelectedBg     = new Vector4(1f, 0.8f, 0.45f, 1f);
 		public Vector4 DyePickerDye1Or2SelectedColor  = new Vector4(0f, 0f, 0f, 1f);
 
+		// browser
+		public Vector4 BrowserVerticalTabButtonsBg     = new Vector4(47, 53, 75, 255) / 255;
+
 
 		// gear browser remember
 		public float IconSizeMult { get; set; } = 1.0f;

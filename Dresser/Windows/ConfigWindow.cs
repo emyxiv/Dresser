@@ -622,9 +622,10 @@ public class ConfigWindow : Window, IDisposable {
 		ConfigColorVecot4(nameof(Configuration.PlateSelectorColorRadio), "Radio text");
 
 		ImGui.Separator();
-		ImGui.TextDisabled("Dye Picker");
+		ImGui.TextDisabled("Browser");
 		ConfigColorVecot4(nameof(Configuration.DyePickerHighlightSelection  ), "Selection");
-		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedBg   ), "Active dye bg");
+		ConfigColorVecot4(nameof(Configuration.BrowserVerticalTabButtonsBg  ), "Inactive tab bg");
+		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedBg   ), "Active tab bg");
 		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedColor), "Active dye text");
 
 	}
