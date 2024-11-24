@@ -297,5 +297,18 @@ namespace Dresser.Windows.Components {
 				AnyItemTooltiping = false;
 		}
 
+
+		public static bool ButtonDrawList(string label, Vector2 size, Vector4 colorBg, Vector4 colorBgActive, float rounding, bool active) {
+
+			var drawList = ImGui.GetWindowDrawList();
+			var isHovered = IsHovered(label);
+
+			if (active) colorBg = colorBgActive;
+			if(!isHovered) colorBg = colorBg.WithAlpha(0.8f);
+			var position = ImGui.GetCursorScreenPos();
+
+			drawList.AddRectFilled(position, position + size,ImGui.ColorConvertFloat4ToU32(colorBg), rounding);
+			return ImGui.InvisibleButton(label, size);
+		}
 	}
 }
