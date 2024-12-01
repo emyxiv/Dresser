@@ -110,11 +110,30 @@ namespace Dresser.Windows
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
 				filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
-				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.BeginDisabled();
+
 				ImGui.SameLine();
-				filterChanged |= ImGui.Checkbox($"##Current Job Strict##displayCategory", ref ConfigurationManager.Config.filterCurrentJobStrict);
+				var strict = ConfigurationManager.Config.filterCurrentJobFilterType == JobFilterType.Strict;
+				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.BeginDisabled();
+				var strictChanged = ImGui.Checkbox($"S##Current Job Strict##displayCategory", ref strict);
+				filterChanged |= strictChanged;
+				if (strictChanged) {
+					ConfigurationManager.Config.filterCurrentJobFilterType = strict ? JobFilterType.Strict : JobFilterType.None;
+				}
 				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.EndDisabled();
 				GuiHelpers.Tooltip($"Strict\nOnly show items of current job\nHandy to find job gear");
+
+				ImGui.SameLine();
+				var relax = ConfigurationManager.Config.filterCurrentJobFilterType == JobFilterType.Relax;
+				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.BeginDisabled();
+
+				var relaxChanged = ImGui.Checkbox($"R##Current Job Relax##displayCategory", ref relax);
+				filterChanged |= relaxChanged;
+				if (relaxChanged) {
+					ConfigurationManager.Config.filterCurrentJobFilterType = relax ? JobFilterType.Relax : JobFilterType.None;
+				}
+				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.EndDisabled();
+				GuiHelpers.Tooltip($"Relax\nHides job gear\nHandy to make a role compatible glam ");
+
 				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
@@ -203,4 +222,10 @@ namespace Dresser.Windows
 			return filterChanged;
 		}
     }
+
+	public enum JobFilterType : byte {
+		None = 0,
+		Strict = 1,
+		Relax = 2,
+	}
 }

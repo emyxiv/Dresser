@@ -349,10 +349,9 @@ namespace Dresser.Windows
 			items = items.Where(i => !i.IsEmpty && i.Item.Base.ModelMain != 0).ToArray();
 
 			SavedQuantityCacheMake(items);
-PluginLog.Debug($"filterCurrentJobStrict: {ConfigurationManager.Config.filterCurrentJobStrict}");
 			items = items.Where(i =>
 					(!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
-					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob(ConfigurationManager.Config.filterCurrentJobStrict))
+					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob(ConfigurationManager.Config.filterCurrentJobFilterType))
 					&& i.IsInGearBrowserSelectedSlot()
 					&& i.IsFilterDisplayable()
 					&& i.IsInFilterLevelRanges()

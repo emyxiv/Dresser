@@ -19,6 +19,7 @@ using Dresser.Logic;
 using Dresser.Logic.Glamourer;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
+using Dresser.Windows;
 
 using Lumina.Data;
 using Lumina.Excel.Sheets;
@@ -146,20 +147,25 @@ namespace Dresser.Extensions {
 
 			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
 		}
-		public static bool CanBeEquipedByPlayedJob(this ItemRow item, bool strict = false)
+		public static bool CanBeEquipedByPlayedJob(this ItemRow item, JobFilterType strict = JobFilterType.None)
 			=> item.Base.CanBeEquipedByPlayedJob(strict);
-		public static bool CanBeEquipedByPlayedJob(this Item item, bool strict = false) {
+		public static bool CanBeEquipedByPlayedJob(this Item item, JobFilterType strict = JobFilterType.None) {
 			var job = PluginServices.Context.LocalPlayerClass;
 			if (job == null) return false;
 			var jobCategory = item.ClassJobCategory;
 			// if (jobCategory == null) return false;
 
 			var isEquipable = Service.ExcelCache.GetClassJobCategorySheet().IsItemEquippableBy(jobCategory.RowId, job.Value.RowId);
-			if (isEquipable && strict) {
+			if (isEquipable && (strict == JobFilterType.Strict || strict == JobFilterType.Relax)) {
 				// ensure there is only one category
 				isEquipable = Service.ExcelCache
 					.GetClassJobCategorySheet()
-					.Any(jc=> jc.RowId == jobCategory.RowId && jc.ClassJobIds.Count == 1);
+					.Any(jc=>
+					{
+						if (jc.RowId != jobCategory.RowId) return false;
+						if(strict == JobFilterType.Strict) return jc.ClassJobIds.Count == 1;
+						return jc.ClassJobIds.Count > 1; // strict == JobFilterType.Relax
+					});
 					//was before 7.1: .ClassJobCategoryLookup[categoryId].Count == 1;
 			}
 			return isEquipable;
