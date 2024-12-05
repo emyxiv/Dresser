@@ -1,3 +1,5 @@
+using System;
+
 using Autofac;
 
 using CriticalCommonLib;
@@ -33,6 +35,8 @@ namespace Dresser {
 		[PluginService] public static IFramework Framework { get; set; } = null!;
 		[PluginService] public static IChatGui ChatGui { get; set; } = null!;
 		[PluginService] public static IObjectTable Objects { get; set; } = null!;
+        [PluginService] public static IGameConfig GameConfig { get; set; } = null!;
+        [PluginService] public static ICondition Condition { get; set; } = null!;
 
 		public static PenumbraIpc Penumbra { get; private set; } = null!;
 		//public static IChatUtilities ChatUtilities { get; private set; } = null!;
@@ -46,6 +50,7 @@ namespace Dresser {
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
 		public static AllaganToolsService AllaganTools { get; private set; } = null!;
 		public static GlamourerService Glamourer { get; private set; } = null!;
+		public static Actions Actions { get; private set; } = null!;
 
 
 		internal static AddonManager AddonManager = null!;
@@ -103,6 +108,8 @@ namespace Dresser {
 			GlamourPlates = new();
 			ApplyGearChange = new ApplyGearChange(plugin);
 
+			Actions = new Actions();
+
 			PluginLoaded = true;
 			OnPluginLoaded?.Invoke();
 
@@ -112,6 +119,7 @@ namespace Dresser {
 			ConfigurationManager.ClearQueue();
 			ConfigurationManager.Save();
 
+			Actions.Dispose();
 			ModdedIconStorage.Dispose();
 			Storage.Dispose();
 			OverlayService.Dispose();
@@ -131,6 +139,7 @@ namespace Dresser {
 
 			GlamourPlates.Dispose();
 
+			Actions = null!;
 			AllaganTools = null!;
 			Glamourer = null!;
 			//CharacterMonitor = null!;
