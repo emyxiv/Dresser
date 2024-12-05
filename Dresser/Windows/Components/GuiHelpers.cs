@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
+using Dresser.Logic;
+
 namespace Dresser.Windows.Components {
 	internal class GuiHelpers {
 		public static bool IconButtonHoldConfirm(FontAwesomeIcon icon, string tooltip, bool isHoldingKey, Vector2 size = default, string hiddenLabel = "") {
@@ -65,20 +67,43 @@ namespace Dresser.Windows.Components {
 				var z = PluginServices.ImageGuiCrop.GetPart(cropItemId);
 				if (z == null) return false;
 				var pos = ImGui.GetCursorScreenPos();
-				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint * 0.9f));
+				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint.WithAlpha(0.9f)));
 				return ImGui.InvisibleButton(hiddenLabel, size);
 			}, hiddenLabel, tooltip, Vector4.Zero);
 		}
+		public static bool GameIconButtonToggle(uint iconId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default) {
+			var iconTexture = PluginServices.TextureProvider.GetFromGameIcon(iconId).GetWrapOrEmpty();
+			var pos = ImGui.GetCursorScreenPos();
+
+			var wasHovered = IsHovered(hiddenLabel);
+			var iconRounding = size.X * 0.1f;
+			var iconSize = size * 0.83f;
+			var iconPos = pos + ((size - iconSize) / 2);
+			var iconColor = (new Vector4(1)).WithAlpha(wasHovered ? 0.9f : 0.7f);
+
+			var clicked = GameButtonToggleBase(UldBundle.ItemCapNormal, UldBundle.Buddy_HighlightSmall, ref value, hiddenLabel, tooltip, size,Vector4.One,1.2f);
+
+			ImGui.GetWindowDrawList().AddImageRounded(iconTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(iconColor), iconRounding);
+
+			return clicked;
+		}
 		public static bool GameButtonCircleToggle(UldBundle cropCircleBUttonItemId, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default)
 			=> GameButtonToggle(cropCircleBUttonItemId, UldBundle.CircleLargeHighlight, ref value, hiddenLabel, tooltip, size);
-		public static bool GameButtonToggle(UldBundle cropCircleBUttonItemId, UldBundle activeIcon, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null) {
+		public static bool GameButtonToggle(UldBundle cropCircleBUttonItemId, UldBundle activeIcon, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null)
+			=> GameButtonToggleBase(cropCircleBUttonItemId, activeIcon, ref value, hiddenLabel, tooltip, size, color);
+		private static bool GameButtonToggleBase(UldBundle cropCircleBUttonItemId, UldBundle activeIcon, ref bool value, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null, float highlightThicknessMult = 1.01f) {
 
 			if (value) {
-				var z = PluginServices.ImageGuiCrop.GetPart(activeIcon);
-				if (z != null) {
-					var pos = ImGui.GetCursorScreenPos();
-					ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size);
-				}
+				var activeTexture = PluginServices.ImageGuiCrop.GetPartOrEmpty(activeIcon);
+				// var highlightSize = PluginServices.ImageGuiCrop.GetPartOrEmpty(cropCircleBUttonItemId).Size;
+				// var activeSize = activeTexture.Size;
+				var pos = ImGui.GetCursorScreenPos();
+
+				// var sizeHighlight = highlightSize / activeSize   * size;
+				var sizeHighlight = size * highlightThicknessMult;
+				var posHighlight = pos - ((sizeHighlight-size) / 2);
+
+				ImGui.GetWindowDrawList().AddImage(activeTexture.ImGuiHandle, posHighlight, posHighlight + sizeHighlight);
 			}
 			var accepting = GameButton(cropCircleBUttonItemId, hiddenLabel, tooltip, size, color);
 			if (accepting) {

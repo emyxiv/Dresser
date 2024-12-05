@@ -31,6 +31,7 @@ namespace Dresser.Services {
 				{ GlamourPlateSlot.LeftRing, UldBundle.LeftRing }, // ring: 28
 			};
 
+		public IDalamudTextureWrap GetPartOrEmpty(UldBundle uldBundle) => (IDalamudTextureWrap) GetPart(uldBundle);
 		public IDalamudTextureWrap? GetPart(UldBundle uldBundle) {
 
 			if (Textures.TryGetValue(uldBundle.GetHashCode(), out var texture)) {
