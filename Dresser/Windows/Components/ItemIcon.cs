@@ -253,7 +253,10 @@ namespace Dresser.Windows.Components {
 
 				if (image != null) {
 					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? Styler.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
-					ImGui.Image(image.GetWrapOrEmpty().ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
+					// ImGui.Image(image.GetWrapOrEmpty().ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
+					var pos = ImGui.GetCursorScreenPos();
+					ImGui.GetWindowDrawList().AddImageRounded(image.GetWrapOrEmpty().ImGuiHandle,pos,pos +  iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorize),iconSize.X * 0.13f);
+					ImGui.InvisibleButton($"##invisibleItemIcon##", iconSize);
 				} else if (emptySlot != null) {
 					var emptySlotInfo = PluginServices.ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
 
