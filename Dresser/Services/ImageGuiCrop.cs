@@ -302,5 +302,11 @@ namespace Dresser.Services {
 		public static UldBundle ColorantToggleButton_IntoDye => new(BuildTexPath("ToggleButton"), "ui/uld/ColorantColoringSelector.uld", 18, "ColorantToggleButton_IntoDye");
 		public static UldBundle MiragePrismBox_Heart => new(BuildTexPath("ItemSearch"), "ui/uld/MiragePrismBox.uld", 10, "MiragePrismBox_Heart");
 
+		public static UldBundle Buddy_HighlightSmall => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 0, "Buddy_Highlight");
+		public static UldBundle Buddy_CapSmall => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 1, "Buddy_Highlight");
+		public static UldBundle Buddy_Highlight => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 2, "Buddy_Highlight");
+		public static UldBundle Buddy_CapGloss => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 3, "Buddy_CapGloss");
+		public static UldBundle Buddy_Cap => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 8, "Buddy_Cap");
+		public static UldBundle Buddy_Slot => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 5, "Buddy_Slot");
 	}
 }
