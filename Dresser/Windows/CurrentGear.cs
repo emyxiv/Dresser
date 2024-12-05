@@ -6,6 +6,7 @@ using System.Numerics;
 using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
+using Dalamud.Game.Config;
 using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Windowing;
@@ -114,6 +115,19 @@ public class CurrentGear : Window, IDisposable {
 
 
 			// new line (not sameline)
+			var changePostureConfigState = PluginServices.Context.ChangePostureConfigState;
+			if (GuiHelpers.GameIconButtonToggle(64068, ref changePostureConfigState, "ChangePostureToggle##CurrentGear", "Click to Change posture\nHold shift + click to disable/enable auto change posture\n(Character Configuration > Control Settings > Character > Randomize idle animation)", SizeGameCircleIcons)) {
+				if (ImGui.GetIO().KeyShift) {
+					PluginServices.Context.ChangePostureConfigState = changePostureConfigState;
+					PluginServices.Framework.RunOnFrameworkThread(() => {
+						PluginServices.GameConfig.Set(UiConfigOption.IdleEmoteRandomType, PluginServices.Context.ChangePostureConfigState);
+					});
+				} else {
+					PluginServices.Actions.ExecuteChangePosture();
+				}
+			}
+			ImGui.SameLine();
+
 			if (PluginServices.Context.IsAnyPlateSelectionOpen) {
 				if (GuiHelpers.GameButton(UldBundle.CircleLargeRefresh2, "OverwritePendingWithCurrent##CurrentGear", $"Overwrite portable plate {ConfigurationManager.Config.SelectedCurrentPlate + 1} with the plate you are currently viewing in Glamour Dresser or Plate Selection skill", SizeGameCircleIcons)) {
 					PluginServices.ApplyGearChange.OverwritePendingWithCurrentPlate();
