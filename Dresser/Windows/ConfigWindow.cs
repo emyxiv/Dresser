@@ -516,6 +516,9 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("Test Currencies"))
 		{
 			DrawDebugCurrencies();
+		}		if (ImGui.CollapsingHeader("Test Actions"))
+		{
+			DrawDebugActions();
 		}
 		if (ImGui.CollapsingHeader("TestUld")) {
 			ImageGuiCrop.TestParts();
@@ -672,5 +675,58 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SameLine();
 			ImGui.Text(currency.NameString);
 		}
+	}
+	private void DrawDebugActions()
+	{
+		if (ImGui.Button("get emote state##actions##config"))
+		{
+			
+			PluginLog.Debug($"GetPoseKind   : {PluginServices.Actions.GetEmoteController()?.GetPoseKind()}");
+			PluginLog.Debug($"EmoteId       : {PluginServices.Actions.GetEmoteController()?.EmoteId}");
+			PluginLog.Debug($"Unk1          : {PluginServices.Actions.GetEmoteController()?.Unk1}");
+			PluginLog.Debug($"CPoseState    : {PluginServices.Actions.GetEmoteController()?.CPoseState}");
+
+			PluginLog.Debug($"GetAvailablePoses: {PluginServices.Actions.GetAvailablePoses()}");
+			PluginLog.Debug($"GetPoseKind      : {PluginServices.Actions.GetPoseKind()}");
+		}
+		if (ImGui.Button("test action##actions##config"))
+		{
+			PluginServices.Actions.ExcuteAction();
+		}
+		if (ImGui.Button("print emote list##actions##config"))
+		{
+			PluginServices.Actions.EmoteList();
+		}
+		ImGui.SameLine();
+		if (ImGui.Button("Favorites##print emote list##actions##config"))
+		{
+
+			var favEmotes = PluginServices.Actions.EmoteFavorites();
+			PluginLog.Debug($"Fav Emotes      : {favEmotes.Length}");
+			foreach (var emote in favEmotes)
+			{
+				PluginLog.Debug($"   {emote}");
+			}
+			
+		}
+		ImGui.SameLine();
+		if (ImGui.Button("History##print emote list##actions##config"))
+		{
+			var histEmotes = PluginServices.Actions.EmoteHistory();
+			PluginLog.Debug($"History Emotes   : {histEmotes.Length}");
+			foreach (var emote in histEmotes)
+			{
+				PluginLog.Debug($"   {emote}");
+			}
+		}
+		if (ImGui.Button("print action list##actions##config"))
+		{
+			PluginServices.Actions.ActionList();
+		}
+		if (ImGui.Button("execute change posture##actions##config"))
+		{
+			PluginServices.Actions.ExecuteChangePosture();
+		}
+			
 	}
 }
