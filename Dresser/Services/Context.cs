@@ -8,6 +8,7 @@ using CriticalCommonLib;
 
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.Config;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Interop.Addons;
@@ -38,6 +39,8 @@ namespace Dresser.Services {
 		public bool AllaganToolsState = false;
 		public bool GlamourerState = false;
 		public bool PenumbraState = false;
+		public bool ChangePostureConfigState = false;
+		public uint ChangePostureConfigTime = 0;
 		public int PenumbraModCountInApplyCollection = 0;
 
 
@@ -111,6 +114,16 @@ namespace Dresser.Services {
 			GlamourerState = PluginServices.Glamourer.IsInitialized();
 			PenumbraState = PluginServices.Penumbra.GetEnabledState();
 			PenumbraModCountInApplyCollection = PluginServices.Penumbra.CountModsDresserApplyCollection();
+
+
+			PluginServices.Framework.RunOnFrameworkThread(() => {
+				if (PluginServices.GameConfig.TryGet(UiConfigOption.IdleEmoteRandomType, out bool zzz)) {
+					ChangePostureConfigState = zzz;
+				}
+				if (PluginServices.GameConfig.TryGet(UiConfigOption.IdleEmoteTime, out uint zzz1)) {
+					ChangePostureConfigTime = zzz1;
+				}
+			});
 		}
 		public bool MustGlamourerApply() {
 			return
