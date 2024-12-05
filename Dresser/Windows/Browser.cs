@@ -148,7 +148,8 @@ namespace Dresser.Windows {
 			// calculate right size icon size
 			var numberOfButtons = 3;
 			var sidebarShowHideIcon = ConfigurationManager.Config.GearBrowserSideBarHide ? FontAwesomeIcon.Columns : FontAwesomeIcon.Expand;
-			var rightButtonWidth = GuiHelpers.CalcIconSize(FontAwesomeIcon.ArrowDownUpLock).X // setting icon
+			var rightButtonWidth = 0
+				+ GuiHelpers.CalcIconSize(FontAwesomeIcon.ArrowDownUpLock).X // setting icon
 				+ GuiHelpers.CalcIconSize(sidebarShowHideIcon).X // setting icon
 				+ GuiHelpers.CalcIconSize(FontAwesomeIcon.Cog).X // setting icon
 
