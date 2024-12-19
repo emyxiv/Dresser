@@ -31,14 +31,19 @@ namespace Dresser.Services {
 				{ GlamourPlateSlot.LeftRing, UldBundle.LeftRing }, // ring: 28
 			};
 
-		public IDalamudTextureWrap GetPartOrEmpty(UldBundle uldBundle) => (IDalamudTextureWrap) GetPart(uldBundle);
-		public IDalamudTextureWrap? GetPart(UldBundle uldBundle) {
+		public IDalamudTextureWrap GetPartOrEmpty(UldBundle uldBundle) => GetPart(uldBundle);
+		public IDalamudTextureWrap GetPart(UldBundle uldBundle) {
 
-			if (Textures.TryGetValue(uldBundle.GetHashCode(), out var texture)) {
+			if (Textures.TryGetValue(uldBundle.GetHashCode(), out var texture) && texture != null) {
 				return texture;
 			}
 
-			if (Ulds.TryGetValue(uldBundle.Uld, out var uld)) {
+			var hasUldBundle = Ulds.TryGetValue(uldBundle.Uld, out var uld);
+			if (!hasUldBundle){
+				MakeUld(uldBundle);
+			}
+
+			if ((hasUldBundle && uld != null) || Ulds.TryGetValue(uldBundle.Uld, out uld)) {
 
 				if (uld.Valid) {
 					texture = uld.LoadTexturePart(uldBundle.Tex, uldBundle.Index);
@@ -48,12 +53,9 @@ namespace Dresser.Services {
 						return texture;
 					}
 				}
-			} else {
-				// if uld not found, make it
-				MakeUld(uldBundle);
 			}
 			//PluginLog.Warning($"Unable to load Uld texture {uldBundle.Handle}");
-			return null;
+			return null!;
 		}
 
 
