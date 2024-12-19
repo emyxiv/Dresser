@@ -603,7 +603,7 @@ namespace Dresser.Interop.Hooks {
 		}
 
 		public unsafe Span<MiragePlate> Plates =>
-			MemoryMarshal.CreateSpan(ref Unsafe.As<FixedSizeArray20<MiragePlate>, MiragePlate>(ref _Plates), Offsets.TotalPlates);
+			MemoryMarshal.CreateSpan(ref Unsafe.As<FixedSizeArray20<MiragePlate>, MiragePlate>(ref _Plates), Offsets.TotalPlates + 1);
 
 		public unsafe Span<MiragePlateItem> Items =>
 			MemoryMarshal.CreateSpan(ref Unsafe.As<FixedSizeArray12<MiragePlateItem>, MiragePlateItem>(ref _Items), 12);
