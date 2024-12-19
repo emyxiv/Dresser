@@ -50,36 +50,76 @@ public partial class CurrentGear
 			if(taskedItems.Any()) {
 				ImGui.TextDisabled($"Some items are neither in {InventoryCategory.GlamourChest.FormattedName()} or {InventoryCategory.Armoire.FormattedName()}");
 				ImGui.Spacing();
-				if(ImGui.BeginTable("TaskTooltip##CurrentGear", 2)) {
+				if(ImGui.BeginTable("TaskTooltip##CurrentGear", 4)) {
 
-					ImGui.TableSetupColumn("Item Name", ImGuiTableColumnFlags.WidthStretch, 100.0f, 0);
-					ImGui.TableSetupColumn("Where", ImGuiTableColumnFlags.WidthStretch, 100.0f, 1);
+					ImGui.TableSetupColumn("Item", ImGuiTableColumnFlags.WidthStretch, 100.0f, 0);
+					ImGui.TableSetupColumn("O", ImGuiTableColumnFlags.WidthStretch, 5.0f, 1);
+					ImGui.TableSetupColumn("N", ImGuiTableColumnFlags.WidthStretch, 5.0f, 2);
+					ImGui.TableSetupColumn("Location", ImGuiTableColumnFlags.WidthStretch, 100.0f, 3);
 					ImGui.TableHeadersRow();
 
 					var ddd = PluginServices.DataManager.Excel.GetSheet<StainTransient>();
 					foreach (var taskedItem in taskedItems) {
+						var isDye = PluginServices.DataManager.Excel.GetSheet<StainTransient>()
+							.Any(t => t.Item1.RowId == taskedItem.ItemId
+									|| t.Item2.RowId == taskedItem.ItemId);
+
 						ImGui.TableNextRow();
 						ImGui.TableNextColumn();
-						ImGui.AlignTextToFramePadding();
-						ImGui.Text($"{taskedItem.FormattedName}");
+						// ImGui.AlignTextToFramePadding();
+						ImGui.Image(PluginServices.TextureProvider.GetFromGameIcon((uint)taskedItem.Icon).GetWrapOrEmpty().ImGuiHandle, new Vector2(ImGui.GetFontSize()));
+						ImGui.SameLine();
 
-						if(PluginServices.DataManager.Excel.GetSheet<StainTransient>()
-							.Any(t=>t.Item1.RowId == taskedItem.ItemId
-									|| t.Item2.RowId == taskedItem.ItemId)) {
-
-							ImGui.SameLine();
-							ImGui.Text($" ( {taskedItem.Quantity}");
-							ImGui.SameLine();
-							ImGui.TextColored(ItemIcon.ColorBad, $"- {taskedItem.QuantityNeeded}");
-							ImGui.SameLine();
-							ImGui.Text($")");
+						var lineColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
+						if (taskedItem.SortedCategory == InventoryCategory.CharacterBags) {
+							if(isDye)
+								lineColor = ItemIcon.ColorGood;
+							else
+								lineColor = ItemIcon.ColorBronze;
 						}
+
+						ImGui.TextColored(lineColor,$" {taskedItem.FormattedName}");
+
+						var ownedQuantity = taskedItem.Quantity;
+						if (taskedItem.SortedCategory < InventoryCategory.CharacterBags) ownedQuantity = 0; // fix the "1" quantity for not owned dyes
+
+						var hasEnough = ownedQuantity >= taskedItem.Quantity;
+
 						ImGui.TableNextColumn();
-						ImGui.Text($"{taskedItem.FormattedInventoryCategoryType()}");
+						ImGui.TextColored(lineColor, $"{ownedQuantity}");
+						ImGui.TableNextColumn();
+						ImGui.TextColored(hasEnough ? ItemIcon.ColorGood : ItemIcon.ColorBad, $"{taskedItem.QuantityNeeded}");
+						ImGui.TableNextColumn();
+						ImGui.TextColored(lineColor, $"{taskedItem.FormattedInventoryCategoryType()}");
 					}
 					ImGui.EndTable();
 				}
 			}
+			if (ImGui.GetIO().KeyShift) {
+				DrawLegend();
+			} else {
+				ImGui.TextDisabled($"Hold shift to display the legend.");
+			}
 		}
+	}
+
+	private static void DrawLegend() {
+		ImGui.Spacing();
+		ImGui.Separator();
+		ImGui.Spacing();
+		ImGui.Text($"Columns");
+
+		ImGui.Indent();
+		ImGui.Text($"Item : An item that is not in the Glamour Dresser or the Armoire");
+		ImGui.Text($"O : Owned quantity");
+		ImGui.Text($"N : Needed quantity");
+		ImGui.Text($"Location : Where to find it in your inventories if owned somewhere else");
+		ImGui.Unindent();
+
+		ImGui.Text($"Row colors");
+		ImGui.Indent();
+		ImGui.TextColored(ItemIcon.ColorGood, "The dye is already in the inventory in good quantity");
+		ImGui.TextColored(ItemIcon.ColorBronze, "The item is in the inventory and needs to be inserted in Glamour Dresser or Armoire");
+		ImGui.Unindent();
 	}
 }
