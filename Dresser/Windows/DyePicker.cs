@@ -52,6 +52,7 @@ public class DyePicker {
 	private static int Columns = 12;
 	private static int IndexKey = 0;
 	//public static Stain? CurrentDye2 = null;
+	const ushort MaxDyeIndex = 2;
 	public static Dictionary<ushort, Stain?> CurrentDyesInEditor = new();
 	public static Dictionary<ushort,byte?> CurrentDyeList = new();
 	public static InventoryItem? CurrentItem = null;
@@ -373,6 +374,16 @@ public class DyePicker {
 	}
 
 	public static ushort DyeIndex = 1;
+	public static void CircleIndex(ushort? index = null){
+		if (index.HasValue) {
+			DyeIndex = index.Value;
+			return;
+		}
+
+		var newIndex = DyeIndex++;
+		if (newIndex > MaxDyeIndex) newIndex = 1;
+		DyeIndex = newIndex;
+	}
 
 
 	private static void DrawDyePickerHeader()

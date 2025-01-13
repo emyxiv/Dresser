@@ -362,6 +362,8 @@ namespace Dresser.Windows.Components {
 
 			var posSquare = pos - new Vector2(radius);
 			var wasClicked = ImGui.IsMouseHoveringRect(posSquare, posSquare + new Vector2(radius * 2)) && ImGui.IsItemClicked();
+
+			if (wasClicked)DyePicker.CircleIndex(dyeIndex);
 			return wasClicked;
 		}
 	}

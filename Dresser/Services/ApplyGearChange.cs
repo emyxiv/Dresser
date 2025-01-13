@@ -429,6 +429,8 @@ namespace Dresser.Services {
 			item.Stain = s2;
 			item.Stain2 = s1;
 
+			DyePicker.CircleIndex();
+
 			ApplyItemAppearanceOnPlayerWithMods(item, slot);
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 			return true;
