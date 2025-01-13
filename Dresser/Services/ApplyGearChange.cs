@@ -337,6 +337,10 @@ namespace Dresser.Services {
 			if(character == null) return;
 			PluginServices.Glamourer.SetItem(character, item, slot);
 				// Service.ClientState.LocalPlayer?.Equip(item,slot);
+			if (slot == GlamourPlateSlot.Head && !ConfigurationManager.Config.CurrentGearDisplayHat) {
+				ConfigurationManager.Config.CurrentGearDisplayHat = true;
+				PluginServices.Context.LocalPlayer?.SetHatVisibility();
+			}
 		}
 
 		public InventoryItemSet? GetCurrentPlate() {

@@ -152,6 +152,7 @@ namespace Dresser.Services {
 				{
 					var newState = callback.Invoke(originalState);
 					if(newState == null) return;
+					ApplyMetaDataToState(ref newState,[]);
 					ApplyStateSubscriber.Invoke(newState, character.ObjectIndex, 0U, ApplyFlag.Equipment |  ApplyFlag.Customization  | ApplyFlag.Once);
 				});
 			});
