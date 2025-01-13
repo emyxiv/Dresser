@@ -283,6 +283,14 @@ namespace Dresser.Services {
 		public bool SetMetaData(ICharacter character, MetaData metaData, bool? forceState = null) {
 			return SetMetaData(character, new() { { metaData, forceState } });
 		}
+		public bool? GetMetaData(MetaData metaData) {
+			var state = GetState();
+			if (state == null) return null;
+
+			var showFieldName = metaData == MetaData.Visor ? "IsToggled" : "Show";
+			return (bool?)state?["Equipment"]?[metaData.ToString()]?[showFieldName];
+		}
+
 		public bool SetMetaData(ICharacter character, Dictionary<MetaData, bool?> metaDataStates) {
 
 			return ModifyAndSendState(character, state =>
