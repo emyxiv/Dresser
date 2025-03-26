@@ -8,6 +8,6 @@
     "AssemblyVersion": "0.5.0.32",
     "RepoUrl": "https://github.com/emyxiv/Dresser",
     "ApplicableVersion": "any",
-    "DalamudApiLevel": 11,
+    "DalamudApiLevel": 12,
     "LoadPriority": 0
 }

@@ -13,7 +13,7 @@
       <Configurations>Debug;Release;FullDebug</Configurations>
       <Platforms>AnyCPU</Platforms>
       <Nullable>enable</Nullable>
-      <TargetFramework>net8.0-windows7.0</TargetFramework>
+      <TargetFramework>net9.0-windows</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -50,7 +50,7 @@
 
   <ItemGroup>
     <PackageReference Include="AllaganLib.Shared" Version="1.1.6" />
-    <PackageReference Include="DalamudPackager" Version="11.0.0" />
+    <PackageReference Include="DalamudPackager" Version="12.0.0" />
     <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\Glamourer.Api\Glamourer.Api.csproj" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
