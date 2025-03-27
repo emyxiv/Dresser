@@ -24,7 +24,7 @@ using static Dresser.Services.Storage;
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
 
 namespace Dresser.Structs.Dresser {
-	public class InventoryItem : CriticalInventoryItem {
+	public partial class InventoryItem : CriticalInventoryItem {
 
 		public string? ModName = null;
 		public string? ModDirectory = null;
