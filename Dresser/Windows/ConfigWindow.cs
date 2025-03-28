@@ -1,9 +1,13 @@
-using CriticalCommonLib.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+using CriticalCommonLib.Enums;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
-using Dalamud.Utility;
 
 using Dresser.Enums;
 using Dresser.Extensions;
@@ -11,20 +15,10 @@ using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
+
 using ImGuiNET;
 
 using Newtonsoft.Json;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-
-using Autofac.Core;
-
-using CriticalCommonLib.Services;
-
-using Service = CriticalCommonLib.Service;
 
 namespace Dresser.Windows;
 
@@ -227,12 +221,12 @@ public class ConfigWindow : Window, IDisposable {
 
 	private void RequiredPlugins() {
 		if (PluginServices.Context.AllaganToolsState) {
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
+			GuiHelpers.Icon(FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorGood, "Allagan Tools connected");
 			//PluginServices.AllaganTools.CheckMethodAvailability();
 		} else {
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
+			GuiHelpers.Icon(FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorBad, "Allagan Tools not found");
 		}
@@ -242,12 +236,12 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.Spacing();
 
 			var glamourerVersions = PluginServices.Glamourer.ApiVersions();
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
+			GuiHelpers.Icon(FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorGood, $"Glamourer API connected (Version {glamourerVersions.Major}.{glamourerVersions.Minor})");
 
 		} else {
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
+			GuiHelpers.Icon(FontAwesomeIcon.ExclamationTriangle, true, ItemIcon.ColorBad);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorBad, "Glamourer is not found");
 
@@ -280,7 +274,7 @@ public class ConfigWindow : Window, IDisposable {
 */
 		if (PluginServices.Context.PenumbraState) {
 			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
+			GuiHelpers.Icon(FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
 			ImGui.SameLine();
 			ImGui.TextColored(ItemIcon.ColorGood, $"Penumbra API connected (Version: Breaking {penumbraVersions.Breaking}, Feature {penumbraVersions.Features})");
 
@@ -305,7 +299,7 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SameLine();
 			ImGui.TextWrapped($"The collection reffered as \"Temporary Penumbra collection\" (by default named \"Dresser TMP\") must be created AND assigned");
 			ImGui.SameLine();
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.QuestionCircle,false);
+			GuiHelpers.Icon(FontAwesomeIcon.QuestionCircle,false);
 
 			ImGui.EndGroup();
 			GuiHelpers.Tooltip(() => {
@@ -322,7 +316,7 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SameLine();
 			ImGui.TextWrapped($"The collection reffered as \"Penumbra collection to apply\" (by default named \"Dresser Apply\") must be created AND assigned to \"Your character\" ");
 			ImGui.SameLine();
-			GuiHelpers.Icon(Dalamud.Interface.FontAwesomeIcon.QuestionCircle, false);
+			GuiHelpers.Icon(FontAwesomeIcon.QuestionCircle, false);
 
 			ImGui.EndGroup();
 			GuiHelpers.Tooltip(() => {
@@ -372,7 +366,7 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.DragInt($"Delay 1##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was enabled\nBefore apply appearance");
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 1##PenumbraConfig##ConfigWindow", "Reset to default value"))
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 1##PenumbraConfig##ConfigWindow", "Reset to default value"))
 				ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance = new Configuration().PenumbraDelayAfterModEnableBeforeApplyAppearance;
 
 
@@ -380,14 +374,14 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.DragInt($"Delay 2##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter apply appearance\nBefore disabling the mod");
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 2##PenumbraConfig##ConfigWindow", "Reset to default value"))
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 2##PenumbraConfig##ConfigWindow", "Reset to default value"))
 				ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable = new Configuration().PenumbraDelayAfterApplyAppearanceBeforeModDisable;
 
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 			ImGui.DragInt($"Delay 3##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, "ResetDefault##Delay 3##PenumbraConfig##ConfigWindow", "Reset to default value"))
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 3##PenumbraConfig##ConfigWindow", "Reset to default value"))
 				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = new Configuration().PenumbraDelayAfterModDisableBeforeNextModLoop;
 
 			ImGui.Checkbox($"Disable the mod instantly after applied##Debug##GearBrowserConfig", ref ConfigurationManager.Config.PenumbraDisableModRightAfterApply);
@@ -399,7 +393,7 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Spacing();
 		if (ImGui.CollapsingHeader("Scan and Blacklist##DrawPenumbraConfigs", ImGuiTreeNodeFlags.DefaultOpen)) {
 
-			ImGui.Text($"{ConfigurationManager.Config.PenumbraModdedItems.Count} modded items in Config, {PluginServices.Storage.AdditionalItems[(CriticalCommonLib.Enums.InventoryType)Storage.InventoryTypeExtra.ModdedItems].Count} in memory");
+			ImGui.Text($"{ConfigurationManager.Config.PenumbraModdedItems.Count} modded items in Config, {PluginServices.Storage.AdditionalItems[(InventoryType)Storage.InventoryTypeExtra.ModdedItems].Count} in memory");
 
 			if (PluginServices.Storage.IsReloadingMods) ImGui.BeginDisabled();
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
@@ -419,26 +413,26 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.Text("Blacklisted mods");
 			GuiHelpers.Tooltip($"Mods listed here will be ignored when creating the list of modded items");
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Plus, "PlusButton##AddToBlackList##PenumbraConfig##ConfigWindow", ""))
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Plus, "PlusButton##AddToBlackList##PenumbraConfig##ConfigWindow", ""))
 				ModsBlackListSearchOpen = true;
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.FileExport, "ExportButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Export list to Clipboard as JSON"))
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileExport, "ExportButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Export list to Clipboard as JSON"))
 				JsonConvert.SerializeObject(ConfigurationManager.Config.PenumbraModsBlacklist).ToClipboard();
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.FileImport, "ImportButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Import list from JSON Clipboard")) {
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileImport, "ImportButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Import list from JSON Clipboard")) {
 				try {
 					var decodedBlacklist = JsonConvert.DeserializeObject<List<(string Path, string Name)>>(ImGui.GetClipboardText());
 					if (decodedBlacklist != null) ConfigurationManager.Config.PenumbraModsBlacklist = ConfigurationManager.Config.PenumbraModsBlacklist.Concat(decodedBlacklist).ToList();
 				} catch (Exception) { }
 			}
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonHoldConfirm(Dalamud.Interface.FontAwesomeIcon.Trash, "Empty blacklist\nHold ctrl + Shift to to confirm", default, "TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow"))
+			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Trash, "Empty blacklist\nHold ctrl + Shift to to confirm", default, "TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow"))
 				ConfigurationManager.Config.PenumbraModsBlacklist.Clear();
 
 			if (ImGui.BeginChildFrame(411141, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 5))) {
 				for (int i = ConfigurationManager.Config.PenumbraModsBlacklist.Count - 1; i >= 0; i--) {
 					var mod = ConfigurationManager.Config.PenumbraModsBlacklist[i];
-					if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Trash, $"{mod.Path}##TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Remove from blacklist")) {
+					if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Trash, $"{mod.Path}##TrashButton##AddToBlackList##PenumbraConfig##ConfigWindow", "Remove from blacklist")) {
 						ConfigurationManager.Config.PenumbraModsBlacklist.RemoveAt(i);
 					}
 					ImGui.SameLine();
@@ -645,7 +639,7 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.SameLine();
 		GuiHelpers.TextTooltip(label, description);
 		ImGui.SameLine();
-		if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Undo, $"{label}##Delay 3##ColorConfig##ConfigWindow", "Reset to default value")) {
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, $"{label}##Delay 3##ColorConfig##ConfigWindow", "Reset to default value")) {
 			var colorDefaultObj = fieldInfo?.GetValue(new Configuration());
 			if(colorDefaultObj != null && colorDefaultObj.GetType() == typeof(Vector4)) {
 				color = (Vector4)colorDefaultObj;
@@ -657,7 +651,7 @@ public class ConfigWindow : Window, IDisposable {
 
 	private void DrawDebugCurrencies()
 	{
-		var currencyUsed = Service.ExcelCache.ItemInfoCache.GetNpcShops()?.Values.SelectMany(v=>v.SelectMany(fg=>fg.CostItems)).Distinct() ?? [];
+		var currencyUsed = PluginServices.SheetManager.ItemInfoCache.GetNpcShops()?.Values.SelectMany(v=>v.SelectMany(fg=>fg.CostItems)).Distinct() ?? [];
 		currencyUsed = currencyUsed.Where(c => 
 			c.IsCurrency
 			// !c.CanBeAcquired

@@ -2,11 +2,44 @@
   "version": 1,
   "dependencies": {
     "net9.0-windows7.0": {
+      "AllaganLib.Data": {
+        "type": "Direct",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "fnp+cwnzh9tGZDeP0ZVgKMIbgIYnzbxVeo3veBNzvoZ+JXesZmTuaHwrD3mgT0maY6UZo0UcNmIPUlR6H1AZXA==",
+        "dependencies": {
+          "CSVFile": "3.1.0",
+          "CsvHelper": "30.0.1"
+        }
+      },
+      "AllaganLib.GameSheets": {
+        "type": "Direct",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "H8oyLkwxqEuFq1qF/C25+ZUAaVjn0KGT9fFgAOT0kj6wVR2lM4ye+yj+UvTbGOx/M+rAGR3VDq7Gm9Cxm3b/7w==",
+        "dependencies": {
+          "AllaganLib.Shared": "1.2.0",
+          "Autofac.Extensions.DependencyInjection": "9.0.0",
+          "CSVFile": "3.2.0",
+          "LuminaSupplemental.Excel": "2.3.0"
+        }
+      },
+      "AllaganLib.Interface": {
+        "type": "Direct",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "SqntL7hFDVwLiXGQ37oAHRmBalwahQ0zUs+s/98QCfZSVpx1XIxcMEgXdW3UCuKd6ZSV8Mbye7z3cSuLgsXJKA==",
+        "dependencies": {
+          "AllaganLib.Data": "1.2.0",
+          "AllaganLib.Shared": "1.2.0",
+          "NaturalSort.Extension": "4.3.0"
+        }
+      },
       "AllaganLib.Shared": {
         "type": "Direct",
-        "requested": "[1.1.6, )",
-        "resolved": "1.1.6",
-        "contentHash": "+tmD5Qd/F6UiXWYHdB760ezXVbxYIx4mcRf650Vw3bbVhNuNzxaUiVyrp0MMrSAWBzHLwxgYhGHGJwGxUIhoRg==",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "Wfu8H9r6Bbpvwl/UpGr80NyfY1ZMSpi7347Uc77N7fcdLQeSp9vzk0jLGs+7NbtG03TAp3I1EyAKIBQUW7m5tg==",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "8.0.0",
           "Microsoft.Extensions.Hosting.Abstractions": "8.0.0"
@@ -77,11 +110,12 @@
       },
       "LuminaSupplemental.Excel": {
         "type": "Transitive",
-        "resolved": "2.1.3",
-        "contentHash": "Pvvv1svauHCCaVZgsgIBPzfXusureUhtg+3oJFZQ0d2R9O6OowA3fKDCdeWeC1iDGWe96QTX/Oo1n5MueCLh2Q==",
+        "resolved": "2.3.0",
+        "contentHash": "gSvHph3Hii0SWmvRwKOvO1/W8uAP8Aaqqh6HQmQFPtxWujhLcjvcFZ5Co1MYvb6PGXcOcfLB6Shr9UkV8/GaIA==",
         "dependencies": {
-          "CSVFile": "3.1.0",
-          "CsvHelper": "30.0.1"
+          "CSVFile": "3.2.0",
+          "CsvHelper": "30.0.1",
+          "Sylvan.Data.Csv": "1.3.9"
         }
       },
       "Microsoft.Extensions.Configuration": {

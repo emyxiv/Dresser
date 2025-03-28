@@ -4,8 +4,6 @@ using System.Threading;
 
 using AllaganLib.GameSheets.Model;
 
-using CriticalCommonLib;
-
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Config;
@@ -97,7 +95,7 @@ namespace Dresser.Services {
 			}
 
 
-			LocalPlayer = Service.ClientState.LocalPlayer;
+			LocalPlayer = PluginServices.ClientState.LocalPlayer;
 			if (LocalPlayer != null) {
 				LocalPlayerCharacterId = PluginServices.ClientState.LocalContentId;
 				LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];

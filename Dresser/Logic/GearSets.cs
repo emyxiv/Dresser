@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Numerics;
 
-using CriticalCommonLib;
+using AllaganLib.GameSheets.Sheets;
 
 using Dalamud.Interface.Textures;
 
@@ -65,7 +65,7 @@ namespace Dresser.Logic {
 			var gearsets = RelatedGearSetClassJob(plateNumber);
 			if (gearsets.Count() == 0) return null;
 			var classjobByte = gearsets.First();
-			var classJob = Service.ExcelCache.GetClassJobSheet().GetRow(classjobByte);
+			var classJob = PluginServices.SheetManager.GetSheet<ClassJobSheet>().GetRow(classjobByte);
 			if (classJob == null) return null;
 			return (ClassJobRole)classJob.Base.Role;
 		}

@@ -50,7 +50,7 @@ namespace Dresser.Services {
         }
 
 		public IEnumerable<CriticalCommonLib.Models.InventoryItem> GetCharacterItems(ulong characterId)
-			=> GetCharacterItemsSerialized(characterId).Select(CriticalCommonLib.Models.InventoryItem.FromNumeric);
+			=> GetCharacterItemsSerialized(characterId).Select(Structs.Dresser.InventoryItem.FromNumeric);
 		public IEnumerable<Structs.Dresser.InventoryItem> GetItems(ulong characterId)
 			=> GetCharacterItems(characterId).Select(Structs.Dresser.InventoryItem.FromCritical);
 		public Dictionary<ulong, IEnumerable<Structs.Dresser.InventoryItem>> GetItemsLocalCharsRetainers(bool includeActiveCharacter = false)

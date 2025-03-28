@@ -4,7 +4,6 @@ using System.Numerics;
 
 using AllaganLib.GameSheets.Model;
 
-using CriticalCommonLib;
 using CriticalCommonLib.Extensions;
 
 using Dalamud.Game.ClientState.Keys;
@@ -144,8 +143,8 @@ namespace Dresser.Windows.Components {
 							ImGui.TextColored(ColorGreyDark, $"MS: [{item.Item.Base.ModelSub}] {item.Item.ModelSubItemModel()}");
 						}
 						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.Patch}]");
-						if (item.Item.Base.DyeCount > 0) ImGui.TextColored(item.Stain  != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain ).Name}");
-						if (item.Item.Base.DyeCount > 1) ImGui.TextColored(item.Stain2 != 0 ? ColorGoodLight : ColorGrey, $"{Service.ExcelCache.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain2).Name}");
+						if (item.Item.Base.DyeCount > 0) ImGui.TextColored(item.Stain  != 0 ? ColorGoodLight : ColorGrey, $"{PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain ).Name}");
+						if (item.Item.Base.DyeCount > 1) ImGui.TextColored(item.Stain2 != 0 ? ColorGoodLight : ColorGrey, $"{PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain2).Name}");
 
 						ImGui.EndGroup();
 
@@ -332,14 +331,14 @@ namespace Dresser.Windows.Components {
 
 			bool wasClicked = false;
 			if (!item.Item.IsDyeable1()) return wasClicked;
-			var stain1 = Service.ExcelCache.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain);
+			var stain1 = PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain);
 			//if(item.FormattedName == "Thavnairian Bustier") PluginLog.Debug($"DYE: {stain1.Name} {stain1.RowId}");
 			if(stain1 == null) return wasClicked;
 			wasClicked |= DrawStain(stain1.Value, 1, sizeMod);
 
 
 			if (!item.Item.IsDyeable2()) return wasClicked;
-			var stain2 = Service.ExcelCache.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain2);
+			var stain2 = PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain2);
 			if (stain2 == null) return wasClicked;
 			wasClicked |= DrawStain(stain2.Value, 2, sizeMod);
 			return wasClicked;

@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Numerics;
 
-using CriticalCommonLib;
+using AllaganLib.GameSheets.Sheets;
+
 using CriticalCommonLib.Enums;
 
 using Dresser.Extensions;
@@ -168,7 +169,7 @@ namespace Dresser.Windows.Components {
 
 			ImGui.Text($"itemId: {itemId} 0x{itemId:X}");
 			if (itemId != 0) {
-				var item = Service.ExcelCache.GetItemSheet().GetRowOrDefault(itemId);
+				var item = PluginServices.SheetManager.GetSheet<ItemSheet>().GetRowOrDefault(itemId);
 				if (item != null) {
 
 					var invItem = item.ToInventoryItem(InventoryType.Bag0);

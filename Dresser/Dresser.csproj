@@ -49,7 +49,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AllaganLib.Shared" Version="1.1.6" />
+    <PackageReference Include="AllaganLib.Data" Version="1.2.0" />
+    <PackageReference Include="AllaganLib.GameSheets" Version="1.2.0" />
+    <PackageReference Include="AllaganLib.Interface" Version="1.2.0" />
+    <PackageReference Include="AllaganLib.Shared" Version="1.2.0" />
     <PackageReference Include="DalamudPackager" Version="12.0.0" />
     <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
     <ProjectReference Include="..\Glamourer.Api\Glamourer.Api.csproj" />

@@ -1,9 +1,5 @@
-using System;
+using AllaganLib.GameSheets.Service;
 
-using Autofac;
-
-using CriticalCommonLib;
-using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 
 using Dalamud.Game;
@@ -16,8 +12,6 @@ using Dresser.Interop.Addons;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
-
-using AlGsService = AllaganLib.GameSheets.Service;
 
 namespace Dresser {
 	internal class PluginServices {
@@ -37,6 +31,7 @@ namespace Dresser {
 		[PluginService] public static IObjectTable Objects { get; set; } = null!;
         [PluginService] public static IGameConfig GameConfig { get; set; } = null!;
         [PluginService] public static ICondition Condition { get; set; } = null!;
+        [PluginService] public static IGameInteropProvider GameInteropProvider { get; set; } = null!;
 
 		public static PenumbraIpc Penumbra { get; private set; } = null!;
 		//public static IChatUtilities ChatUtilities { get; private set; } = null!;
@@ -44,6 +39,7 @@ namespace Dresser {
 		//public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
 		//public static GameInterface GameInterface { get; private set; } = null!;
 		public static GameUiManager GameUi { get; private set; } = null!;
+		public static SheetManager SheetManager { get; private set; } = null!;
 		public static OverlayService OverlayService { get; private set; } = null!;
 		public static TryOn TryOn { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
@@ -64,14 +60,13 @@ namespace Dresser {
 		public delegate void PluginLoadedDelegate();
 		public static event PluginLoadedDelegate? OnPluginLoaded;
 
-		public static void Init(IDalamudPluginInterface dalamud, Plugin plugin) {
+		public static void Init(IDalamudPluginInterface dalamud, Plugin plugin)
+		{
 
-			dalamud.Create<Service>();
 			dalamud.Create<PluginServices>();
 
-
 			var gd = DataManager.GameData;
-			var smso = new AlGsService.SheetManagerStartupOptions()
+			var smso = new SheetManagerStartupOptions()
 			{
 				BuildNpcLevels = true,
 				BuildNpcShops = true,
@@ -82,13 +77,11 @@ namespace Dresser {
 				// 	builder.RegisterType<uint>().AsSelf().as
 				// }
 			};
-			var sm = new AlGsService.SheetManager(gd, smso);
-			var cc = new CraftingCache(sm);
-			Service.ExcelCache = new ExcelCache(sm,cc,gd);
+			SheetManager = new SheetManager(gd, smso);
 
 			Context = new Context();
 
-			HotkeyService = new HotkeyService(Service.Framework, KeyState);
+			HotkeyService = new HotkeyService(Framework, KeyState);
 			ImageGuiCrop = new ImageGuiCrop();
 			Penumbra = new PenumbraIpc();
 			Storage = new Storage();
@@ -102,9 +95,9 @@ namespace Dresser {
 			AllaganTools = new AllaganToolsService(dalamud);
 			Glamourer = new GlamourerService(dalamud);
 			//CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
-			GameUi = new GameUiManager(Framework,Service.GameGui);
+			GameUi = new GameUiManager(Framework, DalamudGameGui, PluginLog);
 			OverlayService = new OverlayService(GameUi);
-			TryOn = new TryOn();
+			TryOn = new TryOn(Framework, PluginLog);
 			GlamourPlates = new();
 			ApplyGearChange = new ApplyGearChange(plugin);
 

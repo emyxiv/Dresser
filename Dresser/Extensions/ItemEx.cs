@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AllaganLib.GameSheets.Model;
+using AllaganLib.GameSheets.Sheets;
 using AllaganLib.GameSheets.Sheets.Helpers;
 using AllaganLib.GameSheets.Sheets.Rows;
 
-using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 
 using Dalamud.Game.Text;
@@ -155,11 +155,10 @@ namespace Dresser.Extensions {
 			var jobCategory = item.ClassJobCategory;
 			// if (jobCategory == null) return false;
 
-			var isEquipable = Service.ExcelCache.GetClassJobCategorySheet().IsItemEquippableBy(jobCategory.RowId, job.Value.RowId);
+			var isEquipable = PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>().IsItemEquippableBy(jobCategory.RowId, job.Value.RowId);
 			if (isEquipable && (strict == JobFilterType.Strict || strict == JobFilterType.Relax)) {
 				// ensure there is only one category
-				isEquipable = Service.ExcelCache
-					.GetClassJobCategorySheet()
+				isEquipable = PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>()
 					.Any(jc=>
 					{
 						if (jc.RowId != jobCategory.RowId) return false;
@@ -198,7 +197,7 @@ namespace Dresser.Extensions {
 
 		public static void OpenInGamerEscape(this ItemRow item) {
 
-			var enItem = Service.Data.GameData.Excel.GetSheet<Item>(Language.English).GetRowOrDefault(item.RowId);
+			var enItem = PluginServices.DataManager.GameData.Excel.GetSheet<Item>(Language.English).GetRowOrDefault(item.RowId);
 				// .GetSheet<ItemSheet>(Language.English)?.GetRow(item.RowId);
 
 			if (enItem != null)
@@ -215,13 +214,13 @@ namespace Dresser.Extensions {
 			var payloadList = new List<Payload> {
 				new UIForegroundPayload((ushort) (0x223 + item.Base.Rarity * 2)),
 				new UIGlowPayload((ushort) (0x224 + item.Base.Rarity * 2)),
-				new ItemPayload(item.RowId, item.Base.CanBeHq && Service.KeyState[0x11]),
+				new ItemPayload(item.RowId, item.Base.CanBeHq && PluginServices.KeyState[0x11]),
 				new UIForegroundPayload(500),
 				new UIGlowPayload(501),
 				new TextPayload($"{(char) SeIconChar.LinkMarker}"),
 				new UIForegroundPayload(0),
 				new UIGlowPayload(0),
-				new TextPayload(item.NameString + (item.Base.CanBeHq && Service.KeyState[0x11] ? $" {(char)SeIconChar.HighQuality}" : "")),
+				new TextPayload(item.NameString + (item.Base.CanBeHq && PluginServices.KeyState[0x11] ? $" {(char)SeIconChar.HighQuality}" : "")),
 				new RawPayload(new byte[] {0x02, 0x27, 0x07, 0xCF, 0x01, 0x01, 0x01, 0xFF, 0x01, 0x03}),
 				new RawPayload(new byte[] {0x02, 0x13, 0x02, 0xEC, 0x03})
 			};

@@ -1,15 +1,13 @@
-﻿using CriticalCommonLib;
-using CriticalCommonLib.Services.Ui;
-using CriticalCommonLib.Services;
+﻿using System;
+using System.Collections.Generic;
 
-using Dalamud.Game;
-using Dresser.Logic;
+using CriticalCommonLib.Services;
+using CriticalCommonLib.Services.Ui;
+
 using Dalamud.Plugin.Services;
 
 using Dresser.Interop.GameUi;
-
-using System;
-using System.Collections.Generic;
+using Dresser.Logic;
 
 namespace Dresser.Services {
 	public class OverlayService : IDisposable {
@@ -19,7 +17,7 @@ namespace Dresser.Services {
 			_gameUiManager = gameUiManager;
 			PluginServices.GameUi.UiVisibilityChanged += GameUiOnUiVisibilityChanged;
 			//PluginServices.GameUi.UiUpdated += GameUiOnUiUpdated;
-			AddOverlay(new MiragePrismMiragePlateOverlay(new AtkMiragePrismMiragePlate()));
+			AddOverlay(new MiragePrismMiragePlateOverlay(new AtkMiragePrismMiragePlate(PluginServices.DalamudGameGui)));
 
 			PluginServices.Framework.Update += FrameworkOnUpdate;
 			PluginServices.OnPluginLoaded += PluginServiceOnOnPluginLoaded;

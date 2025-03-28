@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text.Json.Serialization;
 
+using AllaganLib.GameSheets.Sheets;
 using AllaganLib.GameSheets.Sheets.Rows;
 
-using CriticalCommonLib;
 using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 
@@ -167,7 +167,7 @@ namespace Dresser.Structs.Dresser {
 		public static ItemRow? FromModelMain(ulong model, GlamourPlateSlot slot) {
 
 			var equipSlotCategory = slot.ToEquipSlotCategoryByte();
-			var ddddd = Service.ExcelCache.GetItemSheet().Where(item => item.Base.ModelMain == model && item.Base.EquipSlotCategory.RowId == equipSlotCategory);
+			var ddddd = PluginServices.SheetManager.GetSheet<ItemSheet>().Where(item => item.Base.ModelMain == model && item.Base.EquipSlotCategory.RowId == equipSlotCategory);
 			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
 			//foreach((var id,var item) in ddddd) {
 			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
@@ -178,7 +178,7 @@ namespace Dresser.Structs.Dresser {
 		public static ItemRow? FromModelWeaponMain(ulong model, GlamourPlateSlot slot) {
 
 			//var equipSlotCategory = slot.ToEquipSlotCategoryByte();
-			var ddddd = Service.ExcelCache.GetItemSheet().Where(item => item.Base.ModelMain == model);
+			var ddddd = PluginServices.SheetManager.GetSheet<ItemSheet>().Where(item => item.Base.ModelMain == model);
 			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
 			//foreach ((var id, var item) in ddddd) {
 			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
@@ -187,7 +187,7 @@ namespace Dresser.Structs.Dresser {
 			return ddddd.FirstOrDefault();
 		}
 		public static ItemRow? FromModelWeaponSub(ulong model, GlamourPlateSlot slot) {
-			return Service.ExcelCache.GetItemSheet().Where(item => item.Base.ModelSub == model).FirstOrDefault();
+			return PluginServices.SheetManager.GetSheet<ItemSheet>().FirstOrDefault(item => item.Base.ModelSub == model);
 		}
 
 

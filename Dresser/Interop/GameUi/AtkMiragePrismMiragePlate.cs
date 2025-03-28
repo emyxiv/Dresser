@@ -8,8 +8,12 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
+using Dalamud.Plugin.Services;
+
 namespace Dresser.Interop.GameUi {
 	public class AtkMiragePrismMiragePlate : AtkOverlay {
+		public AtkMiragePrismMiragePlate(IGameGui gameGui) : base(gameGui) { }
+
 		public override WindowName WindowName { get; set; } = WindowName.MiragePrismMiragePlate;
 		public int RadioButtonOffsetId = 6;
 		public int SaveButtonId = 114;

@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using AllaganLib.GameSheets.Caches;
+using AllaganLib.GameSheets.Sheets;
 using AllaganLib.GameSheets.Sheets.Rows;
 
 using CriticalCommonLib;
@@ -166,7 +167,7 @@ namespace Dresser.Services {
 
 				if (additionalItem == AdditionalItem.Currency) {
 					FilterCurrencyIds.Add((InventoryType)invTypeExtra, itemId);
-					var itemEx = Service.ExcelCache.GetItemSheet().First(i => i.RowId == itemId);
+					var itemEx = PluginServices.SheetManager.GetSheet<ItemSheet>().First(i => i.RowId == itemId);
 					FilterCurrencyItemEx.Add((InventoryType)invTypeExtra, itemEx);
 					FilterCurrencyIconTexture.Add((InventoryType)invTypeExtra, itemEx.IconTextureWrap());
 				}
@@ -194,9 +195,9 @@ namespace Dresser.Services {
 		private void LoadAdditional_All() {
 			foreach (var inventoryType in FilterAll) {
 				// at least filter glam items
-				PluginLog.Debug($"================= item numbers all: {Service.ExcelCache.GetItemSheet().Count}");
+				PluginLog.Debug($"================= item numbers all: {PluginServices.SheetManager.GetSheet<ItemSheet>().Count}");
 
-				var q = Service.ExcelCache.GetItemSheet()
+				var q = PluginServices.SheetManager.GetSheet<ItemSheet>()
 					//.DistinctBy(i=>i.Value.GetSharedModels())
 					.Where((itemPair) => itemPair.Base.ModelMain != 0);
 
@@ -212,7 +213,7 @@ namespace Dresser.Services {
 		private void LoadAdditional_Custom() {
 
 			foreach ((var inventoryType, var filterFunction) in FilterUnobtainedFromCustomSource) {
-				AdditionalItems[inventoryType] = Service.ExcelCache.GetItemSheet().Where((itemPair) => {
+				AdditionalItems[inventoryType] = PluginServices.SheetManager.GetSheet<ItemSheet>().Where((itemPair) => {
 					return itemPair.Base.ModelMain != 0 && filterFunction(itemPair);
 				}).Select(i => new InventoryItem(inventoryType, i.RowId)).ToList();
 
@@ -221,7 +222,7 @@ namespace Dresser.Services {
 		}
 		private void LoadAdditional_Currency() {
 			foreach ((var inventoryType, var currencyId) in FilterCurrencyIds) {
-				AdditionalItems[inventoryType] = Service.ExcelCache.GetItemSheet()
+				AdditionalItems[inventoryType] = PluginServices.SheetManager.GetSheet<ItemSheet>()
 					.Where((itemPair) => itemPair.Base.ModelMain != 0 && itemPair.ObtainedWithSpecialShopCurrency2(currencyId))
 					.Select(i => new InventoryItem(inventoryType, i.RowId))
 					.ToList();

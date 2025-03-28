@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using CriticalCommonLib;
-
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin;
 
@@ -79,7 +77,7 @@ namespace Dresser.Services {
 
 			if (equipment != null)
 			{
-				return Service.ExcelCache.GameData.Excel.GetSheet<Item>().GetRowOrDefault(equipment.Value);
+				return PluginServices.DataManager.GetExcelSheet<Item>().GetRowOrDefault(equipment.Value);
 			}
 
 			return null;
@@ -148,7 +146,7 @@ namespace Dresser.Services {
 			_throttler.Throttle(() =>
 			{
 				// PluginLog.Warning($"                         ---        Set State 2     ---                                   \n{new StackTrace()}");
-				return Service.Framework.RunOnFrameworkThread(() =>
+				return PluginServices.Framework.RunOnFrameworkThread(() =>
 				{
 					var newState = callback.Invoke(originalState);
 					if(newState == null) return;
@@ -164,7 +162,7 @@ namespace Dresser.Services {
 				{
 					// PluginLog.Warning($"                         ---        SetItem      ---                                   \n{new StackTrace()}");
 					// if (!EnableAllApply) return;
-					return Service.Framework.RunOnFrameworkThread(() =>
+					return PluginServices.Framework.RunOnFrameworkThread(() =>
 					{
 						SetItemSubscriber.Invoke(character.ObjectIndex, (ApiEquipSlot)slot, NothingOrItem(slot, itemId), new List<byte>() {stainId, stainId2});
 					});
@@ -251,7 +249,7 @@ namespace Dresser.Services {
 					// PluginLog.Warning($"                         ---        Set State 1     ---                                   \n{new StackTrace()}");
 					if(!EnableAllApply) return new Task(()=>{});
 
-					return Service.Framework.RunOnFrameworkThread(() =>
+					return PluginServices.Framework.RunOnFrameworkThread(() =>
 					{
 						var items = customItemIds.ToDictionary(f => f.Key, f => f.Value.Item.Id);
 						DesignWithMod(character, items);

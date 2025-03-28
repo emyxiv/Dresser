@@ -5,8 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-using CriticalCommonLib;
-
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility.Signatures;
@@ -54,7 +52,7 @@ namespace Dresser.Interop.Hooks {
 		internal unsafe static bool IsGlamingAtDresser() {
 
 
-			var isLocked = Service.Condition[ConditionFlag.OccupiedInQuestEvent];
+			var isLocked = PluginServices.Condition[ConditionFlag.OccupiedInQuestEvent];
 
 			bool isActiveMiragePrismMiragePlate = false;
 			bool isActiveMiragePrismPrismBox = false;
@@ -465,13 +463,13 @@ namespace Dresser.Interop.Hooks {
 		internal GlamourPlates() {
 			_glamourDresserApplyThrottler = new Throttler<Task<SetGlamourPlateSlotReturn>>(0);
 
-			Service.GameInteropProvider.InitializeFromAttributes(this);
-			Service.Framework.Update += OnFrameworkUpdate;
+			PluginServices.GameInteropProvider.InitializeFromAttributes(this);
+			PluginServices.Framework.Update += OnFrameworkUpdate;
 
 		}
 
 		public void Dispose() {
-			Service.Framework.Update -= OnFrameworkUpdate;
+			PluginServices.Framework.Update -= OnFrameworkUpdate;
 
 		}
 
