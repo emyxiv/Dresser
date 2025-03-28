@@ -16,6 +16,3 @@
 [submodule "OtterGui"]
 	path = OtterGui
 	url = https://github.com/Ottermandias/OtterGui.git
-[submodule "Glamourer.Api"]
-	path = Glamourer.Api
-	url = https://github.com/Ottermandias/Glamourer.Api
