@@ -24,7 +24,7 @@ using Penumbra.Api.Enums;
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 namespace Dresser.Services {
-	public class ApplyGearChange : IDisposable {
+	public partial class ApplyGearChange : IDisposable {
 		private Plugin Plugin;
 		public ApplyGearChange(Plugin plugin) {
 			Plugin = plugin;
@@ -94,22 +94,6 @@ namespace Dresser.Services {
 				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 			}
 		}
-		public void DyePickerRefreshNewItem(InventoryItem? item, bool applyPreviousDyesToNewItem = false) {
-			if (applyPreviousDyesToNewItem && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
-				foreach ((var dyeIndex, var currentDye) in DyePicker.CurrentDyeList) {
-					if (currentDye == null || item == null) continue;
-
-					switch (dyeIndex) {
-						case 1: item.Stain = currentDye.Value; break;
-						case 2: item.Stain2 = currentDye.Value; break;
-					}
-				}
-			}
-			DyePicker.CurrentItem = item;
-			if (item?.Item.Base.DyeCount < DyePicker.DyeIndex) DyePicker.DyeIndex = item?.Item.Base.DyeCount ?? 1;
-			if (item?.Item.Base.DyeCount > 0 && DyePicker.DyeIndex == 0) DyePicker.DyeIndex = 1;
-
-		}
 
 		private async void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
 			set.ApplyAppearance();
@@ -148,13 +132,13 @@ namespace Dresser.Services {
 				var character = PluginServices.Context.LocalPlayer;
 				foreach ((var s, var item) in set.Items)
 				{
-					
+
 					if(item == null || !item.IsModded() || character == null) continue;
-				
+
 					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
 					// PluginLog.Debug($"==============> SetItem HERE {item.ItemId} {item.ModName} <============");
 					// PluginServices.Glamourer.SetItem(character, item, s);
-					
+
 
 				}
 				//Task.Run(async delegate {
@@ -254,7 +238,7 @@ namespace Dresser.Services {
 				}
 			}
 		}
-	
+
 		private async void RemoveModFromPenumbra((string Path, string Name)? mod) {
 			if (mod == null) return;
 			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
@@ -393,62 +377,9 @@ namespace Dresser.Services {
 					}
 				}
 			}
-			
+
 
 			set.ApplyAppearance();
-		}
-
-
-		public void ExecuteCurrentContextDye(InventoryItem item) {
-			PluginLog.Warning("TODO: open dye picker");
-		}
-		public void ExecuteCurrentContextRemoveDye(InventoryItem item) {
-			item.Stain = 0;
-			item.Stain2 = 0;
-		}
-		public void ApplyDye(ushort PlateNumber, GlamourPlateSlot slot, byte stain, ushort stainIndex) {
-			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(PlateNumber, out var plate)) {
-				var item = plate.GetSlot(slot);
-				if (item != null) {
-					switch (stainIndex) {
-						case 1: item.Stain  = stain; break;
-						case 2: item.Stain2 = stain; break;
-					}
-					ApplyItemAppearanceOnPlayerWithMods(item, slot);
-				}
-			}
-			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
-		}
-		public bool SwapDyesForCurrentSlotInCurrentPlate() {
-			if (GearBrowser.SelectedSlot == null) return false;
-			var slot = GearBrowser.SelectedSlot.Value;
-			var plateNumber = ConfigurationManager.Config.SelectedCurrentPlate;
-
-			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var plate)) return false;
-			var item = plate.GetSlot(slot);
-			if (item == null) return false;
-
-			SwapDyeCurrentPlateForItem(item, slot);
-
-			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
-			return true;
-		}
-		public void SwapDyesForAllItemsInCurrentPlate() {
-			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) return;
-			foreach((var z,var x) in plate.Items) {
-				if(x == null) continue;
-				SwapDyeCurrentPlateForItem(x, z);
-			}
-			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
-		}
-		private void SwapDyeCurrentPlateForItem(InventoryItem item, GlamourPlateSlot slot) {
-			var s1 = item.Stain;
-			var s2 = item.Stain2;
-			item.Stain = s2;
-			item.Stain2 = s1;
-
-			// change appearance for item
-			ApplyItemAppearanceOnPlayerWithMods(item, slot);
 		}
 
 		public void OpenGlamourDresser() {
