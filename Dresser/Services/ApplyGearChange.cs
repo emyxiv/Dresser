@@ -419,7 +419,7 @@ namespace Dresser.Services {
 			}
 			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
-		public bool swapDyes() {
+		public bool SwapDyesForCurrentSlotInCurrentPlate() {
 			if (GearBrowser.SelectedSlot == null) return false;
 			var slot = GearBrowser.SelectedSlot.Value;
 			var plateNumber = ConfigurationManager.Config.SelectedCurrentPlate;
@@ -428,16 +428,27 @@ namespace Dresser.Services {
 			var item = plate.GetSlot(slot);
 			if (item == null) return false;
 
+			SwapDyeCurrentPlateForItem(item, slot);
+
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+			return true;
+		}
+		public void SwapDyesForAllItemsInCurrentPlate() {
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) return;
+			foreach((var z,var x) in plate.Items) {
+				if(x == null) continue;
+				SwapDyeCurrentPlateForItem(x, z);
+			}
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+		}
+		private void SwapDyeCurrentPlateForItem(InventoryItem item, GlamourPlateSlot slot) {
 			var s1 = item.Stain;
 			var s2 = item.Stain2;
 			item.Stain = s2;
 			item.Stain2 = s1;
 
-			DyePicker.CircleIndex();
-
+			// change appearance for item
 			ApplyItemAppearanceOnPlayerWithMods(item, slot);
-			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
-			return true;
 		}
 
 		public void OpenGlamourDresser() {

@@ -528,20 +528,41 @@ public class DyePicker {
 
 		if (dyeCount != 2) ImGui.BeginDisabled();
 		if (GuiHelpers.GameButton(UldBundle.ColorantButton_Swap, "##SwapDyes##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize * 1.5f)) {
-			if (PluginServices.ApplyGearChange.swapDyes()) { // swap dyes for pending glam plate
-															 // also swap dyes in dye picker
-				if(CurrentDyesInEditor.TryGetValue(1, out var s1) && CurrentDyesInEditor.TryGetValue(2, out var s2) && s1 != null && s2 != null) {
-					CurrentDyesInEditor[1] = s2;
-					CurrentDyesInEditor[2] = s1;
-					CurrentDyeList[1] = (byte)s2.Value.RowId;
-					CurrentDyeList[2] = (byte)s1.Value.RowId;
-				}
-			}
+			SwapDyesOneItem();
 		}
 		if (dyeCount != 2) ImGui.EndDisabled();
 		GuiHelpers.Tooltip("Swap dyes between dye 1 and dye 2");
+
+		ImGui.SameLine();
+
+		if (GuiHelpers.GameButton(UldBundle.ColorantButton_Swap, "##SwapDyesAll##DyePicker", "Swap dyes between dye 1 and dye 2 for all items in the plate", ConfigurationManager.Config.DyePickerDyeSize * 1.5f, new(1,0.7f,0.9f,1))) {
+			SwapDyesAllItem();
+		}
+
 		// ImGui.SameLine();
 		GuiHelpers.IconToggleButtonNoBg(FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
 
+	}
+
+
+
+	private static void SwapDyesOneItem() {
+		if (!PluginServices.ApplyGearChange.SwapDyesForCurrentSlotInCurrentPlate()) return;
+		SwapDyesDyePicker();
+
+	}
+	private static void SwapDyesAllItem() {
+		PluginServices.ApplyGearChange.SwapDyesForAllItemsInCurrentPlate();
+		SwapDyesDyePicker();
+	}
+
+	private static void SwapDyesDyePicker() {
+		CircleIndex();
+		if (CurrentDyesInEditor.TryGetValue(1, out var s1) && CurrentDyesInEditor.TryGetValue(2, out var s2) && s1 != null && s2 != null) {
+			CurrentDyesInEditor[1] = s2;
+			CurrentDyesInEditor[2] = s1;
+			CurrentDyeList[1] = (byte)s2.Value.RowId;
+			CurrentDyeList[2] = (byte)s1.Value.RowId;
+		}
 	}
 }
