@@ -88,7 +88,7 @@ namespace Dresser.Windows
 			SidebarOnRight,
 			//SidebarOnLeft,
 		}
-		
+
 		private void DrawClothes() {
 			switch (ConfigurationManager.Config.GearBrowserDisplayMode) {
 				case DisplayMode.Vertical: DrawWithMode_Vertical(); break;
@@ -460,7 +460,7 @@ namespace Dresser.Windows
 						if (selectedInCurrentGear) HoveredIncrement = i;
 						isHovered |= selectedInCurrentGear;
 						var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, out bool clickedMiddle, out bool clickedStain, null, ContextMenuBrowser);
-						var hoverDown = !selectedInCurrentGear && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
+						var hoverDown = !selectedInCurrentGear && isHovered && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
 
 						if (JustRecomputed && selectedInCurrentGear) ImGui.SetScrollHereY();
 						if (isHovered)
@@ -557,8 +557,8 @@ namespace Dresser.Windows
 			DrawSameModels(itemInv);
 
 		}
-		
-		
+
+
 		public static void DrawSameModels(InventoryItem item) {
 
 			var sharedModels = item.Item.GetSharedModels();

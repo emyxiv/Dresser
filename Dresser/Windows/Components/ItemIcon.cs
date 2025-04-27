@@ -307,7 +307,7 @@ namespace Dresser.Windows.Components {
 					var itemHoveredInfo = PluginServices.ImageGuiCrop.GetPart(UldBundle.SlotHighlight);
 					ImGui.SetCursorPos(initialPosition);
 					if(itemHoveredInfo != null && itemSlotInfo != null) {
-						
+
 						var hoverSize = capSize * (itemHoveredInfo.Size.X / itemSlotInfo.Size.X);
 						difference = hoverSize - iconSize;
 
