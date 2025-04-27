@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using CriticalCommonLib.Extensions;
+
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 
@@ -43,10 +45,18 @@ namespace Dresser.Structs.Dresser.DyeHistory {
             else {
                 newIndexBeforeClamp = Index - 1;
             }
-            var newIndex = int.Clamp(newIndexBeforeClamp, 0, Entries.Count - 1);
+            var newIndex = int.Clamp(newIndexBeforeClamp, -1, Entries.Count - 1);
             if (newIndex == Index) return null;
 
-            var entry = GetEntry(newIndex);
+            var entry = GetEntry(newIndex > -1 ? newIndex : 0);
+
+            if(entry == null) return null;
+
+            if (newIndex == -1) {
+                entry = entry.Copy()!;
+                entry.DyeIdTo = entry.DyeIdFrom;
+            }
+
             Index = newIndex;
 
             return entry;

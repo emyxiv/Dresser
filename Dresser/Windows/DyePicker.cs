@@ -586,21 +586,46 @@ public class DyePicker {
 		if (ImGui.CollapsingHeader("History##DyeHistory##DyePicker")) {
 			ImGui.NewLine();
 
+			var displayLines = 6;
 			Plate currentDyeHistoryPlate = PluginServices.ApplyGearChange.GetCurrentPlateDyeHistory();
 
-			var indexRangeStart = int.Clamp(currentDyeHistoryPlate.Index - 3, 0, currentDyeHistoryPlate.Entries.Count);
-			var zz = int.Clamp(6, 0, currentDyeHistoryPlate.Entries.Count - (indexRangeStart));
-			var indexRangeCount    = int.Clamp(zz,0,currentDyeHistoryPlate.Entries.Count);
+			int indexRangeStart;
+			int indexRangeCount;
 
+			if (currentDyeHistoryPlate.Entries.Count < (displayLines -1)) {
+				indexRangeCount = int.Clamp(displayLines, 0 , currentDyeHistoryPlate.Entries.Count+1);
+				indexRangeStart = int.Clamp(currentDyeHistoryPlate.Entries.Count - (displayLines - 1), -1 , currentDyeHistoryPlate.Entries.Count);
+			}
+			else {
+				indexRangeCount = displayLines;
 
-			if (indexRangeCount < 6 && currentDyeHistoryPlate.Entries.Count > indexRangeCount) {
-				indexRangeCount = int.Clamp(6, 0 , currentDyeHistoryPlate.Entries.Count);
-				indexRangeStart = int.Clamp(currentDyeHistoryPlate.Entries.Count - 6, 0 , currentDyeHistoryPlate.Entries.Count);
+				// index in the middle
+				var middleIndex = currentDyeHistoryPlate.Index - (displayLines / 2);
+				indexRangeStart = int.Clamp(middleIndex, -1, currentDyeHistoryPlate.Entries.Count);
+
+				// index near top or bottom
+				indexRangeStart = int.Clamp(indexRangeStart, -1, (currentDyeHistoryPlate.Entries.Count - displayLines));
 			}
 
+			// if we start at -1, remove 1 from the count to get, as we insert the -1 entry just after
+			if(indexRangeStart == -1 && indexRangeCount > 0) indexRangeCount--;
+
+			var entries = currentDyeHistoryPlate.Entries.GetRange(int.Clamp(indexRangeStart, 0,int.MaxValue), indexRangeCount);
+
+			// insert the -1 entry if required
+			if (indexRangeStart == -1) {
+				var entryZero = new Entry(GlamourPlateSlot.Body, 1, 0, 0);
+				var zzz = entries.FirstOrDefault();
+				if (zzz != null) {
+					entryZero.Slot = zzz.Slot;
+					entryZero.DyeIndex = zzz.DyeIndex;
+					entryZero.DyeIdTo = zzz.DyeIdFrom;
+				}
+				entries.Insert(0, entryZero);
+			}
 
 			int ind = indexRangeStart;
-			foreach (Entry dyeHistoryEntry in currentDyeHistoryPlate.Entries.GetRange(indexRangeStart,indexRangeCount)) {
+			foreach (Entry dyeHistoryEntry in entries) {
 
 				var currentDyeColor = ind == currentDyeHistoryPlate.Index ? new Vector4(1,0,0,1) : ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
 				// ImGui.TextColored(currentDyeColor ,$"{dyeHistoryEntry.Slot} {dyeHistoryEntry.DyeIndex} ");
