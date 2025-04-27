@@ -1,4 +1,5 @@
 
+using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Structs.Dresser;
@@ -21,7 +22,7 @@ namespace Dresser.Services {
 		private void DyeHistoryUndoOrRedo(bool forward) {
 			var previous = DyeHistory.GetHistory(ConfigurationManager.Config.SelectedCurrentPlate).UndoOrRedo(forward);
 			if (previous == null) return;
-			ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, (GlamourPlateSlot)previous.Slot, (byte)previous.DyeIdFrom, previous.DyeIndex, true);
+			ApplyDye(ConfigurationManager.Config.SelectedCurrentPlate, previous.Slot, (byte)previous.DyeIdTo, previous.DyeIndex, true);
 		}
 		public Plate GetCurrentPlateDyeHistory() {
 			return DyeHistory.GetHistory(ConfigurationManager.Config.SelectedCurrentPlate);
@@ -84,6 +85,45 @@ namespace Dresser.Services {
 			ApplyItemAppearanceOnPlayerWithMods(item, slot);
 		}
 
+		public void DyeAllWithCurrentSelectedSlot() {
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) return;
+			var itemModel = plate.GetSlot(ConfigurationManager.Config.CurrentGearSelectedSlot);
+			if (itemModel == null) return;
+			DyeAllWith(itemModel.Stain, itemModel.Stain2);
+		}
+		public void DyeAllWithNone() {
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) return;
+			var itemModel = plate.GetSlot(ConfigurationManager.Config.CurrentGearSelectedSlot);
+			if (itemModel == null) return;
+			DyeAllWith(0, 0);
+		}
+		private void DyeAllWith(byte stain1, byte stain2) {
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) return;
+			foreach ((var slot, var item) in plate.Items) {
+				if (item == null) continue;
+				if (!item.Item.IsDyeable1()) continue;
+				DyeHistoryAdd(ConfigurationManager.Config.SelectedCurrentPlate, slot, 1, item.Stain, stain1);
+				item.Stain  = stain1;
+				if (item.Item.IsDyeable2()) {
+					DyeHistoryAdd(ConfigurationManager.Config.SelectedCurrentPlate, slot, 2, item.Stain2, stain2);
+					item.Stain2 = stain2;
+				}
+
+				ApplyItemAppearanceOnPlayerWithMods(item, slot);
+			}
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+		}
+		public void DyeWithNone() {
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var plate)) return;
+			var item = plate.GetSlot(ConfigurationManager.Config.CurrentGearSelectedSlot);
+			if (item == null) return;
+			DyeHistoryAdd(ConfigurationManager.Config.SelectedCurrentPlate, ConfigurationManager.Config.CurrentGearSelectedSlot, 1, item.Stain, 0);
+			item.Stain = 0;
+			DyeHistoryAdd(ConfigurationManager.Config.SelectedCurrentPlate, ConfigurationManager.Config.CurrentGearSelectedSlot, 2, item.Stain2, 0);
+			item.Stain2 = 0;
+			ApplyItemAppearanceOnPlayerWithMods(item, ConfigurationManager.Config.CurrentGearSelectedSlot);
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+		}
 		public void DyePickerRefreshNewItem(InventoryItem? item, bool applyPreviousDyesToNewItem = false) {
 			if (applyPreviousDyesToNewItem && ConfigurationManager.Config.DyePickerKeepApplyOnNewItem) {
 				foreach ((var dyeIndex, var currentDye) in DyePicker.CurrentDyeList) {

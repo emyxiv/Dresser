@@ -554,6 +554,19 @@ public class DyePicker {
 
 		// ImGui.SameLine();
 		GuiHelpers.IconToggleButtonNoBg(FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.SprayCan, "##DyeAllWithCurrentSelectedSlot##DyePicker", "Dye all items in the plate with this item's dyes", ConfigurationManager.Config.DyePickerDyeSize)) {
+			PluginServices.ApplyGearChange.DyeAllWithCurrentSelectedSlot();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Eraser, "##DyeWithNoDye##DyePicker", "Remove all dyes from this item", ConfigurationManager.Config.DyePickerDyeSize)) {
+			PluginServices.ApplyGearChange.DyeWithNone();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Dumpster, "##DyeAllWithNoDye##DyePicker", "Remove dyes from all items in the plate", ConfigurationManager.Config.DyePickerDyeSize)) {
+			PluginServices.ApplyGearChange.DyeAllWithNone();
+		}
+
 
 
 		if (GuiHelpers.GameButton(UldBundle.ColorantButton_Undo, "##Undo##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize * 1.5f)) {
