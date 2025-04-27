@@ -109,7 +109,7 @@ namespace Dresser.Windows {
 				var colorIcon = Vector4.One;
 				if(!isHovered) colorIcon = colorIcon.WithAlpha(0.8f);
 				var iconUld =  vB switch {
-					VerticalTab.Clothes => UldBundle.ArmouryBoard_ChestPiece,
+					VerticalTab.Clothes => UldBundle.ArmouryBoard_Body,
 					VerticalTab.Dyes => UldBundle.ColorantToggleButton_DyeIndicatorActive,
 				};
 

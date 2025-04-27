@@ -61,6 +61,23 @@ namespace Dresser.Services {
 
 		public IDalamudTextureWrap? GetPart(GlamourPlateSlot slot)
 			=> GetPart(EmptyGlamourPlateSlot[slot]);
+		public IDalamudTextureWrap? GetPartArmourySlot(GlamourPlateSlot slot)
+			=> GetPart(slot switch {
+				GlamourPlateSlot.MainHand => UldBundle.ArmouryBoard_MainHand,
+				GlamourPlateSlot.OffHand => UldBundle.ArmouryBoard_OffHand,
+				GlamourPlateSlot.Head => UldBundle.ArmouryBoard_Head,
+				GlamourPlateSlot.Body => UldBundle.ArmouryBoard_Body,
+				GlamourPlateSlot.Hands => UldBundle.ArmouryBoard_Hands,
+				GlamourPlateSlot.Legs => UldBundle.ArmouryBoard_Legs,
+				GlamourPlateSlot.Feet => UldBundle.ArmouryBoard_Feet,
+				GlamourPlateSlot.Ears => UldBundle.ArmouryBoard_Ears,
+				GlamourPlateSlot.Neck => UldBundle.ArmouryBoard_Neck,
+				GlamourPlateSlot.Wrists => UldBundle.ArmouryBoard_Wrists,
+				GlamourPlateSlot.RightRing => UldBundle.ArmouryBoard_RightRing,
+				GlamourPlateSlot.LeftRing => UldBundle.ArmouryBoard_LeftRing,
+				_ => UldBundle.ArmouryBoard_MainHand,
+			});
+
 
 		public ImageGuiCrop() { }
 		private void MakeUld(UldBundle uldBundle) {
@@ -223,7 +240,18 @@ namespace Dresser.Services {
 		public static UldBundle RightRing => new(BuildTexPath("Character"), "ui/uld/Character.uld", 28, "RightRing");
 		public static UldBundle LeftRing  => new(BuildTexPath("Character"), "ui/uld/Character.uld", 28, "LeftRing");
 		public static UldBundle Character_Person  => new(BuildTexPath("Character"), "ui/uld/Character.uld", 7, "Character_Person");
-		public static UldBundle ArmouryBoard_ChestPiece  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 2, "ArmouryBoard_ChestPiece");
+		public static UldBundle ArmouryBoard_MainHand  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 0, "ArmouryBoard_MainHand");
+		public static UldBundle ArmouryBoard_Head  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 1, "ArmouryBoard_Head");
+		public static UldBundle ArmouryBoard_Body  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 2, "ArmouryBoard_Body");
+		public static UldBundle ArmouryBoard_Hands  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 3, "ArmouryBoard_Hands");
+		public static UldBundle ArmouryBoard_Legs  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 5, "ArmouryBoard_Legs");
+		public static UldBundle ArmouryBoard_Feet  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 6, "ArmouryBoard_Feet");
+		public static UldBundle ArmouryBoard_OffHand  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 7, "ArmouryBoard_OffHand");
+		public static UldBundle ArmouryBoard_Ears  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 8, "ArmouryBoard_Ears");
+		public static UldBundle ArmouryBoard_Neck  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 9, "ArmouryBoard_Neck");
+		public static UldBundle ArmouryBoard_Wrists  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 10, "ArmouryBoard_Wrists");
+		public static UldBundle ArmouryBoard_RightRing  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 11, "ArmouryBoard_RightRing");
+		public static UldBundle ArmouryBoard_LeftRing  => new(BuildTexPath("ArmouryBoard"), "ui/uld/ArmouryBoard.uld", 11, "ArmouryBoard_LeftRing");
 
 
 		// handle: circle_buttons_4
@@ -272,7 +300,7 @@ namespace Dresser.Services {
 
 		// handle: mirage_prism_plate2
 		public static UldBundle MiragePlateRadio         => new(BuildTexPath("MiragePrismPlate2"), "ui/uld/MiragePrismPlate.uld", 4,"MiragePlateRadio"); // OK
-		public static UldBundle MiragePlateRadioSelected => new(BuildTexPath("MiragePrismPlate2"), "ui/uld/MiragePrismPlate.uld", 5,"MiragePlateRadioSelected"); // 
+		public static UldBundle MiragePlateRadioSelected => new(BuildTexPath("MiragePrismPlate2"), "ui/uld/MiragePrismPlate.uld", 5,"MiragePlateRadioSelected"); //
 
 
 
@@ -302,6 +330,7 @@ namespace Dresser.Services {
 
 		public static UldBundle ColorantToggleButton_DyeIndicatorInactive => new(BuildTexPath("ToggleButton"), "ui/uld/ColorantColoringSelector.uld", 16, "ColorantToggleButton_DyeIndicatorInactive");
 		public static UldBundle ColorantToggleButton_DyeIndicatorActive => new(BuildTexPath("ToggleButton"), "ui/uld/ColorantColoringSelector.uld", 17, "ColorantToggleButton_DyeIndicatorActive");
+		public static UldBundle ColorantToggleButton_DyeIndicatorInto => new(BuildTexPath("ToggleButton"), "ui/uld/ColorantColoringSelector.uld", 18, "ColorantToggleButton_DyeIndicatorInto");
 		public static UldBundle ColorantToggleButton_IntoDye => new(BuildTexPath("ToggleButton"), "ui/uld/ColorantColoringSelector.uld", 18, "ColorantToggleButton_IntoDye");
 		public static UldBundle MiragePrismBox_Heart => new(BuildTexPath("ItemSearch"), "ui/uld/MiragePrismBox.uld", 10, "MiragePrismBox_Heart");
 

@@ -8,9 +8,11 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Extensions;
+using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
+using Dresser.Structs.Dresser.DyeHistory;
 using Dresser.Windows.Components;
 
 using ImGuiNET;
@@ -204,7 +206,12 @@ public class DyePicker {
 		else isActive = IndexKey == LastSelectedItemKey;
 
 		var selecting = DrawStainIcon(i, isActive, faded);
-		selecting |= !CurrentDyeList.ContainsValue((byte)i.RowId) && ImGui.IsItemHovered() && (ImGui.GetIO().KeyCtrl || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left]);
+		selecting |= !CurrentDyeList.ContainsValue((byte)i.RowId)
+					&& ImGui.IsItemHovered()
+					&& (ImGui.GetIO().KeyCtrl
+						// || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left] // this is already handled by DrawStainIcon()
+						);
+
 		// try {
 		//
 		// } catch (Exception e) {
@@ -475,19 +482,7 @@ public class DyePicker {
 
 
 			var posDyeIdent1 = ImGui.GetCursorScreenPos() + new Vector2(0, paddingDyeButton.Y);
-			var iconUld = isActive ? UldBundle.ColorantToggleButton_DyeIndicatorActive : UldBundle.ColorantToggleButton_DyeIndicatorInactive;
-			var stainBorderTex = PluginServices.ImageGuiCrop.GetPart(iconUld);
-			if (stainBorderTex != null) ImGui.GetWindowDrawList().AddImage(
-				stainBorderTex.ImGuiHandle,
-				posDyeIdent1,
-				posDyeIdent1 + ConfigurationManager.Config.DyePickerDyeSize,
-				Vector2.Zero,
-				Vector2.One,
-				ImGui.ColorConvertFloat4ToU32(Vector4.One));
-			var fontHandle = GuiHelpers.FontHandle(GuiHelpers.Font.Title);
-			fontHandle.Push();
-			ImGui.GetWindowDrawList().AddText(posDyeIdent1 + (ConfigurationManager.Config.DyePickerDyeSize.X * new Vector2( 0.75f, 0.25f)),ImGui.ColorConvertFloat4ToU32(Vector4.One.WithAlpha(0.8f)),$"{dyeIndex.ToString()}");
-			fontHandle.Pop();
+			DrawIndexIndicator(dyeIndex, posDyeIdent1, isActive);
 			// var colorFlags = ImGuiColorEditFlags.NoDragDrop;
 			// if (i == null) colorFlags |= ImGuiColorEditFlags.NoPicker | ImGuiColorEditFlags.AlphaPreview;
 			// clicked |= ImGui.ColorButton(colorLabel, colorVec4, colorFlags, ConfigurationManager.Config.DyePickerDyeSize);
@@ -520,6 +515,23 @@ public class DyePicker {
 
 
 	}
+
+	private static void DrawIndexIndicator(ushort index, Vector2 pos, bool isActive, float multSize = 1f) {
+			var iconUld = isActive ? UldBundle.ColorantToggleButton_DyeIndicatorActive : UldBundle.ColorantToggleButton_DyeIndicatorInactive;
+			var stainBorderTex = PluginServices.ImageGuiCrop.GetPart(iconUld);
+			if (stainBorderTex != null) ImGui.GetWindowDrawList().AddImage(
+				stainBorderTex.ImGuiHandle,
+				pos,
+				pos + (ConfigurationManager.Config.DyePickerDyeSize * multSize),
+				Vector2.Zero,
+				Vector2.One,
+				ImGui.ColorConvertFloat4ToU32(Vector4.One));
+			var fontHandle = GuiHelpers.FontHandle(GuiHelpers.Font.Title, multSize != 1f ? (ImGui.GetFontSize() * 1.75f) * multSize : null);
+			fontHandle.Push();
+			ImGui.GetWindowDrawList().AddText(pos + ((ConfigurationManager.Config.DyePickerDyeSize.X * multSize) * new Vector2( 0.75f, 0.25f)),ImGui.ColorConvertFloat4ToU32(Vector4.One.WithAlpha(0.8f)),$"{index.ToString()}");
+			fontHandle.Pop();
+
+	}
 	private static void DrawSideBar() {
 
 		var dyeCount = CurrentItem?.Item.Base.DyeCount ?? 1;
@@ -542,6 +554,95 @@ public class DyePicker {
 		// ImGui.SameLine();
 		GuiHelpers.IconToggleButtonNoBg(FontAwesomeIcon.PaintRoller, ref ConfigurationManager.Config.DyePickerKeepApplyOnNewItem, "##KeepDyingOnNewItem##DyePicker", "Keep dyeing when a new item is selected in the browser", ConfigurationManager.Config.DyePickerDyeSize);
 
+
+		if (GuiHelpers.GameButton(UldBundle.ColorantButton_Undo, "##Undo##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize * 1.5f)) {
+			PluginServices.ApplyGearChange.DyeHistoryUndo();
+		}
+		ImGui.SameLine();
+		if (GuiHelpers.GameButton(UldBundle.ColorantButton_Redo, "##Redo##DyePicker", "", ConfigurationManager.Config.DyePickerDyeSize * 1.5f)) {
+			PluginServices.ApplyGearChange.DyeHistoryRedo();
+		}
+
+
+
+		DrawDyeHistory();
+	}
+	private static void DrawDyeHistory() {
+
+		if (ImGui.CollapsingHeader("History##DyeHistory##DyePicker")) {
+			ImGui.NewLine();
+
+			Plate currentDyeHistoryPlate = PluginServices.ApplyGearChange.GetCurrentPlateDyeHistory();
+			PluginLog.Debug($"count {currentDyeHistoryPlate.Entries.Count}");
+
+			var indexRangeStart = int.Clamp(currentDyeHistoryPlate.Index - 3, 0, currentDyeHistoryPlate.Entries.Count);
+			var zz = int.Clamp(6, 0, currentDyeHistoryPlate.Entries.Count - (indexRangeStart));
+			var indexRangeCount    = int.Clamp(zz,0,currentDyeHistoryPlate.Entries.Count);
+
+
+			if (indexRangeCount < 6 && currentDyeHistoryPlate.Entries.Count > indexRangeCount) {
+				indexRangeCount = int.Clamp(6, 0 , currentDyeHistoryPlate.Entries.Count);
+				indexRangeStart = int.Clamp(currentDyeHistoryPlate.Entries.Count - 6, 0 , currentDyeHistoryPlate.Entries.Count);
+			}
+
+			PluginLog.Debug($"range {indexRangeStart} {indexRangeCount} {currentDyeHistoryPlate.Entries.Count}");
+
+			int ind = indexRangeStart;
+			foreach (Entry dyeHistoryEntry in currentDyeHistoryPlate.Entries.GetRange(indexRangeStart,indexRangeCount)) {
+
+				var currentDyeColor = ind == currentDyeHistoryPlate.Index ? new Vector4(1,0,0,1) : ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
+				// ImGui.TextColored(currentDyeColor ,$"{dyeHistoryEntry.Slot} {dyeHistoryEntry.DyeIndex} ");
+
+
+				var rowStartPos = ImGui.GetCursorScreenPos();
+
+				ImGui.Text("");
+				ImGui.SameLine();
+
+
+				var numberPos = ImGui.GetCursorScreenPos();
+				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ConfigurationManager.Config.DyePickerDyeSize.X*0.2f);
+
+				var tex = PluginServices.ImageGuiCrop.GetPartArmourySlot(dyeHistoryEntry.Slot);
+				if (tex != null) {
+					ImGui.GetWindowDrawList().AddImage(tex.ImGuiHandle, ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + (ConfigurationManager.Config.DyePickerDyeSize));
+					ImGui.SameLine();
+					ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ConfigurationManager.Config.DyePickerDyeSize.X);
+				}
+
+				ImGui.GetWindowDrawList().AddText(numberPos, ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]),$"{ind + 1}.");
+
+				DrawIndexIndicator(dyeHistoryEntry.DyeIndex, ImGui.GetCursorScreenPos(), false, 0.75f);
+				ImGui.SameLine();
+				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (ConfigurationManager.Config.DyePickerDyeSize.X * 2));
+
+				DrawStainIcon(dyeHistoryEntry.StainFrom(), false, false, $"##from##{ind}##DyeHistory##Sidebar##DyePicker");
+				ImGui.SameLine();
+
+
+
+
+				// put an arrow for "this dye changed into this one"
+				var texInto = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorantToggleButton_IntoDye);
+				ImGui.GetWindowDrawList().AddImage(texInto.ImGuiHandle, ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ConfigurationManager.Config.DyePickerDyeSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 0.5f)));
+				ImGui.SameLine();
+				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ConfigurationManager.Config.DyePickerDyeSize.X);
+
+				var rowEndPos = ImGui.GetCursorScreenPos() + ConfigurationManager.Config.DyePickerDyeSize;
+				DrawStainIcon(dyeHistoryEntry.StainTo(),   false, false, $"##to##{ind}##DyeHistory##Sidebar##DyePicker");
+				// ImGui.SameLine();
+
+
+
+
+				if (ind == currentDyeHistoryPlate.Index) {
+					ImGui.GetWindowDrawList().AddRect(rowStartPos, rowEndPos,ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.DyePickerDye1Or2SelectedBg),ItemIcon.IconSize.X * 0.05f,0,ItemIcon.IconSize.X * 0.02f);
+				}
+
+				ind++;
+
+			}
+		}
 	}
 
 
