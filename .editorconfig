@@ -1,5 +1,8 @@
 [*.cs]
 
+trim_trailing_whitespace = true
+csharp_new_line_before_open_brace = none
+
 # CS8602: Dereference of a possibly null reference.
 dotnet_diagnostic.CS8602.severity = error
 
