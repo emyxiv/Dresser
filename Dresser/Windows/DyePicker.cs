@@ -205,11 +205,12 @@ public class DyePicker {
 		if (LastSelectedItemKey == null && CurrentDyeList.TryGetValue(DyeIndex, out var stain) && stain != null) isActive = i.RowId == stain.Value;
 		else isActive = IndexKey == LastSelectedItemKey;
 
-		var selecting = DrawStainIcon(i, isActive, faded);
+		var selecting = DrawStainIcon(i, isActive, faded, out var interactions);
 		selecting |= !CurrentDyeList.ContainsValue((byte)i.RowId)
-					&& ImGui.IsItemHovered()
+
+					&& interactions.IsHovered
 					&& (ImGui.GetIO().KeyCtrl
-						// || ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left] // this is already handled by DrawStainIcon()
+						|| ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left] // this is already handled by DrawStainIcon()
 						);
 
 		// try {
@@ -267,7 +268,9 @@ public class DyePicker {
 
 		return new (width, height);
 	}
-	private static bool DrawStainIcon(Stain i, bool isActive, bool faded, string extraLabel = "") {
+	private static bool DrawStainIcon(Stain i, bool isActive, bool faded, out ElementUserInputs interactions, string extraLabel = "") {
+
+		interactions = new ElementUserInputs();
 
 		var bordSize = ConfigurationManager.Config.DyePickerDyeSize * 1.28f;
 		var overflowSize = (bordSize - ConfigurationManager.Config.DyePickerDyeSize) / 2;
@@ -307,12 +310,10 @@ public class DyePicker {
 			var colorStainNotStainedTexWrap = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainNotStained);
 			if (colorStainNotStainedTexWrap != null) draw.AddImage(colorStainNotStainedTexWrap.ImGuiHandle, startPos, endPos, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorStainNotStained));
 		}
-		// var hovered = ImGui.IsMouseHoveringRect(pos, pos + size);
+		interactions.IsHovered = ImGui.IsMouseHoveringRect(pos, pos + size);
+		interactions.IsClickedLeft = ImGui.InvisibleButton(hiddenLabel,size);
 
-		var selecting = ImGui.InvisibleButton(hiddenLabel,size);
-		var hovered = ImGui.IsItemHovered();
-
-		GuiHelpers.Hovering(hiddenLabel, ImGui.IsItemHovered());
+		GuiHelpers.Hovering(hiddenLabel, interactions.IsHovered);
 
 		GuiHelpers.Tooltip(() => {
 			ImGui.Text($"{i.Name}");
@@ -377,7 +378,7 @@ public class DyePicker {
 			}
 		}
 
-		return selecting;
+		return interactions.IsClickedLeft;
 	}
 
 	public static ushort DyeIndex = 1;
@@ -497,7 +498,7 @@ public class DyePicker {
 				,0));
 
 			if (i != null) {
-				DrawStainIcon(i.Value, false, false, $"##from##{dyeIndex}##StainButtonHeader");
+				DrawStainIcon(i.Value, false, false,out var interactions, $"##from##{dyeIndex}##StainButtonHeader");
 			}
 
 			if (clicked) {
@@ -573,7 +574,6 @@ public class DyePicker {
 			ImGui.NewLine();
 
 			Plate currentDyeHistoryPlate = PluginServices.ApplyGearChange.GetCurrentPlateDyeHistory();
-			PluginLog.Debug($"count {currentDyeHistoryPlate.Entries.Count}");
 
 			var indexRangeStart = int.Clamp(currentDyeHistoryPlate.Index - 3, 0, currentDyeHistoryPlate.Entries.Count);
 			var zz = int.Clamp(6, 0, currentDyeHistoryPlate.Entries.Count - (indexRangeStart));
@@ -585,7 +585,6 @@ public class DyePicker {
 				indexRangeStart = int.Clamp(currentDyeHistoryPlate.Entries.Count - 6, 0 , currentDyeHistoryPlate.Entries.Count);
 			}
 
-			PluginLog.Debug($"range {indexRangeStart} {indexRangeCount} {currentDyeHistoryPlate.Entries.Count}");
 
 			int ind = indexRangeStart;
 			foreach (Entry dyeHistoryEntry in currentDyeHistoryPlate.Entries.GetRange(indexRangeStart,indexRangeCount)) {
@@ -616,7 +615,7 @@ public class DyePicker {
 				ImGui.SameLine();
 				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (ConfigurationManager.Config.DyePickerDyeSize.X * 2));
 
-				DrawStainIcon(dyeHistoryEntry.StainFrom(), false, false, $"##from##{ind}##DyeHistory##Sidebar##DyePicker");
+				DrawStainIcon(dyeHistoryEntry.StainFrom(), false, false, out var _1, $"##from##{ind}##DyeHistory##Sidebar##DyePicker");
 				ImGui.SameLine();
 
 
@@ -629,7 +628,7 @@ public class DyePicker {
 				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ConfigurationManager.Config.DyePickerDyeSize.X);
 
 				var rowEndPos = ImGui.GetCursorScreenPos() + ConfigurationManager.Config.DyePickerDyeSize;
-				DrawStainIcon(dyeHistoryEntry.StainTo(),   false, false, $"##to##{ind}##DyeHistory##Sidebar##DyePicker");
+				DrawStainIcon(dyeHistoryEntry.StainTo(),   false, false,out var _2, $"##to##{ind}##DyeHistory##Sidebar##DyePicker");
 				// ImGui.SameLine();
 
 
