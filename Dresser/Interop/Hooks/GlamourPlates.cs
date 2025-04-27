@@ -218,6 +218,18 @@ namespace Dresser.Interop.Hooks {
 				return SetGlamourPlateSlotReturn.failed;
 			}
 
+			// skip if already correct
+			var currentPlate = CurrentPlate;
+			if (currentPlate != null && currentPlate.TryGetValue(applyItemSlot.Value, out var currentItem)) {
+				if (currentItem.ItemId == applyItem.ItemId
+					&& currentItem.Stain1 == applyItem.Stain
+					&& currentItem.Stain2 == applyItem.Stain2) {
+					// PluginLog.Verbose($"Item alread correct, ignoring");
+					//data->SelectedItemIndex = initialSlot;
+					return SetGlamourPlateSlotReturn.same;
+				}
+			}
+
 			// save MiragePlate previous slot
 			//var initialSlot = data->SelectedItemIndex;
 
@@ -240,27 +252,13 @@ namespace Dresser.Interop.Hooks {
 				return SetGlamourPlateSlotReturn.success;
 			}
 
-			// skip if already correct
-			var currentPlate = CurrentPlate;
-			if (currentPlate != null && currentPlate.TryGetValue(applyItemSlot.Value, out var currentItem)) {
-				if (currentItem.ItemId == applyItem.ItemId
-					&& currentItem.Stain1 == applyItem.Stain
-					&& currentItem.Stain2 == applyItem.Stain2) {
-					// PluginLog.Verbose($"Item alread correct, ignoring");
-					//data->SelectedItemIndex = initialSlot;
-					return SetGlamourPlateSlotReturn.same;
-				}
-			}
-
-
-
 			// prepare the item to feed to the game
 			var dresser = DresserContents;
 			(MirageSource? container, int index, uint id, byte stain1, byte stain2) info = (null, 0, 0, 0, 0);
 
 			// check for items in glamour dresser
 			//PluginLog.Verbose($"Searching for {applyItemSlot} {applyItem.ItemId} ({applyItem.Stain}, {applyItem.Stain2})");
-			var matchingIds = dresser.FindAll(mirage => mirage.ItemId % Offsets.ItemModifierMod == applyItem.ItemId);
+			var matchingIds = dresser.FindAll(mirage => (mirage.ItemId % Offsets.ItemModifierMod) == applyItem.ItemId);
 
 			//PluginLog.Verbose($"Dresser has {matchingIds.Count} items matching {applyItem.ItemId}");
 
@@ -310,6 +308,8 @@ namespace Dresser.Interop.Hooks {
 			);
 
 			if (applyItem.Stain != info.stain1 || applyItem.Stain2 != info.stain2) {
+
+
 				if (currentPlate?.TryGetValue(applyItemSlot.Value, out var glamItem1) != null && glamItem1 != null) {
 					glamItem1.Stain1 = applyItem.Stain;
 				}
@@ -321,14 +321,20 @@ namespace Dresser.Interop.Hooks {
 				uint previousContextSlot = data->ContextMenuItemIndex;
 				data->ContextMenuItemIndex = (uint)applyItemSlot.Value;
 				PluginLog.Verbose($"Applying stains to {applyItemSlot.Value}: {applyItem.Stain}, {applyItem.Stain2}");
+
+				// item loading for plates is deferred as of patch 7.1
+				// so we must set the flags ourselves in order to activate the second dye slot immediately
+				if (applyItem.Stain2 != 0)
+					data->Items[(int) applyItemSlot.Value].Flags = 0x20;
+
 				this.ApplyStains(applyItemSlot.Value, applyItem, ref usedStains);
 				data->ContextMenuItemIndex = previousContextSlot;
 
 
 			}
-			
-			
-			
+
+
+
 			// PluginLog.Debug("zzz vvv");
 			var zzz = data->Plates;
 
@@ -337,8 +343,8 @@ namespace Dresser.Interop.Hooks {
 			// PluginLog.Debug("zzz");
 			var it = plat.Items[(int)applyItemSlot.Value];
 			// if(it.ItemId != info.id) PluginLog.Error($"failed to apply {info.id}=>{it.ItemId} on {applyItemSlot.Value}");
-			
-			
+
+
 
 			return SetGlamourPlateSlotReturn.success;
 		}
@@ -362,13 +368,13 @@ namespace Dresser.Interop.Hooks {
 		private unsafe InventoryItem* SelectStainItem(byte stainId, ref UsedStains usedStains, out uint bestItemId) {
 			var inventory = InventoryManager.Instance();
 
-			var transient = PluginServices.DataManager.GetExcelSheet<StainTransient>().GetRowOrDefault(stainId);
+			var transient = PluginServices.DataManager.GetExcelSheet<StainTransient>()!.GetRowOrDefault(stainId);
 
 			InventoryItem* item = null;
 
-			bestItemId = transient?.Item1.RowId ?? (transient?.Item2.RowId ?? 0);
+			bestItemId = transient?.Item1.ValueNullable?.RowId ?? (transient?.Item2.ValueNullable?.RowId ?? 0);
 
-			var items = new[] { transient?.Item1, transient?.Item2 };
+			var items = new[] { transient?.Item1.ValueNullable, transient?.Item2.ValueNullable };
 			foreach (var dyeItem in items) {
 				if (dyeItem == null || dyeItem.Value.RowId == 0) {
 					continue;
@@ -625,6 +631,9 @@ namespace Dresser.Interop.Hooks {
 
 		[FieldOffset(0x8)]
 		public MirageSource Source;
+
+		[FieldOffset(0x10)]
+		public byte Flags;
 
 		[FieldOffset(0x18)]
 		public byte Stain1;
