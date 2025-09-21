@@ -61,7 +61,7 @@ namespace Dresser.Windows.Components {
 			ImGui.Text($" {pointerNint:X8}");
 			if (ImGui.IsItemClicked()) pointerNint.ToString("X8").ToClipboard();
 
-			var data = *(AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
 			if (data == null) {
 				ImGui.TextColored(ConfigurationManager.Config.ColorBad, $"agent inactive");
 				return;
@@ -73,7 +73,7 @@ namespace Dresser.Windows.Components {
 
 			var slotSelected = data->SelectedItemIndex;
 			var slotSelectedPtr = (IntPtr)slotSelected;
-			
+
 			//ImGui.Text($"slot selected: {slotSelectedPtr}"); if (ImGui.IsItemClicked()) slotSelectedPtr.ToString().ToClipboard(); ImGui.SameLine(); ImGui.Text($" {slotSelectedPtr:X8}"); if (ImGui.IsItemClicked()) slotSelectedPtr.ToString("X8").ToClipboard();
 			ImGui.Text($"slot selected: {slotSelected}");
 		}

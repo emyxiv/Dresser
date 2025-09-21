@@ -32,7 +32,7 @@ namespace Dresser.Interop.Hooks {
 
 		// https://github.com/caitlyn-gg/Glamaholic/blob/main/Glamaholic/GameFunctions.cs
 
-		private unsafe delegate void SetGlamourPlateSlotDelegate(AgentMiragePrismMiragePlate* agent, MirageSource mirageSource, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2);
+		private unsafe delegate void SetGlamourPlateSlotDelegate(AgentMiragePrismMiragePlate* agent, FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource mirageSource, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2);
 		private unsafe delegate void SetGlamourPlateSlotStainsDelegate(AgentMiragePrismMiragePlate* agent, InventoryItem* stain1Item, byte stain1Idx, uint stain1ItemId, InventoryItem* stain2Item, byte stain2Idx, uint stain2ItemId);
 		private unsafe delegate int GetCabinetItemIdDelegate(FFXIVClientStructs.FFXIV.Client.Game.UI.Cabinet* armoire, uint baseItemId);
 
@@ -78,7 +78,7 @@ namespace Dresser.Interop.Hooks {
 				return null;
 			}
 
-			var data = *(AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
 			if (data == null) {
 				return null;
 			}
@@ -103,7 +103,7 @@ namespace Dresser.Interop.Hooks {
 				return successfullyApplied;
 			}
 
-			var data = *(AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
 			if (data == null) {
 				PluginLog.Error($"Glamour dresser not opened");
 				return successfullyApplied;
@@ -145,7 +145,7 @@ namespace Dresser.Interop.Hooks {
 		}
 
 
-		internal unsafe void SetGlamourPlateSlotItem(MirageSource source, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2) {
+		internal unsafe void SetGlamourPlateSlotItem(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource source, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2) {
 			SetGlamourPlateSlotNative(MiragePlateAgent, source, slotOrCabinetId, itemId, stainId, stainId2);
 		}
 
@@ -204,7 +204,7 @@ namespace Dresser.Interop.Hooks {
 				return SetGlamourPlateSlotReturn.failed;
 			}
 
-			var data = *(AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
 			if (data == null) {
 				PluginLog.Error($"Glamour dresser not opened");
 				return SetGlamourPlateSlotReturn.failed;
@@ -254,7 +254,7 @@ namespace Dresser.Interop.Hooks {
 
 			// prepare the item to feed to the game
 			var dresser = DresserContents;
-			(MirageSource? container, int index, uint id, byte stain1, byte stain2) info = (null, 0, 0, 0, 0);
+			(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource? container, int index, uint id, byte stain1, byte stain2) info = (null, 0, 0, 0, 0);
 
 			// check for items in glamour dresser
 			//PluginLog.Verbose($"Searching for {applyItemSlot} {applyItem.ItemId} ({applyItem.Stain}, {applyItem.Stain2})");
@@ -274,7 +274,7 @@ namespace Dresser.Interop.Hooks {
 				if(idx > -1) {
 					var mirage = matchingIds[idx];
 					//PluginLog.Debug($" >> {mirage.ItemId} {idx}");
-					info = (MirageSource.GlamourDresser, (int)mirage.Slot, mirage.ItemId, mirage.Stain1, mirage.Stain2);
+					info = (FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource.PrismBox, (int)mirage.Slot, mirage.ItemId, mirage.Stain1, mirage.Stain2);
 				}
 			}
 
@@ -284,8 +284,8 @@ namespace Dresser.Interop.Hooks {
 				var cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
 				//var cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
 				if (cabinetId != -1 && this.Armoire->IsItemInCabinet(cabinetId)) {
-					info = (MirageSource.Armoire, (int)cabinetId, applyItem.ItemId, 0, 0);
-					//PluginLog.Verbose($"Item Found in {MirageSource.Armoire} slot {cabinetId}");
+					info = (FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource.Cabinet, (int)cabinetId, applyItem.ItemId, 0, 0);
+					// PluginLog.Verbose($"Item Found in {FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource.Cabinet} slot {cabinetId}");
 				}
 			}
 
@@ -325,7 +325,7 @@ namespace Dresser.Interop.Hooks {
 				// item loading for plates is deferred as of patch 7.1
 				// so we must set the flags ourselves in order to activate the second dye slot immediately
 				if (applyItem.Stain2 != 0)
-					data->Items[(int) applyItemSlot.Value].Flags = 0x20;
+					data->CurrentItems[0].Flags = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemFlag.HasStain1;
 
 				this.ApplyStains(applyItemSlot.Value, applyItem, ref usedStains);
 				data->ContextMenuItemIndex = previousContextSlot;
@@ -336,7 +336,7 @@ namespace Dresser.Interop.Hooks {
 
 
 			// PluginLog.Debug("zzz vvv");
-			var zzz = data->Plates;
+			var zzz = data->GlamourPlates;
 
 			var fff = data->SelectedMiragePlateIndex;
 			var plat = zzz[(int)fff];
@@ -423,31 +423,32 @@ namespace Dresser.Interop.Hooks {
 		public static int CountSlots => Enum.GetValues(typeof(GlamourPlateSlot)).Length;
 		internal static unsafe Dictionary<GlamourPlateSlot, SavedGlamourItem>? CurrentPlate {
 			get {
+
 				var agent = MiragePlateAgent;
 				if (agent == null) {
 					return null;
 				}
 
-				var data = *(AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+				var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
 				if (data == null)
 					return null;
 
 				var plate = new Dictionary<GlamourPlateSlot, SavedGlamourItem>();
 				foreach (var slot in Enum.GetValues<GlamourPlateSlot>()) {
-					ref var item = ref data->Items[(int)slot];
+					ref var item = ref data->CurrentItems[(int)slot];
 
 					if (item.ItemId == 0)
 						continue;
 
 					var stain1 =
-						item.PreviewStain1 != 0
-							? item.PreviewStain1
-							: item.Stain1;
+						item.PendingStainIds[0] != 0
+							? item.PendingStainIds[0]
+							: item.StainIds[0];
 
 					var stain2 =
-						item.PreviewStain2 != 0
-							? item.PreviewStain2
-							: item.Stain2;
+						item.PendingStainIds[1] != 0
+							? item.PendingStainIds[1]
+							: item.StainIds[1];
 
 					plate[slot] = new SavedGlamourItem {
 						ItemId = item.ItemId,
@@ -565,30 +566,30 @@ namespace Dresser.Interop.Hooks {
 	// size may be incorrect
 	[StructLayout(LayoutKind.Explicit, Size = 0x3B38)]
 	public struct AgentMiragePrismMiragePlateData {
-		[FieldOffset(0x0)]
+		[FieldOffset(0)]
 		private bool Unk0;
 
-		[FieldOffset(0x1)]
+		[FieldOffset(1)]
 		public bool HasChanges;
 
-		[FieldOffset(0x14)]
+		[FieldOffset(20)]
 		private uint _SelectedMiragePlateIndex;
 
 		// The index of the item selected in the current Mirage Plate
-		[FieldOffset(0x18)]
+		[FieldOffset(24)]
 		private uint _SelectedItemIndex;
 
 		// The index of the item the context menu is associated with
-		[FieldOffset(0x1C)]
+		[FieldOffset(28)]
 		private uint _ContextMenuItemIndex;
 
 		// If anyone feels like figuring out what the hell is in here..
 		// Please, be my guest.
 
-		[FieldOffset(0x24)]
+		[FieldOffset(36)]
 		private FixedSizeArray20<MiragePlate> _Plates;
 
-		[FieldOffset(0x3864)]
+		[FieldOffset(14436)]
 		private FixedSizeArray12<MiragePlateItem> _Items;
 
 		public uint SelectedMiragePlateIndex {
@@ -623,31 +624,31 @@ namespace Dresser.Interop.Hooks {
 	}
 	[StructLayout(LayoutKind.Explicit, Size = 0x3C)]
 	public struct MiragePlateItem {
-		[FieldOffset(0x0)]
+		[FieldOffset(0)]
 		public uint ItemId;
 
-		[FieldOffset(0x4)]
+		[FieldOffset(4)]
 		public uint SlotOrCabinetId;
 
-		[FieldOffset(0x8)]
+		[FieldOffset(8)]
 		public MirageSource Source;
 
-		[FieldOffset(0x10)]
+		[FieldOffset(16)]
 		public byte Flags;
 
-		[FieldOffset(0x18)]
+		[FieldOffset(24)]
 		public byte Stain1;
 
-		[FieldOffset(0x19)]
+		[FieldOffset(25)]
 		public byte Stain2;
 
-		[FieldOffset(0x1A)]
+		[FieldOffset(26)]
 		public byte PreviewStain1;
 
-		[FieldOffset(0x1B)]
+		[FieldOffset(27)]
 		public byte PreviewStain2;
 
-		[FieldOffset(0x1C)]
+		[FieldOffset(28)]
 		public bool HasChanged;
 
 		// After this seem to be 3 ints, not sure what they are yet

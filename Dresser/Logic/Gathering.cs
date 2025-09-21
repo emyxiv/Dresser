@@ -11,6 +11,8 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using System.Linq;
 using System.Threading.Tasks;
 
+using AgentMiragePrismMiragePlateData = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData;
+
 namespace Dresser.Logic {
 
 	internal static class Gathering {
@@ -23,7 +25,7 @@ namespace Dresser.Logic {
 			PluginServices.Storage.Pages = GetDataFromDresser();
 			PluginServices.Storage.DisplayPage = PluginServices.Storage.Pages?.Last();
 			if (PluginServices.Storage.DisplayPage == null) return;
-			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(MiragePlate)PluginServices.Storage.DisplayPage;
+			ConfigurationManager.Config.DisplayPlateItems = (InventoryItemSet)(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.GlamourPlate)PluginServices.Storage.DisplayPage;
 		}
 		public static InventoryItemSet EmptyGlamourPlate() {
 			return new() {
@@ -44,7 +46,7 @@ namespace Dresser.Logic {
 				ParseGlamourPlates();
 				PluginServices.ApplyGearChange.CheckModificationsOnPendingPlates();
 			});
-		private unsafe static MiragePlate[]? GetDataFromDresser() {
+		private unsafe static AgentMiragePrismMiragePlateData.GlamourPlate[]? GetDataFromDresser() {
 			var agent = AgentMiragePrismMiragePlate.Instance();
 			if (agent == null) return null;
 			if (!agent->IsAgentActive()) return null;
@@ -53,7 +55,7 @@ namespace Dresser.Logic {
 			if (data == null) return null;
 
 
-			return data->Plates.ToArray();
+			return data->GlamourPlates.ToArray();
 		}
 		public static bool IsApplied(InventoryItem item) {
 

@@ -38,11 +38,11 @@ namespace Dresser.Structs.Dresser {
 		public InventoryItemSet(GlamourPlateSlot slot, InventoryItem item) {
 			Items = new Dictionary<GlamourPlateSlot, InventoryItem?> { { slot, item } };
 		}
-		public static explicit operator InventoryItemSet(MiragePlate a) {
+		public static explicit operator InventoryItemSet(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.GlamourPlate a) {
 			Dictionary<GlamourPlateSlot, InventoryItem?> dictionary = new();
 			var array = a.Items.ToArray();
 			for (int i = 0; i < array.Length; i++) {
-				dictionary.Add((GlamourPlateSlot)i, (InventoryItem?)array[i]);
+				dictionary.Add((GlamourPlateSlot)i, InventoryItemExtensions.New(array[i].ItemId, array[i].StainIds[0], array[i].StainIds[1]));
 			}
 			return new InventoryItemSet(dictionary);
 		}
