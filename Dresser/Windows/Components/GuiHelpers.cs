@@ -280,11 +280,18 @@ namespace Dresser.Windows.Components {
 			Tooltip(tooltip);
 		}
 		public static Vector4 ColorAddHSV(Vector4 color, float h_add, float s_add, float v_add) {
-			ImGui.ColorConvertRGBtoHSV(color.X, color.Y, color.Z, out var h, out var s, out var v);
+
+			float h = 0f;
+			float s = 0f;
+			float v = 0f;
+			ImGui.ColorConvertRGBtoHSV(color.X, color.Y, color.Z, ref h, ref s, ref v);
 			h += h_add;
 			s += s_add;
 			v += v_add;
-			ImGui.ColorConvertHSVtoRGB(h, s, v, out var r, out var g, out var b);
+			float r = 0f;
+			float g = 0f;
+			float b = 0f;
+			ImGui.ColorConvertHSVtoRGB(h, s, v, ref r, ref g, ref b);
 			return new(r, g, b, color.W);
 		}
 

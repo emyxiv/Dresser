@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 using AllaganLib.GameSheets.Sheets.Rows;
 
@@ -141,6 +142,7 @@ namespace Dresser.Windows
 					var methodInt = (int)method;
 					var directionInt = (int)direction;
 					int* indexPtr = &j;
+					ReadOnlySpan<byte> payloadReadOnly = BitConverter.GetBytes(j);
 
 
 					var text = $"{method.ToString().AddSpaceBeforeCapital()}";
@@ -189,7 +191,7 @@ namespace Dresser.Windows
 
 					if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.AcceptNoPreviewTooltip | ImGuiDragDropFlags.SourceNoPreviewTooltip)) {
 
-						ImGui.SetDragDropPayload("DND_ORDER_INDEX", (nint)indexPtr, sizeof(int));
+						ImGui.SetDragDropPayload("DND_ORDER_INDEX", payloadReadOnly);
 						ImGui.EndDragDropSource();
 					}
 					if (ImGui.BeginDragDropTarget()) {

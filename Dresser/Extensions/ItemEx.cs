@@ -175,7 +175,7 @@ namespace Dresser.Extensions {
 
 		public static bool ObtainedWithSpecialShopCurrency2(this ItemRow itemEx, uint currencyItemId)
 		{
-			return itemEx.Sources.Any(s=>s.CostItems.Any(c=>c.RowId == currencyItemId));
+			return itemEx.Sources.Any(s=>s.CostItems.Any(c=>c.ItemRow.RowId == currencyItemId));
 			// return Service.ExcelCache.GetSpecialShopSheet().Any(u => u.CostItems.Any(c => c.RowId == currencyItemId) && u.Items.Any(i => i == itemEx));
 
 			// if (Service.ExcelCache.SpecialShopItemRewardCostLookup.TryGetValue(itemEx.RowId, out var specialShop)) {
