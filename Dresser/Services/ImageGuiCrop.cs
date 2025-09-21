@@ -6,7 +6,7 @@ using Dresser.Logic;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using System;
 using System.Collections.Generic;
@@ -130,7 +130,7 @@ namespace Dresser.Services {
 
 						if(uld.Uld != null) {
 							foreach (var z in uld.Uld.AssetData) {
-								ImGui.Text($"{z.Id:D2} {z.Unk1} {z.Unk2} path: {new string(z.Path)}");
+								ImGui.Text($"{z.Id:D2} {z.ThemeSupportBitmask} {z.IconId} path: {new string(z.Path)}");
 							}
 						}
 					} else {
@@ -149,7 +149,7 @@ namespace Dresser.Services {
 				if (texture == null) {
 					ImGui.TextColored(ItemIcon.ColorBad, "Error");
 				} else {
-					ImGui.Image(texture.ImGuiHandle, texture.Size);
+					ImGui.Image(texture.Handle, texture.Size);
 				}
 				ImGui.SameLine();
 				ImGui.Text($"[{uldBundle.Index}]");

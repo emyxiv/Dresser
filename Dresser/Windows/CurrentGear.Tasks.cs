@@ -10,7 +10,7 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Lumina.Excel.Sheets;
 
@@ -67,7 +67,7 @@ public partial class CurrentGear
 						ImGui.TableNextRow();
 						ImGui.TableNextColumn();
 						// ImGui.AlignTextToFramePadding();
-						ImGui.Image(PluginServices.TextureProvider.GetFromGameIcon((uint)taskedItem.Icon).GetWrapOrEmpty().ImGuiHandle, new Vector2(ImGui.GetFontSize()));
+						ImGui.Image(PluginServices.TextureProvider.GetFromGameIcon((uint)taskedItem.Icon).GetWrapOrEmpty().Handle, new Vector2(ImGui.GetFontSize()));
 						ImGui.SameLine();
 
 						var lineColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];

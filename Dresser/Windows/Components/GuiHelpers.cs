@@ -5,7 +5,7 @@ using Dalamud.Utility;
 
 using Dresser.Services;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using System;
 using System.Collections.Generic;
@@ -67,7 +67,7 @@ namespace Dresser.Windows.Components {
 				var z = PluginServices.ImageGuiCrop.GetPart(cropItemId);
 				if (z == null) return false;
 				var pos = ImGui.GetCursorScreenPos();
-				ImGui.GetWindowDrawList().AddImage(z.ImGuiHandle, pos, pos + size, Vector2.Zero, Vector2.One,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint.WithAlpha(0.9f)));
+				ImGui.GetWindowDrawList().AddImage(z.Handle, pos, pos + size, Vector2.Zero, Vector2.One,ImGui.ColorConvertFloat4ToU32(hovered ? tint : tint.WithAlpha(0.9f)));
 				return ImGui.InvisibleButton(hiddenLabel, size);
 			}, hiddenLabel, tooltip, Vector4.Zero);
 		}
@@ -83,7 +83,7 @@ namespace Dresser.Windows.Components {
 
 			var clicked = GameButtonToggleBase(UldBundle.ItemCapNormal, UldBundle.Buddy_HighlightSmall, ref value, hiddenLabel, tooltip, size,Vector4.One,1.2f);
 
-			ImGui.GetWindowDrawList().AddImageRounded(iconTexture.ImGuiHandle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(iconColor), iconRounding);
+			ImGui.GetWindowDrawList().AddImageRounded(iconTexture.Handle, iconPos, iconPos + iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(iconColor), iconRounding);
 
 			return clicked;
 		}
@@ -103,7 +103,7 @@ namespace Dresser.Windows.Components {
 				var sizeHighlight = size * highlightThicknessMult;
 				var posHighlight = pos - ((sizeHighlight-size) / 2);
 
-				ImGui.GetWindowDrawList().AddImage(activeTexture.ImGuiHandle, posHighlight, posHighlight + sizeHighlight);
+				ImGui.GetWindowDrawList().AddImage(activeTexture.Handle, posHighlight, posHighlight + sizeHighlight);
 			}
 			var accepting = GameButton(cropCircleBUttonItemId, hiddenLabel, tooltip, size, color);
 			if (accepting) {

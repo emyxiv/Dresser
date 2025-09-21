@@ -19,7 +19,7 @@ using Dresser.Services;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 

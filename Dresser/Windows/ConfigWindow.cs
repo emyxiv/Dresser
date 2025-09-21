@@ -16,7 +16,7 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Newtonsoft.Json;
 
@@ -663,7 +663,7 @@ public class ConfigWindow : Window, IDisposable {
 		currencyUsed = currencyUsed.OrderBy(c => c.RowId);
 		foreach (var currency in currencyUsed)
 		{
-			ImGui.Image(currency.IconTextureWrap().GetWrapOrEmpty().ImGuiHandle, ItemIcon.IconSize * 0.4f);
+			ImGui.Image(currency.IconTextureWrap().GetWrapOrEmpty().Handle, ItemIcon.IconSize * 0.4f);
 			ImGui.SameLine();
 			ImGui.Text(currency.RowId.ToString());
 			ImGui.SameLine();

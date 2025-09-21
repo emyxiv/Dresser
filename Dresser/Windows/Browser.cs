@@ -8,7 +8,7 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace Dresser.Windows {
 	public partial class GearBrowser : Window, IWindowWithHotkey, IDisposable {
@@ -115,7 +115,7 @@ namespace Dresser.Windows {
 
 				var iconTexWrap = PluginServices.ImageGuiCrop.GetPart(iconUld);
 				if (iconTexWrap != null) ImGui.GetWindowDrawList().AddImage(
-					iconTexWrap.ImGuiHandle,
+					iconTexWrap.Handle,
 					pos,
 					pos + new Vector2(buttonSize.X, buttonSize.X * ((float)iconTexWrap.Width / iconTexWrap.Height)),
 					Vector2.Zero,

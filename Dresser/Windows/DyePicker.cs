@@ -15,7 +15,7 @@ using Dresser.Structs.Dresser;
 using Dresser.Structs.Dresser.DyeHistory;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Lumina.Excel.Sheets;
 
@@ -303,12 +303,12 @@ public class DyePicker {
 		}
 
 		// draw the color
-		draw.AddImage(colorStainTexWrap.ImGuiHandle, startPos, endPos, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorStain));
+		draw.AddImage(colorStainTexWrap.Handle, startPos, endPos, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorStain));
 
 		// draw the
 		if (i.RowId == 0) {
 			var colorStainNotStainedTexWrap = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainNotStained);
-			if (colorStainNotStainedTexWrap != null) draw.AddImage(colorStainNotStainedTexWrap.ImGuiHandle, startPos, endPos, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorStainNotStained));
+			if (colorStainNotStainedTexWrap != null) draw.AddImage(colorStainNotStainedTexWrap.Handle, startPos, endPos, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorStainNotStained));
 		}
 		interactions.IsHovered = ImGui.IsMouseHoveringRect(pos, pos + size);
 		interactions.IsClickedLeft = ImGui.InvisibleButton(hiddenLabel,size);
@@ -323,21 +323,21 @@ public class DyePicker {
 		if (i.Unknown1) {
 			var stainMetalTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainMetallic);
 			// if (stainMetalTex != null) draw.AddImage(
-			// 	stainMetalTex.ImGuiHandle,
+			// 	stainMetalTex.Handle,
 			// 	startPos,
 			// 	endPos,
 			// 	Vector2.One,
 			// 	Vector2.Zero,
 			// 	ImGui.ColorConvertFloat4ToU32(Vector4.One.Darken(0.3f).WithAlpha(0.9f)));
 			if (stainMetalTex != null) draw.AddImage(
-				stainMetalTex.ImGuiHandle,
+				stainMetalTex.Handle,
 				startPos,
 				endPos,
 				Vector2.One,
 				Vector2.Zero,
 				ImGui.ColorConvertFloat4ToU32(colorMetal));
 			// if (stainMetalTex != null) draw.AddImage(
-			// 	stainMetalTex.ImGuiHandle,
+			// 	stainMetalTex.Handle,
 			// 	startPos,
 			// 	endPos,
 			// 	Vector2.One,
@@ -348,7 +348,7 @@ public class DyePicker {
 		// put a border
 		var stainBorderTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainOutline);
 		if (stainBorderTex != null) draw.AddImage(
-			stainBorderTex.ImGuiHandle,
+			stainBorderTex.Handle,
 			startPos,
 			endPos,
 			Vector2.Zero,
@@ -361,7 +361,7 @@ public class DyePicker {
 			var stainHoverTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainHover);
 			if (isActive || wasHovered) {
 				if (stainHoverTex != null) draw.AddImage(
-					stainHoverTex.ImGuiHandle,
+					stainHoverTex.Handle,
 					startPos,
 					endPos);
 			}
@@ -369,7 +369,7 @@ public class DyePicker {
 			// highlight not faded when searching
 			if (GearBrowser.SearchText().Length > 0 && !faded) {
 				if (stainHoverTex != null) draw.AddImage(
-					stainHoverTex.ImGuiHandle,
+					stainHoverTex.Handle,
 					startPos,
 					endPos,
 					Vector2.Zero,
@@ -521,7 +521,7 @@ public class DyePicker {
 			var iconUld = isActive ? UldBundle.ColorantToggleButton_DyeIndicatorActive : UldBundle.ColorantToggleButton_DyeIndicatorInactive;
 			var stainBorderTex = PluginServices.ImageGuiCrop.GetPart(iconUld);
 			if (stainBorderTex != null) ImGui.GetWindowDrawList().AddImage(
-				stainBorderTex.ImGuiHandle,
+				stainBorderTex.Handle,
 				pos,
 				pos + (ConfigurationManager.Config.DyePickerDyeSize * multSize),
 				Vector2.Zero,
@@ -642,7 +642,7 @@ public class DyePicker {
 
 				var tex = PluginServices.ImageGuiCrop.GetPartArmourySlot(dyeHistoryEntry.Slot);
 				if (tex != null) {
-					ImGui.GetWindowDrawList().AddImage(tex.ImGuiHandle, ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + (ConfigurationManager.Config.DyePickerDyeSize));
+					ImGui.GetWindowDrawList().AddImage(tex.Handle, ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + (ConfigurationManager.Config.DyePickerDyeSize));
 					ImGui.SameLine();
 					ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ConfigurationManager.Config.DyePickerDyeSize.X);
 				}
@@ -661,7 +661,7 @@ public class DyePicker {
 
 				// put an arrow for "this dye changed into this one"
 				var texInto = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorantToggleButton_IntoDye);
-				ImGui.GetWindowDrawList().AddImage(texInto.ImGuiHandle, ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ConfigurationManager.Config.DyePickerDyeSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 0.5f)));
+				ImGui.GetWindowDrawList().AddImage(texInto.Handle, ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ConfigurationManager.Config.DyePickerDyeSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 0.5f)));
 				ImGui.SameLine();
 				ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ConfigurationManager.Config.DyePickerDyeSize.X);
 

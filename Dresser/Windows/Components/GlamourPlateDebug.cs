@@ -13,7 +13,7 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Lumina.Excel.Sheets;
 
@@ -268,7 +268,7 @@ namespace Dresser.Windows.Components {
 					ImGui.TextUnformatted($"{(exists ? item.Slot : "")}");
 					ImGui.TableNextColumn();
 					var icon = IconWrapper.Get(item.IconId);
-					ImGui.Image(icon.GetWrapOrEmpty().ImGuiHandle, new Vector2(ImGui.GetFontSize()));
+					ImGui.Image(icon.GetWrapOrEmpty().Handle, new Vector2(ImGui.GetFontSize()));
 					ImGui.SameLine();
 					ImGui.TextUnformatted($"{(exists ? item.ItemId:"")}");
 					ImGui.TableNextColumn();

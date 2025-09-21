@@ -19,7 +19,7 @@ using Dresser.Structs.Dresser;
 
 using Humanizer;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Lumina.Excel.Sheets;
 
@@ -252,9 +252,9 @@ namespace Dresser.Windows.Components {
 
 				if (image != null) {
 					var colorize = !IsHidingTooltip && iconImageFlag.HasFlag(IconImageFlag.NotAppliable) ? Styler.CollectionColorBackground + new Vector4(0, 0, 0, 0.3f) : Vector4.One;
-					// ImGui.Image(image.GetWrapOrEmpty().ImGuiHandle, iconSize, Vector2.Zero, Vector2.One, colorize);
+					// ImGui.Image(image.GetWrapOrEmpty().Handle, iconSize, Vector2.Zero, Vector2.One, colorize);
 					var pos = ImGui.GetCursorScreenPos();
-					ImGui.GetWindowDrawList().AddImageRounded(image.GetWrapOrEmpty().ImGuiHandle,pos,pos +  iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorize),iconSize.X * 0.13f);
+					ImGui.GetWindowDrawList().AddImageRounded(image.GetWrapOrEmpty().Handle,pos,pos +  iconSize, Vector2.Zero, Vector2.One, ImGui.ColorConvertFloat4ToU32(colorize),iconSize.X * 0.13f);
 					ImGui.InvisibleButton($"##invisibleItemIcon##", iconSize);
 				} else if (emptySlot != null) {
 					var emptySlotInfo = PluginServices.ImageGuiCrop.GetPart((GlamourPlateSlot)emptySlot);
@@ -268,8 +268,8 @@ namespace Dresser.Windows.Components {
 						var placeholderIconSize = iconSize * 0.75f;
 						var placeholderIconOffset = (iconSize - placeholderIconSize) / 2;
 						//+(placeholderIconSize / 2)
-						draw.AddImage(emptySlotInfo.ImGuiHandle, ddddddddd + placeholderIconOffset, ddddddddd + placeholderIconOffset + placeholderIconSize);
-						//ImGui.Image(emptySlotInfo.ImGuiHandle, iconSize * 0.5f);
+						draw.AddImage(emptySlotInfo.Handle, ddddddddd + placeholderIconOffset, ddddddddd + placeholderIconOffset + placeholderIconSize);
+						//ImGui.Image(emptySlotInfo.Handle, iconSize * 0.5f);
 					}
 				}
 
@@ -293,7 +293,7 @@ namespace Dresser.Windows.Components {
 					//difference = slotSize - iconSize;
 					var slotPos = ImGui.GetCursorScreenPos();
 					//var slotPos = ImGui.GetCursorScreenPos() - (difference / 2);
-					draw.AddImage(itemSlotInfo.ImGuiHandle, slotPos, slotPos + slotSize);
+					draw.AddImage(itemSlotInfo.Handle, slotPos, slotPos + slotSize);
 				}
 
 
@@ -312,7 +312,7 @@ namespace Dresser.Windows.Components {
 						difference = hoverSize - iconSize;
 
 						var hoverPos = ImGui.GetCursorScreenPos() - (difference / 2);
-						draw.AddImage(itemHoveredInfo.ImGuiHandle, hoverPos, hoverPos + hoverSize);
+						draw.AddImage(itemHoveredInfo.Handle, hoverPos, hoverPos + hoverSize);
 					}
 				}
 			} catch (Exception ex) {

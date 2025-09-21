@@ -5,7 +5,7 @@ using Dresser.Extensions;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using static Dresser.Services.Storage;
 
@@ -70,7 +70,7 @@ namespace Dresser.Windows
 
 						if (addItemKind == AdditionalItem.Currency && PluginServices.Storage.FilterCurrencyItemEx.TryGetValue(inventoryType, out var itex) && itex != null && PluginServices.Storage.FilterCurrencyIconTexture.TryGetValue(inventoryType, out var texWrap) && texWrap != null) {
 							var savedPosX = ImGui.GetCursorPosX();
-							if (ImGui.ImageButton(texWrap.GetWrapOrEmpty().ImGuiHandle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? Styler.ColorIconImageTintEnabled : Styler.ColorIconImageTintDisabled)) {
+							if (ImGui.ImageButton(texWrap.GetWrapOrEmpty().Handle, ItemIcon.IconSize / 2, Vector2.Zero, Vector2.One, 0, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg], isChecked ? Styler.ColorIconImageTintEnabled : Styler.ColorIconImageTintDisabled)) {
 
 
 								filterChanged = true;

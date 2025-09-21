@@ -1,7 +1,7 @@
 ﻿using Dresser.Extensions;
 using Dresser.Services;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using System.Numerics;
 

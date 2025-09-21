@@ -17,7 +17,7 @@ using Dresser.Structs.Dresser;
 using Dresser.Windows;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Penumbra.Api.Enums;
 

@@ -18,7 +18,7 @@ using Dresser.Services;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using Lumina.Excel.Sheets;
 
@@ -230,7 +230,7 @@ public partial class CurrentGear : Window, IDisposable {
 
 		var tint = PlateSlotButtonHovering == plateNumber ? ConfigurationManager.Config.PlateSelectorHoverColor : roleColor??ConfigurationManager.Config.PlateSelectorRestColor;
 		if (isActive) tint = ConfigurationManager.Config.PlateSelectorActiveColor;
-		if (imageInfo != null) ImGui.Image(imageInfo.ImGuiHandle, radioSize, Vector2.Zero, Vector2.One, tint);
+		if (imageInfo != null) ImGui.Image(imageInfo.Handle, radioSize, Vector2.Zero, Vector2.One, tint);
 		var clicked = ImGui.IsItemClicked();
 		var hovering = ImGui.IsItemHovered();
 		if (ImGui.BeginPopupContextItem($"{plateNumber}##PlateSelector##ContextMenu##CurrentGear")) {
@@ -253,7 +253,7 @@ public partial class CurrentGear : Window, IDisposable {
 			var jobIconColor1 = !ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors ? roleColor1 ?? new Vector4(0, 0, 0, 1) : new Vector4(1, 1, 1, 1);
 			var jobIconColor = jobIconColor1 + new Vector4(0.1f, 0.1f, 0.1f, -0.35f);
 
-			ImGui.GetWindowDrawList().AddImage(classJobTexture.GetWrapOrEmpty().ImGuiHandle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
+			ImGui.GetWindowDrawList().AddImage(classJobTexture.GetWrapOrEmpty().Handle, cjt_p_min, cjt_p_max, new(0), new(1), ImGui.ColorConvertFloat4ToU32(jobIconColor));
 		}
 
 		var spacer = plateNumberForHuman < 10 ? " " : "";

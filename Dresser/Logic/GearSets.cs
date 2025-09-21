@@ -9,7 +9,7 @@ using Dalamud.Interface.Textures;
 using Dresser.Structs;
 using Dresser.Windows.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using static FFXIVClientStructs.FFXIV.Client.UI.Misc.RaptureGearsetModule;
 
