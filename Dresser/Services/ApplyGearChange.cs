@@ -630,7 +630,7 @@ namespace Dresser.Services {
 
 			// put all todo tab in Highlight_apply_todo color
 			HighlightPlatesRadio = DifferencesToApply.ToDictionary(p => p.Key, p => Highlight_apply_todo);
-			PluginServices.OverlayService.RefreshOverlayStates();
+			// PluginServices.OverlayService.RefreshOverlayStates();
 			PluginServices.Context.HasConfirmedApplyIntoDresser = true;
 
 			ExecuteChangesOnSelectedPlate();
@@ -701,20 +701,20 @@ namespace Dresser.Services {
 					// success all
 					HighlightPlatesRadio[plateIndex] = Highlight_apply_all;
 					HighlightSaveButton = true;
-					PluginServices.OverlayService.RefreshOverlayStates();
+					// PluginServices.OverlayService.RefreshOverlayStates();
 
 				} else if (successfullyApplied.Any()) {
 					PluginLog.Verbose($"Apply Glame to plate: success partial");
 					// success partial
 					HighlightPlatesRadio[plateIndex] = Highlight_apply_partial;
-					PluginServices.OverlayService.RefreshOverlayStates();
+					// PluginServices.OverlayService.RefreshOverlayStates();
 					Popup_FailedSomeAskWhatToDo(plateIndex);
 
 				} else {
 					PluginLog.Verbose($"Apply Glame to plate: fail");
 					// fail
 					HighlightPlatesRadio[plateIndex] = Highlight_apply_none;
-					PluginServices.OverlayService.RefreshOverlayStates();
+					// PluginServices.OverlayService.RefreshOverlayStates();
 					Popup_FailedSomeAskWhatToDo(plateIndex);
 				}
 
@@ -764,7 +764,7 @@ namespace Dresser.Services {
 								   //PlatesFailed.Add(plateIndex);
 								   // offer saving
 					HighlightSaveButton = true;
-					PluginServices.OverlayService.RefreshOverlayStates();
+					// PluginServices.OverlayService.RefreshOverlayStates();
 
 				} else if (choice == 2) { // stop all
 					PluginServices.ApplyGearChange.ClearApplyDresser();
@@ -784,7 +784,7 @@ namespace Dresser.Services {
 				DifferencesToApply.Remove((ushort)currentPlateNumber);
 				HighlightPlatesRadio[(ushort)currentPlateNumber] = Highlight_save_ok;
 				HighlightSaveButton = false;
-				PluginServices.OverlayService.RefreshOverlayStates();
+				// PluginServices.OverlayService.RefreshOverlayStates();
 			}
 
 			if (!DifferencesToApply.Any()) {
@@ -835,7 +835,7 @@ namespace Dresser.Services {
 			Vector4? n = null;
 			HighlightPlatesRadio = HighlightPlatesRadio.ToDictionary(h => h.Key, h => n);
 			HighlightSaveButton = null;
-			PluginServices.OverlayService.RefreshOverlayStates();
+			// PluginServices.OverlayService.RefreshOverlayStates();
 			HighlightPlatesRadio.Clear();
 
 		}

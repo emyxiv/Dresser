@@ -38,10 +38,10 @@ namespace Dresser {
 		public static HotkeyService HotkeyService { get; private set; } = null!;
 		//public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
 		//public static GameInterface GameInterface { get; private set; } = null!;
-		public static GameUiManager GameUi { get; private set; } = null!;
+		// public static GameUiManager GameUi { get; private set; } = null!;
 		public static SheetManager SheetManager { get; private set; } = null!;
-		public static OverlayService OverlayService { get; private set; } = null!;
-		public static TryOn TryOn { get; private set; } = null!;
+		// public static OverlayService OverlayService { get; private set; } = null!;
+		// public static TryOn TryOn { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
 		public static AllaganToolsService AllaganTools { get; private set; } = null!;
@@ -95,9 +95,9 @@ namespace Dresser {
 			AllaganTools = new AllaganToolsService(dalamud);
 			Glamourer = new GlamourerService(dalamud);
 			//CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
-			GameUi = new GameUiManager(Framework, DalamudGameGui, PluginLog);
-			OverlayService = new OverlayService(GameUi);
-			TryOn = new TryOn(Framework, PluginLog);
+			// GameUi = new GameUiManager(Framework, DalamudGameGui, PluginLog);
+			// OverlayService = new OverlayService(GameUi);
+			// TryOn = new TryOn(Framework, PluginLog);
 			GlamourPlates = new();
 			ApplyGearChange = new ApplyGearChange(plugin);
 
@@ -115,9 +115,9 @@ namespace Dresser {
 			Actions.Dispose();
 			ModdedIconStorage.Dispose();
 			Storage.Dispose();
-			OverlayService.Dispose();
-			TryOn.Dispose();
-			GameUi.Dispose();
+			// OverlayService.Dispose();
+			// TryOn.Dispose();
+			// GameUi.Dispose();
 			//CharacterMonitor.Dispose();
 			AllaganTools.Dispose();
 			Glamourer.Dispose();
@@ -138,9 +138,9 @@ namespace Dresser {
 			//CharacterMonitor = null!;
 			//ChatUtilities = null!;
 			Context = null!;
-			GameUi = null!;
-			TryOn = null!;
-			OverlayService = null!;
+			// GameUi = null!;
+			// TryOn = null!;
+			// OverlayService = null!;
 			GlamourPlates = null!;
 			ModdedIconStorage = null!;
 			//GameInterface = null!;

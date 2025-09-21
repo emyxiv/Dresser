@@ -81,7 +81,7 @@ namespace Dresser.Interop.Addons {
 			}
 			if (e.SenderID == 5 && e.EventArgs->Int == 0) {
 				// if change plate + discards
-				PluginServices.OverlayService.RefreshOverlayStates();
+				// PluginServices.OverlayService.RefreshOverlayStates();
 			}
 			if (e.SenderID == 4 && e.EventArgs->Int == 0) {
 				// click "yes" when asked to saving changes

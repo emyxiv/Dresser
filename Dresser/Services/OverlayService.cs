@@ -15,7 +15,7 @@ namespace Dresser.Services {
 
 		public OverlayService(GameUiManager gameUiManager) {
 			_gameUiManager = gameUiManager;
-			PluginServices.GameUi.UiVisibilityChanged += GameUiOnUiVisibilityChanged;
+			// PluginServices.GameUi.UiVisibilityChanged += GameUiOnUiVisibilityChanged;
 			//PluginServices.GameUi.UiUpdated += GameUiOnUiUpdated;
 			AddOverlay(new MiragePrismMiragePlateOverlay(new AtkMiragePrismMiragePlate(PluginServices.DalamudGameGui)));
 
@@ -74,10 +74,10 @@ namespace Dresser.Services {
 			if (_setupHooks.Contains(overlayState.WindowName)) {
 				return;
 			}
-			var result = PluginServices.GameUi.IsWindowVisible(overlayState.WindowName);
-			if (result) {
-				_setupHooks.Add(overlayState.WindowName);
-			}
+			// var result = PluginServices.GameUi.IsWindowVisible(overlayState.WindowName);
+			// if (result) {
+			// 	_setupHooks.Add(overlayState.WindowName);
+			// }
 		}
 
 		public void AddOverlay(IGameOverlay overlayState) {
@@ -169,7 +169,7 @@ namespace Dresser.Services {
 			if (!_disposed && disposing) {
 				PluginServices.Framework.Update -= FrameworkOnUpdate;
 				ClearOverlays();
-				PluginServices.GameUi.UiVisibilityChanged -= GameUiOnUiVisibilityChanged;
+				// PluginServices.GameUi.UiVisibilityChanged -= GameUiOnUiVisibilityChanged;
 				//PluginServices.GameUi.UiUpdated -= GameUiOnUiUpdated;
 				PluginServices.OnPluginLoaded -= PluginServiceOnOnPluginLoaded;
 			}
