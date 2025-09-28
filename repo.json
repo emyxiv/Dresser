@@ -9,7 +9,7 @@
 		"AssemblyVersion": "0.5.0.35",
 		"RepoUrl": "https://github.com/emyxiv/Dresser",
 		"ApplicableVersion": "any",
-		"DalamudApiLevel": 12,
+		"DalamudApiLevel": 13,
 		"DownloadCount": 1164,
 		"DownloadLinkInstall": "https://github.com/emyxiv/Dresser/releases/download/v0.5.0.35/latest.zip"
 	}
