@@ -484,7 +484,7 @@ namespace Dresser.Services {
 		}
 
 		public void OverwritePendingWithCurrentPlate() {
-			ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = ConfigurationManager.Config.DisplayPlateItems.Copy().RemoveEmpty();
+			ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = GlamourPlates.CurrentSet().RemoveEmpty();
 			ReApplyAppearanceAfterEquipUpdate();
 		}
 		public void OverwritePendingWithActualPlates() {

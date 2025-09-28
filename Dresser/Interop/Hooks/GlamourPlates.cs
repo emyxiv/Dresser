@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -411,7 +412,14 @@ namespace Dresser.Interop.Hooks {
 		}
 
 		public static int CountSlots => Enum.GetValues(typeof(GlamourPlateSlot)).Length;
-		internal static unsafe Dictionary<GlamourPlateSlot, SavedGlamourItem>? CurrentPlate {
+		internal static InventoryItemSet CurrentSet() {
+			return new InventoryItemSet(CurrentSetItems());
+		}
+		private static Dictionary<GlamourPlateSlot, InventoryItemDr?> CurrentSetItems() {
+			return CurrentPlate?.ToDictionary(kvp => kvp.Key, kvp => (InventoryItemDr?)InventoryItemDr.FromSavedGlamourItem(kvp.Value))
+					?? Enum.GetValues<GlamourPlateSlot>().ToDictionary(s=>s, s => (InventoryItemDr?)null);
+		}
+		private static unsafe Dictionary<GlamourPlateSlot, SavedGlamourItem>? CurrentPlate {
 			get {
 
 				var agent = MiragePlateAgent;
