@@ -38,6 +38,9 @@ namespace Dresser.Structs.Dresser {
 		public InventoryItemSet(GlamourPlateSlot slot, InventoryItem item) {
 			Items = new Dictionary<GlamourPlateSlot, InventoryItem?> { { slot, item } };
 		}
+		public InventoryItemSet Copy() {
+			return new InventoryItemSet(Items.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.Copy()));
+		}
 		public static explicit operator InventoryItemSet(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.GlamourPlate a) {
 			Dictionary<GlamourPlateSlot, InventoryItem?> dictionary = new();
 			var array = a.Items.ToArray();

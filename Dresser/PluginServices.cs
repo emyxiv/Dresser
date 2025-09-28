@@ -47,6 +47,7 @@ namespace Dresser {
 		public static AllaganToolsService AllaganTools { get; private set; } = null!;
 		public static GlamourerService Glamourer { get; private set; } = null!;
 		public static Actions Actions { get; private set; } = null!;
+		public static InventoryItemFactory InventoryItemFactory { get; private set; } = null!;
 
 
 		internal static AddonManager AddonManager = null!;
@@ -78,6 +79,7 @@ namespace Dresser {
 				// }
 			};
 			SheetManager = new SheetManager(gd, smso);
+			InventoryItemFactory = new InventoryItemFactory(SheetManager, DataManager);
 
 			Context = new Context();
 

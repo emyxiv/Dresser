@@ -51,16 +51,5 @@ namespace Dresser.Structs.Dresser
 
             return inventoryItem;
         }
-
-
-        [JsonIgnore]
-        public override ItemRow Item => PluginServices.SheetManager.GetSheet<ItemSheet>().GetRowOrDefault(ItemId) ?? PluginServices.SheetManager.GetSheet<ItemSheet>().GetRow(1);
-
-        [JsonIgnore]
-        public override Stain? StainEntry => PluginServices.DataManager.GetExcelSheet<Stain>().GetRowOrDefault(Stain);
-
-        [JsonIgnore]
-        public override Stain? Stain2Entry => PluginServices.DataManager.GetExcelSheet<Stain>().GetRowOrDefault(Stain2);
-
     }
 }

@@ -35,8 +35,6 @@ namespace Dresser.Extensions {
 
 			return returnVal;
 		}
-		public static CriticalInventoryItem Clone(this CriticalInventoryItem item)
-			=> item.Copy()!;
 
 		public static CriticalInventoryItem New(uint itemId, byte stain, byte stain2)
 			=> new(0, 0, itemId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, stain, stain2, 0);

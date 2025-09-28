@@ -36,7 +36,8 @@ namespace Dresser.Structs.Dresser {
 		public uint QuantityNeeded = 1;
 
 
-		public InventoryItem(InventoryItem inventoryItem) : base(inventoryItem) {
+		public InventoryItem(InventoryItem inventoryItem) : base(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet) {
+            FromInventoryItem(inventoryItem);
 			if(inventoryItem.IsModded()) PluginLog.Warning($"B Copy InventoryItem {inventoryItem.ModDirectory}");
 
 			this.ModName = inventoryItem.ModName;
@@ -45,7 +46,28 @@ namespace Dresser.Structs.Dresser {
 			if (inventoryItem.IsModded()) PluginLog.Warning($"A Copy InventoryItem {this.ModDirectory}");
 		}
 
-		public InventoryItem(InventoryType container, short slot, uint itemId, uint quantity, ushort spiritbond, ushort condition, FFXIVClientStructs.FFXIV.Client.Game.InventoryItem.ItemFlags flags, ushort materia0, ushort materia1, ushort materia2, ushort materia3, ushort materia4, byte materiaLevel0, byte materiaLevel1, byte materiaLevel2, byte materiaLevel3, byte materiaLevel4, byte stain, byte stain2, uint glamourId) : base(container, slot, itemId, quantity, spiritbond, condition, flags, materia0, materia1, materia2, materia3, materia4, materiaLevel0, materiaLevel1, materiaLevel2, materiaLevel3, materiaLevel4, stain, stain2, glamourId) { }
+		public InventoryItem(InventoryType container,
+			short slot,
+			uint itemId,
+			uint quantity,
+			ushort spiritbond,
+			ushort condition,
+			FFXIVClientStructs.FFXIV.Client.Game.InventoryItem.ItemFlags flags,
+			ushort materia0,
+			ushort materia1,
+			ushort materia2,
+			ushort materia3,
+			ushort materia4,
+			byte materiaLevel0,
+			byte materiaLevel1,
+			byte materiaLevel2,
+			byte materiaLevel3,
+			byte materiaLevel4,
+			byte stain,
+			byte stain2,
+			uint glamourId) : base(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet) {
+			FromRaw(container, slot, itemId, quantity, spiritbond, condition, flags, materia0, materia1, materia2, materia3, materia4, materiaLevel0, materiaLevel1, materiaLevel2, materiaLevel3, materiaLevel4, stain, stain2, glamourId);
+		}
 		public InventoryItem(InventoryType inventoryType, uint itemId) : this(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
 			this.SortedContainer = inventoryType;
 		}
@@ -57,17 +79,29 @@ namespace Dresser.Structs.Dresser {
 
 
 		[JsonConstructor]
-		public InventoryItem() {
+		public InventoryItem() : base(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet) {
 
 		}
 
 
 		public static CriticalInventoryItem ToCritical(InventoryItem item) {
-			return new CriticalInventoryItem(item);
+            var cclItem = new CriticalInventoryItem(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet);
+            cclItem.FromInventoryItem(item);
+			return cclItem;
 		}
 		public static InventoryItem FromCritical(CriticalInventoryItem item) {
 			return new InventoryItem { Container = item.Container, Slot = item.Slot, ItemId = item.ItemId, Quantity = item.Quantity, Spiritbond = item.Spiritbond, Condition = item.Condition, Flags = item.Flags, Materia0 = item.Materia0, Materia1 = item.Materia1, Materia2 = item.Materia2, Materia3 = item.Materia3, Materia4 = item.Materia4, MateriaLevel0 = item.MateriaLevel0, MateriaLevel1 = item.MateriaLevel1, MateriaLevel2 = item.MateriaLevel2, MateriaLevel3 = item.MateriaLevel3, MateriaLevel4 = item.MateriaLevel4, Stain = item.Stain, Stain2 = item.Stain2, GlamourId = item.GlamourId, SortedContainer = item.SortedContainer, SortedCategory = item.SortedCategory, SortedSlotIndex = item.SortedSlotIndex, RetainerId = item.RetainerId, RetainerMarketPrice = item.RetainerMarketPrice, GearSets = item.GearSets, };
 		}
+		public InventoryItem Copy() {
+			var item = this;
+			return new InventoryItem {
+				Container = item.Container, Slot = item.Slot, ItemId = item.ItemId, Quantity = item.Quantity, Spiritbond = item.Spiritbond, Condition = item.Condition, Flags = item.Flags, Materia0 = item.Materia0, Materia1 = item.Materia1, Materia2 = item.Materia2, Materia3 = item.Materia3, Materia4 = item.Materia4, MateriaLevel0 = item.MateriaLevel0, MateriaLevel1 = item.MateriaLevel1, MateriaLevel2 = item.MateriaLevel2, MateriaLevel3 = item.MateriaLevel3, MateriaLevel4 = item.MateriaLevel4, Stain = item.Stain, Stain2 = item.Stain2, GlamourId = item.GlamourId, SortedContainer = item.SortedContainer, SortedCategory = item.SortedCategory, SortedSlotIndex = item.SortedSlotIndex, RetainerId = item.RetainerId, RetainerMarketPrice = item.RetainerMarketPrice, GearSets = item.GearSets,
+				ModName = item.ModName,
+				ModDirectory = item.ModDirectory,
+				ModModelPath = item.ModModelPath,
+			};
+		}
+		public InventoryItem Clone() => this.Copy();
 		public static InventoryItem Zero => new InventoryItem();
 
 		public void Clear() {
