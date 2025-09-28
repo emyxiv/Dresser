@@ -45,7 +45,7 @@ namespace Dresser.Structs.Dresser {
 			Dictionary<GlamourPlateSlot, InventoryItem?> dictionary = new();
 			var array = a.Items.ToArray();
 			for (int i = 0; i < array.Length; i++) {
-				dictionary.Add((GlamourPlateSlot)i, InventoryItemExtensions.New(array[i].ItemId, array[i].StainIds[0], array[i].StainIds[1]));
+				dictionary.Add((GlamourPlateSlot)i, InventoryItem.New(array[i].ItemId, array[i].StainIds[0], array[i].StainIds[1]));
 			}
 			return new InventoryItemSet(dictionary);
 		}

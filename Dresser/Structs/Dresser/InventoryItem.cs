@@ -77,6 +77,11 @@ namespace Dresser.Structs.Dresser {
 			this.ModModelPath = modModelPath;
 		}
 
+		public static InventoryItem FromSavedGlamourItem(SavedGlamourItem item)
+			=> New(item.ItemId,item.Stain1,item.Stain2);
+		public static InventoryItem New(uint itemId, byte stain, byte stain2)
+			=> new(0, 0, itemId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, stain, stain2, 0);
+
 
 		[JsonConstructor]
 		public InventoryItem() : base(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet) {

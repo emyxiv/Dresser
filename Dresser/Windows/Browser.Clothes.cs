@@ -573,7 +573,7 @@ namespace Dresser.Windows
 
 		private static int DrawListOfItemIconsHoveredIcon = -1;
 		public static void DrawListOfItemIcons(List<ItemRow> items)
-			=> DrawListOfItemIcons(items.Select(i => InventoryItemExtensions.New(i.RowId, 0, 0)).ToList());
+			=> DrawListOfItemIcons(items.Select(i => InventoryItem.New(i.RowId, 0, 0)).ToList());
 		public static void DrawListOfItemIcons(List<InventoryItem> items) {
 			if (!items.Any()) return;
 			bool isAnotherTooltipActive = false;

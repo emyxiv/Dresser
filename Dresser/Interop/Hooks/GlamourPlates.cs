@@ -539,7 +539,7 @@ namespace Dresser.Interop.Hooks {
 			};
 		}
 		public static explicit operator InventoryItemDr(SavedGlamourItem item)
-			=> InventoryItemExtensions.New(item.ItemId, item.Stain1, item.Stain2);
+			=> InventoryItemDr.New(item.ItemId, item.Stain1, item.Stain2);
 
 	}
 	public enum GlamourPlateSlot : uint {
@@ -649,7 +649,7 @@ namespace Dresser.Interop.Hooks {
 		// After this seem to be 3 ints, not sure what they are yet
 
 		public static explicit operator InventoryItemDr?(MiragePlateItem a) {
-			return a.ItemId == 0 ? null : InventoryItemExtensions.New(a.ItemId, a.Stain1, a.Stain2);
+			return a.ItemId == 0 ? null : InventoryItemDr.New(a.ItemId, a.Stain1, a.Stain2);
 		}
 
 	}

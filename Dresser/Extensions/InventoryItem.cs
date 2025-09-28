@@ -36,9 +36,6 @@ namespace Dresser.Extensions {
 			return returnVal;
 		}
 
-		public static CriticalInventoryItem New(uint itemId, byte stain, byte stain2)
-			=> new(0, 0, itemId, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, stain, stain2, 0);
-
 		public static bool IsAppearanceDifferent(this CriticalInventoryItem item, CriticalInventoryItem? item2)
 			=> (item?.ItemId ?? 0) != (item2?.ItemId ?? 0) || (item?.Stain ?? 0) != (item2?.Stain ?? 0);
 		public static bool IsInFilterLevelRanges(this CriticalInventoryItem item) {

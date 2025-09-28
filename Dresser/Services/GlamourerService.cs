@@ -96,7 +96,7 @@ namespace Dresser.Services {
 
 				var itemId = ((((uint?)itemJson?["ItemId"]) ?? 0));
 				if (itemId is > 4294967100u or 0) item = InventoryItem.Zero;
-				else item = InventoryItemExtensions.New(
+				else item = InventoryItem.New(
 					itemId,
 					((byte?)itemJson?["Stain"]) ?? 0,
 					((byte?)itemJson?["Stain2"]) ?? 0
