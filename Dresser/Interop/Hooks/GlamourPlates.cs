@@ -32,12 +32,8 @@ namespace Dresser.Interop.Hooks {
 
 		// https://github.com/caitlyn-gg/Glamaholic/blob/main/Glamaholic/GameFunctions.cs
 
-		private unsafe delegate void SetGlamourPlateSlotDelegate(AgentMiragePrismMiragePlate* agent, FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource mirageSource, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2);
-		private unsafe delegate void SetGlamourPlateSlotStainsDelegate(AgentMiragePrismMiragePlate* agent, InventoryItem* stain1Item, byte stain1Idx, uint stain1ItemId, InventoryItem* stain2Item, byte stain2Idx, uint stain2ItemId);
 		private unsafe delegate int GetCabinetItemIdDelegate(FFXIVClientStructs.FFXIV.Client.Game.UI.Cabinet* armoire, uint baseItemId);
 
-		[Signature(Signatures.SetGlamourPlateSlot)] private readonly SetGlamourPlateSlotDelegate SetGlamourPlateSlotNative = null!;
-		[Signature(Signatures.SetGlamourPlateSlotStains)] private readonly SetGlamourPlateSlotStainsDelegate SetGlamourPlateSlotStainsNative = null!;
 		[Signature(Signatures.GetCabinetItemId)] private readonly GetCabinetItemIdDelegate GetCabinetItemId = null!;
 
 
@@ -145,13 +141,6 @@ namespace Dresser.Interop.Hooks {
 		}
 
 
-		internal unsafe void SetGlamourPlateSlotItem(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource source, int slotOrCabinetId, uint itemId, byte stainId, byte stainId2) {
-			SetGlamourPlateSlotNative(MiragePlateAgent, source, slotOrCabinetId, itemId, stainId, stainId2);
-		}
-
-		internal unsafe void SetGlamourPlateSlotStains(GlamourPlateSlot slot, byte stain1Idx, uint stain1Item, byte stain2Idx, uint stain2Item) {
-			SetGlamourPlateSlotStainsNative(MiragePlateAgent, null, stain1Idx, stain1Item, null, stain2Idx, stain2Item);
-		}
 
 		internal unsafe void ClearGlamourPlateSlot(GlamourPlateSlot slot) {
 			//this._clearGlamourPlateSlot((IntPtr)MiragePrismMiragePlateAgent, slot);
@@ -299,14 +288,13 @@ namespace Dresser.Interop.Hooks {
 			//PluginLog.Debug($"=>>> send item info {info.container.Value} | {info.index} | {info.id} | {info.stain1} | {info.stain2}");
 
 			// apply the item
-			SetGlamourPlateSlotItem(
-				info.container.Value,
-				info.index, // slot or cabinet id
-				info.id, // item id
-				info.stain1, // stain 1
-				info.stain2 // stain 2
-			);
-
+			AgentMiragePrismMiragePlate.Instance()->SetSelectedItemData(
+                info.container.Value,
+                (uint) info.index, // slot or cabinet id
+                info.id, // item id
+                info.stain1, // stain 1
+                info.stain2  // stain 2
+            );
 			if (applyItem.Stain != info.stain1 || applyItem.Stain2 != info.stain2) {
 
 
@@ -355,7 +343,9 @@ namespace Dresser.Interop.Hooks {
 			var stain2Item = SelectStainItem(item.Stain2, ref usedStains, out var stain2ItemId);
 
 			PluginLog.Verbose($"SetGlamourPlateSlotStains({(stain1Item != null ? stain1Item->Slot : 0)}, {item.Stain}, {stain1ItemId}, {(stain2Item != null ? stain2Item->Slot : 0)}, {item.Stain2}, {stain2ItemId})");
-			SetGlamourPlateSlotStainsNative(MiragePlateAgent, stain1Item, item.Stain, stain1ItemId, stain2Item, item.Stain2, stain2ItemId);
+		    AgentMiragePrismMiragePlate.Instance()->SetSelectedItemStains(stain1Item, item.Stain, stain1ItemId,
+                                                                          stain2Item, item.Stain2, stain2ItemId);
+
 		}
 
 		private static readonly InventoryType[] PlayerInventories = {
@@ -494,11 +484,16 @@ namespace Dresser.Interop.Hooks {
 			if (!agent->IsAddonReady() || agent->Data == null)
 				return new();
 
-			if (agent->Data->UsedSlots == _dresserItemSlotsUsed)
-				return new();
+			// if (agent->Data->UsedSlots == _dresserItemSlotsUsed)
+			// 	return new();
+            ushort* usedSlots = (ushort*) ((nint) agent->Data + 0x10B460);
+            if (*usedSlots == _dresserItemSlotsUsed)
+                return new();
 
 			List<PrismBoxCachedItem> items = new();
 			//PluginLog.Verbose($"refreshing dresser contents");
+
+			_cachedDresserItems.Clear();
 			foreach (var item in agent->Data->PrismBoxItems) {
 				if (item.ItemId == 0 || item.Slot >= Offsets.TotalBoxSlot)
 					continue;
