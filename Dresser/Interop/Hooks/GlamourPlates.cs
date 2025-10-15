@@ -257,6 +257,8 @@ namespace Dresser.Interop.Hooks {
 
 				// we want dyed ones in priority
 				var idx = matchingIds.FindIndex(mirage => mirage.Stain1 == applyItem.Stain && mirage.Stain2 == applyItem.Stain2);
+				bool matchWithStains = idx != -1;
+
 				if (idx == -1) idx = matchingIds.FindIndex(mirage => mirage.Stain1 == applyItem.Stain);
 				if (idx == -1) idx = matchingIds.FindIndex(mirage => mirage.Stain2 == applyItem.Stain2);
 				if (idx == -1) idx = 0;
@@ -265,6 +267,7 @@ namespace Dresser.Interop.Hooks {
 					var mirage = matchingIds[idx];
 					//PluginLog.Debug($" >> {mirage.ItemId} {idx}");
 					info = (FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource.PrismBox, (int)mirage.Slot, mirage.ItemId, mirage.Stain1, mirage.Stain2);
+					// PluginLog.Verbose($"Item {applyItem.ItemId} found in dresser at slot {mirage.Slot} with stains {mirage.Stain1}, {mirage.Stain2} ({(matchWithStains ? "matched" : "mismatched")})");
 				}
 			}
 
@@ -314,7 +317,7 @@ namespace Dresser.Interop.Hooks {
 				// item loading for plates is deferred as of patch 7.1
 				// so we must set the flags ourselves in order to activate the second dye slot immediately
 				if (applyItem.Stain2 != 0)
-					data->CurrentItems[0].Flags = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemFlag.HasStain1;
+					data->CurrentItems[(int)applyItemSlot.Value].Flags = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemFlag.HasStain1;
 
 				this.ApplyStains(applyItemSlot.Value, applyItem, ref usedStains);
 				data->ContextMenuItemIndex = previousContextSlot;
