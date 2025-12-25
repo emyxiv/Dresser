@@ -116,7 +116,7 @@ public partial class CurrentGear : Window, IDisposable {
 
 			// new line (not sameline)
 			var changePostureConfigState = PluginServices.Context.ChangePostureConfigState;
-			if (GuiHelpers.GameIconButtonToggle(64068, ref changePostureConfigState, "ChangePostureToggle##CurrentGear", "Click to Change posture\nHold shift + click to disable/enable auto change posture\n(Character Configuration > Control Settings > Character > Randomize idle animation)", SizeGameCircleIcons)) {
+			if (GuiHelpers.GameIconButtonToggle(PluginServices.Storage.ChangePoseIconId, ref changePostureConfigState, "ChangePostureToggle##CurrentGear", "Click to Change posture\nHold shift + click to disable/enable auto change posture\n(Character Configuration > Control Settings > Character > Randomize idle animation)", SizeGameCircleIcons)) {
 				if (ImGui.GetIO().KeyShift) {
 					PluginServices.Context.ChangePostureConfigState = changePostureConfigState;
 					PluginServices.Framework.RunOnFrameworkThread(() => {

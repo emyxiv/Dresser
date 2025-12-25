@@ -677,7 +677,6 @@ public class ConfigWindow : Window, IDisposable {
 			
 			PluginLog.Debug($"GetPoseKind   : {PluginServices.Actions.GetEmoteController()?.GetPoseKind()}");
 			PluginLog.Debug($"EmoteId       : {PluginServices.Actions.GetEmoteController()?.EmoteId}");
-			PluginLog.Debug($"Unk1          : {PluginServices.Actions.GetEmoteController()?.Unk1}");
 			PluginLog.Debug($"CPoseState    : {PluginServices.Actions.GetEmoteController()?.CPoseState}");
 
 			PluginLog.Debug($"GetAvailablePoses: {PluginServices.Actions.GetAvailablePoses()}");

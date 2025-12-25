@@ -70,7 +70,7 @@ namespace Dresser.Services
                 var textCommand = emote.TextCommand.ValueNullable;
                 PluginLog.Debug($"{emote.RowId}: {emote.Name} {textCommand?.Command}" +
                                 $" {textCommand?.Alias} {textCommand?.ShortAlias} {textCommand?.ShortCommand}" +
-                                $" {actionTl} {emote.Unknown0} {emote.Unknown1} {emote.Unknown2} {emote.Unknown3} {emote.Unknown4} {emote.Unknown5} {emote.Unknown6}");
+                                $" {actionTl} {emote.EmoteMode} {emote.Unknown1} {emote.Unknown2} {emote.Unknown3} {emote.Unknown4} {emote.Unknown5} {emote.Unknown6}");
             }
         }
         public void ActionList() {

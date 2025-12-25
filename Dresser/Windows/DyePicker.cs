@@ -146,7 +146,7 @@ public class DyePicker {
 			foreach (var i in dyesFiltered) {
 				bool selecting = false;
 				bool isCurrentActive = IndexKey == LastSelectedItemKey;
-				bool isMatchingSearch = DyeNameSearch.Length == 0 || (i.Name.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase) || i.Name2.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase));
+				bool isMatchingSearch = DyeNameSearch.Length == 0 || (i.Name.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase) || i.InlineName.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase));
 
 				var drawnLineTurpe = DrawDyePickerItem(i, isCurrentActive, !isMatchingSearch);
 				selecting |= drawnLineTurpe.Item1;
@@ -320,7 +320,7 @@ public class DyePicker {
 		});
 
 		// if dye is metallic, put some gloss
-		if (i.Unknown1) {
+		if (i.IsMetallic) {
 			var stainMetalTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainMetallic);
 			// if (stainMetalTex != null) draw.AddImage(
 			// 	stainMetalTex.Handle,

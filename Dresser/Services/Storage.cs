@@ -23,6 +23,7 @@ using Dresser.Windows;
 
 using Lumina.Data.Files;
 using Lumina.Excel.Sheets;
+using Lumina.Extensions;
 
 using static Dresser.Windows.Components.GuiHelpers;
 
@@ -44,10 +45,14 @@ namespace Dresser.Services {
 		public HashSet<byte> RarityAllowed = new() { 1, 2, 3, 4 };
 
 		public Dictionary<Font, (IFontHandle handle, float size)> FontHandles = new();
+		public uint ChangePoseIconId;
 
 
 
 		public Storage() {
+
+			// store change pose icon id based on the alias in case ID changes
+			ChangePoseIconId = PluginServices.DataManager.Excel.GetSheet<Emote>().FirstOrNull(e => e.TextCommand.Value.ShortCommand == "/cpose" || e.TextCommand.Value.Command == "/cpose")?.Icon ?? 0; // 7.4 = 246268
 
 			//Dyes = Sheets.GetSheet<Dye>();
 			// ui colors:
