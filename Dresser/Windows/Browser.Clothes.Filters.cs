@@ -135,7 +135,7 @@ namespace Dresser.Windows
 				GuiHelpers.Tooltip($"Relax\nHides job gear\nHandy to make a role compatible glam ");
 
 				if (columnMode) ImGui.SameLine();
-				filterChanged |= ImGui.Checkbox($"Current Race##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
+				filterChanged |= ImGui.Checkbox($"Current Race/Gender##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
 				var numberInputFrameWidth = ImGui.GetFontSize() * 2;
 				// todo: level
