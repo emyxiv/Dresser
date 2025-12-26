@@ -431,7 +431,7 @@ namespace Dresser.Windows
 	public static class JobFilterTypeExtensions {
 		public static string Tooltip(this JobFilterType status) {
 			return status switch {
-				JobFilterType.All  => $"All compatible\nShow any job including the selected job(s)",
+				JobFilterType.All  => $"All compatible\nShow any items including the selected job(s)",
 				JobFilterType.Job  => $"Job Gear Only\nOnly show items of selected job(s)\nHandy to find job gear",
 				JobFilterType.Type => $"Job Types Only\nShow only gear that can be equiped by multiple jobs, hides job gear\nHandy to make a role compatible glam (became useless with 7.4)",
 				_ => "",
