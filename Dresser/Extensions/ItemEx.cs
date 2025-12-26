@@ -17,6 +17,7 @@ using Dalamud.Utility;
 
 using Dresser.Logic;
 using Dresser.Logic.Glamourer;
+using Dresser.Services;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
 using Dresser.Windows;
@@ -147,27 +148,38 @@ namespace Dresser.Extensions {
 
 			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
 		}
-		public static bool CanBeEquipedByPlayedJob(this ItemRow item, JobFilterType strict = JobFilterType.None)
-			=> item.Base.CanBeEquipedByPlayedJob(strict);
-		public static bool CanBeEquipedByPlayedJob(this Item item, JobFilterType strict = JobFilterType.None) {
+		public static bool CanBeEquipedByPlayedJob(this Item item) {
 			var job = PluginServices.Context.LocalPlayerClass;
 			if (job == null) return false;
 			var jobCategory = item.ClassJobCategory;
-			// if (jobCategory == null) return false;
+			return PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>().IsItemEquippableBy(jobCategory.RowId, job.Value.RowId);
 
-			var isEquipable = PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>().IsItemEquippableBy(jobCategory.RowId, job.Value.RowId);
-			if (isEquipable && (strict == JobFilterType.Strict || strict == JobFilterType.Relax)) {
-				// ensure there is only one category
-				isEquipable = PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>()
-					.Any(jc=>
-					{
+		}
+		public static bool CanBeEquipedByFilteredJobs(this ItemRow item)
+			=> item.Base.CanBeEquipedByFilteredJobs();
+		public static bool CanBeEquipedByFilteredJobs(this Item item) {
+
+			var jobCategory = item.ClassJobCategory;
+			var jft = ConfigurationManager.Config.filterCurrentJobFilterType;
+			var sheet = PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>();
+
+			foreach (var job in PluginServices.SheetManager.GetSheet<ClassJobSheet>().Where(cj => ConfigurationManager.Config.FilterClassJobCategories.Contains(cj.RowId))) {
+
+				var isEquipable = sheet.IsItemEquippableBy(jobCategory.RowId, job.RowId);
+				if (!isEquipable) continue;
+				if (jft == JobFilterType.All) return true;
+
+				isEquipable = sheet
+					.Any(jc => {
 						if (jc.RowId != jobCategory.RowId) return false;
-						if(strict == JobFilterType.Strict) return jc.ClassJobIds.Count == 1;
-						return jc.ClassJobIds.Count > 1; // strict == JobFilterType.Relax
+						if (jft == JobFilterType.Job) return jc.ClassJobIds.Count == 1; // ensure there is ONLY ONE job for Strict jft
+						if (jft == JobFilterType.Type) return jc.ClassJobIds.Count > 1; // ensure there is MORE THAN ONE job for Relax jft
+						return true;
 					});
-					//was before 7.1: .ClassJobCategoryLookup[categoryId].Count == 1;
+				if (isEquipable) return true;
+
 			}
-			return isEquipable;
+			return false;
 		}
 		public static CriticalInventoryItem ToInventoryItem(this ItemRow itemEx, InventoryType inventoryType) {
 			return new CriticalInventoryItem(inventoryType, 0, itemEx.RowId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

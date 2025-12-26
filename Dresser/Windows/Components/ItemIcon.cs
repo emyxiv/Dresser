@@ -73,7 +73,7 @@ namespace Dresser.Windows.Components {
 			//var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
-			var isEquippableByCurrentClass = item?.Item.CanBeEquipedByPlayedJob();
+			var isEquippableByCurrentClass = true;
 			// Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
 			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
 			var DyeCount = item.Item.Base.DyeCount;
@@ -164,7 +164,7 @@ namespace Dresser.Windows.Components {
 						ImGui.SameLine();
 						ImGui.Text($"ilvl: {item.Item.Base.LevelItem.RowId}");
 
-						ImGui.TextColored(isEquippableByCurrentClass.Value ? ColorGood : ColorBad, $"{item.Item.Base.ClassJobCategory.Value.Name}");
+						ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.Base.ClassJobCategory.Value.Name}");
 
 						var genderRaceColor = isEquippableByGenderRace ? ColorBronze : ColorBad;
 						if (item.Item.EquippableByGender != CharacterSex.Both || item.Item.EquipRace != CharacterRace.Any) {

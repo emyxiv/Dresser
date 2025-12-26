@@ -1,11 +1,18 @@
-using System.Linq;
-using System.Numerics;
+using AllaganLib.GameSheets.Sheets;
+using AllaganLib.GameSheets.Sheets.Rows;
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Textures;
+using Dalamud.Utility;
 
 using Dresser.Extensions;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
-using Dalamud.Bindings.ImGui;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 using static Dresser.Services.Storage;
 
@@ -109,30 +116,28 @@ namespace Dresser.Windows
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
-				filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
+				filterChanged |= JobCategoryFilter();
 
-				ImGui.SameLine();
-				var strict = ConfigurationManager.Config.filterCurrentJobFilterType == JobFilterType.Strict;
-				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.BeginDisabled();
-				var strictChanged = ImGui.Checkbox($"S##Current Job Strict##displayCategory", ref strict);
-				filterChanged |= strictChanged;
-				if (strictChanged) {
-					ConfigurationManager.Config.filterCurrentJobFilterType = strict ? JobFilterType.Strict : JobFilterType.None;
+				//filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
+
+				var enumJftValues = Enum.GetValues<JobFilterType>().Cast<JobFilterType>();
+				var maxWidthJftCombo = enumJftValues.Select(jft => ImGui.CalcTextSize(jft.ToString()).X).Max() + (ImGui.GetFontSize() * 2);
+				ImGui.SetNextItemWidth(maxWidthJftCombo);
+				if(ImGui.BeginCombo("##Current Job Filter Type##displayCategory", ConfigurationManager.Config.filterCurrentJobFilterType.ToString())) {
+
+					foreach(var enumValue in enumJftValues) {
+						var isSelected = ConfigurationManager.Config.filterCurrentJobFilterType == enumValue;
+						var clickedJobFilterTypeCombo = ImGui.Selectable($"{enumValue}##Current Job Filter Type##displayCategory", isSelected);
+						if (clickedJobFilterTypeCombo) {
+							ConfigurationManager.Config.filterCurrentJobFilterType = enumValue;
+							filterChanged = true;
+						}
+						GuiHelpers.Tooltip(enumValue.Tooltip());
+					}
+					ImGui.EndCombo();
 				}
-				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.EndDisabled();
-				GuiHelpers.Tooltip($"Strict\nOnly show items of current job\nHandy to find job gear");
-
 				ImGui.SameLine();
-				var relax = ConfigurationManager.Config.filterCurrentJobFilterType == JobFilterType.Relax;
-				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.BeginDisabled();
-
-				var relaxChanged = ImGui.Checkbox($"R##Current Job Relax##displayCategory", ref relax);
-				filterChanged |= relaxChanged;
-				if (relaxChanged) {
-					ConfigurationManager.Config.filterCurrentJobFilterType = relax ? JobFilterType.Relax : JobFilterType.None;
-				}
-				if (!ConfigurationManager.Config.filterCurrentJob) ImGui.EndDisabled();
-				GuiHelpers.Tooltip($"Relax\nHides job gear\nHandy to make a role compatible glam ");
+				ImGui.TextUnformatted("Job filter Type");
 
 				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race/Gender##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
@@ -221,11 +226,216 @@ namespace Dresser.Windows
 
 			return filterChanged;
 		}
-    }
+		private static bool JobCategoryFilter() {
+			var classJobs = PluginServices.SheetManager.GetSheet<ClassJobSheet>();
+			if (classJobs == null || classJobs.Count() == 0) return false;
+
+			var classJobsSorted = SortClassJobs(classJobs);
+
+			bool changed = false;
+
+			// Preview / control
+			var selectedIds = ConfigurationManager.Config.FilterClassJobCategories ?? new List<uint>();
+
+			var selectedJobNames = classJobsSorted.Where(c => selectedIds.Contains(c.RowId));
+
+			var selectedFrameSize = new Vector2(ImGui.GetContentRegionAvail().X - (ImGui.GetStyle().ItemSpacing.X * 2), (ItemIcon.IconSize.Y / 2));
+			var selectedFrameOrigin = ImGui.GetCursorPos();
+
+			ImGui.SetNextItemWidth(Math.Max(120, ImGui.GetContentRegionAvail().X / 3));
+			if (ImGui.Button($"##summonSelectJobs##JobCategoryPreview",selectedFrameSize)) {
+				ImGui.OpenPopup("JobCategoryPopup##JobCategory");
+			}
+
+			ImGui.SetCursorPos(selectedFrameOrigin);
+
+			if (!selectedJobNames.Any()) {
+				ImGui.TextUnformatted("Select to filter Job(s)");
+			} else {
+				foreach (var selectedClassJob in selectedJobNames) {
+					bool _ = false;
+					DrawClassJob(selectedClassJob, false, ref _);
+					ImGui.SameLine();
+				}
+				ImGui.NewLine();
+			}
+
+			ImGui.SetCursorPosY(selectedFrameOrigin.Y + (ItemIcon.IconSize.Y / 2));
+			ImGui.Spacing();
+
+
+			// Draw Popup for class selection
+			//
+			if (ImGui.BeginPopup("JobCategoryPopup##JobCategory")) {
+
+				// some buttons
+				if (GuiHelpers.IconButtonNoBg(Dalamud.Interface.FontAwesomeIcon.Times, "##closeButton##JobCategoryPopup##JobCategory")) ImGui.CloseCurrentPopup();
+				ImGui.SameLine();
+				if (ImGui.Button("Clear##JobCategoryPopup##JobCategory")) {
+					ConfigurationManager.Config.FilterClassJobCategories?.Clear();
+					changed = true;
+				}
+				ImGui.NewLine();
+
+				// render the icons
+				ClassJobRow? previousRow = null;
+				foreach (var row in classJobsSorted) {
+					DrawClassJobNewLineOrSpacing(row, previousRow);
+					previousRow = row;
+
+					var id = row.RowId;
+
+					var isSelected = selectedIds.Contains(id);
+
+					if (DrawClassJob(row, true, ref isSelected)) {
+						if (isSelected) ConfigurationManager.Config.FilterClassJobCategories?.Remove(id);
+						else ConfigurationManager.Config.FilterClassJobCategories?.Add(id);
+						changed = true;
+					}
+				}
+
+
+				ImGui.EndPopup();
+			}
+
+			return changed;
+		}
+
+		/// <summary>
+		/// Sort class jobs for filter display, to match the "Search Info" ordering
+		/// </summary>
+		/// <param name="classJobs"></param>
+		/// <returns></returns>
+		private static IOrderedEnumerable<ClassJobRow> SortClassJobs(ClassJobSheet classJobs) {
+			return classJobs
+				.Where(c => !c.Base.Abbreviation.ToString().IsNullOrWhitespace()) // filter out filling empty rows
+				.OrderBy(c => c.Base.Role == 0 ? byte.MaxValue : c.Base.Role switch {  // sort them by role first, put doh/dol last
+					4 => 2, // healer
+					2 => 3, // melee dps
+					3 => 4, // ranged dps and magic dps
+					_ => c.Base.Role,
+				})
+				.ThenBy(c => { // for ranged dps, sort by job type (physical ranged, magic), put classes at the end
+					if (c.Base.Role != 3) return byte.MinValue;
+					if (c.Base.JobType == 0) return c.Base.Abbreviation.ToString() switch { // recreate the job type for classes
+						"ARC" => 4, // BRD ranged physical
+						"THM" => 5, // BLM ranged magical
+						"ACN" => 5, // SMN ranged magical
+						_ => byte.MaxValue,
+					};
+					return c.Base.JobType;
+					})
+				.ThenBy(c => {
+					if(c.Base.JobIndex == 0) return int.MaxValue;
+					if(c.Base.IsLimitedJob) return int.MaxValue - 1; // put limited jobs after regular jobs but before classes
+					return c.Base.JobIndex;
+				}) // put job first and in their right order, put the classes at the end
+				.ThenBy(c => c.Base.BattleClassIndex) // order by class index
+				.ThenBy(c => c.Base.BattleClassIndex == 0 ? int.MaxValue : c.Base.BattleClassIndex)
+				.ThenBy(c => {
+					if (c.Base.DohDolJobIndex == -1) return byte.MinValue;
+					if (c.Base.JobType == 0) return c.Base.Abbreviation.ToString() switch { // recreate the job type for classes
+						"MIN" or "BTN" or "FSH" => byte.MaxValue, // gatherers
+						_ => byte.MinValue,
+					};
+					return c.Base.JobType;
+				}) // for ranged dps, sort by job type (physical ranged, magic), put classes at the end
+
+				.ThenBy(c => c.Base.DohDolJobIndex)
+				;
+		}
+
+		private static int _rowCounter = 0;
+		/// <summary>
+		/// Break line/space to match the "Search Info" display
+		/// </summary>
+		/// <param name="current"></param>
+		/// <param name="previous"></param>
+		private static void DrawClassJobNewLineOrSpacing(ClassJobRow? current, ClassJobRow? previous) {
+			_rowCounter++;
+			if (previous == null || current == null) {
+				//ImGui.SameLine();
+				return;
+			}
+			// new line for new role
+			if (previous.Base.Role != current.Base.Role) {
+				_rowCounter = 0;
+				//ImGui.NewLine();
+				return;
+			}
+			// new line for new job type (ranged physical / ranged magical)
+			if ((current.Base.Role == 3 && current.Base.JobType != 0) &&
+				previous.Base.JobType != current.Base.JobType) {
+				_rowCounter = 0;
+				return;
+			}
+			// spacing for new job (melee dps and healer only)
+			if ((current.Base.JobIndex == 0 && previous.Base.JobIndex != 0)
+				//&& (current.Base.BattleClassIndex != 0 && previous.Base.JobIndex != 0)
+				) {
+
+				var spacesToAdd = 7 - _rowCounter;
+				ImGui.SameLine();
+				var size = (ItemIcon.IconSize.X / 2) * spacesToAdd
+					+ ImGui.GetStyle().ItemSpacing.X * (spacesToAdd - 1)
+					;
+				ImGui.Dummy(new Vector2(size, 0));
+				ImGui.SameLine();
+				return;
+			}
+
+			// new line for dol after doh jobs
+			if(_rowCounter > 0 && current.Base.DohDolJobIndex == 0) {
+				_rowCounter = 0;
+				return;
+			}
+
+			// else same line
+			ImGui.SameLine();
+		}
+
+		private static bool DrawClassJob(ClassJobRow classJob, bool isInteractive, ref bool isSelected) {
+			var isClicked = false;
+
+			//ImGui.TextUnformatted(classJob.Base.Abbreviation.ToString());
+			//ImGui.SameLine();
+			var size = ItemIcon.IconSize / 2;
+			if (isInteractive) {
+				var tooltip = $"{classJob.Base.Abbreviation}";
+				if(ConfigurationManager.Config.IconTooltipShowDev) {
+					tooltip += $"\nID: {classJob.RowId}" +
+						$"\nJob Index: {classJob.Base.JobIndex}" +
+						$"\nBattleClassIndex: {classJob.Base.BattleClassIndex}" +
+						$"\nDohDolJobIndex: {classJob.Base.DohDolJobIndex}" +
+						$"\nRole: {classJob.Base.Role}" +
+						$"\nJobType: {classJob.Base.JobType}" +
+						$"\nIsLimitedJob: {classJob.Base.IsLimitedJob}";
+				}
+				if (GuiHelpers.GameIconButtonToggle((uint)classJob.Icon, ref isSelected, $"ClassJobSelector##{classJob.RowId}", tooltip, size)) {
+					isSelected = !isSelected;
+					isClicked = true;
+				}
+			} else {
+				var icon = PluginServices.TextureProvider.GetFromGameIcon(new GameIconLookup((uint)classJob.Icon));
+				ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+			}
+			return isClicked;
+		}
+	}
 
 	public enum JobFilterType : byte {
-		None = 0,
-		Strict = 1,
-		Relax = 2,
+		All = 0,
+		Job = 1,
+		Type = 2,
+	}
+	public static class JobFilterTypeExtensions {
+		public static string Tooltip(this JobFilterType status) {
+			return status switch {
+				JobFilterType.All  => $"All compatible\nShow any job including the selected job(s)",
+				JobFilterType.Job  => $"Job Gear Only\nOnly show items of selected job(s)\nHandy to find job gear",
+				JobFilterType.Type => $"Job Types Only\nShow only gear that can be equiped by multiple jobs, hides job gear\nHandy to make a role compatible glam (became useless with 7.4)",
+				_ => "",
+			};
+		}
 	}
 }

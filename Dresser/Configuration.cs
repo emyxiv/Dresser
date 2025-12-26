@@ -147,8 +147,8 @@ namespace Dresser {
 		public bool FadeIconsIfNotHiddingTooltip = false;
 		public bool IconTooltipShowDev = false;
 		public bool ShowImagesInBrowser = true;
-		public bool filterCurrentJob = true;
-		public JobFilterType filterCurrentJobFilterType = JobFilterType.None;
+		public List<uint> FilterClassJobCategories = [];
+		public JobFilterType filterCurrentJobFilterType = JobFilterType.All;
 		public bool filterCurrentRace = true;
 		public Vector2 filterEquipLevel = new(1, 90);
 		public Vector2 filterItemLevel = new(1, 665);

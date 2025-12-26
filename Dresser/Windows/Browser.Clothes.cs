@@ -353,7 +353,7 @@ namespace Dresser.Windows
 			SavedQuantityCacheMake(items);
 			items = items.Where(i =>
 					(!ConfigurationManager.Config.filterCurrentRace || i.Item.CanBeEquipedByPlayedRaceGender())
-					&& (!ConfigurationManager.Config.filterCurrentJob || i.Item.CanBeEquipedByPlayedJob(ConfigurationManager.Config.filterCurrentJobFilterType))
+					&& (ConfigurationManager.Config.FilterClassJobCategories.Count == 0 || i.Item.CanBeEquipedByFilteredJobs())
 					&& i.IsInGearBrowserSelectedSlot()
 					&& i.IsFilterDisplayable()
 					&& i.IsInFilterLevelRanges()
