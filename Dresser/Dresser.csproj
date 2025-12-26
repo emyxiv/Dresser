@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/14.0.1">
   <PropertyGroup>
       <LangVersion>preview</LangVersion>
-      <Version>0.6.0.3</Version>
+      <Version>0.6.0.4</Version>
       <AssemblyName>Dresser</AssemblyName>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
