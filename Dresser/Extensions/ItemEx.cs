@@ -160,25 +160,36 @@ namespace Dresser.Extensions {
 		public static bool CanBeEquipedByFilteredJobs(this Item item) {
 
 			var jobCategory = item.ClassJobCategory;
+			//if (jobCategory == null) return false;
+
+			var filterList = ConfigurationManager.Config.FilterClassJobCategories;
+			if (filterList == null || filterList.Count == 0) return false;
+
+			var jcrId = jobCategory.RowId;
 			var jft = ConfigurationManager.Config.filterCurrentJobFilterType;
 			var sheet = PluginServices.SheetManager.GetSheet<ClassJobCategorySheet>();
 
-			foreach (var job in PluginServices.SheetManager.GetSheet<ClassJobSheet>().Where(cj => ConfigurationManager.Config.FilterClassJobCategories.Contains(cj.RowId))) {
+			var jobCatRow = sheet.FirstOrDefault(jc => jc.RowId == jcrId);
+			var classJobIdsCount = jobCatRow?.ClassJobIds?.Count ?? 0;
 
-				var isEquipable = sheet.IsItemEquippableBy(jobCategory.RowId, job.RowId);
-				if (!isEquipable) continue;
+			foreach (var jcRowId in filterList) {
+				if (!sheet.IsItemEquippableBy(jcrId, jcRowId)) continue; // item is not equippable by this job, skip
+
 				if (jft == JobFilterType.All) return true;
 
-				isEquipable = sheet
-					.Any(jc => {
-						if (jc.RowId != jobCategory.RowId) return false;
-						if (jft == JobFilterType.Job) return jc.ClassJobIds.Count == 1; // ensure there is ONLY ONE job for Strict jft
-						if (jft == JobFilterType.Type) return jc.ClassJobIds.Count > 1; // ensure there is MORE THAN ONE job for Relax jft
-						return true;
-					});
-				if (isEquipable) return true;
+				if (jft == JobFilterType.Job) {
+					if (classJobIdsCount == 1) return true;
+					continue;
+				}
 
+				if (jft == JobFilterType.Type) {
+					if (classJobIdsCount > 1) return true;
+					continue;
+				}
+
+				return true; // if no filter type matched, return true as fallback, should not happen
 			}
+
 			return false;
 		}
 		public static CriticalInventoryItem ToInventoryItem(this ItemRow itemEx, InventoryType inventoryType) {
