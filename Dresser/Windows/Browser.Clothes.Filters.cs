@@ -275,6 +275,11 @@ namespace Dresser.Windows
 					ConfigurationManager.Config.FilterClassJobCategories?.Clear();
 					changed = true;
 				}
+				ImGui.SameLine();
+				if (ImGui.Button("Select All##JobCategoryPopup##JobCategory")) {
+					ConfigurationManager.Config.FilterClassJobCategories = classJobsSorted.Select(cj=>cj.RowId).ToList();
+					changed = true;
+				}
 				ImGui.NewLine();
 
 				// render the icons
