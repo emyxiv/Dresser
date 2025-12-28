@@ -234,11 +234,8 @@ namespace Dresser.Windows
 
 			bool changed = false;
 
-			// Preview / control
-			var selectedIds = ConfigurationManager.Config.FilterClassJobCategories ?? new List<uint>();
 
-			var selectedJobNames = classJobsSorted.Where(c => selectedIds.Contains(c.RowId));
-
+			// Calculate sizes and positions
 			var selectedFrameSize = new Vector2(ImGui.GetContentRegionAvail().X - (ImGui.GetStyle().ItemSpacing.X * 2), (ItemIcon.IconSize.Y / 2));
 			var selectedFrameOrigin = ImGui.GetCursorPos();
 
@@ -248,6 +245,11 @@ namespace Dresser.Windows
 			}
 
 			ImGui.SetCursorPos(selectedFrameOrigin);
+
+			// Preview / control
+			//
+			var selectedIds = ConfigurationManager.Config.FilterClassJobCategories ?? new List<uint>();
+			var selectedJobNames = classJobsSorted.Where(c => selectedIds.Contains(c.RowId));
 
 			if (!selectedJobNames.Any()) {
 				ImGui.TextUnformatted("Select to filter Job(s)");
