@@ -280,6 +280,19 @@ namespace Dresser.Windows
 					ConfigurationManager.Config.FilterClassJobCategories = classJobsSorted.Select(cj=>cj.RowId).ToList();
 					changed = true;
 				}
+				ImGui.SameLine();
+				if (PluginServices.Context.LocalPlayerClass != null && ImGui.Button("Toggle Current Job##JobCategoryPopup##JobCategory")) {
+					if(ConfigurationManager.Config.FilterClassJobCategories?.Contains(PluginServices.Context.LocalPlayerClass.Value.RowId) ?? false)
+						ConfigurationManager.Config.FilterClassJobCategories?.Remove(PluginServices.Context.LocalPlayerClass.Value.RowId);
+					else
+						ConfigurationManager.Config.FilterClassJobCategories?.Add(PluginServices.Context.LocalPlayerClass.Value.RowId);
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (PluginServices.Context.LocalPlayerClass != null && ImGui.Button("Target Current Job##JobCategoryPopup##JobCategory")) {
+					ConfigurationManager.Config.FilterClassJobCategories = [PluginServices.Context.LocalPlayerClass.Value.RowId];
+					changed = true;
+				}
 				ImGui.NewLine();
 
 				// render the icons
