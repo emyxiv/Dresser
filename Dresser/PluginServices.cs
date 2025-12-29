@@ -19,6 +19,7 @@ namespace Dresser {
 		[PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
 		[PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 		[PluginService] internal static IClientState ClientState { get; private set; } = null!;
+		[PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
 		[PluginService] internal static IDataManager DataManager { get; private set; } = null!;
 		[PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
 		[PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;

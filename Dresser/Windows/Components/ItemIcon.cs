@@ -72,10 +72,10 @@ namespace Dresser.Windows.Components {
 			// item variables
 			//var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
-			if (image == null && emptySlot == null) emptySlot = item?.Item.GlamourPlateSlot();
+			if (image == null && emptySlot == null) emptySlot = item.Item.GlamourPlateSlot();
 			var isEquippableByCurrentClass = true;
 			// Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
-			var isEquippableByGenderRace = item.Item.CanBeEquippedByRaceGender((CharacterRace)PluginServices.Context.LocalPlayerRace, (CharacterSex)PluginServices.Context.LocalPlayerGender);
+			var isEquippableByGenderRaceGc = item.Item.CanBeEquipedByPlayedRaceGenderGc();
 			var DyeCount = item.Item.Base.DyeCount;
 			var isApplicable = !item.IsFadedInBrowser();
 			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
@@ -166,16 +166,25 @@ namespace Dresser.Windows.Components {
 
 						ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.Base.ClassJobCategory.Value.Name}");
 
-						var genderRaceColor = isEquippableByGenderRace ? ColorBronze : ColorBad;
-						if (item.Item.EquippableByGender != CharacterSex.Both || item.Item.EquipRace != CharacterRace.Any) {
-							var fitGender = item.Item.EquippableByGender;
-							string fitGenderRace = "Fits: ";
-							fitGenderRace += item.Item.EquipRace.Humanize();
-
-							ImGui.TextColored(genderRaceColor, fitGenderRace);
+						var fitGender = item.Item.EquippableByGender;
+						var fitRace = item.Item.EquipRace;
+						bool requiresSpecificGender = fitGender != CharacterSex.Both;
+						bool requiresSpecificRace = fitRace != CharacterRace.Any;
+						bool requiresSpecificGc = item.Item.Base.GrandCompany.RowId != 0;
+						if(requiresSpecificGender || requiresSpecificRace || requiresSpecificGc) {
+							ImGui.TextColored(isEquippableByGenderRaceGc ? ColorBronze : ColorBad, "Fits: ");
+						}
+						if (requiresSpecificRace) {
 							ImGui.SameLine();
-							GuiHelpers.Icon(fitGender == CharacterSex.Male ? FontAwesomeIcon.Mars : FontAwesomeIcon.Venus, true, genderRaceColor);
-
+							ImGui.TextColored(fitRace == PluginServices.Context.LocalPlayerRace ? ColorBronze : ColorBad, fitRace.Humanize());
+						}
+						if (requiresSpecificGender) {
+							ImGui.SameLine();
+							GuiHelpers.Icon(fitGender == CharacterSex.Male ? FontAwesomeIcon.Mars : FontAwesomeIcon.Venus, true, fitGender == PluginServices.Context.LocalPlayerGender ? ColorBronze : ColorBad);
+						}
+						if (requiresSpecificGc) {
+							ImGui.SameLine();
+							ImGui.TextColored(item.Item.Base.GrandCompany.RowId == PluginServices.Context.LocalPlayerGrandCompany?.RowId ? ColorGood : ColorBad, item.Item.Base.GrandCompany.Value.Name.ToString());
 						}
 
 						// Acquisition

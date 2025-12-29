@@ -141,12 +141,24 @@ namespace Dresser.Extensions {
 
 		public static bool IsWeapon(this ItemRow item)
 			=> item.EquipSlotCategory?.Base.MainHand == 1 || item.EquipSlotCategory?.Base.OffHand == 1;
-		public static bool CanBeEquipedByPlayedRaceGender(this ItemRow item) {
+		public static bool CanBeEquipedByPlayedRaceGenderGc(this ItemRow item) {
 			var gender = PluginServices.Context.LocalPlayerGender;
 			var race = PluginServices.Context.LocalPlayerRace;
 			if (gender == null || race == null) return false;
+			if (!item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender)) return false; // race/gender doesn't match, not equipable
 
-			return item.CanBeEquippedByRaceGender((CharacterRace)race, (CharacterSex)gender);
+			if(!item.Base.GrandCompany.IsValid || item.Base.GrandCompany.RowId == 0) return true; // no GC restriction, equipable
+
+
+			var playerGc = PluginServices.Context.LocalPlayerGrandCompany;
+			if (playerGc == null) return false; // player has no GC, but item requires one, not equipable
+
+			var playerGcId = playerGc.Value.RowId;
+			var itemGc = item.Base.GrandCompany.RowId;
+			if(playerGcId != itemGc) return false; // player's GC doesn't match item's GC, not equipable
+
+			// all checks passed, item is equipable
+			return true;
 		}
 		public static bool CanBeEquipedByPlayedJob(this Item item) {
 			var job = PluginServices.Context.LocalPlayerClass;

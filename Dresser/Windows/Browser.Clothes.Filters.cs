@@ -142,7 +142,7 @@ namespace Dresser.Windows
 				ImGui.TextUnformatted("Job filter Type");
 
 				if (columnMode) ImGui.SameLine();
-				filterChanged |= ImGui.Checkbox($"Current Race/Gender##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
+				filterChanged |= ImGui.Checkbox($"Current Race/Gender/GC##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
 				var numberInputFrameWidth = ImGui.GetFontSize() * 2;
 				// todo: level

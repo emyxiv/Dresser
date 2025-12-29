@@ -28,7 +28,8 @@ namespace Dresser.Services {
 		public CharacterRace? LocalPlayerRace = null;
 		public CharacterSex? LocalPlayerGender = null;
 		public ClassJob? LocalPlayerClass = null;
-		public byte LocalPlayerLevel = 0;
+		public short LocalPlayerLevel = 0;
+		public GrandCompany? LocalPlayerGrandCompany = null;
 		public ulong LocalPlayerCharacterId = 0;
 
 		private Timer Every5seconds;
@@ -95,13 +96,14 @@ namespace Dresser.Services {
 			}
 
 
-			LocalPlayer = PluginServices.ClientState.LocalPlayer;
+			LocalPlayer = PluginServices.Objects.LocalPlayer;
 			if (LocalPlayer != null) {
-				LocalPlayerCharacterId = PluginServices.ClientState.LocalContentId;
+				LocalPlayerCharacterId = PluginServices.PlayerState.ContentId;
 				LocalPlayerRace = (CharacterRace)LocalPlayer.Customize[(int)CustomizeIndex.Race];
-				LocalPlayerGender = LocalPlayer.Customize[(int)CustomizeIndex.Gender] == 0 ? CharacterSex.Male : CharacterSex.Female;
-				LocalPlayerClass = LocalPlayer.ClassJob.Value;
-				LocalPlayerLevel = LocalPlayer.Level;
+				LocalPlayerGender = (CharacterSex)PluginServices.PlayerState.Sex;
+				LocalPlayerClass = PluginServices.PlayerState.ClassJob.Value;
+				LocalPlayerLevel = PluginServices.PlayerState.Level;
+				LocalPlayerGrandCompany = PluginServices.PlayerState.GrandCompany.ValueNullable;
 			}
 
 		}
