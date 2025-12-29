@@ -358,7 +358,6 @@ namespace Dresser.Windows
 					&& i.IsFilterDisplayable()
 					&& i.IsInFilterLevelRanges()
 					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Base.Rarity == ConfigurationManager.Config.filterRarity)
-					&& i.Item.CanBeEquipedByPlayedRaceGender()
 					&& i.IsNotInBlackList()
 				);
 
