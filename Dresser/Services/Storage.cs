@@ -48,6 +48,8 @@ namespace Dresser.Services {
 		public Dictionary<Font, (IFontHandle handle, float size)> FontHandles = new();
 		public uint ChangePoseIconId;
 		public int ClassJobsTotalCount;
+		public ushort MaxEquipLevel;
+		public uint MaxItemLevel;
 
 
 
@@ -58,6 +60,10 @@ namespace Dresser.Services {
 
 			// store total valid classjob count
 			ClassJobsTotalCount = PluginServices.DataManager.Excel.GetSheet<ClassJob>().Count(cj => !cj.Abbreviation.ToString().IsNullOrWhitespace());
+
+			// store max levels
+			MaxEquipLevel = (ushort)PluginServices.DataManager.Excel.GetSheet<Item>().Max(a=>a.LevelEquip);
+			MaxItemLevel = PluginServices.DataManager.Excel.GetSheet<Item>().Max(a=>a.LevelItem.Value.RowId);
 
 			//Dyes = Sheets.GetSheet<Dye>();
 			// ui colors:
