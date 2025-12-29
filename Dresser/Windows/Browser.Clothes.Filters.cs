@@ -168,7 +168,8 @@ namespace Dresser.Windows
 				if (ConfigurationManager.Config.filterRarity.HasValue && ConfigurationManager.Config.filterRarity.Value < PluginServices.Storage.RarityColors.Count)
 					if (PluginServices.Storage.RarityColors.TryGetValue(ConfigurationManager.Config.filterRarity.Value, out var selectedRarityColor2))
 						selectedRarityColor = selectedRarityColor2;
-
+				bool rarityFilterActive = selectedRarityColor.HasValue;
+				filterActiveAfter |= rarityFilterActive;
 				if (selectedRarityColor.HasValue) {
 					ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered]);
 					ImGui.PushStyleColor(ImGuiCol.FrameBg, selectedRarityColor.Value * hoveredAlphaMod);
@@ -177,7 +178,12 @@ namespace Dresser.Windows
 
 				var numberInputFrameWidth = ImGui.GetFontSize() * 2;
 				ImGui.SetNextItemWidth(numberInputFrameWidth * 2 + ImGui.GetStyle().ItemSpacing.X);
-				if (ImGui.BeginCombo(" Gear Color##Filters##GearBrowser", selectedRarityColor.HasValue ? "" : "Any")) {
+				var rarityComboStartPos = ImGui.GetCursorScreenPos();
+				var isRarityComboOpen = ImGui.BeginCombo("##Item Rarity##Filters##GearBrowser", selectedRarityColor.HasValue ? "" : "Any");
+				var rarityComboSize = ImGui.GetItemRectSize();
+
+				if (isRarityComboOpen) {
+					ImGui.GetItemRectSize();
 					var newItemSpacing = new Vector2(ImGui.GetFontSize() * 0.2f);
 					ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, newItemSpacing);
 					if (filterChanged |= ImGui.Selectable($"##Any##Rarity##Filters##GearBrowser"))
@@ -201,6 +207,12 @@ namespace Dresser.Windows
 					ImGui.EndCombo();
 				}
 				if (selectedRarityColor.HasValue) ImGui.PopStyleColor(3);
+				if (rarityFilterActive) {
+					ImGui.GetWindowDrawList().AddRect(rarityComboStartPos, rarityComboStartPos + rarityComboSize, ImGui.GetColorU32(Styler.FilterIndicatorFrameColor), ImGui.GetStyle().FrameRounding, Styler.BigButtonBorderThickness);
+				}
+				ImGui.SameLine();
+				ImGui.TextColored(rarityFilterActive ? Styler.FilterIndicatorFrameActiveColor : ImGui.GetStyle().Colors[(int)ImGuiCol.Text], " Item Rarity");
+
 				// todo: dyeable only / not dyeable / all
 				// todo: dyed with
 			} else
