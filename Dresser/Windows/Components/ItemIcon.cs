@@ -176,8 +176,7 @@ namespace Dresser.Windows.Components {
 							ImGui.SameLine();
 							GuiHelpers.Icon(fitGender == CharacterSex.Male ? FontAwesomeIcon.Mars : FontAwesomeIcon.Venus, true, genderRaceColor);
 
-						} else
-							ImGui.TextColored(genderRaceColor, "Fits: Everyone");
+						}
 
 						// Acquisition
 						ImGui.Separator();
