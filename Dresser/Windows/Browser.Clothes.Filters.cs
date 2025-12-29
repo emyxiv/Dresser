@@ -23,8 +23,11 @@ namespace Dresser.Windows
 {
     public partial class GearBrowser
     {
+		private static bool FilterActive = false;
         private static bool DrawFilters() {
 			bool filterChanged = false;
+			bool filterActiveBefore = FilterActive;
+			bool? filterActiveAfter = null;
 
 			if (ImGui.CollapsingHeader($"Owned##Source##GearBrowser", ConfigurationManager.Config.FilterSourceCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSourceCollapse = true;
@@ -113,8 +116,17 @@ namespace Dresser.Windows
 			} else
 				ConfigurationManager.Config.FilterAdditionalCollapse = false;
 
+			if(filterActiveBefore) {
+				ImGui.PushStyleColor(ImGuiCol.Header, Styler.FilterIndicatorFrameColor);
+				ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Styler.FilterIndicatorFrameHoveredColor);
+				ImGui.PushStyleColor(ImGuiCol.HeaderActive, Styler.FilterIndicatorFrameActiveColor);
+			}
+			var filterCollaspingHeaderIsOpen = ImGui.CollapsingHeader($"Filters##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
+			if (filterActiveBefore) ImGui.PopStyleColor(3);
 
-			if (ImGui.CollapsingHeader($"Filters##Source##GearBrowser", ConfigurationManager.Config.FilterAdvancedCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+			if (filterCollaspingHeaderIsOpen) {
+				filterActiveAfter ??= false;
+
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
@@ -144,35 +156,10 @@ namespace Dresser.Windows
 				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race/Gender/GC##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
-				var numberInputFrameWidth = ImGui.GetFontSize() * 2;
-				// todo: level
-				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if (filterChanged |= ImGui.DragFloat($"##Min##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.X, 1, 1, PluginServices.Storage.MaxEquipLevel, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
-					if (ConfigurationManager.Config.filterEquipLevel.Y < ConfigurationManager.Config.filterEquipLevel.X) ConfigurationManager.Config.filterEquipLevel.Y = ConfigurationManager.Config.filterEquipLevel.X;
-				}
-				ImGui.SameLine();
-				ImGui.TextUnformatted("-");
-				ImGui.SameLine();
-				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if(filterChanged |= ImGui.DragFloat($"##Max##EquipLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterEquipLevel.Y, 1, 1, PluginServices.Storage.MaxEquipLevel, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
-					if (ConfigurationManager.Config.filterEquipLevel.X > ConfigurationManager.Config.filterEquipLevel.Y) ConfigurationManager.Config.filterEquipLevel.X = ConfigurationManager.Config.filterEquipLevel.Y;
-				}
-				ImGui.SameLine();
-				ImGui.Text("Job Level");
-				// todo: ilvl
-				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if (filterChanged |= ImGui.DragFloat($"##Min##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.X, 1, 1, PluginServices.Storage.MaxItemLevel, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
-					if (ConfigurationManager.Config.filterItemLevel.Y < ConfigurationManager.Config.filterItemLevel.X) ConfigurationManager.Config.filterItemLevel.Y = ConfigurationManager.Config.filterItemLevel.X;
-				}
-				ImGui.SameLine();
-				ImGui.TextUnformatted("-");
-				ImGui.SameLine();
-				ImGui.SetNextItemWidth(numberInputFrameWidth);
-				if (filterChanged |= ImGui.DragFloat($"##Max##ItemLevel##Filters##GearBrowser", ref ConfigurationManager.Config.filterItemLevel.Y, 1, 1, PluginServices.Storage.MaxItemLevel, "%.0f", ImGuiSliderFlags.AlwaysClamp)) {
-					if (ConfigurationManager.Config.filterItemLevel.X > ConfigurationManager.Config.filterItemLevel.Y) ConfigurationManager.Config.filterItemLevel.X = ConfigurationManager.Config.filterItemLevel.Y;
-				}
-				ImGui.SameLine();
-				ImGui.Text("Item Level");
+				filterChanged |= ConfigControls.ConfigFloatFromTo(nameof(ConfigurationManager.Config.filterEquipLevel), $"Job Level##Filters##GearBrowser", out bool jobLevelfilterActive);
+				filterActiveAfter |= jobLevelfilterActive;
+				filterChanged |= ConfigControls.ConfigFloatFromTo(nameof(ConfigurationManager.Config.filterItemLevel), $"Item Level##Filters##GearBrowser", out bool itemLevelfilterActive);
+				filterActiveAfter |= itemLevelfilterActive;
 
 				// todo: rarity
 				Vector4? selectedRarityColor = null;
@@ -187,6 +174,7 @@ namespace Dresser.Windows
 					ImGui.PushStyleColor(ImGuiCol.Button, selectedRarityColor.Value * hoveredAlphaMod);
 				}
 
+				var numberInputFrameWidth = ImGui.GetFontSize() * 2;
 				ImGui.SetNextItemWidth(numberInputFrameWidth * 2 + ImGui.GetStyle().ItemSpacing.X);
 				if (ImGui.BeginCombo(" Gear Color##Filters##GearBrowser", selectedRarityColor.HasValue ? "" : "Any")) {
 					var newItemSpacing = new Vector2(ImGui.GetFontSize() * 0.2f);
@@ -225,7 +213,9 @@ namespace Dresser.Windows
 			} else
 				ConfigurationManager.Config.FilterSortCollapse = false;
 
-
+			if(filterActiveAfter != null) {
+				FilterActive = filterActiveAfter.Value;
+			}
 			return filterChanged;
 		}
 		private static bool JobCategoryFilter() {

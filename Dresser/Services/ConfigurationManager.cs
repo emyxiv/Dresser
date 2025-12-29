@@ -21,6 +21,8 @@ namespace Dresser.Services {
 			set;
 		} = null!;
 
+		public static readonly Configuration Default = new();
+
 		public static string ConfigurationFile {
 			get {
 				return PluginServices.PluginInterface.ConfigFile.ToString();

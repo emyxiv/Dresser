@@ -367,7 +367,7 @@ public class ConfigWindow : Window, IDisposable {
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was enabled\nBefore apply appearance");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 1##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance = new Configuration().PenumbraDelayAfterModEnableBeforeApplyAppearance;
+				ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance = ConfigurationManager.Default.PenumbraDelayAfterModEnableBeforeApplyAppearance;
 
 
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
@@ -375,14 +375,14 @@ public class ConfigWindow : Window, IDisposable {
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter apply appearance\nBefore disabling the mod");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 2##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable = new Configuration().PenumbraDelayAfterApplyAppearanceBeforeModDisable;
+				ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable = ConfigurationManager.Default.PenumbraDelayAfterApplyAppearanceBeforeModDisable;
 
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 			ImGui.DragInt($"Delay 3##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
 			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
 			ImGui.SameLine();
 			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 3##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = new Configuration().PenumbraDelayAfterModDisableBeforeNextModLoop;
+				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = ConfigurationManager.Default.PenumbraDelayAfterModDisableBeforeNextModLoop;
 
 			ImGui.Checkbox($"Disable the mod instantly after applied##Debug##GearBrowserConfig", ref ConfigurationManager.Config.PenumbraDisableModRightAfterApply);
 			GuiHelpers.Tooltip($"Right after the item appearance is applied on the character, the mod applied during  application will be disabled. The item will still be displaed with the mod (Except in Mare). This allows displaying mods that affects the same items.");
@@ -593,61 +593,42 @@ public class ConfigWindow : Window, IDisposable {
 
 	private void DrawColorStyleConfig() {
 		ImGui.TextDisabled("Frames");
-		ConfigColorVecot4(nameof(Configuration.CollectionColorBackground), "Window Background", "Background color for the frames that contain items", ImGuiColorEditFlags.None);
-		ConfigColorVecot4(nameof(Configuration.CollectionColorBorder), "Window Border", "Border color for the frames that contain items", ImGuiColorEditFlags.None);
-		ConfigColorVecot4(nameof(Configuration.CollectionColorScrollbar), "Scroll bar", "Scroll bar color for the frames that contain items (in Gear Browser)", ImGuiColorEditFlags.None);
-		ConfigColorVecot4(nameof(Configuration.ColorIconImageTintEnabled), "Icon Tint (Enabled)", "Tint of enabled icons (currencies)", ImGuiColorEditFlags.None);
-		ConfigColorVecot4(nameof(Configuration.ColorIconImageTintDisabled), "Icon Tint (Disabled)", "Tint of disabled icons (currencies)", ImGuiColorEditFlags.None);
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.CollectionColorBackground), "Window Background", "Background color for the frames that contain items", ImGuiColorEditFlags.None);
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.CollectionColorBorder), "Window Border", "Border color for the frames that contain items", ImGuiColorEditFlags.None);
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.CollectionColorScrollbar), "Scroll bar", "Scroll bar color for the frames that contain items (in Gear Browser)", ImGuiColorEditFlags.None);
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorIconImageTintEnabled), "Icon Tint (Enabled)", "Tint of enabled icons (currencies)", ImGuiColorEditFlags.None);
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorIconImageTintDisabled), "Icon Tint (Disabled)", "Tint of disabled icons (currencies)", ImGuiColorEditFlags.None);
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorFilteredIndicator), "Filter Indicator", "Will show on various controls when filters are active", ImGuiColorEditFlags.None);
 
 		ImGui.Separator();
 		ImGui.TextDisabled("Text");
-		ConfigColorVecot4(nameof(Configuration.PlateSelectorColorTitle), "Title");
-		ConfigColorVecot4(nameof(Configuration.ColorGood),"Good");
-		ConfigColorVecot4(nameof(Configuration.ColorGoodLight),"Good (light)");
-		ConfigColorVecot4(nameof(Configuration.ColorBad),"Bad");
-		ConfigColorVecot4(nameof(Configuration.ColorGrey),"Grey");
-		ConfigColorVecot4(nameof(Configuration.ColorGreyDark),"Grey (dark)");
-		ConfigColorVecot4(nameof(Configuration.ColorBronze),"Bronze");
-		ConfigColorVecot4(nameof(Configuration.ModdedItemColor), "Modded item name");
-		ConfigColorVecot4(nameof(Configuration.ModdedItemWatermarkColor),"Modded item tooltip watermark");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.PlateSelectorColorTitle), "Title");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorGood),"Good");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorGoodLight),"Good (light)");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorBad),"Bad");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorGrey),"Grey");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorGreyDark),"Grey (dark)");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ColorBronze),"Bronze");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ModdedItemColor), "Modded item name");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.ModdedItemWatermarkColor),"Modded item tooltip watermark");
 
 		ImGui.Separator();
 		ImGui.TextDisabled("Plate selector");
-		ConfigColorVecot4(nameof(Configuration.PlateSelectorActiveColor), "Active");
-		ConfigColorVecot4(nameof(Configuration.PlateSelectorHoverColor), "Hover");
-		ConfigColorVecot4(nameof(Configuration.PlateSelectorRestColor), "Rest");
-		ConfigColorVecot4(nameof(Configuration.PlateSelectorColorRadio), "Radio text");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.PlateSelectorActiveColor), "Active");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.PlateSelectorHoverColor), "Hover");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.PlateSelectorRestColor), "Rest");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.PlateSelectorColorRadio), "Radio text");
 
 		ImGui.Separator();
 		ImGui.TextDisabled("Browser");
-		ConfigColorVecot4(nameof(Configuration.DyePickerHighlightSelection  ), "Selection");
-		ConfigColorVecot4(nameof(Configuration.BrowserVerticalTabButtonsBg  ), "Inactive tab bg");
-		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedBg   ), "Active tab bg");
-		ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedColor), "Active dye text");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.DyePickerHighlightSelection  ), "Selection");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.BrowserVerticalTabButtonsBg  ), "Inactive tab bg");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedBg   ), "Active tab bg");
+		ConfigControls.ConfigColorVecot4(nameof(Configuration.DyePickerDye1Or2SelectedColor), "Active dye text");
 
 	}
 
-	private static void ConfigColorVecot4(string propertyName, string label, string description = "", ImGuiColorEditFlags imguiColorEditFlag = ImGuiColorEditFlags.None) {
 
-		var fieldInfo = typeof(Configuration).GetField(propertyName);
-		if (fieldInfo == null) return;
-		var colGet = fieldInfo?.GetValue(ConfigurationManager.Config);
-		if (colGet == null || colGet.GetType() != typeof(Vector4)) return;
-		var color = (Vector4)colGet;
-
-		color = ImGuiComponents.ColorPickerWithPalette(propertyName.GetHashCode(), label, color, ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreview | ImGuiColorEditFlags.AlphaPreviewHalf | imguiColorEditFlag);
-		ImGui.SameLine();
-		GuiHelpers.TextTooltip(label, description);
-		ImGui.SameLine();
-		if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, $"{label}##Delay 3##ColorConfig##ConfigWindow", "Reset to default value")) {
-			var colorDefaultObj = fieldInfo?.GetValue(new Configuration());
-			if(colorDefaultObj != null && colorDefaultObj.GetType() == typeof(Vector4)) {
-				color = (Vector4)colorDefaultObj;
-			}
-		}
-
-		fieldInfo?.SetValue(ConfigurationManager.Config, color);
-	}
 
 	private void DrawDebugCurrencies()
 	{
