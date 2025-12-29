@@ -130,7 +130,8 @@ namespace Dresser.Windows
 				ConfigurationManager.Config.FilterAdvancedCollapse = true;
 				var columnMode = !ConfigurationManager.Config.GearBrowserDisplayMode.HasFlag(DisplayMode.Vertical);
 
-				filterChanged |= JobCategoryFilter();
+				filterChanged |= JobCategoryFilter(out var filterActiveJobs);
+				filterActiveAfter |= filterActiveJobs;
 
 				//filterChanged |= ImGui.Checkbox($"Current Job##displayCategory", ref ConfigurationManager.Config.filterCurrentJob);
 
@@ -218,7 +219,8 @@ namespace Dresser.Windows
 			}
 			return filterChanged;
 		}
-		private static bool JobCategoryFilter() {
+		private static bool JobCategoryFilter(out bool filterActive) {
+			filterActive = false;
 			var classJobs = PluginServices.SheetManager.GetSheet<ClassJobSheet>();
 			if (classJobs == null || classJobs.Count() == 0) return false;
 
@@ -228,11 +230,13 @@ namespace Dresser.Windows
 
 
 			// Calculate sizes and positions
-			var selectedFrameSize = new Vector2(ImGui.GetContentRegionAvail().X - (ImGui.GetStyle().ItemSpacing.X * 2), (ItemIcon.IconSize.Y / 2));
+			var selectedFrameSize = new Vector2(ImGui.GetContentRegionAvail().X, (ItemIcon.IconSize.Y / 2));
 			var selectedFrameOrigin = ImGui.GetCursorPos();
 
 			ImGui.SetNextItemWidth(Math.Max(120, ImGui.GetContentRegionAvail().X / 3));
-			if (ImGui.Button($"##summonSelectJobs##JobCategoryPreview",selectedFrameSize)) {
+			var isPreviewClicked = ImGui.InvisibleButton($"##summonSelectJobs##JobCategoryPreview", selectedFrameSize);
+			var isPreviewHovered = ImGui.IsItemHovered();
+			if (isPreviewClicked) {
 				ImGui.OpenPopup("JobCategoryPopup##JobCategory");
 			}
 
@@ -244,15 +248,31 @@ namespace Dresser.Windows
 			var selectedJobNames = classJobsSorted.Where(c => selectedIds.Contains(c.RowId));
 
 			if (!selectedJobNames.Any()) {
-				ImGui.TextUnformatted("Select to filter Job(s)");
+				ImGui.TextUnformatted(" Select to filter Job(s)");
 			} else {
+				int drawnCount = 0;
 				foreach (var selectedClassJob in selectedJobNames) {
+					if(ImGui.GetContentRegionAvail().X < (ItemIcon.IconSize.X * 1.0f)) break;
 					bool _ = false;
 					DrawClassJob(selectedClassJob, false, ref _);
 					ImGui.SameLine();
+					drawnCount++;
+				}
+				if(drawnCount < selectedJobNames.Count()) {
+					GuiHelpers.TextWithFont($"+{selectedJobNames.Count() - drawnCount}", GuiHelpers.Font.Title);
 				}
 				ImGui.NewLine();
 			}
+
+			filterActive |= selectedIds.Count > 0;
+
+			Vector4 borderColor;
+			if (selectedIds.Count > 0)
+				borderColor = isPreviewHovered ? Styler.FilterIndicatorFrameActiveColor : Styler.FilterIndicatorFrameColor; // going for active color when hovering instead of "hovered" color to make it more visible
+			else
+				borderColor = ImGui.GetStyle().Colors[isPreviewHovered ? (int)ImGuiCol.ButtonActive: (int)ImGuiCol.Button];
+			var windowsMinPos = ImGui.GetWindowPos();
+			ImGui.GetWindowDrawList().AddRect(windowsMinPos + selectedFrameOrigin, windowsMinPos + selectedFrameOrigin + selectedFrameSize, ImGui.GetColorU32(borderColor), Styler.BigButtonRounding, Styler.BigButtonBorderThickness);
 
 			ImGui.SetCursorPosY(selectedFrameOrigin.Y + (ItemIcon.IconSize.Y / 2));
 			ImGui.Spacing();
