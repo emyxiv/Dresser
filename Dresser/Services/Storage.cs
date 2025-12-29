@@ -13,6 +13,7 @@ using CriticalCommonLib.Enums;
 
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Textures;
+using Dalamud.Utility;
 
 using Dresser.Extensions;
 using Dresser.Interop;
@@ -46,6 +47,7 @@ namespace Dresser.Services {
 
 		public Dictionary<Font, (IFontHandle handle, float size)> FontHandles = new();
 		public uint ChangePoseIconId;
+		public int ClassJobsTotalCount;
 
 
 
@@ -53,6 +55,9 @@ namespace Dresser.Services {
 
 			// store change pose icon id based on the alias in case ID changes
 			ChangePoseIconId = PluginServices.DataManager.Excel.GetSheet<Emote>().FirstOrNull(e => e.TextCommand.Value.ShortCommand == "/cpose" || e.TextCommand.Value.Command == "/cpose")?.Icon ?? 0; // 7.4 = 246268
+
+			// store total valid classjob count
+			ClassJobsTotalCount = PluginServices.DataManager.Excel.GetSheet<ClassJob>().Count(cj => !cj.Abbreviation.ToString().IsNullOrWhitespace());
 
 			//Dyes = Sheets.GetSheet<Dye>();
 			// ui colors:

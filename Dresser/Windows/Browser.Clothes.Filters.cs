@@ -129,7 +129,7 @@ namespace Dresser.Windows
 
 					foreach(var enumValue in enumJftValues) {
 						var isSelected = ConfigurationManager.Config.filterCurrentJobFilterType == enumValue;
-						var clickedJobFilterTypeCombo = ImGui.Selectable($"{enumValue}##Current Job Filter Type##displayCategory", isSelected);
+						var clickedJobFilterTypeCombo = ImGui.Selectable($"{enumValue.ToString().AddSpaceBeforeCapital()}##Current Job Filter Type##displayCategory", isSelected);
 						if (clickedJobFilterTypeCombo) {
 							ConfigurationManager.Config.filterCurrentJobFilterType = enumValue;
 							filterChanged = true;
@@ -483,13 +483,15 @@ namespace Dresser.Windows
 		All = 0,
 		Job = 1,
 		Type = 2,
+		NoJob = 3,
 	}
 	public static class JobFilterTypeExtensions {
 		public static string Tooltip(this JobFilterType status) {
 			return status switch {
 				JobFilterType.All  => $"All compatible\nShow any items including the selected job(s)",
 				JobFilterType.Job  => $"Job Gear Only\nOnly show items of selected job(s)\nHandy to find job gear",
-				JobFilterType.Type => $"Job Types Only\nShow only gear that can be equiped by multiple jobs, hides job gear\nHandy to make a role compatible glam (became useless with 7.4)",
+				JobFilterType.Type => $"Job Type\nOnly show items of job types the selected job is included in\nE.g. Selected PLD, the gear wearable by \"PLD WAR DRK GNB\" or \"Disciple of War\".",
+				JobFilterType.NoJob => $"All but Not Job Gear\nShow only gear that can be equiped by multiple jobs, hides job gear\nHandy to make a role compatible glam (became useless with 7.4)",
 				_ => "",
 			};
 		}

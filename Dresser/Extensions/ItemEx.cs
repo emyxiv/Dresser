@@ -181,8 +181,12 @@ namespace Dresser.Extensions {
 					if (classJobIdsCount == 1) return true;
 					continue;
 				}
-
 				if (jft == JobFilterType.Type) {
+					if(classJobIdsCount > 1 && classJobIdsCount < PluginServices.Storage.ClassJobsTotalCount) return true;
+					continue;
+				}
+
+				if (jft == JobFilterType.NoJob) {
 					if (classJobIdsCount > 1) return true;
 					continue;
 				}
