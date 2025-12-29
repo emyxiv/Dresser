@@ -340,5 +340,13 @@ namespace Dresser.Services {
 		public static UldBundle Buddy_CapGloss => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 3, "Buddy_CapGloss");
 		public static UldBundle Buddy_Cap => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 8, "Buddy_Cap");
 		public static UldBundle Buddy_Slot => new(BuildTexPath("BgParts"), "ui/uld/Buddy.uld", 5, "Buddy_Slot");
+
+		public static UldBundle CharacterClass_Tank => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 3, "CharacterClass_Tank");
+		public static UldBundle CharacterClass_Healer => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 4, "CharacterClass_Healer");
+		public static UldBundle CharacterClass_DpsMelee => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 5, "CharacterClass_DpsMelee");
+		public static UldBundle CharacterClass_DpsPhysicalRanged => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 6, "CharacterClass_DpsPhysicalRanged");
+		public static UldBundle CharacterClass_DpsMagicalRanged => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 7, "CharacterClass_DpsMagicalRanged");
+		public static UldBundle CharacterClass_DisciplesOfTheHand => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 8, "CharacterClass_DisciplesOfTheHand");
+		public static UldBundle CharacterClass_DisciplesOfTheLand => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 9, "CharacterClass_DisciplesOfTheLand");
 	}
 }

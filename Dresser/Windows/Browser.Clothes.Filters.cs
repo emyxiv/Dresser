@@ -9,6 +9,8 @@ using Dresser.Extensions;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
+using Lumina.Excel.Sheets;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -283,7 +285,7 @@ namespace Dresser.Windows
 					changed = true;
 				}
 				ImGui.SameLine();
-				if (PluginServices.Context.LocalPlayerClass != null && ImGui.Button("Toggle Current Job##JobCategoryPopup##JobCategory")) {
+				if (PluginServices.Context.LocalPlayerClass != null && GuiHelpers.IconButtonTooltip(Dalamud.Interface.FontAwesomeIcon.Crosshairs, "Toggle Current Job", default, "Toggle Current Job##JobCategoryPopup##JobCategory")) {
 					if(ConfigurationManager.Config.FilterClassJobCategories?.Contains(PluginServices.Context.LocalPlayerClass.Value.RowId) ?? false)
 						ConfigurationManager.Config.FilterClassJobCategories?.Remove(PluginServices.Context.LocalPlayerClass.Value.RowId);
 					else
@@ -291,8 +293,44 @@ namespace Dresser.Windows
 					changed = true;
 				}
 				ImGui.SameLine();
-				if (PluginServices.Context.LocalPlayerClass != null && ImGui.Button("Target Current Job##JobCategoryPopup##JobCategory")) {
+				if (PluginServices.Context.LocalPlayerClass != null && GuiHelpers.IconButtonTooltip(Dalamud.Interface.FontAwesomeIcon.Crosshairs, "Target Current Job", default, "Target Current Job##JobCategoryPopup##JobCategory")) {
 					ConfigurationManager.Config.FilterClassJobCategories = [PluginServices.Context.LocalPlayerClass.Value.RowId];
+					changed = true;
+				}
+
+				// Job type buttons line
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_Tank,"SelectTankJobs##JobCategoryPopup##JobCategory","",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeTank()).Select(cj=>cj.RowId)];
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_Healer,"SelectHealJobs##JobCategoryPopup##JobCategory","",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeHealer()).Select(cj=>cj.RowId)];
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_DpsMelee, "SelectDpsMeleeJobs##JobCategoryPopup##JobCategory", "",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeDpsMelee()).Select(cj=>cj.RowId)];
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_DpsPhysicalRanged, "SelectDpsPhysicalRangedJobs##JobCategoryPopup##JobCategory", "",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeDpsPhysicalRanged()).Select(cj=>cj.RowId)];
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_DpsMagicalRanged, "SelectDpsMagicalRangedJobs##JobCategoryPopup##JobCategory", "",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeDpsMagicalRanged()).Select(cj=>cj.RowId)];
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_DisciplesOfTheHand, "SelectDisciplesOfTheHandJobs##JobCategoryPopup##JobCategory", "",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeDisciplesOfTheHand()).Select(cj=>cj.RowId)];
+					changed = true;
+				}
+				ImGui.SameLine();
+				if (GuiHelpers.GameButton(UldBundle.CharacterClass_DisciplesOfTheLand, "SelectDisciplesOfTheLandJobs##JobCategoryPopup##JobCategory", "",new Vector2(ImGui.GetFontSize()*1.5f))) {
+					ConfigurationManager.Config.FilterClassJobCategories = [.. PluginServices.DataManager.Excel.GetSheet<ClassJob>().Where(cj=> cj.IsTypeDisciplesOfTheLand()).Select(cj=>cj.RowId)];
 					changed = true;
 				}
 				ImGui.NewLine();
@@ -354,10 +392,8 @@ namespace Dresser.Windows
 				.ThenBy(c => c.Base.BattleClassIndex == 0 ? int.MaxValue : c.Base.BattleClassIndex)
 				.ThenBy(c => {
 					if (c.Base.DohDolJobIndex == -1) return byte.MinValue;
-					if (c.Base.JobType == 0) return c.Base.Abbreviation.ToString() switch { // recreate the job type for classes
-						"MIN" or "BTN" or "FSH" => byte.MaxValue, // gatherers
-						_ => byte.MinValue,
-					};
+					if (c.Base.JobType == 0 && c.Base.IsTypeDisciplesOfTheHand()) return byte.MinValue; // put crafting classes at the start
+					if (c.Base.JobType == 0 && c.Base.IsTypeDisciplesOfTheLand()) return byte.MaxValue; // put gathering classes at the end
 					return c.Base.JobType;
 				}) // for ranged dps, sort by job type (physical ranged, magic), put classes at the end
 
