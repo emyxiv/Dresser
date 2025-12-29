@@ -170,7 +170,7 @@ namespace Dresser.Windows.Components {
 						if (item.Item.EquippableByGender != CharacterSex.Both || item.Item.EquipRace != CharacterRace.Any) {
 							var fitGender = item.Item.EquippableByGender;
 							string fitGenderRace = "Fits: ";
-							fitGenderRace += item.Item.EquipRace.FormattedName();
+							fitGenderRace += item.Item.EquipRace.Humanize();
 
 							ImGui.TextColored(genderRaceColor, fitGenderRace);
 							ImGui.SameLine();
