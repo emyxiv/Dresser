@@ -7,6 +7,7 @@ using System.Numerics;
 namespace Dresser.Windows.Components {
 	internal class Styler {
 
+		// Colors
 		public static Vector4 CollectionColorBackground => ConfigurationManager.Config.CollectionColorBackground;
 		public static Vector4 CollectionColorBorder => ConfigurationManager.Config.CollectionColorBorder;
 		public static Vector4 CollectionColorScrollbar => ConfigurationManager.Config.CollectionColorScrollbar;
@@ -39,5 +40,12 @@ namespace Dresser.Windows.Components {
 			ImGui.PopStyleColor(5);
 			ImGui.PopStyleVar(8);
 		}
+
+
+
+		// Sizes
+		public static float BigButtonRounding = ItemIcon.IconSize.X * 0.1f;
+		public static float BigButtonBorderThickness = ItemIcon.IconSize.X * 0.02f;
+
 	}
 }

@@ -430,8 +430,6 @@ public class DyePicker {
 			;
 
 		var buttonSize4 = new Vector2(widthOfOneDyeSelectorButton, buttonsHeight);
-		var rounding = ItemIcon.IconSize.X * 0.1f;
-
 
 		// calculate stuff for inside the button
 		var stainIconSize = ConfigurationManager.Config.DyePickerDyeSize;
@@ -439,8 +437,7 @@ public class DyePicker {
 
 		// ConfigurationManager.Config.DyePickerDye1Or2SelectedBg
 		var extraMargin = ItemIcon.IconSize * 0.08f;
-		var thicknessRect = ItemIcon.IconSize.X * 0.02f;
-		ImGui.GetWindowDrawList().AddRect(posFirstButtonScreen-extraMargin, posFirstButtonScreen + new Vector2(widthSelectorAllButtons,buttonSize4.Y) + (extraMargin),ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.DyePickerDye1Or2SelectedBg),rounding * 1.5f,0,thicknessRect);
+		ImGui.GetWindowDrawList().AddRect(posFirstButtonScreen-extraMargin, posFirstButtonScreen + new Vector2(widthSelectorAllButtons,buttonSize4.Y) + (extraMargin),ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.DyePickerDye1Or2SelectedBg), Styler.BigButtonRounding * 1.5f,0, Styler.BigButtonBorderThickness);
 
 		var dyeIndexList = Enumerable.Range(1, dyeCount).Select(i => (ushort)i);
 		foreach (var dyeIndex in dyeIndexList) {
@@ -472,7 +469,7 @@ public class DyePicker {
 
 			var colorLabel = $"{i?.Name ?? "No Color"}##{i?.RowId ?? 0}##stain{dyeIndex}##selected1";
 			var colorVec4 = i?.ColorVector4() ?? new Vector4(0, 0, 0, 0);
-			var clicked = GuiHelpers.ButtonDrawList(colorLabel, buttonSize4, ConfigurationManager.Config.BrowserVerticalTabButtonsBg, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg, rounding, isActive);
+			var clicked = GuiHelpers.ButtonDrawList(colorLabel, buttonSize4, ConfigurationManager.Config.BrowserVerticalTabButtonsBg, ConfigurationManager.Config.DyePickerDye1Or2SelectedBg, Styler.BigButtonRounding, isActive);
 			var posBackup2 = ImGui.GetCursorPos();
 
 			ImGui.SameLine();
