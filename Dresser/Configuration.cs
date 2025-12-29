@@ -115,6 +115,7 @@ namespace Dresser {
 		public Vector4 CollectionColorScrollbar = (new Vector4(116, 123, 98, 255) / 255 * 0.2f) + new Vector4(0, 0, 0, 1);
 		public Vector4 ColorIconImageTintDisabled = new(1, 1, 1, 0.5f);
 		public Vector4 ColorIconImageTintEnabled = Vector4.One;
+		public Vector4 ColorFilteredIndicator = new Vector4(237, 107, 89, 255) / 255;
 
 		// plate selector
 		public Vector4 PlateSelectorRestColor = new(1, 1, 1, 0.70f);

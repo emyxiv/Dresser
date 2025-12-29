@@ -14,6 +14,10 @@ namespace Dresser.Windows.Components {
 		public static Vector4 ColorIconImageTintEnabled => ConfigurationManager.Config.ColorIconImageTintEnabled;
 		public static Vector4 DiscordColor = new Vector4(86, 98, 246, 255) / 255;
 
+		public static Vector4 FilterIndicatorFrameColor => ConfigurationManager.Config.ColorFilteredIndicator * new Vector4(new Vector3(0.70f), 1f);
+		public static Vector4 FilterIndicatorFrameHoveredColor => ConfigurationManager.Config.ColorFilteredIndicator * new Vector4(new Vector3(0.85f), 1f);
+		public static Vector4 FilterIndicatorFrameActiveColor => ConfigurationManager.Config.ColorFilteredIndicator;
+
 		public static void PushStyleCollection() {
 			ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ItemIcon.IconSize / 12f);
 			ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ItemIcon.IconSize / 8f);
