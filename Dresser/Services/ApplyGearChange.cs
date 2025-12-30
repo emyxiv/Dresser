@@ -80,7 +80,7 @@ namespace Dresser.Services {
 			var clonedItem = item.Clone();
 			DyePickerRefreshNewItem(clonedItem,true);
 
-			var slot = GearBrowser.SelectedSlot;
+			var slot = clonedItem.Item.GlamourPlateSlot();
 
 			if (slot != null) {
 				if(!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {

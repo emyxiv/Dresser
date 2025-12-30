@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Numerics;
 
 using Dresser.Logic;
+using Dresser.Extensions;
 
 namespace Dresser.Windows.Components {
 	internal class GuiHelpers {
@@ -128,6 +129,12 @@ namespace Dresser.Windows.Components {
 			Hovering(hiddenLabel, ImGui.IsItemHovered());
 			Tooltip(tooltip);
 			return accepting;
+		}
+		public static bool TextButtonNoBg(string label, string tooltip = "", Vector4? textColor = null) {
+			return ButtonNoBg((lbl, h) => {
+				ImGui.Text(lbl.LabelVisibleText());
+				return ImGui.IsItemClicked();
+			}, label, tooltip, textColor);
 		}
 		public static bool IconToggleButtonNoBg(FontAwesomeIcon icon, ref bool valueToggled, string hiddenLabel, string tooltip = "", Vector2 size = default) {
 			var textColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];

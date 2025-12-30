@@ -3,6 +3,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Utility;
 
+using Dresser.Extensions;
 using Dresser.Services;
 
 using System;
@@ -88,8 +89,7 @@ namespace Dresser.Windows.Components {
 
 			// Label
 			// -----
-			int idx = label.IndexOf('#');
-			string visibleLabel = idx >= 0 ? label[..idx] : label;
+			string visibleLabel = label.LabelVisibleText();
 
 			ImGui.SameLine();
 			if (!description.IsNullOrWhitespace()) {

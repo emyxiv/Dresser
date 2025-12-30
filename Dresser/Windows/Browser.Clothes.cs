@@ -4,6 +4,8 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
+using AllaganLib.GameSheets.Caches;
+using AllaganLib.GameSheets.ItemSources;
 using AllaganLib.GameSheets.Sheets.Rows;
 
 using CriticalCommonLib.Enums;
@@ -557,6 +559,7 @@ namespace Dresser.Windows
 			//	PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 
 			DrawSameModels(itemInv);
+			DrawSets(itemInv);
 
 		}
 
@@ -564,37 +567,58 @@ namespace Dresser.Windows
 		public static void DrawSameModels(InventoryItem item) {
 
 			var sharedModels = item.Item.GetSharedModels();
-			if (sharedModels != null && sharedModels.Any()) {
+			if (sharedModels != null && sharedModels.Count != 0) {
 				ImGui.Spacing();
 				ImGui.Text("Shared model:");
 				DrawListOfItemIcons(sharedModels);
 			}
 		}
+		public static void DrawSets(InventoryItem item) {
 
-		private static int DrawListOfItemIconsHoveredIcon = -1;
-		public static void DrawListOfItemIcons(List<ItemRow> items)
-			=> DrawListOfItemIcons(items.Select(i => InventoryItem.New(i.RowId, 0, 0)).ToList());
-		public static void DrawListOfItemIcons(List<InventoryItem> items) {
-			if (!items.Any()) return;
+			var setUses = item.Item.GetUsesByType<ItemGlamourReadySetItemSource>(ItemInfoType.GlamourReadySetItem);
+			if (setUses.Count == 0) return;
+
+			int outfitCounter = 0;
+			foreach (var setUse in setUses) {
+				outfitCounter++;
+				var setName = setUse.ConvertedItem.NameString;
+				var label = $"{setName}:##itemset##browser";
+
+				if (GuiHelpers.TextButtonNoBg(label, "Click on the Glamour Outfit name to apply all items", ItemIcon.ColorBronze)) {
+					foreach (var it in setUse.SetItems.Select(i => InventoryItem.New(i.RowId, 0, 0))) {
+						PluginServices.ApplyGearChange.ExecuteBrowserItem(it);
+					}
+				}
+				DrawListOfItemIcons(setUse.SetItems, 5000+ outfitCounter);
+			}
+		}
+
+		private static Dictionary<int,int> DrawListOfItemIconsHoveredIcon = [];
+		public static void DrawListOfItemIcons(List<ItemRow> items, int key = 0)
+			=> DrawListOfItemIcons(items.Select(i => InventoryItem.New(i.RowId, 0, 0)).ToList(), key);
+		public static void DrawListOfItemIcons(List<InventoryItem> items, int listKey = 0) {
+			if (items.Count == 0) return;
 			bool isAnotherTooltipActive = false;
 			int iconKey = 0;
 			var sizeMod = 0.45f;
 
 			var slot = items.First().Item.GlamourPlateSlot();
 			foreach (var item in items) {
-				bool isHovering = iconKey == DrawListOfItemIconsHoveredIcon;
-				if(ItemIcon.DrawIcon(item, ref isHovering, ref isAnotherTooltipActive, out bool clickedMiddle, out bool clickedStain, slot, null, sizeMod)) {
+				bool isHovering = DrawListOfItemIconsHoveredIcon.TryGetValue(listKey, out int savedHoveringIconKey) && savedHoveringIconKey == iconKey;
+				if (ItemIcon.DrawIcon(item, ref isHovering, ref isAnotherTooltipActive, out bool clickedMiddle, out bool clickedStain, slot, null, sizeMod)) {
 					PluginServices.ApplyGearChange.ExecuteBrowserItem(item);
 				}
-				if (isHovering) DrawListOfItemIconsHoveredIcon = iconKey;
+				if (isHovering) DrawListOfItemIconsHoveredIcon[listKey] = iconKey;
 				iconKey++;
-				ImGui.SameLine();
-				if(iconKey % 5 == 0) {
-					ImGui.NewLine();
+				if(iconKey < items.Count) {
+					ImGui.SameLine();
+					if (iconKey % 5 == 0) {
+						ImGui.NewLine();
+					}
 				}
 			}
 
-			if (!isAnotherTooltipActive) DrawListOfItemIconsHoveredIcon = -1;
+			if (!isAnotherTooltipActive) DrawListOfItemIconsHoveredIcon.Remove(listKey);
 		}
 	}
 }

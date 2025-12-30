@@ -21,6 +21,10 @@ namespace Dresser.Extensions {
 		public static void ToClipboard(this string text) {
 			ImGui.SetClipboardText(text);
 		}
+		public static string LabelVisibleText(this string text) {
+			int idx = text.IndexOf('#');
+			return idx >= 0 ? text[..idx] : text;
+		}
 
 
 
