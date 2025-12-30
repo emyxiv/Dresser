@@ -157,6 +157,8 @@ namespace Dresser.Windows
 				if (columnMode) ImGui.SameLine();
 				filterChanged |= ImGui.Checkbox($"Current Race/Gender/GC##displayCategory", ref ConfigurationManager.Config.filterCurrentRace);
 
+				filterChanged |= ImGui.Checkbox($"Glamour Outfits Only", ref ConfigurationManager.Config.filterGlamourSetsOnly);
+
 				filterChanged |= ConfigControls.ConfigFloatFromTo(nameof(ConfigurationManager.Config.filterEquipLevel), $"Job Level##Filters##GearBrowser", out bool jobLevelfilterActive);
 				filterActiveAfter |= jobLevelfilterActive;
 				filterChanged |= ConfigControls.ConfigFloatFromTo(nameof(ConfigurationManager.Config.filterItemLevel), $"Item Level##Filters##GearBrowser", out bool itemLevelfilterActive);

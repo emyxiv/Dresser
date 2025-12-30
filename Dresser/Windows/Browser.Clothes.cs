@@ -359,6 +359,7 @@ namespace Dresser.Windows
 					&& i.IsInFilterLevelRanges()
 					&& (!ConfigurationManager.Config.filterRarity.HasValue || i.Item.Base.Rarity == ConfigurationManager.Config.filterRarity)
 					&& i.IsNotInBlackList()
+					&& (!ConfigurationManager.Config.filterGlamourSetsOnly || i.Item.IsPartOfGlamourSet())
 				);
 
 

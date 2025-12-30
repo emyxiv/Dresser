@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using AllaganLib.GameSheets.Caches;
 using AllaganLib.GameSheets.Model;
 using AllaganLib.GameSheets.Sheets;
 using AllaganLib.GameSheets.Sheets.Helpers;
@@ -141,6 +142,10 @@ namespace Dresser.Extensions {
 
 		public static bool IsWeapon(this ItemRow item)
 			=> item.EquipSlotCategory?.Base.MainHand == 1 || item.EquipSlotCategory?.Base.OffHand == 1;
+		public static bool IsPartOfGlamourSet(this ItemRow item) {
+			return item.Uses.Any(s => s.Type == ItemInfoType.GlamourReadySetItem);
+		}
+
 		public static bool CanBeEquipedByPlayedRaceGenderGc(this ItemRow item) {
 			var gender = PluginServices.Context.LocalPlayerGender;
 			var race = PluginServices.Context.LocalPlayerRace;
