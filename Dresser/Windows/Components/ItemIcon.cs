@@ -1,11 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Numerics;
-
+﻿using AllaganLib.GameSheets.Caches;
 using AllaganLib.GameSheets.Model;
 
-using CriticalCommonLib.Extensions;
-
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using Dalamud.Interface.Textures;
@@ -19,9 +15,12 @@ using Dresser.Structs.Dresser;
 
 using Humanizer;
 
-using Dalamud.Bindings.ImGui;
-
 using Lumina.Excel.Sheets;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 using static Dresser.Services.Storage;
 
@@ -102,35 +101,60 @@ namespace Dresser.Windows.Components {
 
 						var rarityColor = RarityColor(item.Item);
 
-						// Side of the icon
+						// START ICON SIDE
+						//
 						ImGui.SameLine();
 						ImGui.BeginGroup();
 						Vector2 textInitPos = ImGui.GetCursorScreenPos();
 						ImGui.TextColored(rarityColor, $"{item.FormattedName}");
+						var nameSize = ImGui.GetItemRectSize();
+						// Glamour Set Outfit indicator
+						if (item.Item.IsPartOfGlamourSet()) {
+							ImGui.SameLine();
+							GuiHelpers.GameImage(UldBundle.ItemDetail_GlamourSetItem, new Vector2(ImGui.GetFontSize()));
+						}
+
 						// Modded
 						if (isModdedItem) {
-							var nameSize = ImGui.GetItemRectSize();
 							var verticalNameMid = nameSize.Y * 0.55f;
 
 							var draw = ImGui.GetWindowDrawList();
-							//-new Vector2(0, nameSize.Y / 2)
-							//
-							draw.AddLine(textInitPos+ new Vector2(0,verticalNameMid), textInitPos + new Vector2(nameSize.X, verticalNameMid), ImGui.ColorConvertFloat4ToU32(ModdedItemColor * new Vector4(1,1,1,0.75f)), ImGui.GetFontSize() * 0.15f);
+							// strike through the item name
+							draw.AddLine(textInitPos + new Vector2(0, verticalNameMid), textInitPos + new Vector2(nameSize.X, verticalNameMid), ImGui.ColorConvertFloat4ToU32(ModdedItemColor * new Vector4(1, 1, 1, 0.75f)), ImGui.GetFontSize() * 0.15f);
 
+							// add the mod name and version instead of the item name
 							ImGui.TextColored(ModdedItemColor, $"{item.ModName}");
 							ImGui.SameLine();
 							ImGui.TextColored(ColorGreyDark, $"{item.ModVersion}");
+
+							// this says if there is a website for the mod, usually for heliosphere mods
 							if (!item.ModWebsite.IsNullOrWhitespace()) {
 								ImGui.SameLine();
 								GuiHelpers.Icon(FontAwesomeIcon.Globe, true, ColorGood);
 							}
-							ImGui.TextColored(ModdedItemColor, $"by {item.ModAuthor}");
-							if (ConfigurationManager.Config.IconTooltipShowDev) {
-								ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");
-							}
 						}
 
+						// LINE BREAK
 
+						// level
+						ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.Base.LevelEquip ? ColorBad : ColorGrey, $"\uE06A{item.Item.Base.LevelEquip}");
+						// ilvl
+						ImGui.SameLine();
+						ImGui.TextColored(ColorGrey, $"\uE033{item.Item.Base.LevelItem.RowId}");
+						ImGui.SameLine();
+						ImGui.TextColored(ColorGreyDark, $"[{item.Item.Patch}]");
+
+
+						// LINE BREAK
+						// dyes stains
+						DrawStainsTooltip(item, sizeMod);
+
+						// END ICON SIDE
+						//
+						ImGui.EndGroup();
+
+						// LINE BREAK
+						// various debug and id info
 						if (ConfigurationManager.Config.IconTooltipShowDev) {
 							ImGui.TextColored(ColorGreyDark, $"[{item.ItemId} - 0x{item.ItemId:X0}] ({item.FormattedType}) [");
 							ImGui.SameLine();
@@ -138,34 +162,39 @@ namespace Dresser.Windows.Components {
 							ImGui.SameLine();
 							ImGui.TextColored(ColorGreyDark, $"]");
 
+							// LINE BREAK
 							ImGui.TextColored(ColorGreyDark, $"MM: [{item.Item.Base.ModelMain}] {item.Item.ModelMainItemModel()}");
 							ImGui.SameLine();
 							ImGui.TextColored(ColorGreyDark, $"MS: [{item.Item.Base.ModelSub}] {item.Item.ModelSubItemModel()}");
 						}
-						ImGui.TextColored(ColorGreyDark, $"[Patch {item.Item.Patch}]");
-						if (item.Item.Base.DyeCount > 0) ImGui.TextColored(item.Stain  != 0 ? ColorGoodLight : ColorGrey, $"{PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain ).Name}");
-						if (item.Item.Base.DyeCount > 1) ImGui.TextColored(item.Stain2 != 0 ? ColorGoodLight : ColorGrey, $"{PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().First(i => i.RowId == item.Stain2).Name}");
 
-						ImGui.EndGroup();
+						// LINE BREAK
+						// mod author
+						if (isModdedItem) {
+
+							ImGui.TextColored(ModdedItemColor, $"by {item.ModAuthor}");
+							if (ConfigurationManager.Config.IconTooltipShowDev) {
+								// LINE BREAK
+								ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");
+							}
+						}
+
+						// LINE BREAK
+
 
 						// type of item (body, legs, etc) under the icon
-						ImGui.TextColored(ColorGrey, string.Join(", ",item.Item.EquipSlotCategory?.PossibleSlots.Select(s=>s.Humanize())));
+						ImGui.TextColored(ColorGrey, string.Join(", ",item.Item.EquipSlotCategory?.PossibleSlots.Select(s=>s.Humanize()) ?? []));
 						ImGui.SameLine();
 						if ((item.Item.EquipSlotCategory?.BlockedSlots.Count?? 0) > 0) {
-							ImGui.TextColored(ColorBad, "Locks: " + string.Join(", ", item.Item.EquipSlotCategory?.BlockedSlots.Select(s => s.Humanize())));
+							ImGui.TextColored(ColorBad, "Locks: " + string.Join(", ", item.Item.EquipSlotCategory?.BlockedSlots.Select(s => s.Humanize()) ?? []));
 						}
-						//PluginLog.Debug($"ui category: {item.ItemUICategory} {item.EquipSlotCategory!.RowId}");
+						// inventory where the item is if owned (only new line if there is a "Locks")
 						ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.FormattedInventoryCategoryType());
 
-						// Equip Conditions
-						ImGui.Separator();
-
-						ImGui.TextColored(PluginServices.Context.LocalPlayerLevel < item.Item.Base.LevelEquip ? ColorBad : ColorGrey, $"lvl: {item.Item.Base.LevelEquip}");
-						ImGui.SameLine();
-						ImGui.Text($"ilvl: {item.Item.Base.LevelItem.RowId}");
-
+						// job/class allowed
 						ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.Base.ClassJobCategory.Value.Name}");
 
+						// gender/race/gc
 						var fitGender = item.Item.EquippableByGender;
 						var fitRace = item.Item.EquipRace;
 						bool requiresSpecificGender = fitGender != CharacterSex.Both;
@@ -187,15 +216,18 @@ namespace Dresser.Windows.Components {
 							ImGui.TextColored(item.Item.Base.GrandCompany.RowId == PluginServices.Context.LocalPlayerGrandCompany?.RowId ? ColorGood : ColorBad, item.Item.Base.GrandCompany.Value.Name.ToString());
 						}
 
+
+						DrawItemSource(item);
+
 						// Acquisition
-						ImGui.Separator();
-						var typEx = (InventoryTypeExtra)item.SortedContainer;
-						switch (typEx) {
-							case InventoryTypeExtra.RelicVendors:
-							case InventoryTypeExtra.CalamityVendors:
-								ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
-								break;
-						}
+						//ImGui.Separator();
+						//var typEx = (InventoryTypeExtra)item.SortedContainer;
+						//switch (typEx) {
+						//	case InventoryTypeExtra.RelicVendors:
+						//	case InventoryTypeExtra.CalamityVendors:
+						//		ImGui.Text($"Buy (vendor) for {item.BuyFromVendorPrice:n0} gil");
+						//		break;
+						//}
 
 						// Other info
 						//if((InventoryTypeExtra)item.SortedContainer == InventoryTypeExtra.CalamityVendors)
@@ -234,6 +266,49 @@ namespace Dresser.Windows.Components {
 
 
 			return clicked;
+		}
+		private static HashSet<ItemInfoType> _itemSourceToDraw = [
+			ItemInfoType.CashShop,
+			ItemInfoType.GCShop,
+			ItemInfoType.AnimaShop,
+			ItemInfoType.FateShop,
+			ItemInfoType.GilShop,
+			ItemInfoType.FCShop,
+			ItemInfoType.CalamitySalvagerShop,
+			ItemInfoType.ZodiacWeapon,
+			ItemInfoType.Achievement,
+		];
+
+		public static void DrawItemSource(InventoryItem inventoryItem) {
+			if (!ConfigurationManager.Config.ShowItemTooltipsSources) return;
+			if (ConfigurationManager.Config.ShowItemTooltipsSourcesNotObtained && inventoryItem.IsObtained()) return;
+
+			var item = inventoryItem.Item;
+			var sources = item.Sources;
+			if (sources == null || sources.Count == 0) return;
+
+			ImGui.Text($"Sources:");
+			foreach (var itemSource in sources) {
+				//if (!_itemSourceToDraw.Contains(itemSource.Type)) continue;
+				ImGui.BulletText($"{itemSource.Type.Humanize()}");
+				int costItemCount = 0;
+				var costItems = itemSource.CostItems;
+				if (costItems != null && costItems.Count != 0) {
+					ImGui.SameLine();
+					foreach (var costItem in costItems) {
+						costItemCount++;
+						var icon = costItem.ItemRow.Base.Icon;
+						GuiHelpers.GameIcon(icon, new Vector2(ImGui.GetFontSize()));
+						if(costItem.Count != null) {
+							ImGui.SameLine();
+							ImGui.TextColored(ColorBronze, costItem.Count?.ToString());
+						}
+						if (costItemCount < costItems.Count) {
+							ImGui.SameLine();
+						}
+					}
+				}
+			}
 		}
 		private static bool DrawImage(ISharedImmediateTexture image, InventoryItem item, IconImageFlag iconImageFlag = 0)
 		{
@@ -334,40 +409,70 @@ namespace Dresser.Windows.Components {
 			return clicked;
 		}
 
+
+		public static void DrawStainsTooltip(InventoryItem item, float sizeMod = 1) {
+
+			if (!item.Item.IsDyeable1()) return;
+			var stain1 = item.StainEntry;
+			if (stain1 == null) return; // should not happen
+			var pos1 = ImGui.GetCursorScreenPos();
+			var color1 = item.Stain != 0 ? ColorGoodLight : ColorGrey;
+			ImGui.TextColored(color1, $"{stain1.Value.Name}");
+			pos1 += ImGui.GetItemRectSize() + new Vector2(ImGui.GetStyle().ItemSpacing.X * 0.5f, 0);
+			DrawStain(stain1.Value, 1, sizeMod * 0.75f,out var radius1, ImGui.ColorConvertFloat4ToU32(color1), pos1, false);
+
+			if (!item.Item.IsDyeable2()) return;
+			var stain2 = item.StainEntry;
+			if (stain2 == null) return; // should not happen
+			ImGui.SameLine();
+			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (radius1 * 2) + ImGui.GetStyle().ItemSpacing.X);
+			var pos2 = ImGui.GetCursorScreenPos();
+			var color2 = item.Stain2 != 0 ? ColorGoodLight : ColorGrey;
+			ImGui.TextColored(color2, $"{stain2.Value.Name}");
+
+			pos2 += ImGui.GetItemRectSize() + new Vector2(ImGui.GetStyle().ItemSpacing.X * 0.5f, 0);
+			DrawStain(stain2.Value, 2, sizeMod * 0.75f, out var radius2, ImGui.ColorConvertFloat4ToU32(color2), pos2, false);
+			ImGui.SetCursorScreenPos(pos2);
+			ImGui.InvisibleButton("##spacelockerStain2##DrawStainsTooltip",new Vector2(radius2*2)); // lock space on the right
+		}
 		public static bool DrawStains(InventoryItem item, float sizeMod = 1)
 		{
 
 			bool wasClicked = false;
 			if (!item.Item.IsDyeable1()) return wasClicked;
-			var stain1 = PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain);
-			//if(item.FormattedName == "Thavnairian Bustier") PluginLog.Debug($"DYE: {stain1.Name} {stain1.RowId}");
+			var stain1 = item.StainEntry;
 			if(stain1 == null) return wasClicked;
 			wasClicked |= DrawStain(stain1.Value, 1, sizeMod);
 
-
 			if (!item.Item.IsDyeable2()) return wasClicked;
-			var stain2 = PluginServices.DataManager.GameData.Excel.GetSheet<Stain>().GetRowOrDefault(item.Stain2);
+			var stain2 = item.Stain2Entry;
 			if (stain2 == null) return wasClicked;
 			wasClicked |= DrawStain(stain2.Value, 2, sizeMod);
 			return wasClicked;
 		}
-		public static bool DrawStain(Stain stain, ushort dyeIndex, float sizeMod = 1) {
-			ImGui.SameLine();
-			Vector2 cursorScreenPos = ImGui.GetCursorScreenPos();
+		public static bool DrawStain(Stain stain, ushort dyeIndex, float sizeMod = 1)
+			=> DrawStain(stain, dyeIndex, sizeMod, out var _, 0xff000000, null, true);
+		public static bool DrawStain(Stain stain, ushort dyeIndex, float sizeMod, out float radius, uint borderColor, Vector2? pos = null, bool forceSameLineBefore = true) {
+			if(forceSameLineBefore) ImGui.SameLine();
 
 			var rowOffset = dyeIndex > 1 ? dyeIndex * 1.75f : 1;
 
-			var radius = (ImGui.GetFontSize()) * 0.5f * ConfigurationManager.Config.IconSizeMult * sizeMod;
-			var x = cursorScreenPos.X - radius - ImGui.GetStyle().ItemSpacing.X;
-			var y = cursorScreenPos.Y + (rowOffset * radius);
-			var pos = new Vector2(x, y);
+			radius = (ImGui.GetFontSize()) * 0.5f * ConfigurationManager.Config.IconSizeMult * sizeMod;
+			if (pos == null) {
+				Vector2 cursorScreenPos = ImGui.GetCursorScreenPos();
+				var x = cursorScreenPos.X - radius - ImGui.GetStyle().ItemSpacing.X;
+				var y = cursorScreenPos.Y + (rowOffset * radius);
+				pos = new Vector2(x, y);
+			} else {
+				pos += new Vector2(radius, -radius - (ImGui.GetFontSize() * 0.075f)); // set anchor to bottom left corner 
+			}
 			var color = stain.ColorVector4();
 
 			var draw = ImGui.GetWindowDrawList();
-			draw.AddCircleFilled(pos, radius, ImGui.ColorConvertFloat4ToU32(color));
-			draw.AddCircle(pos, radius, 0xff000000, 0, DyeBorder * sizeMod);
+			draw.AddCircleFilled(pos.Value, radius, ImGui.ColorConvertFloat4ToU32(color));
+			draw.AddCircle(pos.Value, radius, borderColor, 0, DyeBorder * sizeMod);
 
-			var posSquare = pos - new Vector2(radius);
+			var posSquare = pos.Value - new Vector2(radius);
 			var wasClicked = ImGui.IsMouseHoveringRect(posSquare, posSquare + new Vector2(radius * 2)) && ImGui.IsItemClicked();
 
 			if (wasClicked)DyePicker.CircleIndex(dyeIndex);

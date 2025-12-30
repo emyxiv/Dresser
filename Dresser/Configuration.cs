@@ -148,6 +148,8 @@ namespace Dresser {
 		public bool FadeIconsIfNotHiddingTooltip = false;
 		public bool IconTooltipShowDev = false;
 		public bool ShowImagesInBrowser = true;
+		public bool ShowItemTooltipsSources = true;
+		public bool ShowItemTooltipsSourcesNotObtained = true;
 		public List<uint> FilterClassJobCategories = [];
 		public JobFilterType filterCurrentJobFilterType = JobFilterType.All;
 		public bool filterCurrentRace = true;

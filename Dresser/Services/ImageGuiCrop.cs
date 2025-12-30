@@ -10,6 +10,7 @@ using Dalamud.Bindings.ImGui;
 
 using System;
 using System.Collections.Generic;
+using Dalamud.Utility;
 
 namespace Dresser.Services {
 	internal class ImageGuiCrop : IDisposable {
@@ -210,8 +211,9 @@ namespace Dresser.Services {
 		//=> "light/";
 		//=> "third/";
 		//=> "fourth/";
-		private static string BuildTexPath(string textureSubPath)
+		private static string BuildTexPath(string textureSubPath, string subFolder = "")
 			=> "ui/uld/"
+				+ (subFolder.IsNullOrWhitespace() ? string.Empty : subFolder + "/")
 				// + ThemePathPart // todo this needs Dalamud UldWrapper update
 				+ textureSubPath
 				+ Storage.HighResolutionSufix
@@ -348,5 +350,14 @@ namespace Dresser.Services {
 		public static UldBundle CharacterClass_DpsMagicalRanged => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 7, "CharacterClass_DpsMagicalRanged");
 		public static UldBundle CharacterClass_DisciplesOfTheHand => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 8, "CharacterClass_DisciplesOfTheHand");
 		public static UldBundle CharacterClass_DisciplesOfTheLand => new(BuildTexPath("ToggleButton"), "ui/uld/CharacterClass.uld", 9, "CharacterClass_DisciplesOfTheLand");
+
+		public static UldBundle MiragePrismBox_SetStored => new(BuildTexPath("MiragePrismBoxIcon"), "ui/uld/MiragePrismBox.uld", 26, "MiragePrismBox_SetStored");
+		public static UldBundle MiragePrismBox_SetStorable => new(BuildTexPath("MiragePrismBoxIcon"), "ui/uld/MiragePrismBox.uld", 27, "MiragePrismBox_SetStorable");
+		public static UldBundle MiragePrismBox_SetStored2 => new(BuildTexPath("MiragePrismBoxIcon"), "ui/uld/MiragePrismSetConvesion.uld", 27, "MiragePrismBox_SetStored2");
+		public static UldBundle ItemDetail_NotGlamour => new(BuildTexPath("ItemDetailPutIn"), "ui/uld/ItemDetail.uld", 1, "ItemDetail_NotGlamour");
+		public static UldBundle ItemDetail_Glamour => new(BuildTexPath("ItemDetailPutIn"), "ui/uld/ItemDetail.uld", 4, "ItemDetail_Glamour");
+		public static UldBundle ItemDetail_GlamourSetItem => new(BuildTexPath("ItemDetailPutIn"), "ui/uld/ItemDetail.uld", 7, "ItemDetail_GlamourSetItem");
+
+
 	}
 }

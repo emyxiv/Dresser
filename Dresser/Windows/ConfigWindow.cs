@@ -38,6 +38,7 @@ public class ConfigWindow : Window, IDisposable {
 			{"General",new () {
 				{ "Portable Plates", DrawPlatesConfig },
 				{ "Behaviors", DrawBehaviourConfigs },
+				{ "Item Tooltips", DrawItemTooltipsConfigs },
 				{ "Icons", DrawIconsConfigs },
 			}},
 			{"Style",new () {
@@ -137,6 +138,12 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Checkbox($"Offer Overwrite Pending Plates After Apply All##Behaviours##Config", ref ConfigurationManager.Config.OfferOverwritePendingPlatesAfterApplyAll);
 
 
+	}
+	private void DrawItemTooltipsConfigs() {
+		ImGui.Checkbox($"Show item's sources##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowItemTooltipsSources);
+		if (!ConfigurationManager.Config.ShowItemTooltipsSources) ImGui.BeginDisabled();
+		ImGui.Checkbox($"Only show item's sources when the item is not obtained##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowItemTooltipsSourcesNotObtained);
+		if (!ConfigurationManager.Config.ShowItemTooltipsSources) ImGui.EndDisabled();
 	}
 	private void DrawIconsConfigs() {
 

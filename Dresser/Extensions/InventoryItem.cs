@@ -49,6 +49,11 @@ namespace Dresser.Extensions {
 			return elmin <= el && el <= elmax && ilmin <= il && il <= ilmax;
 		}
 
+		public static bool IsObtained(this InventoryItem item) {
+			return !
+				(item.SortedCategory == 0 && ((int)item.SortedContainer >= (int)InventoryTypeExtra.AllItems || (int)item.SortedContainer == 0)) // not owned
+				;
+		}
 		public static string FormattedInventoryCategoryType(this CriticalInventoryItem item) {
 			var cat = item.SortedCategory;
 			var catForm = cat.ToFriendlyName();

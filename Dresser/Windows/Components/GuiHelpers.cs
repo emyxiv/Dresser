@@ -62,6 +62,22 @@ namespace Dresser.Windows.Components {
 		public static bool IconButtonNoBg(FontAwesomeIcon icon, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? textColor = null) {
 			return ButtonNoBg((label,h) => IconButton(icon, size, label), hiddenLabel, tooltip, textColor);
 		}
+
+		public static void GameImage(UldBundle cropItemId, Vector2 size = default) {
+			var z = PluginServices.ImageGuiCrop.GetPart(cropItemId);
+			if (z == null) return;
+			var pos = ImGui.GetCursorScreenPos();
+			ImGui.GetWindowDrawList().AddImage(z.Handle, pos, pos + size);
+			ImGui.InvisibleButton($"{pos.GetHashCode()}##spacerButtonGameImage", size);
+		}
+
+		public static void GameIcon(uint icon, Vector2 size = default) {
+			var z = PluginServices.TextureProvider.GetFromGameIcon(new Dalamud.Interface.Textures.GameIconLookup(icon));
+			if (z == null) return;
+			var pos = ImGui.GetCursorScreenPos();
+			ImGui.GetWindowDrawList().AddImage(z.GetWrapOrEmpty().Handle, pos, pos + size);
+			ImGui.InvisibleButton($"{pos.GetHashCode()}##spacerButtonGameIcon", size);
+		}
 		public static bool GameButton(UldBundle cropItemId, string hiddenLabel, string tooltip = "", Vector2 size = default, Vector4? color = null) {
 			var tint = color?? Vector4.One;
 			return ButtonNoBg((label, hovered) => {
