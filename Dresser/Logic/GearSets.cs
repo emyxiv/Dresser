@@ -100,18 +100,7 @@ namespace Dresser.Logic {
 				var name = g.NameString;
 				var id = g.Id + 1;
 				var ilvl = g.ItemLevel;
-				//ImGui.Bullet();
-				ImGui.Text(" • ");
-				ImGui.SameLine();
-				//ImGui.AlignTextToFramePadding();
-				//GuiHelpers.TextWithFont($"{id}",GuiHelpers.Font.TrumpGothic_184);
-				ImGui.Text($"{id}  ");
-				ImGui.SameLine();
-				ImGui.Text($"{name}  ");
-				ImGui.SameLine();
-				GuiHelpers.TextWithFont($"{(char)0xE033}",GuiHelpers.Font.BubblePlateNumber);
-				ImGui.SameLine();
-				ImGui.Text($"{ilvl}");
+				ImGui.BulletText($"{id}  [{name}]  \uE033{ilvl}");
 			}
 		}
 
