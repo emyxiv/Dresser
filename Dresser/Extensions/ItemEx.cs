@@ -142,6 +142,9 @@ namespace Dresser.Extensions {
 
 		public static bool IsWeapon(this ItemRow item)
 			=> item.EquipSlotCategory?.Base.MainHand == 1 || item.EquipSlotCategory?.Base.OffHand == 1;
+		public static bool IsOrnate(this ItemRow item) {
+			return item.Base.MateriaSlotCount >= 5;
+		}
 		public static bool IsPartOfGlamourSet(this ItemRow item) {
 			return item.Uses.Any(s => s.Type == ItemInfoType.GlamourReadySetItem);
 		}

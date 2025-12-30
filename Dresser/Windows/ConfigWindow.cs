@@ -38,6 +38,7 @@ public class ConfigWindow : Window, IDisposable {
 			{"General",new () {
 				{ "Portable Plates", DrawPlatesConfig },
 				{ "Behaviors", DrawBehaviourConfigs },
+				{ "Item Filters", DrawItemFiltersConfigs },
 				{ "Item Tooltips", DrawItemTooltipsConfigs },
 				{ "Icons", DrawIconsConfigs },
 			}},
@@ -138,6 +139,13 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Checkbox($"Offer Overwrite Pending Plates After Apply All##Behaviours##Config", ref ConfigurationManager.Config.OfferOverwritePendingPlatesAfterApplyAll);
 
 
+	}
+	private void DrawItemFiltersConfigs() {
+		var filterChanged = false;
+		filterChanged |= ImGui.Checkbox($"Always Remove Ornate items from Gear Browser##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.filterOrnateObtained);
+
+
+		if (filterChanged) GearBrowser.RecomputeItems();
 	}
 	private void DrawItemTooltipsConfigs() {
 		ImGui.Checkbox($"Show item's sources##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.ShowItemTooltipsSources);

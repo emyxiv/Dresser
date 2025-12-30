@@ -154,6 +154,7 @@ namespace Dresser {
 		public JobFilterType filterCurrentJobFilterType = JobFilterType.All;
 		public bool filterCurrentRace = true;
 		public bool filterGlamourSetsOnly = false;
+		public bool filterOrnateObtained = false;
 		public Vector2 filterEquipLevel = new(1, PluginServices.Storage.MaxEquipLevel);
 		public Vector2 filterItemLevel = new(1, PluginServices.Storage.MaxItemLevel);
 		public byte? filterRarity = null;
