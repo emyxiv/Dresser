@@ -363,6 +363,8 @@ namespace Dresser.Windows
 					&& i.IsNotInBlackList()
 					&& (!ConfigurationManager.Config.filterGlamourSetsOnly || i.Item.IsPartOfGlamourSet())
 					&& (!ConfigurationManager.Config.filterOrnateObtained || i.IsObtained() || !i.Item.IsOrnate())
+					&& (!ConfigurationManager.Config.filterHideCashShop || i.IsObtained() || !i.Item.IsCashShop())
+					&& (!ConfigurationManager.Config.filterHideNoSource || i.IsObtained() || !i.Item.HasNoSource())
 				);
 
 

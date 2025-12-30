@@ -145,6 +145,12 @@ namespace Dresser.Extensions {
 		public static bool IsOrnate(this ItemRow item) {
 			return item.Base.MateriaSlotCount >= 5;
 		}
+		public static bool IsCashShop(this ItemRow item) {
+			return item.HasSourcesByType(ItemInfoType.CashShop);
+		}
+		public static bool HasNoSource(this ItemRow item) {
+			return item.Sources.Count == 0;
+		}
 		public static bool IsPartOfGlamourSet(this ItemRow item) {
 			return item.Uses.Any(s => s.Type == ItemInfoType.GlamourReadySetItem);
 		}

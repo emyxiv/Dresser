@@ -133,7 +133,6 @@ namespace Dresser.Services {
 		// InventoryTypeExtra must match AdditionalItem * 1000000 + (currency item id OR other)
 		public enum InventoryTypeExtra {
 			AllItems = 1000000,
-			AllButSqStore = 1000001,
 
 			CalamityVendors = 2000001,
 			RelicVendors = 2000022,
@@ -197,7 +196,7 @@ namespace Dresser.Services {
 		//public Dictionary<AdditionalItem, Dictionary<InventoryType, HashSet<InventoryItem>>> AdditionalItems = FilterNames.ToDictionary(fn=>fn.Key,fn=>fn.Value.ToDictionary(itn=>itn.Key,itn=> new HashSet<InventoryItem>()));
 
 		// all items
-		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems, (InventoryType)InventoryTypeExtra.AllButSqStore };
+		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems, };
 		// vendor
 		public static Dictionary<InventoryType, Func<ItemRow, bool>> FilterUnobtainedFromCustomSource = new() {
 			{ (InventoryType) InventoryTypeExtra.CalamityVendors , (i) => {return i.HasSourcesByType(ItemInfoType.CalamitySalvagerShop); } },
@@ -216,8 +215,6 @@ namespace Dresser.Services {
 				var q = PluginServices.SheetManager.GetSheet<ItemSheet>()
 					//.DistinctBy(i=>i.Value.GetSharedModels())
 					.Where((itemPair) => itemPair.Base.ModelMain != 0);
-
-				if (inventoryType == (InventoryType)InventoryTypeExtra.AllButSqStore) q = q.Where(p => !p.HasSourcesByCategory(ItemInfoCategory.Shop)); // for AllButSqStore
 
 				AdditionalItems[inventoryType] = q.Select(i => new InventoryItem(inventoryType, i.RowId)).ToList();
 

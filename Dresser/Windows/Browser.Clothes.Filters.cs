@@ -71,6 +71,12 @@ namespace Dresser.Windows
 
 				ImGui.Columns(ConfigurationManager.Config.FilterInventoryTypeColumnNumber is >= 1 and <= 5 ? ConfigurationManager.Config.FilterInventoryTypeColumnNumber : 2);
 				ImGui.BeginGroup();
+
+				filterChanged |= ImGui.Checkbox($"Hide Cash Shop", ref ConfigurationManager.Config.filterHideCashShop);
+				GuiHelpers.Tooltip("Hide cash shop (sq store) items.\nNote: This will also hide the items that can be obtained by other means than the cash shop (e.g. with event's currency). However, these are usually from past event so these currencies should now be unobtainable.");
+				filterChanged |= ImGui.Checkbox($"Hide No Source", ref ConfigurationManager.Config.filterHideNoSource);
+				GuiHelpers.Tooltip("Hide unobtained items that have no known source.\nNote: This is not purely a \"hide unobtainable\" checkbox, as some unobtainable future event items have known sources, and in opposition, some sources are not known but this plugin.");
+
 				int i = 0;
 				foreach ((var addItemKind, var option) in PluginServices.Storage.FilterNames) {
 					ImGui.TextDisabled(addItemKind.ToString().AddSpaceBeforeCapital());
