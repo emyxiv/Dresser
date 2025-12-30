@@ -267,19 +267,9 @@ namespace Dresser.Windows.Components {
 
 			return clicked;
 		}
-		private static HashSet<ItemInfoType> _itemSourceToDraw = [
-			ItemInfoType.CashShop,
-			ItemInfoType.GCShop,
-			ItemInfoType.AnimaShop,
-			ItemInfoType.FateShop,
-			ItemInfoType.GilShop,
-			ItemInfoType.FCShop,
-			ItemInfoType.CalamitySalvagerShop,
-			ItemInfoType.ZodiacWeapon,
-			ItemInfoType.Achievement,
-		];
 
 		public static void DrawItemSource(InventoryItem inventoryItem) {
+			// Quick config checks
 			if (!ConfigurationManager.Config.ShowItemTooltipsSources) return;
 			if (ConfigurationManager.Config.ShowItemTooltipsSourcesNotObtained && inventoryItem.IsObtained()) return;
 
@@ -287,10 +277,28 @@ namespace Dresser.Windows.Components {
 			var sources = item.Sources;
 			if (sources == null || sources.Count == 0) return;
 
+			// Deduplicate sources:
+			// - Key by (Type, primary cost item id)
+			// - For each group keep the source with the lowest total cost (sum of CostItem.Count)
+			// Rationale: "same item id" interpreted as the primary cost item's RowId (first cost item), and
+			// when multiple cost entries exist compare their total cost and keep the minimal one.
+			var deduped = sources
+				.Select(s => new {
+					Source = s,
+					PrimaryCostItemId = s.CostItems?.FirstOrDefault()?.ItemRow?.RowId ?? 0,
+					TotalCost = s.CostItems?.Sum(ci => (ci.Count ?? 0)) ?? 0
+				})
+				.GroupBy(x => (x.Source.Type, x.PrimaryCostItemId))
+				.Select(g => g.OrderBy(x => x.TotalCost).ThenBy(x => (x.Source.CostItems?.Count ?? 0)).First().Source);
+
+			// Draw
 			ImGui.Text($"Sources:");
-			foreach (var itemSource in sources) {
-				//if (!_itemSourceToDraw.Contains(itemSource.Type)) continue;
+			foreach (var itemSource in deduped) {
+
+				// print source type
 				ImGui.BulletText($"{itemSource.Type.Humanize()}");
+
+				// followed by costs if available
 				int costItemCount = 0;
 				var costItems = itemSource.CostItems;
 				if (costItems != null && costItems.Count != 0) {
@@ -299,7 +307,7 @@ namespace Dresser.Windows.Components {
 						costItemCount++;
 						var icon = costItem.ItemRow.Base.Icon;
 						GuiHelpers.GameIcon(icon, new Vector2(ImGui.GetFontSize()));
-						if(costItem.Count != null) {
+						if (costItem.Count != null) {
 							ImGui.SameLine();
 							ImGui.TextColored(ColorBronze, costItem.Count?.ToString());
 						}
