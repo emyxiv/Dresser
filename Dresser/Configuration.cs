@@ -156,6 +156,7 @@ namespace Dresser {
 		public bool filterGlamourSetsOnly = false;
 		public bool filterHideCashShop = false;
 		public bool filterHideNoSource = false;
+		public bool filterHideOwned = false;
 		public bool filterOrnateObtained = false;
 		public Vector2 filterEquipLevel = new(1, PluginServices.Storage.MaxEquipLevel);
 		public Vector2 filterItemLevel = new(1, PluginServices.Storage.MaxItemLevel);

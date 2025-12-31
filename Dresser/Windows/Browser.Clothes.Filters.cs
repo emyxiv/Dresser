@@ -76,6 +76,8 @@ namespace Dresser.Windows
 				GuiHelpers.Tooltip("Hide cash shop (sq store) items.\nNote: This will also hide the items that can be obtained by other means than the cash shop (e.g. with event's currency). However, these are usually from past event so these currencies should now be unobtainable.");
 				filterChanged |= ImGui.Checkbox($"Hide No Source", ref ConfigurationManager.Config.filterHideNoSource);
 				GuiHelpers.Tooltip("Hide unobtained items that have no known source.\nNote: This is not purely a \"hide unobtainable\" checkbox, as some unobtainable future event items have known sources, and in opposition, some sources are not known but this plugin.");
+				filterChanged |= ImGui.Checkbox($"Hide Owned", ref ConfigurationManager.Config.filterHideOwned);
+				GuiHelpers.Tooltip("Hide items already obtained.");
 
 				int i = 0;
 				foreach ((var addItemKind, var option) in PluginServices.Storage.FilterNames) {

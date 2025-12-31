@@ -365,6 +365,7 @@ namespace Dresser.Windows
 					&& (!ConfigurationManager.Config.filterOrnateObtained || i.IsObtained() || !i.Item.IsOrnate())
 					&& (!ConfigurationManager.Config.filterHideCashShop || i.IsObtained() || !i.Item.IsCashShop())
 					&& (!ConfigurationManager.Config.filterHideNoSource || i.IsObtained() || !i.Item.HasNoSource())
+					&& (!ConfigurationManager.Config.filterHideOwned || !i.IsObtained())
 				);
 
 
