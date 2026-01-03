@@ -71,16 +71,11 @@ namespace Dresser.Interop.Hooks {
 		internal unsafe ushort? CurrentPlateIndex() {
 
 			var agent = MiragePlateAgent;
-			if (agent == null) {
+			if (agent == null || agent->Data == null) {
 				return null;
 			}
 
-			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
-			if (data == null) {
-				return null;
-			}
-
-			var currentPlate = data->SelectedMiragePlateIndex;
+			var currentPlate = agent->Data->SelectedMiragePlateIndex;
 			if (currentPlate >= Offsets.TotalPlates && currentPlate < 0) return null;
 			return (ushort)currentPlate;
 
@@ -100,12 +95,11 @@ namespace Dresser.Interop.Hooks {
 				return successfullyApplied;
 			}
 
-			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
-			if (data == null) {
+			if (agent->Data == null) {
 				PluginLog.Error($"Glamour dresser not opened");
 				return successfullyApplied;
 			}
-			var initialSlot = data->SelectedItemIndex;
+			var initialSlot = agent->Data->SelectedItemIndex;
 
 			int changedCount = 0;
 			foreach ( (var slot, var item) in set.Items) {
@@ -128,9 +122,9 @@ namespace Dresser.Interop.Hooks {
 				//});
 			}
 
-			data->SelectedItemIndex = initialSlot;
+			agent->Data->SelectedItemIndex = initialSlot;
 			if(changedCount > 0) {
-				data->HasChanges = true;
+				agent->Data->HasChanges = true;
 			}
 			return successfullyApplied;
 		}
@@ -194,7 +188,7 @@ namespace Dresser.Interop.Hooks {
 				return SetGlamourPlateSlotReturn.failed;
 			}
 
-			var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
+			var data = agent->Data;
 			if (data == null) {
 				PluginLog.Error($"Glamour dresser not opened");
 				return SetGlamourPlateSlotReturn.failed;
@@ -289,6 +283,19 @@ namespace Dresser.Interop.Hooks {
 			}
 
 
+			// never attempt to clear stains on invalid items
+			// this can happen if CS offsets are wrong
+			int numStainSlots = applyItem.DyeCount;
+			if (numStainSlots == 0) {
+				info.stain1 = 0;
+				applyItem.Stain = 0;
+			}
+
+			if (numStainSlots != 2) {
+				info.stain2 = 0;
+				applyItem.Stain2 = 0;
+			}
+
 			//PluginLog.Debug($"=>>> send item info {info.container.Value} | {info.index} | {info.id} | {info.stain1} | {info.stain2}");
 
 			// apply the item
@@ -316,8 +323,10 @@ namespace Dresser.Interop.Hooks {
 
 				// item loading for plates is deferred as of patch 7.1
 				// so we must set the flags ourselves in order to activate the second dye slot immediately
+				if (applyItem.Stain != 0)
+					data->CurrentItems[(int)applyItemSlot.Value].Flags |= FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemFlag.HasStain0;
 				if (applyItem.Stain2 != 0)
-					data->CurrentItems[(int)applyItemSlot.Value].Flags = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemFlag.HasStain1;
+					data->CurrentItems[(int)applyItemSlot.Value].Flags |= FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemFlag.HasStain1;
 
 				this.ApplyStains(applyItemSlot.Value, applyItem, ref usedStains);
 				data->ContextMenuItemIndex = previousContextSlot;
@@ -426,17 +435,13 @@ namespace Dresser.Interop.Hooks {
 			get {
 
 				var agent = MiragePlateAgent;
-				if (agent == null) {
+				if (agent == null || agent->Data == null) {
 					return null;
 				}
 
-				var data = *(FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData**)((nint)agent + Offsets.HeadSize);
-				if (data == null)
-					return null;
-
 				var plate = new Dictionary<GlamourPlateSlot, SavedGlamourItem>();
 				foreach (var slot in Enum.GetValues<GlamourPlateSlot>()) {
-					ref var item = ref data->CurrentItems[(int)slot];
+					ref var item = ref agent->Data->CurrentItems[(int)slot];
 
 					if (item.ItemId == 0)
 						continue;
@@ -495,11 +500,7 @@ namespace Dresser.Interop.Hooks {
 			if (!agent->IsAddonReady() || agent->Data == null)
 				return new();
 
-			// if (agent->Data->UsedSlots == _dresserItemSlotsUsed)
-			// 	return new();
-            ushort* usedSlots = (ushort*) ((nint) agent->Data + 0x10B460);
-            if (*usedSlots == _dresserItemSlotsUsed)
-                return new();
+			int usedSlots = agent->Data->UsedSlots;
 
 			List<PrismBoxCachedItem> items = new();
 			//PluginLog.Verbose($"refreshing dresser contents");
