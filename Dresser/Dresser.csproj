@@ -48,9 +48,7 @@
 
   <ItemGroup>
     <PackageReference Include="AllaganLib.Data" Version="2.0.0" />
-    <PackageReference Include="AllaganLib.GameSheets" Version="2.0.1" />
     <PackageReference Include="AllaganLib.Interface" Version="2.0.0" />
-    <PackageReference Include="AllaganLib.Shared" Version="2.0.0" />
     <PackageReference Include="Glamourer.Api" Version="2.8.0" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
     <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
