@@ -74,12 +74,10 @@ namespace Dresser {
 				BuildNpcShops = true,
 				BuildItemInfoCache = true,
 				CalculateLookups = true,
-				// ContainerBuilderHook = builder =>
-				// {
-				// 	builder.RegisterType<uint>().AsSelf().as
-				// }
+                PersistInDataShare = true,
+                CacheInDataShare = true
 			};
-			SheetManager = new SheetManager(gd, smso);
+			SheetManager = new SheetManager(dalamud, gd, smso);
 			InventoryItemFactory = new InventoryItemFactory(SheetManager, DataManager);
 
 			Context = new Context();
