@@ -266,6 +266,25 @@ namespace Dresser.Structs.Dresser {
 			return itemSlot == GearBrowser.SelectedSlot || (itemSlot == GlamourPlateSlot.RightRing && GearBrowser.SelectedSlot == GlamourPlateSlot.LeftRing);
 		}
 
+		public bool HasTagContains(string searchTerm) {
+
+			// check if the item has any tags that contain the search term
+			if (!TagStore.itemToTags.TryGetValue(this.ItemId, out var tagIds)) {
+				if(searchTerm.Contains("t:none", System.StringComparison.OrdinalIgnoreCase)) {
+					return true;
+				}
+				return false;
+			}
+
+			// get all tags that match the search term
+			var tags = Tag.TagNameContains(searchTerm).Select(t => t.Id);
+
+			// check if the item has any of the matching tags
+			return tagIds.Overlaps(tags);
+		}
+
+
+
 
 		private IEnumerable<ItemProviderInfo>? _providerInfo = null;
 		private bool _providerInfoSet = false;

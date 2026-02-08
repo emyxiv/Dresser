@@ -216,7 +216,7 @@ namespace Dresser.Windows.Components {
 							ImGui.TextColored(item.Item.Base.GrandCompany.RowId == PluginServices.Context.LocalPlayerGrandCompany?.RowId ? ColorGood : ColorBad, item.Item.Base.GrandCompany.Value.Name.ToString());
 						}
 
-
+						DrawTags(item);
 						DrawItemSource(item);
 
 						// Acquisition
@@ -267,7 +267,70 @@ namespace Dresser.Windows.Components {
 
 			return clicked;
 		}
+		public static void DrawTags(InventoryItem inventoryItem) {
+			DrawTags(inventoryItem, true, false, out var _, "iconItem");
+		}
+		public static bool DrawTags(InventoryItem inventoryItem, bool leadLineBreak, bool interactive, out Tag? clickedTag, string extraLabel) {
+			var tags = inventoryItem.Item.Tags();
+			return DrawTags(tags, leadLineBreak, interactive, out clickedTag, extraLabel, null);
+		}
+		public static bool DrawTags(HashSet<Tag> tags, bool leadLineBreak, bool interactive, out Tag? clickedTag, string extraLabel, string? searchTerm) {
+			clickedTag = null;
+			if (tags == null || tags.Count == 0) return false;
+			var isSearchable = searchTerm != null && !searchTerm.IsNullOrWhitespace();
 
+			if (leadLineBreak) ImGui.NewLine();
+			try {
+				ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
+				var isFirst = true;
+				foreach (var tag in tags) {
+					if(!isFirst) ImGui.SameLine();
+					isFirst = false;
+					var widthAvailable = ImGui.GetContentRegionAvail().X;
+					var buttonWidth = ImGui.CalcTextSize(tag.Name).X;
+
+					var hasEnoughSpace = buttonWidth < widthAvailable;
+					if (!hasEnoughSpace) {
+						ImGui.NewLine();
+					}
+
+					var isNameExactMatch = false;
+					if (isSearchable && searchTerm != null) isNameExactMatch = tag.NameEquals(searchTerm);
+					if (!interactive) ImGui.BeginDisabled();
+
+					bool isButtonClicked = false;
+					try {
+						if (isSearchable) {
+							var buttonBackground = isNameExactMatch ? ItemIcon.ColorGood : ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
+							var buttonText = isNameExactMatch ? new Vector4(new Vector3(0f), 1f) : ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
+							ImGui.PushStyleColor(ImGuiCol.Button, buttonBackground);
+							ImGui.PushStyleColor(ImGuiCol.Text, buttonText);
+						}
+
+						isButtonClicked = ImGui.SmallButton($"{tag.Name}##DeleteTagButton##{tag.Id}##{extraLabel}");
+
+					} finally {
+						if (isSearchable) ImGui.PopStyleColor(2);
+					}
+
+
+					if (!interactive) {
+						ImGui.EndDisabled();
+						var isCtrlShiftHeld = ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift;
+						if (isCtrlShiftHeld) {
+							GuiHelpers.Tooltip("Hold Ctrl + Shift and Click to relive this tag from the item");
+						}
+					}
+					if (interactive && isButtonClicked) {
+						clickedTag = tag;
+					}
+				}
+			} finally {
+				ImGui.PopStyleVar(1);
+			}
+			return clickedTag != null;
+
+		}
 		public static void DrawItemSource(InventoryItem inventoryItem) {
 			// Quick config checks
 			if (!ConfigurationManager.Config.ShowItemTooltipsSources) return;

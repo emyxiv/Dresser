@@ -12,6 +12,7 @@ using Dresser.Interop.Addons;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
+using Dresser.Structs.Dresser;
 
 namespace Dresser {
 	internal class PluginServices {
@@ -90,6 +91,7 @@ namespace Dresser {
 			//ChatUtilities = new ChatUtilities();
 
 			ConfigurationManager.Load();
+			TagStore.LoadLinks();
 			//GameInterface = new GameInterface(Service.GameInteropProvider);
 			HotkeySetup.Init();
 
