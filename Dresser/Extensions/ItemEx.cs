@@ -21,6 +21,7 @@ using Dresser.Logic.Glamourer;
 using Dresser.Services;
 using Dresser.Structs;
 using Dresser.Structs.Actor;
+using Dresser.Structs.Dresser;
 using Dresser.Windows;
 
 using Lumina.Data;
@@ -311,6 +312,17 @@ namespace Dresser.Extensions {
 		}
 		public static bool IsDyeable2(this ItemRow item) {
 			return item.Base.DyeCount > 1;
+		}
+
+		public static HashSet<Tag> Tags(this ItemRow item) {
+			return Tag.ByItemId(item.RowId);
+		}
+		public static void AssignTag(this ItemRow item, Tag tag) {
+			TagStore.AddTag(new TagLink(item.RowId, tag.Id));
+			item.GetSharedModels().ForEach(im => TagStore.AddTag(new TagLink(im.RowId, tag.Id)));
+		}
+		public static void RemoveTag(this ItemRow item, Tag tag) {
+			TagStore.RemoveTag(new TagLink(item.RowId, tag.Id));
 		}
 	}
 }

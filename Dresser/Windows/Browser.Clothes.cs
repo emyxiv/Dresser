@@ -376,6 +376,7 @@ namespace Dresser.Windows
 					|| i.Stain2Name().Contains(Search, StringComparison.OrdinalIgnoreCase) // search for stain name
 					|| (i.ModName?.Contains(Search, StringComparison.OrdinalIgnoreCase)??false) // search for mod name
 					|| (i.ModAuthor?.Contains(Search, StringComparison.OrdinalIgnoreCase)??false) // search for mod author
+					|| (i.HasTagContains(Search))
 					);
 
 			if (!items.Any()) { Items = new List<InventoryItem>(); FinishRecomputeItems(); return; }
@@ -566,11 +567,94 @@ namespace Dresser.Windows
 			//if (item.CanOpenCraftLog && ImGui.Selectable("Open Crafting Log"))
 			//	PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 
+			DrawTags(itemInv);
 			DrawSameModels(itemInv);
 			DrawSets(itemInv);
 
 		}
 
+		private static string NewTagInput = string.Empty;
+
+		private static void DrawTags(InventoryItem itemInv) {
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.PlusCircle, "Add tag")) ImGui.OpenPopup($"AddTagPopup##{itemInv.Item.RowId}");
+
+			Tag? tagToDetach = null;
+			var isCtrlShiftHeld = ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift;
+			ItemIcon.DrawTags(itemInv, false, isCtrlShiftHeld, out tagToDetach, $"##{itemInv.Item.RowId}");
+			if(tagToDetach != null) {
+				itemInv.Item.RemoveTag(tagToDetach);
+				tagToDetach = null;
+			}
+			
+
+
+			var popupId = $"AddTagPopup##{itemInv.Item.RowId}";
+			ImGui.SetNextWindowSize((new Vector2(4, 3) * ImGui.GetFontSize() * 7f), ImGuiCond.Appearing);
+			//ImGui.SetNextWindowSizeConstraints(Vector2.One, (new Vector2(4, 3) * ImGui.GetFontSize() * 10));
+			if (ImGui.BeginPopup(popupId)) {
+				var rowId = itemInv.Item.RowId;
+				var tags = Tag.All();
+				if (!NewTagInput.IsNullOrEmpty()) {
+					tags = [.. tags.Where(t => t.Name.Contains(NewTagInput, StringComparison.OrdinalIgnoreCase))];
+				}
+
+				ImGui.Text("Add a new tag:");
+				ImGui.Spacing();
+
+				// EnterReturnsTrue: pressing Enter will return true here
+				ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X);
+				if (ImGui.InputText($"##newtag_{rowId}", ref NewTagInput, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
+					NewTagInput = NewTagInput.Trim();
+					if (!string.IsNullOrEmpty(NewTagInput)) {
+
+
+						var anyExisting = Tag.TagNameEquals(NewTagInput);
+						if (anyExisting != null) {
+							itemInv.Item.AssignTag(anyExisting);
+						} else {
+							var tag = Tag.NewAndAssign(NewTagInput, itemInv.Item);
+						}
+						NewTagInput = string.Empty;
+						//ImGui.CloseCurrentPopup();
+					} else {
+						// Clear input even if nothing was added
+						NewTagInput = string.Empty;
+					}
+				}
+
+				ImGui.Spacing();
+				ImGui.Separator();
+				ImGui.Spacing();
+				ImGui.Text("Existing tags:");
+				ImGui.Spacing();
+
+				if (tags.Count == 0) {
+					ImGui.TextUnformatted(NewTagInput.IsNullOrEmpty() ? "(no tags)" : "(no tags with current filter)");
+				} else {
+
+					Tag? tagClicked = null;
+					if (ItemIcon.DrawTags(tags, true, true, out tagClicked, $"ListOfTags##addTags", NewTagInput) && tagClicked != null) {
+						// Placeholder logic when clicking an existing tag
+
+
+						if (ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift) {
+							tagClicked.Delete();
+							PluginLog.Verbose($"Removed tag '{tagClicked.Name}' from item {rowId}");
+						} else {
+							itemInv.Item.AssignTag(tagClicked);
+							PluginLog.Verbose($"Clicked tag '{tagClicked.Name}' on item {rowId}");
+							// TODO: replace with desired behavior (filter, apply tag actions, etc.)
+							//ImGui.CloseCurrentPopup();
+						}
+					}
+					tagClicked = null;
+				}
+
+				ImGui.Spacing();
+				if (ImGui.Button("Close")) ImGui.CloseCurrentPopup();
+				ImGui.EndPopup();
+			}
+		}
 
 		public static void DrawSameModels(InventoryItem item) {
 

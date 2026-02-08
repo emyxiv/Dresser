@@ -169,6 +169,8 @@ namespace Dresser {
 		public float GearBrowserSideBarSizePercent { get; set; } = 0.33f;
 		public bool GearBrowserSideBarHide = false;
 		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnRight;
+		public HashSet<TagLink> ItemTags = [];
+		public HashSet<Tag> SavedTags = [];
 
 		public void LoadFilterInventoryCategory() {
 			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");
