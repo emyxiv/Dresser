@@ -216,17 +216,17 @@ namespace Dresser.Windows.Components {
 			{Font.Task,GameFontFamilyAndSize.TrumpGothic23 },
 			{Font.BubblePlateNumber,GameFontFamilyAndSize.TrumpGothic23 },
 		};
-		public static void TextWithFont(string text, Font font) {
-			var fontHandle = FontHandle(font,null,text);
+		public static void CallbackWithFont(Action action, Font font) {
+			var fontHandle = FontHandle(font, null);
 			fontHandle.Push();
-			ImGui.Text(text);
+			action.Invoke();
 			fontHandle.Pop();
 		}
+		public static void TextWithFont(string text, Font font) {
+			CallbackWithFont(() => ImGui.Text(text), font);
+		}
 		public static void TextWrappedWithFont(string text, Font font) {
-			var fontHandle = FontHandle(font,null,text);
-			fontHandle.Push();
-			ImGui.TextWrapped(text);
-			fontHandle.Pop();
+			CallbackWithFont(() => ImGui.TextWrapped(text), font);
 		}
 
 		public static IFontHandle FontHandle(Font font, float? size = null,string someText = "") {
