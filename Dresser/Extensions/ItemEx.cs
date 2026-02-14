@@ -247,6 +247,10 @@ namespace Dresser.Extensions {
 			=> $"https://www.garlandtools.org/db/#item/{item.RowId}".OpenBrowser();
 		public static void OpenInTeamcraft(this ItemRow item)
 			=> $"https://ffxivteamcraft.com/db/en/item/{item.RowId}".OpenBrowser();
+		public static void OpenInItemVendorLocation(this ItemRow item) {
+			if (!PluginServices.ItemVendorLocation.IsInitialized()) return;
+			PluginServices.ItemVendorLocation.OpenUiWithItemId(item.RowId);
+		}
 
 		public static void OpenInGamerEscape(this ItemRow item) {
 

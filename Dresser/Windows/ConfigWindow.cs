@@ -295,6 +295,13 @@ public class ConfigWindow : Window, IDisposable {
 
 			ImGui.Checkbox($"Enable mod browsing with penumbra (experimental)##OptionalPlugins##ConfigWindow", ref ConfigurationManager.Config.EnablePenumbraModding);
 		}
+
+		var isItemVendorLocationEnabled = PluginServices.ItemVendorLocation.IsInitialized();
+		if(isItemVendorLocationEnabled) GuiHelpers.Icon(FontAwesomeIcon.CheckCircle, true, ItemIcon.ColorGood);
+		else                            GuiHelpers.Icon(FontAwesomeIcon.TimesCircle, true, ItemIcon.ColorBad);
+		ImGui.SameLine();
+		ImGui.TextColored(isItemVendorLocationEnabled ? ItemIcon.ColorGood : ItemIcon.ColorBad, "Item Vendor Location");
+		ImGui.TextWrapped("Open vendor location from items context menu.");
 	}
 
 	private void DrawPenumbraConfigs() {
@@ -584,6 +591,29 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.EndTable();
 
 		}
+		if (ImGui.CollapsingHeader("ItemVendorLocation IPC")) {
+
+			ImGui.Text($"Initialized: {PluginServices.ItemVendorLocation.IsInitialized()}");
+			DrawItemVendorButton(38035);
+			DrawItemVendorButton(47929);
+
+
+		}
+	}
+	private void DrawItemVendorButton(uint itemId) {
+		if (ImGui.Button($"GetItemInfoProvider {itemId}##ItemVendorLocationIPC##Debug##ConfigWindow")) {
+
+			var zz = PluginServices.ItemVendorLocation.GetItemInfoProvider(itemId);
+			if(zz != null) foreach (var rr in zz) {
+					if(rr == null) continue;
+					PluginLog.Debug($"{rr.NpcId}, {rr.TerritoryId}, {rr.Coordinates}, {rr.GetNpcName()}, {rr.GetPlaceName()}");
+			}
+		}
+		ImGui.SameLine();
+		if (ImGui.Button($"OpenUiWithItemId {itemId}##ItemVendorLocationIPC##Debug##ConfigWindow")) {
+			PluginServices.ItemVendorLocation.OpenUiWithItemId(itemId);
+		}
+
 	}
 
 	private void DrawGlamourerIpcDebug() {

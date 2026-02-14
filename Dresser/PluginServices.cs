@@ -45,6 +45,7 @@ namespace Dresser {
 		// public static TryOn TryOn { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
+		public static ItemVendorLocation ItemVendorLocation { get; private set; } = null!;
 		public static AllaganToolsService AllaganTools { get; private set; } = null!;
 		public static GlamourerService Glamourer { get; private set; } = null!;
 		public static Actions Actions { get; private set; } = null!;
@@ -93,6 +94,7 @@ namespace Dresser {
 			HotkeySetup.Init();
 
 			ModdedIconStorage = new ModdedIconStorage();
+			ItemVendorLocation = new ItemVendorLocation(dalamud);
 			AllaganTools = new AllaganToolsService(dalamud);
 			Glamourer = new GlamourerService(dalamud);
 			//CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
@@ -122,6 +124,7 @@ namespace Dresser {
 			//CharacterMonitor.Dispose();
 			AllaganTools.Dispose();
 			Glamourer.Dispose();
+			ItemVendorLocation.Dispose();
 
 			Context.Dispose();
 
@@ -136,6 +139,7 @@ namespace Dresser {
 			Actions = null!;
 			AllaganTools = null!;
 			Glamourer = null!;
+			ItemVendorLocation = null!;
 			//CharacterMonitor = null!;
 			//ChatUtilities = null!;
 			Context = null!;

@@ -529,6 +529,10 @@ namespace Dresser.Windows
 		public static void ContextMenuBrowser(InventoryItem itemInv, GlamourPlateSlot? slot) {
 
 			var item = itemInv.Item;
+
+			if (PluginServices.ItemVendorLocation.IsInitialized() && PluginServices.ItemVendorLocation.HasItemInfoProvider(item.RowId))
+				if (ImGui.Selectable($"{char.ConvertFromUtf32(0xE086)} Vendor Location"))
+					item.OpenInItemVendorLocation();
 			if (ImGui.Selectable("Open in Garland Tools"))
 				item.OpenInGarlandTools();
 			if (ImGui.Selectable("Open in Teamcraft"))

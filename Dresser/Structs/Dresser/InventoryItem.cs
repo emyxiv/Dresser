@@ -267,5 +267,15 @@ namespace Dresser.Structs.Dresser {
 		}
 
 
+		private IEnumerable<ItemProviderInfo>? _providerInfo = null;
+		private bool _providerInfoSet = false;
+		public IEnumerable<ItemProviderInfo>? GetItemProvider() {
+			if (_providerInfoSet) return _providerInfo;
+			_providerInfoSet = true;
+			if (!PluginServices.ItemVendorLocation.IsInitialized()) return null;
+			_providerInfo = PluginServices.ItemVendorLocation.GetItemInfoProvider(ItemId);
+			return _providerInfo;
+		}
+
 	}
 }
