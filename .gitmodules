@@ -3,7 +3,7 @@
 	url = https://github.com/Critical-Impact/FFXIVClientInterface.git
 [submodule "CriticalCommonLib"]
 	path = CriticalCommonLib
-	url = https://github.com/emyxiv/CriticalCommonLib.git
+	url = https://github.com/Critical-Impact/CriticalCommonLib.git
 [submodule "Penumbra.GameData"]
 	path = Penumbra.GameData
 	url = https://github.com/Ottermandias/Penumbra.GameData
