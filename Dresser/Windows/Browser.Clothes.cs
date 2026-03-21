@@ -370,10 +370,28 @@ namespace Dresser.Windows
 			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog, default, "OpenTagManager")) {
 				Plugin.GetInstance().TagManager.IsOpen = !Plugin.GetInstance().TagManager.IsOpen;
 			}
-			ImGui.SameLine();
 			GuiHelpers.Tooltip("Open Tag Manager");
 
-			ImGui.NewLine();
+
+			// Tag combine mode selector
+			ImGui.AlignTextToFramePadding();
+
+
+			var modesTooltip = $"Tag Combine Mode determines how multiple include tags are combined:\n\nAny: Any item matching one or more tag\nAll: Only items matching all checked tags";
+			var modes = new[] { "Any", "All" };
+			var currentMode = (int)ConfigurationManager.Config.FilterTagCombineMode;
+			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 3);
+			if (ImGui.Combo("##TagCombineMode", ref currentMode, modes, modes.Length)) {
+				ConfigurationManager.Config.FilterTagCombineMode = (Dresser.Enums.TagFilterCombineMode)currentMode;
+				changed = true;
+			}
+			ImGui.SameLine();
+
+			GuiHelpers.Tooltip(modesTooltip);
+
+			ImGui.Text("Include Mode");
+			GuiHelpers.Tooltip(modesTooltip);
+
 			ImGui.Separator();
 
 			// Display each tag with a 3-state checkbox
@@ -426,48 +444,70 @@ namespace Dresser.Windows
 		}
 
 		private static bool PassesTagFilters(InventoryItem item) {
-			if (ConfigurationManager.Config.FilterTagStates.Count == 0) {
-				return true; // No tag filters active
-			}
-
-			var itemTags = Tag.ByItemId(item.ItemId);
-			var itemTagIds = itemTags.Select(t => t.Id).ToHashSet();
-			var itemSlot = item.Item.GlamourPlateSlot();
-			var hasAnyIncludeTags = false;
-			var hasAnyExcludeTags = false;
-
-			var allTagsDict = Tag.All().ToDictionary(t => t.Id);
-
-			foreach ((var tagId, var state) in ConfigurationManager.Config.FilterTagStates) {
-				// Find the tag to check its slot restriction
-				if (!allTagsDict.TryGetValue(tagId, out var tag)) continue;
-
-				// Skip this tag filter if it's restricted to a different slot
-				if (tag.Slot.HasValue && tag.Slot.Value != itemSlot) {
-					continue;
+				if (ConfigurationManager.Config.FilterTagStates.Count == 0) {
+					return true; // No tag filters active
 				}
 
-				if (state == 1) { // Include
-					hasAnyIncludeTags = true;
-					if (itemTagIds.Contains(tagId)) {
-						return true; // Item has an include tag
+				var itemTags = Tag.ByItemId(item.ItemId);
+				var itemTagIds = itemTags.Select(t => t.Id).ToHashSet();
+				var itemSlot = item.Item.GlamourPlateSlot();
+
+				var allTagsDict = Tag.All().ToDictionary(t => t.Id);
+
+				// Collect include and exclude tags separately
+				var includeTagIds = new List<uint>();
+				var excludeTagIds = new List<uint>();
+
+				foreach ((var tagId, var state) in ConfigurationManager.Config.FilterTagStates) {
+					// Find the tag to check its slot restriction
+					if (!allTagsDict.TryGetValue(tagId, out var tag)) continue;
+
+					// Skip this tag filter if it's restricted to a different slot
+					if (tag.Slot.HasValue && tag.Slot.Value != itemSlot) {
+						continue;
 					}
-				} else if (state == -1) { // Exclude
-					hasAnyExcludeTags = true;
-					if (itemTagIds.Contains(tagId)) {
-						return false; // Item has an exclude tag
+
+					if (state == 1) { // Include
+						includeTagIds.Add(tagId);
+					} else if (state == -1) { // Exclude
+						excludeTagIds.Add(tagId);
 					}
 				}
-			}
 
-			// If there are include tags and item didn't match any, exclude it
-			if (hasAnyIncludeTags) {
-				return false;
-			}
+				// Check exclude tags first - if any match, exclude the item
+				if (excludeTagIds.Count > 0) {
+					foreach (var tagId in excludeTagIds) {
+						if (itemTagIds.Contains(tagId)) {
+							return false; // Item has an exclude tag
+						}
+					}
+				}
 
-			// If only exclude tags exist and we got here, item passes (no exclude tags matched)
-			return true;
-		}
+				// Check include tags based on combine mode
+				if (includeTagIds.Count > 0) {
+					var combineMode = ConfigurationManager.Config.FilterTagCombineMode;
+					if (combineMode == Dresser.Enums.TagFilterCombineMode.Any) {
+						// OR mode: item passes if it has ANY of the include tags
+						foreach (var tagId in includeTagIds) {
+							if (itemTagIds.Contains(tagId)) {
+								return true;
+							}
+						}
+						return false;
+					} else { // All mode
+						// AND mode: item passes only if it has ALL of the include tags
+						foreach (var tagId in includeTagIds) {
+							if (!itemTagIds.Contains(tagId)) {
+								return false;
+							}
+						}
+						return true;
+					}
+				}
+
+				// No include tags - item passes if no exclude tags matched (already checked above)
+				return true;
+			}
 
 		public static IEnumerable<InventoryItem>? Items = null;
 		private static int ItemsCount = 0;

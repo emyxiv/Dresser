@@ -172,6 +172,7 @@ namespace Dresser {
 		public HashSet<TagLink> ItemTags = [];
 		public HashSet<Tag> SavedTags = [];
 		public Dictionary<uint, int> FilterTagStates = []; // tagId -> state: 1=include, -1=exclude, 0=neutral
+		public TagFilterCombineMode FilterTagCombineMode = TagFilterCombineMode.Any; // How to combine multiple include tags
 
 		public void LoadFilterInventoryCategory() {
 			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");
