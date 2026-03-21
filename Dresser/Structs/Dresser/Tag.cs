@@ -68,8 +68,9 @@ namespace Dresser.Structs.Dresser {
 			var max = existingTags.Select(t => t.Id).Max();
 			return max + 1;
 		}
-		public static Tag NewAndAssign(string name, ItemRow item) {
+		public static Tag NewAndAssign(string name, ItemRow item, bool isNewTagSlot) {
 			var tag = new Tag(name);
+			tag.Slot = isNewTagSlot ? GearBrowser.SelectedSlot : null;
 			ConfigurationManager.Config.SavedTags.Add(tag);
 
 			TagStore.AddTag(new TagLink(item.RowId, tag.Id));

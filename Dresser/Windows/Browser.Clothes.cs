@@ -755,6 +755,7 @@ namespace Dresser.Windows
 		}
 
 		private static string NewTagInput = string.Empty;
+		private static bool NewTagSlot = true;
 
 		private static void DrawTags(InventoryItem itemInv) {
 			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.PlusCircle, "Add tag")) ImGui.OpenPopup($"AddTagPopup##{itemInv.Item.RowId}");
@@ -774,7 +775,7 @@ namespace Dresser.Windows
 			//ImGui.SetNextWindowSizeConstraints(Vector2.One, (new Vector2(4, 3) * ImGui.GetFontSize() * 10));
 			if (ImGui.BeginPopup(popupId)) {
 				var rowId = itemInv.Item.RowId;
-				var tags = Tag.All();
+				var tags = Tag.All().Where(t=>!t.Slot.HasValue || t.Slot.Value == GearBrowser.SelectedSlot).ToHashSet();
 				if (!NewTagInput.IsNullOrEmpty()) {
 					tags = [.. tags.Where(t => t.Name.Contains(NewTagInput, StringComparison.OrdinalIgnoreCase))];
 				}
@@ -784,7 +785,11 @@ namespace Dresser.Windows
 
 				// EnterReturnsTrue: pressing Enter will return true here
 				ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X);
-				if (ImGui.InputText($"##newtag_{rowId}", ref NewTagInput, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
+				var inputChanged = ImGui.InputText($"##newtag_{rowId}", ref NewTagInput, 128, ImGuiInputTextFlags.EnterReturnsTrue);
+				if( tags.Count == 0) {
+					ImGui.Checkbox($"Bind new tag [{NewTagInput}] to current slot ({GearBrowser.SelectedSlot})##newtag_filter", ref NewTagSlot);
+				}
+				if (inputChanged) {
 					NewTagInput = NewTagInput.Trim();
 					if (!string.IsNullOrEmpty(NewTagInput)) {
 
@@ -793,7 +798,7 @@ namespace Dresser.Windows
 						if (anyExisting != null) {
 							itemInv.Item.AssignTag(anyExisting);
 						} else {
-							var tag = Tag.NewAndAssign(NewTagInput, itemInv.Item);
+							var tag = Tag.NewAndAssign(NewTagInput, itemInv.Item, NewTagSlot);
 						}
 						NewTagInput = string.Empty;
 						//ImGui.CloseCurrentPopup();
@@ -803,11 +808,7 @@ namespace Dresser.Windows
 					}
 				}
 
-				ImGui.Spacing();
-				ImGui.Separator();
-				ImGui.Spacing();
 				ImGui.Text("Existing tags:");
-				ImGui.Spacing();
 
 				if (tags.Count == 0) {
 					ImGui.TextUnformatted(NewTagInput.IsNullOrEmpty() ? "(no tags)" : "(no tags with current filter)");
