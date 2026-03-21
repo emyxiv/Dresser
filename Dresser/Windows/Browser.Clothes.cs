@@ -328,6 +328,120 @@ namespace Dresser.Windows
 			return count;
 		}
 
+		private static bool DrawTagFilters() {
+			bool changed = false;
+			var allTags = Tag.All();
+
+			if (!allTags.Any()) {
+				ImGui.TextDisabled("No tags available");
+				return changed;
+			}
+
+			// Display buttons to modify all tags at once
+			if (GuiHelpers.IconButton(FontAwesomeIcon.Times, default, "##ClearAllTagFilters##TagFilter")) {
+				ConfigurationManager.Config.FilterTagStates.Clear();
+				changed = true;
+			}
+			ImGui.SameLine();
+			GuiHelpers.Tooltip("Clear all tag filters");
+
+			ImGui.SameLine();
+			if (GuiHelpers.IconButton(FontAwesomeIcon.Check, default, "##IncludeAllTagFilters##TagFilter")) {
+				foreach (var tag in allTags) {
+					ConfigurationManager.Config.FilterTagStates[tag.Id] = 1;
+				}
+				changed = true;
+			}
+			ImGui.SameLine();
+			GuiHelpers.Tooltip("Include all tags");
+
+			ImGui.SameLine();
+			if (GuiHelpers.IconButton(FontAwesomeIcon.Ban, default, "##ExcludeAllTagFilters##TagFilter")) {
+				foreach (var tag in allTags) {
+					ConfigurationManager.Config.FilterTagStates[tag.Id] = -1;
+				}
+				changed = true;
+			}
+			ImGui.SameLine();
+			GuiHelpers.Tooltip("Exclude all tags");
+
+			ImGui.NewLine();
+			ImGui.Separator();
+
+			// Display each tag with a 3-state checkbox
+			foreach (var tag in allTags.OrderBy(t => t.Name)) {
+				ConfigurationManager.Config.FilterTagStates.TryGetValue(tag.Id, out var state);
+
+				var tagColor = tag.Color();
+				ImGui.PushStyleColor(ImGuiCol.FrameBg, tagColor * 0.3f);
+				ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, tagColor * 0.4f);
+				ImGui.PushStyleColor(ImGuiCol.FrameBgActive, tagColor * 0.5f);
+				ImGui.PushStyleColor(ImGuiCol.CheckMark, tagColor);
+
+				var stateStr = state switch {
+					1 => "✓", // include
+					-1 => "✗", // exclude
+					_ => "○", // neutral
+				};
+				var buttonId = $"##TagFilter_{tag.Id}##TagFilter";
+				var label = $"{stateStr} {tag.Name}";
+
+				if (ImGui.Button(label, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
+					// Cycle through states: 0 -> 1 -> -1 -> 0
+					int newState = (state + 2) % 3 - 1;
+					if (newState == 0) {
+						ConfigurationManager.Config.FilterTagStates.Remove(tag.Id);
+					} else {
+						ConfigurationManager.Config.FilterTagStates[tag.Id] = newState;
+					}
+					changed = true;
+				}
+
+				ImGui.PopStyleColor(4);
+
+				var tooltipText = state switch {
+					1 => "Include: Show items WITH this tag",
+					-1 => "Exclude: Hide items WITH this tag",
+					_ => "Neutral: No filter",
+				};
+				GuiHelpers.Tooltip(tooltipText);
+			}
+
+			return changed;
+		}
+
+		private static bool PassesTagFilters(InventoryItem item) {
+			if (ConfigurationManager.Config.FilterTagStates.Count == 0) {
+				return true; // No tag filters active
+			}
+
+			var itemTags = Tag.ByItemId(item.ItemId);
+			var itemTagIds = itemTags.Select(t => t.Id).ToHashSet();
+			var hasAnyIncludeTags = false;
+			var hasAnyExcludeTags = false;
+
+			foreach ((var tagId, var state) in ConfigurationManager.Config.FilterTagStates) {
+				if (state == 1) { // Include
+					hasAnyIncludeTags = true;
+					if (itemTagIds.Contains(tagId)) {
+						return true; // Item has an include tag
+					}
+				} else if (state == -1) { // Exclude
+					hasAnyExcludeTags = true;
+					if (itemTagIds.Contains(tagId)) {
+						return false; // Item has an exclude tag
+					}
+				}
+			}
+
+			// If there are include tags and item didn't match any, exclude it
+			if (hasAnyIncludeTags) {
+				return false;
+			}
+
+			// If only exclude tags exist and we got here, item passes (no exclude tags matched)
+			return !hasAnyExcludeTags || true;
+		}
 
 		public static IEnumerable<InventoryItem>? Items = null;
 		private static int ItemsCount = 0;
@@ -366,6 +480,7 @@ namespace Dresser.Windows
 					&& (!ConfigurationManager.Config.filterHideCashShop || i.IsObtained() || !i.Item.IsCashShop())
 					&& (!ConfigurationManager.Config.filterHideNoSource || i.IsObtained() || !i.Item.HasNoSource())
 					&& (!ConfigurationManager.Config.filterHideOwned || !i.IsObtained())
+					&& PassesTagFilters(i)
 				);
 
 
