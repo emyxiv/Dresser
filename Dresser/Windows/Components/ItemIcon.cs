@@ -493,7 +493,7 @@ namespace Dresser.Windows.Components {
 			DrawStain(stain1.Value, 1, sizeMod * 0.75f,out var radius1, ImGui.ColorConvertFloat4ToU32(color1), pos1, false);
 
 			if (!item.Item.IsDyeable2()) return;
-			var stain2 = item.StainEntry;
+			var stain2 = item.Stain2Entry;
 			if (stain2 == null) return; // should not happen
 			ImGui.SameLine();
 			ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (radius1 * 2) + ImGui.GetStyle().ItemSpacing.X);
