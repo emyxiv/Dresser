@@ -27,6 +27,7 @@ using Dalamud.Bindings.ImGui;
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
 using static Dresser.Services.Storage;
+using OtterGui.Text.Widget;
 
 namespace Dresser.Windows
 {
@@ -396,21 +397,13 @@ namespace Dresser.Windows
 
 				ConfigurationManager.Config.FilterTagStates.TryGetValue(tag.Id, out var state);
 
-				var tagColor = tag.Color();
-				ImGui.PushStyleColor(ImGuiCol.FrameBg, tagColor * 0.3f);
-				ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, tagColor * 0.4f);
-				ImGui.PushStyleColor(ImGuiCol.FrameBgActive, tagColor * 0.5f);
-				ImGui.PushStyleColor(ImGuiCol.CheckMark, tagColor);
-
-				var stateStr = state switch {
-					1  => char.ConvertFromUtf32(0xE04A), // include
-					-1 => char.ConvertFromUtf32(0xE043), // exclude
-					_  => " · ", // neutral
+				var stateEnum = state switch {
+					1  => TagFilterStateFlag.Include,
+					-1 => TagFilterStateFlag.Exclude,
+					_  => TagFilterStateFlag.Neutral
 				};
 
-				var label = $"{stateStr} {tag.Name}";
-
-				if (ImGui.Button(label, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
+				if ((new TriStateCheckbox()).Draw($"{tag.Name}##TagFilters##Clothes##Browser", ref stateEnum, TagFilterStateFlag.Include, TagFilterStateFlag.Exclude)) {
 					// Cycle through states: 0 -> 1 -> -1 -> 0
 					int newState = (state + 2) % 3 - 1;
 					if (newState == 0) {
@@ -421,23 +414,15 @@ namespace Dresser.Windows
 					changed = true;
 				}
 
-				ImGui.PopStyleColor(4);
-
-				var tooltipText = state switch {
-					1 => tag.Slot.HasValue 
-						? $"Include: Show {tag.Slot.Value.ToString().AddSpaceBeforeCapital()} items WITH this tag"
-						: "Include: Show items WITH this tag (any slot)",
-					-1 => tag.Slot.HasValue
-						? $"Exclude: Hide {tag.Slot.Value.ToString().AddSpaceBeforeCapital()} items WITH this tag"
-						: "Exclude: Hide items WITH this tag (any slot)",
-					_ => tag.Slot.HasValue
-						? $"Neutral: This tag is restricted to {tag.Slot.Value.ToString().AddSpaceBeforeCapital()} slot"
-						: "Neutral: No filter (applies to any slot)",
-				};
-				GuiHelpers.Tooltip(tooltipText);
 			}
-
 			return changed;
+		}
+
+		[Flags]
+		enum TagFilterStateFlag {
+			Neutral,
+			Include,
+			Exclude,
 		}
 
 		private static bool PassesTagFilters(InventoryItem item) {
