@@ -144,6 +144,12 @@ public class ConfigWindow : Window, IDisposable {
 		var filterChanged = false;
 		filterChanged |= ImGui.Checkbox($"Always Remove Ornate items from Gear Browser##displayCategory##GearBrowserConfig", ref ConfigurationManager.Config.filterOrnateObtained);
 
+		//ImGui.SameLine();
+		if (ImGui.Button("Open tag manager##ItemFilters##Config")) {
+			Plugin.GetInstance().TagManager.IsOpen = !Plugin.GetInstance().TagManager.IsOpen;
+		}
+		GuiHelpers.Tooltip("Rename tags, assign tags to a slot, delete tags, etc.");
+
 
 		if (filterChanged) GearBrowser.RecomputeItems();
 	}

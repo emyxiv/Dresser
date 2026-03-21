@@ -31,6 +31,7 @@ namespace Dresser {
 		internal GearBrowser GearBrowser { get; init; }
 		internal CurrentGear CurrentGear { get; init; }
 		internal DyePicker DyePicker { get; init; }
+		internal TagManager TagManager { get; init; }
 		internal Dialogs? Dialogs = null;
 
 		public Plugin(
@@ -53,11 +54,13 @@ namespace Dresser {
 			GearBrowser = new GearBrowser(this);
 			CurrentGear = new CurrentGear(this);
 			// DyePicker = new DyePicker(this);
+			TagManager = new TagManager(this);
 			Dialogs = new Dialogs(this);
 			WindowSystem.AddWindow(ConfigWindow);
 			WindowSystem.AddWindow(GearBrowser);
 			WindowSystem.AddWindow(CurrentGear);
 			// WindowSystem.AddWindow(DyePicker);
+			WindowSystem.AddWindow(TagManager);
 			WindowSystem.AddWindow(Dialogs);
 
 
@@ -80,6 +83,7 @@ namespace Dresser {
 			ConfigWindow.Dispose();
 			GearBrowser.Dispose();
 			CurrentGear.Dispose();
+			TagManager.Dispose();
 			Dialogs?.Dispose();
 			// DyePicker.Dispose();
 
