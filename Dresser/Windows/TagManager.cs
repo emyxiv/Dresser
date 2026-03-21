@@ -1,9 +1,8 @@
-using CriticalCommonLib.Enums;
+using AllaganLib.GameSheets.Sheets;
 
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 
 using Dresser.Extensions;
@@ -12,8 +11,6 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
-
-using OtterGui.Text.EndObjects;
 
 using System;
 using System.Collections.Generic;
@@ -264,9 +261,15 @@ namespace Dresser.Windows {
 			ImGui.Separator();
 			ImGui.Spacing();
 
-			// Tag stats
+			// Tag stats with slot breakdown
 			var itemsWithTag = TagStore.GetItemsForTag(SelectedTag.Id);
 			ImGui.Text($"Items with this tag: {itemsWithTag.Count}");
+			
+			if (itemsWithTag.Count > 0) {
+				ImGui.Indent();
+				DrawTagItemsBySlot(itemsWithTag);
+				ImGui.Unindent();
+			}
 
 			ImGui.Spacing();
 
@@ -279,6 +282,57 @@ namespace Dresser.Windows {
 			}
 
 			ImGui.EndChildFrame();
+		}
+		private void DrawTagItemsBySlot(HashSet<uint> itemIds) {
+			// Group items by their slot
+			var itemsBySlot = new Dictionary<GlamourPlateSlot, int>();
+
+			foreach (var itemId in itemIds) {
+				try {
+					// Get the item from the sheet
+					
+					var itemSheet = PluginServices.SheetManager.GetSheet<ItemSheet>();
+					if (itemSheet == null) continue;
+
+					var itemRow = itemSheet.GetRow(itemId);
+					if (itemRow == null) continue;
+
+					// Get the slot for this item
+					var slot = itemRow.GlamourPlateSlot();
+					if (slot == null) continue;
+
+					if (!itemsBySlot.ContainsKey(slot.Value)) {
+						itemsBySlot[slot.Value] = 0;
+					}
+					itemsBySlot[slot.Value]++;
+				} catch {
+					// Skip items that can't be processed
+					continue;
+				}
+			}
+
+			// Display the breakdown
+			if (itemsBySlot.Count == 0) {
+				ImGui.TextDisabled("(no items found)");
+				return;
+			}
+
+			// Sort by slot order
+			var sortedSlots = itemsBySlot.OrderBy(kvp => (int)kvp.Key).ToList();
+
+			foreach (var kvp in sortedSlots) {
+				var slot = kvp.Key;
+				var count = kvp.Value;
+				var slotName = slot.ToString().AddSpaceBeforeCapital();
+				ImGui.BulletText($"{count} {slotName}");
+				ImGui.SameLine();
+				if(GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowCircleLeft,$"Change this tag's slot for {slotName}.", default, $"{slot}##ChangeSlotFor##TagManager")) {
+					EditingTagSlot = slot;
+					SelectedTag?.Slot = slot;
+					PluginLog.Debug($"Updated tag '{SelectedTag?.Name}' slot to {slot}");
+					ConfigurationManager.Config.Save(); // Save configuration
+				}
+			}
 		}
 	}
 }
