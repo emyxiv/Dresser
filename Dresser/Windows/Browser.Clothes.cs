@@ -338,7 +338,7 @@ namespace Dresser.Windows
 			}
 
 			// Display buttons to modify all tags at once
-			if (GuiHelpers.IconButton(FontAwesomeIcon.Times, default, "##ClearAllTagFilters##TagFilter")) {
+			if (GuiHelpers.IconButton(FontAwesomeIcon.TrashAlt, default, "##ClearAllTagFilters##TagFilter")) {
 				ConfigurationManager.Config.FilterTagStates.Clear();
 				changed = true;
 			}
@@ -346,7 +346,7 @@ namespace Dresser.Windows
 			GuiHelpers.Tooltip("Clear all tag filters");
 
 			ImGui.SameLine();
-			if (GuiHelpers.IconButton(FontAwesomeIcon.Check, default, "##IncludeAllTagFilters##TagFilter")) {
+			if (ImGui.Button($"{char.ConvertFromUtf32(0xE04A)}##IncludeAllTagFilters##TagFilter")) {
 				foreach (var tag in allTags) {
 					ConfigurationManager.Config.FilterTagStates[tag.Id] = 1;
 				}
@@ -356,7 +356,7 @@ namespace Dresser.Windows
 			GuiHelpers.Tooltip("Include all tags");
 
 			ImGui.SameLine();
-			if (GuiHelpers.IconButton(FontAwesomeIcon.Ban, default, "##ExcludeAllTagFilters##TagFilter")) {
+			if (ImGui.Button($"{char.ConvertFromUtf32(0xE043)}##ExcludeAllTagFilters##TagFilter")) {
 				foreach (var tag in allTags) {
 					ConfigurationManager.Config.FilterTagStates[tag.Id] = -1;
 				}
@@ -379,9 +379,9 @@ namespace Dresser.Windows
 				ImGui.PushStyleColor(ImGuiCol.CheckMark, tagColor);
 
 				var stateStr = state switch {
-					1 => "✓", // include
-					-1 => "✗", // exclude
-					_ => "○", // neutral
+					1  => char.ConvertFromUtf32(0xE04A), // include
+					-1 => char.ConvertFromUtf32(0xE043), // exclude
+					_  => " · ", // neutral
 				};
 				var buttonId = $"##TagFilter_{tag.Id}##TagFilter";
 				var label = $"{stateStr} {tag.Name}";
