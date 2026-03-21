@@ -171,6 +171,7 @@ namespace Dresser {
 		public DisplayMode GearBrowserDisplayMode { get; set; } = DisplayMode.SidebarOnRight;
 		public HashSet<TagLink> ItemTags = [];
 		public HashSet<Tag> SavedTags = [];
+		public Dictionary<uint, int> FilterTagStates = []; // tagId -> state: 1=include, -1=exclude, 0=neutral
 
 		public void LoadFilterInventoryCategory() {
 			//PluginLog.Debug($"FilterInventoryCategory: cc:{FilterInventoryCategory.Count} nc:{GearBrowser.AllowedCategories.Count} dc:{this.FilterInventoryCategory.Select(i => i.Key).Except(GearBrowser.AllowedCategories).Count()}");
@@ -200,6 +201,7 @@ namespace Dresser {
 		public bool FilterSourceCollapse = true;
 		public bool FilterAdditionalCollapse = false;
 		public bool FilterAdvancedCollapse = true;
+		public bool FilterTagsCollapse = false;
 		public bool FilterSortCollapse = true;
 
 		public List<(InventoryItemOrder.OrderMethod Method, InventoryItemOrder.OrderDirection Direction)>? SortOrder = null;

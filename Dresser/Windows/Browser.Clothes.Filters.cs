@@ -228,6 +228,14 @@ namespace Dresser.Windows
 			} else
 				ConfigurationManager.Config.FilterAdvancedCollapse = false;
 
+			if (ImGui.CollapsingHeader($"Tags##Source##GearBrowser", ConfigurationManager.Config.FilterTagsCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
+				ConfigurationManager.Config.FilterTagsCollapse = true;
+
+				filterChanged |= DrawTagFilters();
+
+			} else
+				ConfigurationManager.Config.FilterTagsCollapse = false;
+
 			if (ImGui.CollapsingHeader($"Sort##Source##GearBrowser", ConfigurationManager.Config.FilterAdditionalCollapse ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None)) {
 				ConfigurationManager.Config.FilterSortCollapse = true;
 
