@@ -377,6 +377,10 @@ namespace Dresser.Windows
 
 			// Display each tag with a 3-state checkbox
 			foreach (var tag in allTags.OrderBy(t => t.Name)) {
+				if(tag.Slot.HasValue && SelectedSlot.HasValue && tag.Slot.Value != SelectedSlot.Value) {
+					continue; // Skip tags that don't match the selected slot
+				}
+
 				ConfigurationManager.Config.FilterTagStates.TryGetValue(tag.Id, out var state);
 
 				var tagColor = tag.Color();
@@ -391,7 +395,7 @@ namespace Dresser.Windows
 					_  => " · ", // neutral
 				};
 
-				var slotSuffix = tag.Slot.HasValue ? $" [{tag.Slot.Value.ToString().AddSpaceBeforeCapital()}]" : "";
+				var slotSuffix = tag.Slot.HasValue ? $" [{tag.Slot.Value.ToString().AddSpaceBeforeCapital()}]" : $" [Universal]";
 				var label = $"{stateStr} {tag.Name}{slotSuffix}";
 
 				if (ImGui.Button(label, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
