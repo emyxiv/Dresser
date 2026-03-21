@@ -29,6 +29,7 @@ namespace Dresser.Windows {
 		private string EditingTagName = string.Empty;
 		private GlamourPlateSlot? EditingTagSlot = null;
 		private bool IsEditingTag = false;
+		private string NewTagName = string.Empty;
 
 		public TagManager(Plugin plugin) : base("Tag Manager", ImGuiWindowFlags.NoScrollbar) {
 			this.SizeConstraints = new WindowSizeConstraints {
@@ -147,7 +148,53 @@ namespace Dresser.Windows {
 				}
 			}
 
+			ImGui.Spacing();
+			ImGui.Separator();
+			ImGui.Spacing();
+
+			// Create new tag section
+			ImGui.AlignTextToFramePadding();
+			ImGui.Text("New Tag:");
+			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight() - ImGui.GetStyle().ItemSpacing.X);
+			if (ImGui.InputText("##NewTagNameInput", ref NewTagName, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
+				CreateNewTag();
+			}
+
+			ImGui.SameLine();
+			if (ImGui.Button("+##CreateNewTag", new Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
+				CreateNewTag();
+			}
+			GuiHelpers.Tooltip("Create a new tag (or press Enter in the input field)");
+
 			ImGui.EndChildFrame();
+		}
+
+		private void CreateNewTag() {
+			NewTagName = NewTagName.Trim();
+			if (NewTagName.IsNullOrEmpty()) {
+				return;
+			}
+
+			// Check if tag with this name already exists
+			var existingTag = Tag.TagNameEquals(NewTagName);
+			if (existingTag != null) {
+				PluginLog.Warning($"Tag '{NewTagName}' already exists");
+				return;
+			}
+
+			// Create new tag
+			var newTag = new Tag(NewTagName);
+			ConfigurationManager.Config.SavedTags.Add(newTag);
+			ConfigurationManager.Config.Save();
+
+			PluginLog.Debug($"Created new tag: {NewTagName}");
+			NewTagName = string.Empty;
+
+			// Select the newly created tag
+			SelectedTag = newTag;
+			EditingTagName = newTag.Name;
+			EditingTagSlot = newTag.Slot;
+			IsEditingTag = false;
 		}
 
 		private void DrawTagEditor(float width) {
