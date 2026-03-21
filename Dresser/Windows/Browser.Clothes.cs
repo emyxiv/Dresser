@@ -376,9 +376,22 @@ namespace Dresser.Windows
 			ImGui.Separator();
 
 			// Display each tag with a 3-state checkbox
-			foreach (var tag in allTags.OrderBy(t => t.Name)) {
+			GlamourPlateSlot? previousSlot = null;
+			var tagsSorted = allTags.OrderBy(t => t.Slot).ThenBy(t => t.Name);
+			if(tagsSorted.First().Slot == null) {
+				ImGui.Text("Universal");
+			}
+			foreach (var tag in tagsSorted) {
 				if(tag.Slot.HasValue && SelectedSlot.HasValue && tag.Slot.Value != SelectedSlot.Value) {
 					continue; // Skip tags that don't match the selected slot
+				}
+
+				// Add slot header when slot changes
+				if (tag.Slot != previousSlot) {
+					ImGui.Spacing(); // Add spacing between slot groups
+					var slotHeaderText = tag.Slot.HasValue ? tag.Slot.Value.ToString().AddSpaceBeforeCapital() : "Universal";
+					ImGui.Text(slotHeaderText);
+					previousSlot = tag.Slot;
 				}
 
 				ConfigurationManager.Config.FilterTagStates.TryGetValue(tag.Id, out var state);
@@ -395,8 +408,7 @@ namespace Dresser.Windows
 					_  => " · ", // neutral
 				};
 
-				var slotSuffix = tag.Slot.HasValue ? $" [{tag.Slot.Value.ToString().AddSpaceBeforeCapital()}]" : $" [Universal]";
-				var label = $"{stateStr} {tag.Name}{slotSuffix}";
+				var label = $"{stateStr} {tag.Name}";
 
 				if (ImGui.Button(label, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
 					// Cycle through states: 0 -> 1 -> -1 -> 0
