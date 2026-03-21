@@ -365,6 +365,13 @@ namespace Dresser.Windows
 			ImGui.SameLine();
 			GuiHelpers.Tooltip("Exclude all tags");
 
+			//ImGui.SameLine();
+			if (GuiHelpers.IconButton(Dalamud.Interface.FontAwesomeIcon.Cog, default, "OpenTagManager")) {
+				Plugin.GetInstance().TagManager.IsOpen = !Plugin.GetInstance().TagManager.IsOpen;
+			}
+			ImGui.SameLine();
+			GuiHelpers.Tooltip("Open Tag Manager");
+
 			ImGui.NewLine();
 			ImGui.Separator();
 
@@ -383,8 +390,9 @@ namespace Dresser.Windows
 					-1 => char.ConvertFromUtf32(0xE043), // exclude
 					_  => " · ", // neutral
 				};
-				var buttonId = $"##TagFilter_{tag.Id}##TagFilter";
-				var label = $"{stateStr} {tag.Name}";
+
+				var slotSuffix = tag.Slot.HasValue ? $" [{tag.Slot.Value.ToString().AddSpaceBeforeCapital()}]" : "";
+				var label = $"{stateStr} {tag.Name}{slotSuffix}";
 
 				if (ImGui.Button(label, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
 					// Cycle through states: 0 -> 1 -> -1 -> 0
@@ -400,9 +408,15 @@ namespace Dresser.Windows
 				ImGui.PopStyleColor(4);
 
 				var tooltipText = state switch {
-					1 => "Include: Show items WITH this tag",
-					-1 => "Exclude: Hide items WITH this tag",
-					_ => "Neutral: No filter",
+					1 => tag.Slot.HasValue 
+						? $"Include: Show {tag.Slot.Value.ToString().AddSpaceBeforeCapital()} items WITH this tag"
+						: "Include: Show items WITH this tag (any slot)",
+					-1 => tag.Slot.HasValue
+						? $"Exclude: Hide {tag.Slot.Value.ToString().AddSpaceBeforeCapital()} items WITH this tag"
+						: "Exclude: Hide items WITH this tag (any slot)",
+					_ => tag.Slot.HasValue
+						? $"Neutral: This tag is restricted to {tag.Slot.Value.ToString().AddSpaceBeforeCapital()} slot"
+						: "Neutral: No filter (applies to any slot)",
 				};
 				GuiHelpers.Tooltip(tooltipText);
 			}
@@ -417,10 +431,21 @@ namespace Dresser.Windows
 
 			var itemTags = Tag.ByItemId(item.ItemId);
 			var itemTagIds = itemTags.Select(t => t.Id).ToHashSet();
+			var itemSlot = item.Item.GlamourPlateSlot();
 			var hasAnyIncludeTags = false;
 			var hasAnyExcludeTags = false;
 
+			var allTagsDict = Tag.All().ToDictionary(t => t.Id);
+
 			foreach ((var tagId, var state) in ConfigurationManager.Config.FilterTagStates) {
+				// Find the tag to check its slot restriction
+				if (!allTagsDict.TryGetValue(tagId, out var tag)) continue;
+
+				// Skip this tag filter if it's restricted to a different slot
+				if (tag.Slot.HasValue && tag.Slot.Value != itemSlot) {
+					continue;
+				}
+
 				if (state == 1) { // Include
 					hasAnyIncludeTags = true;
 					if (itemTagIds.Contains(tagId)) {
@@ -440,7 +465,7 @@ namespace Dresser.Windows
 			}
 
 			// If only exclude tags exist and we got here, item passes (no exclude tags matched)
-			return !hasAnyExcludeTags || true;
+			return true;
 		}
 
 		public static IEnumerable<InventoryItem>? Items = null;
