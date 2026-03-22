@@ -49,6 +49,7 @@ internal class PenumbraIpc : IDisposable {
 	private Penumbra.Api.IpcSubscribers.RemoveAllTemporaryModSettingsPlayer RemoveAllTemporaryModSettingsPlayerSubscriber;
 	private Penumbra.Api.IpcSubscribers.QueryTemporaryModSettingsPlayer QueryTemporaryModSettingsPlayerSubscriber;
 
+	private Penumbra.Api.IpcSubscribers.GetModPath GetModPathSubscriber;
 
 
 
@@ -82,6 +83,8 @@ internal class PenumbraIpc : IDisposable {
 
 		RemoveAllTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.RemoveAllTemporaryModSettingsPlayer(PluginServices.PluginInterface);
 		QueryTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.QueryTemporaryModSettingsPlayer(PluginServices.PluginInterface);
+
+		GetModPathSubscriber = new global::Penumbra.Api.IpcSubscribers.GetModPath(PluginServices.PluginInterface);
 
 		RegisterEvents();
 	}
@@ -256,6 +259,21 @@ internal class PenumbraIpc : IDisposable {
 		return new();
 	}
 
+	internal (string FullPath, bool FullDefault, bool NameDefault)? GetModPath(string modDirectory) {
+		try {
+			var response = GetModPathSubscriber.Invoke(modDirectory);
+			if (response.Item1 != PenumbraApiEc.Success) {
+				PluginLog.Warning($"Failed to get mod path for mod {modDirectory}. Status: {response.Item1}");
+				return null;
+			}
+			return (response.Item2, response.Item3, response.Item4);
+		} catch (Exception) {
+			return null;
+		}
+	}
+	internal string GetModPathString(string modDirectory) {
+		return GetModPath(modDirectory)?.FullPath ?? string.Empty;
+	}
 
 
 
@@ -334,6 +352,14 @@ internal class PenumbraIpc : IDisposable {
 			return state;
 		}
 		return false;
+	}
+
+	private Dictionary<string, string> ModPathCache = [];
+	internal string? GetModPathCacheCached(string modDirectory) {
+		if (!ModPathCache.ContainsKey(modDirectory)) {
+			ModPathCache[modDirectory] = GetModPathString(modDirectory);
+		}
+		return ModPathCache[modDirectory];
 	}
 
 	internal bool SetTemporaryModSettings(InventoryItem item) {

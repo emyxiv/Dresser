@@ -2,6 +2,7 @@ using CriticalCommonLib.Enums;
 
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Enums;
@@ -588,6 +589,18 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawPenumbraIpcDebug() {
 		if(!PluginServices.Context.PenumbraState) return;
 
+		var slot = ConfigurationManager.Config.CurrentGearSelectedSlot;
+		var item = PluginServices.ApplyGearChange.GetCurrentPlateItem(slot);
+		var isItemModded = item != null && item.IsModded();
+
+		ImGui.Text($"Current item ({slot}):");
+		ImGui.Bullet(); ImGui.TextWrapped($"Name: {(item != null ? item.FormattedName : "null")}");
+		ImGui.Bullet(); ImGui.TextWrapped($"Is Modded: {isItemModded}");
+		if (isItemModded && item != null) {
+			ImGui.Bullet(); ImGui.TextWrapped($"Mod Directory: {item.ModDirectory}");
+		}
+		ImGui.Spacing();
+
 		if (ImGui.Button("Get Changed Item Adapter Dictionary Print To Log##PenumbraIPC##Debug##ConfigWindow")) {
 			PluginServices.Penumbra.GetChangedItemAdapterDictionaryPrintToLog();
 		}
@@ -595,49 +608,62 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.Button("Get Changed Item Adapter List Print To Log##PenumbraIPC##Debug##ConfigWindow")) {
 			PluginServices.Penumbra.GetChangedItemAdapterListPrintToLog();
 		}
-		if (ImGui.Button("Penumbra.SetTemporaryModSettings##PenumbraIPC##Debug##ConfigWindow")) {
-			var item = PluginServices.ApplyGearChange.GetCurrentPlateItem(ConfigurationManager.Config.CurrentGearSelectedSlot);
-			if(item == null) PluginLog.Debug($"No item on plate for slot {ConfigurationManager.Config.CurrentGearSelectedSlot}");
-			else {
-				PluginLog.Debug($" - Item for mod application -" +
-					$"\n name: {item.FormattedName}" +
-					$"\n modDirectory: {item.ModDirectory}" +
-					$"\n ModIconPath: {item.ModIconPath}" +
-					$"\n ModModelPath: {item.ModModelPath}" +
-					$"\n ModAuthor: {item.ModAuthor}" +
-					$"");
+
+		if(!isItemModded) ImGui.BeginDisabled();
+		if (ImGui.Button("Penumbra.SetTemporaryModSettings (Current item)##PenumbraIPC##Debug##ConfigWindow") && item != null && isItemModded) {
+			PluginLog.Debug($" - Item for mod application -" +
+				$"\n name: {item.FormattedName}" +
+				$"\n modDirectory: {item.ModDirectory}" +
+				$"\n ModIconPath: {item.ModIconPath}" +
+				$"\n ModModelPath: {item.ModModelPath}" +
+				$"\n ModAuthor: {item.ModAuthor}" +
+				$"");
 
 
-				// load mod in penumbra if not loaded, and enable it
-				var res5 = PluginServices.Penumbra.SetTemporaryModSettings(item);
-				PluginLog.Debug($"SetTemporaryModSettings result: {res5}");
-			}
+			// load mod in penumbra if not loaded, and enable it
+			var res5 = PluginServices.Penumbra.SetTemporaryModSettings(item);
+			PluginLog.Debug($"SetTemporaryModSettings result: {res5}");
 		}
 
-		if (ImGui.Button("Glamourer.SetItem##PenumbraIPC##Debug##ConfigWindow")) {
-			var slot = ConfigurationManager.Config.CurrentGearSelectedSlot;
-			var item = PluginServices.ApplyGearChange.GetCurrentPlateItem(slot);
-			if(item == null) PluginLog.Debug($"No item on plate for slot {slot}");
-			else {
-				PluginLog.Debug($" - Item for mod application -" +
-					$"\n name: {item.FormattedName}" +
-					$"\n modDirectory: {item.ModDirectory}" +
-					$"\n ModIconPath: {item.ModIconPath}" +
-					$"\n ModModelPath: {item.ModModelPath}" +
-					$"\n ModAuthor: {item.ModAuthor}" +
-					$"");
+		ImGui.SameLine();
+		if (ImGui.Button("Glamourer.SetItem (Current item)##PenumbraIPC##Debug##ConfigWindow") && item != null && isItemModded) {
+			PluginLog.Debug($" - Item for mod application -" +
+				$"\n name: {item.FormattedName}" +
+				$"\n modDirectory: {item.ModDirectory}" +
+				$"\n ModIconPath: {item.ModIconPath}" +
+				$"\n ModModelPath: {item.ModModelPath}" +
+				$"\n ModAuthor: {item.ModAuthor}" +
+				$"");
 
-				var character = PluginServices.Context.LocalPlayer;
-				if (character != null) {
-					PluginServices.Glamourer.SetItem(character, item, slot);
-				}
+			var character = PluginServices.Context.LocalPlayer;
+			if (character != null) {
+				PluginServices.Glamourer.SetItem(character, item, slot);
 			}
 		}
+		if (!isItemModded) ImGui.EndDisabled();
 
 		if (ImGui.Button("GetAllModSettings##PenumbraIPC##Debug##ConfigWindow")) {
 			PluginServices.Penumbra.GetAllModSettings();
 		}
 
+		if (!isItemModded) ImGui.BeginDisabled();
+		if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Rocket, "Print Meta To Log (Current item)##GetModMeta##PenumbraIPC##Debug##ConfigWindow") && item != null && isItemModded && item.ModDirectory != null) {
+			var meta = PluginServices.Penumbra.GetModMeta(item.ModDirectory);
+			PluginLog.Debug($"Meta for {item.ModDirectory}:\n  {meta}");	
+		}
+		if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Rocket, "Print ModPath To Log (Current item)##GetModPath##PenumbraIPC##Debug##ConfigWindow") && item != null && isItemModded && item.ModDirectory != null) {
+			var path = PluginServices.Penumbra.GetModPath(item.ModDirectory);
+			if (path != null) {
+				PluginLog.Debug($"Path for {item.ModDirectory}:" +
+					$"\n   FullPath:    {path.Value.FullPath}" +
+					$"\n   FullDefault: {path.Value.FullDefault}" +
+					$"\n   NameDefault: {path.Value.NameDefault}");
+			} else {
+				PluginLog.Debug($"No path for mod {item.ModDirectory}");
+			}
+		}
+
+		if (!isItemModded) ImGui.EndDisabled() ;
 
 
 
