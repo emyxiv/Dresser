@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-
 using CriticalCommonLib.Enums;
-using CriticalCommonLib.Extensions;
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 
 using Dresser.Enums;
@@ -17,9 +11,11 @@ using Dresser.Structs.Dresser;
 using Dresser.Windows;
 using Dresser.Windows.Components;
 
-using Dalamud.Bindings.ImGui;
-
-using Penumbra.Api.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
 
 using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
 
@@ -64,7 +60,7 @@ namespace Dresser.Services {
 			RestoreAppearance();
 		}
 
-		private (string, string)? CurrentPreviousMod = null;
+		private InventoryItem? CurrentPreviousModdedItem = null;
 		private int CurrentIncrement = 0;
 		public void ExecuteBrowserItem(InventoryItem item) {
 			PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
@@ -87,7 +83,7 @@ namespace Dresser.Services {
 					plate = new();
 					ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
 				}
-				CurrentPreviousMod = plate.GetSlot(slot.Value)?.GetMod();
+				CurrentPreviousModdedItem = plate.GetSlot(slot.Value);
 				plate.SetSlot(slot.Value, clonedItem);
 
 				PrepareModsAndDo(clonedItem, slot.Value, ApplyItemAppearanceOnPlayer);
@@ -97,60 +93,22 @@ namespace Dresser.Services {
 
 		private async void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
 			set.ApplyAppearance();
-			// return;
-			//foreach ((var s, var item) in set.Items)
-			//	if (item != null) PrepareModsAndDo(item);
 
-			//foreach ((var s, var item) in set.Items)
-			//	if (item != null) ApplyItemAppearanceOnPlayer(item);
 
 			var mods = set.Items.Where(i => i.Value?.IsModded() ?? false).DistinctBy(i => i.Value?.GetMod()).Select(i=>i.Value?.GetMod());
 			var numberOfMods = mods.Count();
 			if (numberOfMods == 0) return;
-			bool isModInstant = !ConfigurationManager.Config.PenumbraDisableModRightAfterApply || numberOfMods <= 1;
-
-			//PluginLog.Debug($"numberOfMods: {numberOfMods} => {(isModInstant ? "instant" : "notinstant")}");
-
-			if (!isModInstant) {
-				Dictionary<string, List<(GlamourPlateSlot Slot, InventoryItem Item)>> itemsByMods = new();
-				foreach ((var s, var item) in set.Items)
-					if (item != null) {
-						if (item.IsModded() && !isModInstant && item.ModDirectory != null) {
-							PluginLog.Warning($"putting in queue {item.FormattedName} => {item.ModDirectory}");
-							itemsByMods.TryAdd(item.ModDirectory, new());
-							itemsByMods[item.ModDirectory].Add((s, item));
-							//ApplyItemAppearanceOnPlayer(InventoryItem.Zero,s);
-						} else {
-							PrepareModsAndDo(item, s, ApplyItemAppearanceOnPlayer);
-						}
-					}
-				foreach ((var modDir, var itemsForThisMod) in itemsByMods)
-					AddToApplyAppearanceQueue(itemsForThisMod);
-				ApplyAppearanceQueueTick(true);
-			} else {
-				PrepareMods(set);
-				var character = PluginServices.Context.LocalPlayer;
-				foreach ((var s, var item) in set.Items)
-				{
-
-					if(item == null || !item.IsModded() || character == null) continue;
-
-					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-					// PluginLog.Debug($"==============> SetItem HERE {item.ItemId} {item.ModName} <============");
-					// PluginServices.Glamourer.SetItem(character, item, s);
 
 
-				}
-				//Task.Run(async delegate {
-					//PluginServices.Penumbra.CleanDresserApplyCollection();
-					//await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
+			PrepareMods(set);
+			var character = PluginServices.Context.LocalPlayer;
+			foreach ((var s, var item) in set.Items)
+			{
 
-					// PrepareMods(set);
-					//await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
+				if(item == null || !item.IsModded() || character == null) continue;
 
-					// set.ApplyAppearance();
-				//});
 			}
+
 		}
 		private void PrepareMods(InventoryItemSet set) {
 			Task.Run(async delegate {
@@ -160,10 +118,6 @@ namespace Dresser.Services {
 						ExecuteConfigModsInPenumbra(item, slot);
 					}
 				}
-				await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-				await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-				await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-				await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
 
 			}).Wait();
 
@@ -174,88 +128,62 @@ namespace Dresser.Services {
 
 
 				var tast = Task.Run(delegate {
+					PluginLog.Verbose($"Executing modded item in Penumbra: {item.FormattedName} => {item.ModName}");
 					ExecuteConfigModsInPenumbra(item, slot, callback, ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance);
 				});
 
 			} else {
+				CleanupMod(slot, CurrentPreviousModdedItem);
 				callback?.Invoke(item, slot);
-				CleanupMod(slot);
 			}
 
 		}
 		private async void ExecuteConfigModsInPenumbra(InventoryItem item, GlamourPlateSlot slot, Action<InventoryItem, GlamourPlateSlot>? callback = null, bool ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance = false) {
-			var personalCollection = PluginServices.Penumbra.GetCollectionForLocalPlayerCharacter();
-
-			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-			//PluginLog.Debug($"PENUMBRA YOURSELF COLLECTION: {personalCollection}");
-			var modSettings = PluginServices.Penumbra.GetCurrentModSettings(personalCollection, item.ModDirectory ?? "", item.ModName ?? "", true);
-			//PluginLog.Debug($"GetCurrentModSettings: {modSettings.Item1} | {item.ModName}");
-			//modSettings.Item2.Value.Priority
-
-			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-			if (modSettings.Item1 == PenumbraApiEc.Success && modSettings.Item2.HasValue) {
-				foreach ((var optionGroup, var options) in modSettings.Item2.Value.EnabledOptions) {
-					var res1 = PluginServices.Penumbra.TrySetModSettings(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, optionGroup, options.ToList());
-					//PluginLog.Debug($"TrySetModSettings: {res1} | {item.ModName}");
-				}
+			CleanupMod(slot, CurrentPreviousModdedItem);
+			if (PluginServices.Context.PenumbraState) {
+				var res2 = PluginServices.Penumbra.SetTemporaryModSettings(item);
+				PluginLog.Debug($"SetTemporaryModSettings: {res2} | {item.ModName}");
 			}
 
-			var res6 = PluginServices.Penumbra.TrySetModPriority(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, item.ModName!, CurrentIncrement++);
-			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
-			var res2 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionApply, item.ModDirectory!, true);
-			//PluginLog.Debug($"TrySetMod TRUE: {res2} | {item.ModName}");
 
-
-			// delay before apply
-			if (!ignore_PenumbraDelayAfterModEnableBeforeApplyAppearance)
-				await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance);
 			PluginLog.Warning($"Applying appearance...");
 			callback?.Invoke(item, slot);
-			if (ConfigurationManager.Config.PenumbraDisableModRightAfterApply) {
-				// this is where we remove the mod right after applying it
-				RemoveModFromPenumbra(item.GetMod());
-			} else {
-				CleanupMod(slot);
-			}
-			CurrentPreviousMod = null;
-			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop);
-			if (ApplyAppearanceQueue.Any()) {
-				ApplyAppearanceQueueTick();
-			}
 		}
-		private void CleanupMod(GlamourPlateSlot slot) {
+		private void CleanupMod(GlamourPlateSlot slot, InventoryItem? item) {
+			if (!PluginServices.Context.PenumbraState) return;
 
 			// this is where we keep the mod, but we remove the previous one IF it is not used in any items
-			if (CurrentPreviousMod.HasValue) {
-				var curPlate2 = GetCurrentPlate();
+			if (item == null) return;
 
-				// that's when there was a mod before
-				if (! (curPlate2?.HasMod(CurrentPreviousMod) ?? false)) {
-					// ok we can remove it
-					RemoveModFromPenumbra(CurrentPreviousMod);
-				} else {
-					// we gotta leave it
-				}
+			var curPlate2 = GetCurrentPlate();
+
+			// that's when there was a mod before
+			if (! (curPlate2?.HasMod(item.GetMod()) ?? false)) {
+				// ok we can remove it
+				RemoveModFromPenumbra(item);
+			} else {
+				// we gotta leave it
 			}
+			
+		}
+		private void CleanupModForce(InventoryItem? item) {
+			if (!PluginServices.Context.PenumbraState) return;
+			if (item == null) return;
+
+			RemoveModFromPenumbra(item);
 		}
 
-		private async void RemoveModFromPenumbra((string Path, string Name)? mod) {
-			if (mod == null) return;
-			await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
-			PenumbraApiEc res3 = PenumbraApiEc.UnknownError;
-			for (var i = 0; i < 10; i++) {
-
-				try {
-					res3 = PluginServices.Penumbra.TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, mod.Value.Path, mod.Value.Name, true);
-					break;
-				} catch {
-
-					PluginLog.Debug($"Failed to disable mod after apply, retrying... | {mod.Value.Name}");
-					await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
-				}
-
+		private async void RemoveModFromPenumbra(InventoryItem item) {
+			if (!PluginServices.Context.PenumbraState) return;
+			if (!item.IsModded()) return;
+			//await Task.Delay(ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable);
+			if (PluginServices.Penumbra.RemoveTemporaryModSettings(item)) {
+				PluginLog.Debug($"Removing mod from Penumbra: {item.FormattedName} => {item.ModName}");
 			}
-			PluginLog.Debug($"Disable mod after apply {res3} | {mod.Value.Name}");
+		}
+		private async void RemoveModFromPenumbra() {
+			if (!PluginServices.Context.PenumbraState) return;
+			PluginServices.Penumbra.RemoveAllTemporaryModSettings();
 		}
 
 		private Queue<List<(GlamourPlateSlot Slot,InventoryItem Item)>> ApplyAppearanceQueue = new();
@@ -299,12 +227,12 @@ namespace Dresser.Services {
 		public void ExecuteCurrentContextRemoveItem(InventoryItem item, GlamourPlateSlot? slot) {
 			if (slot == null) return;
 			if (item.ItemId == 0) return;
-			CurrentPreviousMod = GetCurrentPlateItem(slot.Value)?.GetMod();
-			//GetCurrentPlate()?.RemoveSlot(slot.Value);
-			item.Clear();
-			PluginLog.Debug($"dddddd ddddddd => {item.ItemId} {item.Item.RowId}");
-			ApplyItemAppearanceOnPlayer(item, slot.Value);
-			CleanupMod(slot.Value);
+			CurrentPreviousModdedItem = GetCurrentPlateItem(slot.Value);
+			GetCurrentPlate()?.RemoveSlot(slot.Value);
+
+			CleanupMod(slot.Value, CurrentPreviousModdedItem);
+
+			ApplyItemAppearanceOnPlayer(InventoryItem.Zero, slot.Value);
 			//RestoreAppearance();
 			//ReApplyAppearanceAfterEquipUpdate();
 		}
@@ -423,6 +351,8 @@ namespace Dresser.Services {
 		public void RestoreAppearance() {
 			PluginLog.Verbose("Restoring appearance");
 
+			RemoveModFromPenumbra();
+
 			if (PluginServices.Context.MustGlamourerApply()) {
 				PluginServices.Glamourer.RevertCharacter(PluginServices.Context.LocalPlayer);
 				PluginServices.Glamourer.RevertToAutomationCharacter(PluginServices.Context.LocalPlayer);
@@ -447,6 +377,7 @@ namespace Dresser.Services {
 
 		public void changeCurrentPendingPlate(ushort plateNumber) {
 			Task.Run(delegate {
+				RemoveModFromPenumbra();
 				PluginServices.ApplyGearChange.UnApplyCurrentPendingPlateAppearance();
 				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
 				PluginServices.ApplyGearChange.ApplyCurrentPendingPlateAppearance();
@@ -456,8 +387,8 @@ namespace Dresser.Services {
 		public void UnApplyCurrentPendingPlateAppearance() {
 			ClearApplyAppearanceQueue();
 			if(ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlate)) {
-				foreach (var mod in currentPlate.Mods()) {
-					if(mod.HasValue) PluginServices.Penumbra.CleanDresserApplyMod(mod.Value);
+				foreach ((var key, var item) in currentPlate.Items) {
+					if(item != null && item.IsModded()) PluginServices.Penumbra.CleanDresserApplyMod(item);
 				}
 			}
 		}

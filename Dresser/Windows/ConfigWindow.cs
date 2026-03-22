@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-
 using CriticalCommonLib.Enums;
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
-using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Enums;
@@ -16,9 +11,12 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Windows.Components;
 
-using Dalamud.Bindings.ImGui;
-
 using Newtonsoft.Json;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 namespace Dresser.Windows;
 
@@ -48,6 +46,9 @@ public class ConfigWindow : Window, IDisposable {
 			}},
 			{"Mod Browser",new () {
 				{ "Penumbra", DrawPenumbraConfigs },
+			}},
+			{"About",new () {
+				{ "Dresser", DrawAboutConfigs },
 			}},
 		};
 
@@ -313,63 +314,14 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawPenumbraConfigs() {
 
 		if (ImGui.CollapsingHeader("Info##DrawPenumbraConfigs")) {
-			ImGui.TextWrapped($"This is feature may be nerdy to configure. Due to current technical limitations (or knowledge limitation) it is not straightforward to set-up and might require manipulations in Penumbra.");
+			ImGui.TextWrapped($"This mod browsing feature is experimental.");
+			ImGui.TextWrapped($"There are a few quirks.");
 
-			ImGui.Spacing();
-			ImGui.TextWrapped($"The method to apply appearance will only work for one mod per item, it will not work with conversion mods " +
-				$"(For example, a mod replaces an item, and then another mod changes the shape of the item while preserving the texture of the first mod.)");
-
-			ImGui.Spacing();
-			ImGui.Spacing();
-
-			ImGui.BeginGroup();
-			ImGui.Text("1. ");
-			ImGui.SameLine();
-			ImGui.TextWrapped($"The collection reffered as \"Temporary Penumbra collection\" (by default named \"Dresser TMP\") must be created AND assigned");
-			ImGui.SameLine();
-			GuiHelpers.Icon(FontAwesomeIcon.QuestionCircle,false);
-
-			ImGui.EndGroup();
-			GuiHelpers.Tooltip(() => {
-				ImGui.Bullet();
-				ImGui.TextWrapped($"This will be used as a workaround to find which mod change which items in your list of mods.");
-				ImGui.Bullet();
-				ImGui.TextWrapped($"The collection should be assigned to unrelatted object.\n A way to achieve that is, in Penumbra, to navigate to Collection > Individual Assignments > then enter an improbable name and select a world you would never visit. Then drag the collection \"Dresser TMP\" and drop it in \"New Player\" box.");
-			});
-			ImGui.Spacing();
-
-
-			ImGui.BeginGroup();
-			ImGui.Text("2. ");
-			ImGui.SameLine();
-			ImGui.TextWrapped($"The collection reffered as \"Penumbra collection to apply\" (by default named \"Dresser Apply\") must be created AND assigned to \"Your character\" ");
-			ImGui.SameLine();
-			GuiHelpers.Icon(FontAwesomeIcon.QuestionCircle, false);
-
-			ImGui.EndGroup();
-			GuiHelpers.Tooltip(() => {
-				ImGui.Bullet();
-				ImGui.TextWrapped($"This collection will be used to apply the preview on your character.");
-				ImGui.Bullet();
-				ImGui.TextWrapped($"The collection will often be populated and cleaned." +
-					$"\nDresser will manage it, so you should not enable any mode in this collection");
-				ImGui.Bullet();
-				ImGui.TextWrapped($"It should be set at the top of the collection tree to not be overwritten by any mods, and still take base collections." +
-					$"\nIf you don't use multiple collections");
-			});
-
-			ImGui.AlignTextToFramePadding();
-			ImGui.TextWrapped($"Feel free to look for help or provide feedback on");
-			ImGui.SameLine();
-			ImGui.PushStyleColor(ImGuiCol.Button, Styler.DiscordColor);
-			if (ImGui.Button("Our Discord Server"))
-				"https://discord.gg/kXwKDFjXBd".OpenBrowser();
-			ImGui.PopStyleColor();
-			ImGui.SameLine();
-			ImGui.Text(".");
-
-
-
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"The mod will scan for all the mods that change items, see below in \"Scan and Blacklist\".");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"The application of mods is made through temporary sate, similar to Glamourer's \"Use Temporary Mod Settings\".");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"When browsing items, changing from one to another will disable the previous and enable the next very quickly, these transitions may look odd.");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"It might synchronize with friends through penumbra/glamourer, but the transition speed may upset the sync.");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"Mix and matching with 2 mods affecting the same items will result in conflict, one of the items will not be displayed correctly.");
 
 		}
 		ImGui.Spacing();
@@ -381,39 +333,15 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 			if (!ConfigurationManager.Config.PenumbraUseModListCollection) ImGui.BeginDisabled();
 			ImGui.InputText($"Mod List Penumbra collection##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionModList, 100);
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileImport, "Get the collection currently selected in Penumbra", default, "Load Mod List from Penumbra currentcollection##PenumbraConfig##ConfigWindow")) {
+				var col = PluginServices.Penumbra.GetCurrentCollectionName();
+				if (col != null) {
+					ConfigurationManager.Config.PenumbraCollectionModList = col;
+				}
+			}
 			if (!ConfigurationManager.Config.PenumbraUseModListCollection) ImGui.EndDisabled();
 			GuiHelpers.Tooltip($"When enabled, the mods of this collection will be scanned.\nMods can be enabled regardless of conflicts, as mods sharing the same items can be displayed at the same time");
-
-			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-			ImGui.InputText($"Temporary Penumbra collection##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionTmp, 100);
-			GuiHelpers.Tooltip($"This collection must be activated and assigned (to fake object) in order to find modded items");
-
-			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-			ImGui.InputText($"Penumbra collection to apply##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraCollectionApply, 100);
-			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-			ImGui.DragInt($"Delay 1##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
-			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was enabled\nBefore apply appearance");
-			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 1##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterModEnableBeforeApplyAppearance = ConfigurationManager.Default.PenumbraDelayAfterModEnableBeforeApplyAppearance;
-
-
-			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-			ImGui.DragInt($"Delay 2##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
-			GuiHelpers.Tooltip($"Penumbra delay\nAfter apply appearance\nBefore disabling the mod");
-			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 2##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterApplyAppearanceBeforeModDisable = ConfigurationManager.Default.PenumbraDelayAfterApplyAppearanceBeforeModDisable;
-
-			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
-			ImGui.DragInt($"Delay 3##PenumbraConfig##ConfigWindow", ref ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop, 10, 0, int.MaxValue, "%.0f", ImGuiSliderFlags.AlwaysClamp);
-			GuiHelpers.Tooltip($"Penumbra delay\nAfter the mod was disabled\nBefore next mod loop");
-			ImGui.SameLine();
-			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, "ResetDefault##Delay 3##PenumbraConfig##ConfigWindow", "Reset to default value"))
-				ConfigurationManager.Config.PenumbraDelayAfterModDisableBeforeNextModLoop = ConfigurationManager.Default.PenumbraDelayAfterModDisableBeforeNextModLoop;
-
-			ImGui.Checkbox($"Disable the mod instantly after applied##Debug##GearBrowserConfig", ref ConfigurationManager.Config.PenumbraDisableModRightAfterApply);
-			GuiHelpers.Tooltip($"Right after the item appearance is applied on the character, the mod applied during  application will be disabled. The item will still be displaed with the mod (Except in Mare). This allows displaying mods that affects the same items.");
 		}
 
 
@@ -432,6 +360,7 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.SetNextItemWidth(ImGui.GetFontSize() * 10);
 			if (ImGui.Button($"Clear modded items##PenumbraConfig##ConfigWindow")) {
 				PluginServices.Storage.ClearMods();
+				GearBrowser.RecomputeItems();
 			}
 			if (PluginServices.Storage.IsReloadingMods) ImGui.EndDisabled();
 
@@ -479,6 +408,18 @@ public class ConfigWindow : Window, IDisposable {
 		// put that at the end
 		DrawModBlacklistSelector();
 	}
+
+	private void DrawAboutConfigs() {
+		ImGui.TextWrapped("Dresser is a plugin to manage your glamours and inventories, with a special focus on portable glamours.\n" +
+			"Feel free to look for help or provide feedback on our Discord");
+		ImGui.Spacing();
+		ImGui.PushStyleColor(ImGuiCol.Button, Styler.DiscordColor);
+		if (ImGui.Button("Dresser Discord"))
+			"https://discord.gg/kXwKDFjXBd".OpenBrowser();
+		ImGui.PopStyleColor();
+
+	}
+
 	private static List<(string Path, string Name)>? ModsAvailableToBlacklist = null;
 	private static string ModsBlackListSearch = "";
 	private static bool ModsBlackListSearchOpen = false;
@@ -525,7 +466,7 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("Manual triggers")) {
 			if (ImGui.Button("AppearanceUpdateNakedOrWearing2##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing2();
 			if (ImGui.Button("ReApplyAppearanceAfterEquipUpdate##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
-			if (ImGui.Button($"CleanDresserApplyCollection ({PluginServices.Penumbra.CountModsDresserApplyCollection()})##Manual triggers##Debug##ConfigWindow")) PluginServices.Penumbra.CleanDresserApplyCollection();
+			//if (ImGui.Button($"CleanDresserApplyCollection ({PluginServices.Penumbra.CountModsDresserApplyCollection()})##Manual triggers##Debug##ConfigWindow")) PluginServices.Penumbra.CleanDresserApplyCollection();
 			if (ImGui.Button($"Save config##Manual triggers##Debug##ConfigWindow")) ConfigurationManager.SaveAsync();
 			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Broom, $"Remove EVERY (ALL) items from ALL plates for THIS character {PluginServices.Context.LocalPlayer?.Name}", default, $"##clear##Manual triggers##Debug##ConfigWindow")) {
 				ConfigurationManager.Config.PendingPlateItemsCurrentChar = new();
@@ -550,6 +491,9 @@ public class ConfigWindow : Window, IDisposable {
 		}
 		if (ImGui.CollapsingHeader("Glamourer IPC")) {
 			DrawGlamourerIpcDebug();
+		}
+		if (ImGui.CollapsingHeader("Penumbra IPC")) {
+			DrawPenumbraIpcDebug();
 		}
 		if (ImGui.CollapsingHeader("Allagan Tools IPC")) {
 			ImGui.TextDisabled($"characters owned by player from AT IPC");
@@ -639,6 +583,64 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.Button("SetMetaData Weapon##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Weapon)}");
 		}
+
+	}
+	private void DrawPenumbraIpcDebug() {
+		if(!PluginServices.Context.PenumbraState) return;
+
+		if (ImGui.Button("Get Changed Item Adapter Dictionary Print To Log##PenumbraIPC##Debug##ConfigWindow")) {
+			PluginServices.Penumbra.GetChangedItemAdapterDictionaryPrintToLog();
+		}
+
+		if (ImGui.Button("Get Changed Item Adapter List Print To Log##PenumbraIPC##Debug##ConfigWindow")) {
+			PluginServices.Penumbra.GetChangedItemAdapterListPrintToLog();
+		}
+		if (ImGui.Button("Penumbra.SetTemporaryModSettings##PenumbraIPC##Debug##ConfigWindow")) {
+			var item = PluginServices.ApplyGearChange.GetCurrentPlateItem(ConfigurationManager.Config.CurrentGearSelectedSlot);
+			if(item == null) PluginLog.Debug($"No item on plate for slot {ConfigurationManager.Config.CurrentGearSelectedSlot}");
+			else {
+				PluginLog.Debug($" - Item for mod application -" +
+					$"\n name: {item.FormattedName}" +
+					$"\n modDirectory: {item.ModDirectory}" +
+					$"\n ModIconPath: {item.ModIconPath}" +
+					$"\n ModModelPath: {item.ModModelPath}" +
+					$"\n ModAuthor: {item.ModAuthor}" +
+					$"");
+
+
+				// load mod in penumbra if not loaded, and enable it
+				var res5 = PluginServices.Penumbra.SetTemporaryModSettings(item);
+				PluginLog.Debug($"SetTemporaryModSettings result: {res5}");
+			}
+		}
+
+		if (ImGui.Button("Glamourer.SetItem##PenumbraIPC##Debug##ConfigWindow")) {
+			var slot = ConfigurationManager.Config.CurrentGearSelectedSlot;
+			var item = PluginServices.ApplyGearChange.GetCurrentPlateItem(slot);
+			if(item == null) PluginLog.Debug($"No item on plate for slot {slot}");
+			else {
+				PluginLog.Debug($" - Item for mod application -" +
+					$"\n name: {item.FormattedName}" +
+					$"\n modDirectory: {item.ModDirectory}" +
+					$"\n ModIconPath: {item.ModIconPath}" +
+					$"\n ModModelPath: {item.ModModelPath}" +
+					$"\n ModAuthor: {item.ModAuthor}" +
+					$"");
+
+				var character = PluginServices.Context.LocalPlayer;
+				if (character != null) {
+					PluginServices.Glamourer.SetItem(character, item, slot);
+				}
+			}
+		}
+
+		if (ImGui.Button("GetAllModSettings##PenumbraIPC##Debug##ConfigWindow")) {
+			PluginServices.Penumbra.GetAllModSettings();
+		}
+
+
+
+
 
 	}
 

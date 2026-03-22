@@ -104,6 +104,10 @@ namespace Dresser.Structs.Dresser {
 				ModName = item.ModName,
 				ModDirectory = item.ModDirectory,
 				ModModelPath = item.ModModelPath,
+				ModAuthor = item.ModAuthor,
+				ModIconPath = item.ModIconPath,
+				ModVersion = item.ModVersion,
+				ModWebsite = item.ModWebsite,
 			};
 		}
 		public InventoryItem Clone() => this.Copy();

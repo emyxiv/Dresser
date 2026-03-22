@@ -247,7 +247,6 @@ namespace Dresser.Services {
 			AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems] = ConfigurationManager.Config.PenumbraModdedItems;
 		}
 
-		public static string PenumbraCollectionModList = "Dresser Mod List";
 		private void RecomputeModdedItemsList() {
 			if (PluginServices.Penumbra.GetEnabledState() == false) return;
 
@@ -255,29 +254,8 @@ namespace Dresser.Services {
 
 			var penumbraVersions = PluginServices.Penumbra.ApiVersions();
 			PluginLog.Debug($"--------------- PENUMBRA --- v {penumbraVersions.Breaking} - {penumbraVersions.Features} ----------------");
-
-			// make a list of enabled mods
-
-			List<(string Path, string Name)> DaCollModsSettings;
-			if (ConfigurationManager.Config.PenumbraUseModListCollection) DaCollModsSettings = PluginServices.Penumbra.GetEnabledModsForCollection(PenumbraCollectionModList, true);
-			else {
-				DaCollModsSettings = PluginServices.Penumbra.GetNotBlacklistedMods().ToList();
-				ModsReloadingMax = DaCollModsSettings.Count;
-			}
-
-			PluginLog.Debug($"Found {DaCollModsSettings.Count} enabled mod in collection {PenumbraCollectionModList}");
-			// make list of inventoryItems
-			List<InventoryItem> inventoryItems = PluginServices.Penumbra.GetChangedInventoryItemForMods(DaCollModsSettings);
-
-			//PluginLog.Debug($"------------ CHECK  PENUMBRA --------------------------");
-			//foreach(var i in tmpItemList) {
-			//	PluginLog.Debug($"Checking tmpItemList item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
-			//}
-			ConfigurationManager.Config.PenumbraModdedItems = inventoryItems;
+			ConfigurationManager.Config.PenumbraModdedItems = PluginServices.Penumbra.GetModdedInventoryItems();
 			LoadAdditional_Modded();
-			//foreach (var i in AdditionalItems[(InventoryType)InventoryTypeExtra.ModdedItems]) {
-			//	PluginLog.Debug($"Checking item {i.ItemId} for mod {i.ModName} || {i.ModDirectory}");
-			//}
 			PluginLog.Debug($"------------ END - PENUMBRA --------------------------");
 			IsReloadingMods = false;
 

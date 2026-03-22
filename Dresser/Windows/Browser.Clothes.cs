@@ -54,7 +54,7 @@ namespace Dresser.Windows
 					ImGui.ColorConvertFloat4ToU32(ConfigurationManager.Config.ModdedItemColor.Darken(darkenAmount)),
 					infoSearchTextPart2);
 				GuiHelpers.Tooltip(() => {
-					ImGui.Text($"{ItemsCount} modded items are applied in {ConfigurationManager.Config.PenumbraCollectionApply} collection");
+					ImGui.Text($"{ItemsCount} modded items are applied temporarily");
 				}, ImGui.IsMouseHoveringRect(posInfoSearchPart2, posInfoSearchPart2 + sizeInfoSearchPart2));
 			}
 
@@ -738,7 +738,7 @@ namespace Dresser.Windows
 			}
 			if (ImGui.Selectable("Link"))
 				item.LinkInChatHistory();
-			if (!ConfigurationManager.Config.PenumbraUseModListCollection && itemInv.IsModded() && ImGui.Selectable("Blacklist this Mod"))
+			if (itemInv.IsModded() && ImGui.Selectable("Blacklist this Mod"))
 				ConfigWindow.AddModToBlacklist((itemInv.ModDirectory, itemInv.ModName)!);
 			if (itemInv.IsModded() && ImGui.Selectable("Open in Penumbra"))
 				PluginServices.Penumbra.OpenModWindow((itemInv.ModDirectory, itemInv.ModName)!);

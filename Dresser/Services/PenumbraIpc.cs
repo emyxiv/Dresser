@@ -30,16 +30,24 @@ internal class PenumbraIpc : IDisposable {
 	private Penumbra.Api.IpcSubscribers.GetChangedItemsForCollection GetChangedItemsForCollectionSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetCollectionsByIdentifier   GetCollectionsByIdentifierSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetCurrentModSettings GetCurrentModSettingsSubscriber;
-	private Penumbra.Api.IpcSubscribers.TrySetModPriority     TrySetModPrioritySubscriber;
-	private Penumbra.Api.IpcSubscribers.TrySetModSettings     TrySetModSettingsSubscriber;
-	private Penumbra.Api.IpcSubscribers.TryInheritMod         TryInheritModSubscriber;
+	//private Penumbra.Api.IpcSubscribers.TrySetModPriority     TrySetModPrioritySubscriber;
+	//private Penumbra.Api.IpcSubscribers.TrySetModSettings     TrySetModSettingsSubscriber;
+	//private Penumbra.Api.IpcSubscribers.TryInheritMod         TryInheritModSubscriber;
 	private Penumbra.Api.IpcSubscribers.ApiVersion                   ApiVersionsSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetEnabledState              GetEnabledStateSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetCollection         GetCollectionForTypeSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetModDirectory              GetModDirectorySubscriber;
-	private Penumbra.Api.IpcSubscribers.TrySetMod             TrySetModSubscriber;
+	//private Penumbra.Api.IpcSubscribers.TrySetMod             TrySetModSubscriber;
 	private Penumbra.Api.IpcSubscribers.OpenMainWindow               OpenMainWindowSubscriber;
 
+	private Penumbra.Api.IpcSubscribers.RemoveTemporaryModSettingsPlayer RemoveTemporaryModSettingsPlayerSubscriber;
+	private Penumbra.Api.IpcSubscribers.SetTemporaryModSettingsPlayer SetTemporaryModSettingsPlayerSubscriber;
+	private Penumbra.Api.IpcSubscribers.GetChangedItemAdapterDictionary GetChangedItemAdapterDictionarySubscriber;
+	private Penumbra.Api.IpcSubscribers.GetChangedItemAdapterList GetChangedItemAdapterListSubscriber;
+	private Penumbra.Api.IpcSubscribers.GetAllModSettings GetAllModSettingsSubscriber;
+
+	private Penumbra.Api.IpcSubscribers.RemoveAllTemporaryModSettingsPlayer RemoveAllTemporaryModSettingsPlayerSubscriber;
+	private Penumbra.Api.IpcSubscribers.QueryTemporaryModSettingsPlayer QueryTemporaryModSettingsPlayerSubscriber;
 
 
 
@@ -54,15 +62,26 @@ internal class PenumbraIpc : IDisposable {
 		GetModsSubscriber = new global::Penumbra.Api.IpcSubscribers.GetModList(PluginServices.PluginInterface);
 		//GetChangedItemsSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.GetChangedItems       (PluginServices.PluginInterface);
 		GetCurrentModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCurrentModSettings (PluginServices.PluginInterface);
-		TrySetModPrioritySubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetModPriority     (PluginServices.PluginInterface);
-		TrySetModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetModSettings     (PluginServices.PluginInterface);
-		TryInheritModSubscriber = new global::Penumbra.Api.IpcSubscribers.TryInheritMod         (PluginServices.PluginInterface);
+		//TrySetModPrioritySubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetModPriority     (PluginServices.PluginInterface);
+		//TrySetModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetModSettings     (PluginServices.PluginInterface);
+		//TryInheritModSubscriber = new global::Penumbra.Api.IpcSubscribers.TryInheritMod         (PluginServices.PluginInterface);
 		ApiVersionsSubscriber = new global::Penumbra.Api.IpcSubscribers.ApiVersion                   (PluginServices.PluginInterface);
 		GetEnabledStateSubscriber = new global::Penumbra.Api.IpcSubscribers.GetEnabledState              (PluginServices.PluginInterface);
 		GetCollectionForTypeSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCollection  (PluginServices.PluginInterface);
 		GetModDirectorySubscriber = new global::Penumbra.Api.IpcSubscribers.GetModDirectory              (PluginServices.PluginInterface);
-		TrySetModSubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetMod             (PluginServices.PluginInterface);
+		//TrySetModSubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetMod             (PluginServices.PluginInterface);
 		OpenMainWindowSubscriber = new global::Penumbra.Api.IpcSubscribers.OpenMainWindow               (PluginServices.PluginInterface);
+
+		RemoveTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.RemoveTemporaryModSettingsPlayer(PluginServices.PluginInterface);
+		SetTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.SetTemporaryModSettingsPlayer(PluginServices.PluginInterface);
+
+		GetChangedItemAdapterDictionarySubscriber = new global::Penumbra.Api.IpcSubscribers.GetChangedItemAdapterDictionary(PluginServices.PluginInterface);
+		GetChangedItemAdapterListSubscriber = new global::Penumbra.Api.IpcSubscribers.GetChangedItemAdapterList(PluginServices.PluginInterface);
+
+		GetAllModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.GetAllModSettings(PluginServices.PluginInterface);
+
+		RemoveAllTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.RemoveAllTemporaryModSettingsPlayer(PluginServices.PluginInterface);
+		QueryTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.QueryTemporaryModSettingsPlayer(PluginServices.PluginInterface);
 
 		RegisterEvents();
 	}
@@ -83,88 +102,95 @@ internal class PenumbraIpc : IDisposable {
 	internal IList<(string Path, string Name)> GetNotBlacklistedMods()
 		=> GetMods().Where(m => !ConfigurationManager.Config.PenumbraModsBlacklist.Contains(m)).ToList();
 
-	/// <returns>A dictionary of affected items in <paramref name="collectionName"/> via name and known objects or null.</returns>
-	internal IReadOnlyDictionary<string, dynamic?> GetChangedItemsForCollection(string collectionName) {
+	internal IEnumerable<(string ModDir, EquipItem Item)> GetModdedEquipItemsNotBlacklisted() {
 		try {
-			return GetChangedItemsForCollectionSubscriber.Invoke(CollectionNameToGuid(collectionName));
-			//return GetChangedItemsSubscriber.Invoke(collectionName);
-		} catch (Exception) {
-			return new Dictionary<string, dynamic?>();
-		}
-	}
-	internal IEnumerable<(uint ItemId, string ModModelPath)> GetChangedItemIdsForMod(string modPath, string modName) {
-
-		List<(uint ItemId, string ModModelPath)> items = new();
-
-		var res5 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionTmp, modPath, true);
-		//PluginLog.Warning($"Enable mod (path:){modPath}: {res5}");
-
-		//var tempCollection = $"DaCol_{modCount}";
-		//PluginLog.Debug($"Mod enabled, creating temp collection {tempCollection}");
-		//var statusCreatedTmpCol = PluginServices.Penumbra.CreateNamedTemporaryCollection(tempCollection);
-		//Task.Run(async delegate { await Task.Delay(500); }).Wait();
-		//if (statusCreatedTmpCol == PenumbraApiEc.Success) {
-
-		//foreach ((var optionGroup, var options) in modSettings.Item2.Value.EnabledOptions) {
-		//	PluginServices.Penumbra.TrySetModSettings(tempCollection, mod.Path, mod.Name, optionGroup, options.ToList());
-		//}
-
-		Task.Run(async delegate { await Task.Delay(50); }).Wait();
-		var changedItems = PluginServices.Penumbra.GetChangedEquipItemsForCollection(ConfigurationManager.Config.PenumbraCollectionTmp);
-
-
-		foreach (var i in changedItems) {
-			items.Add((i.ItemId.Id, i.ModelString));
-		}
-
-		//var ddd = PluginServices.Penumbra.RemoveTemporaryCollectionByName(tempCollection);
-		//PluginLog.Debug($"{tempCollection} {(ddd == PenumbraApiEc.Success ? "removed" : "NOT REMOVED")}");
-		//}
-		var res6 = PluginServices.Penumbra.TrySetMod(ConfigurationManager.Config.PenumbraCollectionTmp, modPath, false);
-		//PluginLog.Debug($"disable mod {modPath}: {res6}");
-
-		return items;
-	}
-
-	// carefull here, the ignoreInheritance seems reversed?
-	internal List<(string Path, string Name)> GetEnabledModsForCollection(string collection, bool ignoreInheritance) {
-		return new();
-		// todo fix it;
-		List<(string Path, string Name)> DaCollModsSettings = new();
-		foreach (var mod in PluginServices.Penumbra.GetNotBlacklistedMods()) {
-			if (!PluginServices.Penumbra.IsModAppliedInCollection(collection, mod.Path, mod.Name, ignoreInheritance)) continue;
-
-			PluginServices.Storage.ModsReloadingMax++;
-			//PluginLog.Debug($"Found ACTIVE mod {mod.Name} || {mod.Path}");
-
-			DaCollModsSettings.Add(mod);
-		}
-		return DaCollModsSettings;
-	}
-	internal List<InventoryItem> GetChangedInventoryItemForMods(List<(string Path, string Name)> mods) {
-		List<InventoryItem> tmpItemList = new();
-		foreach (var mod3 in mods) {
-
-			var meta = GetModMeta(mod3.Path);
-			var configTexts = GetConfigFileTexts(mod3.Path);
-			var items = PluginServices.Penumbra.GetChangedItemIdsForMod(mod3.Path, mod3.Name);
-			foreach (var i in items) {
-				var item = new InventoryItem((InventoryType)InventoryTypeExtra.ModdedItems, i.ItemId.Copy(), mod3.Name.Copy()!, mod3.Path.Copy()!, i.ModModelPath.Copy()!);
-				// todo: add icon path
-
-				if (meta != null && meta.HasValues) {
-					item.ModAuthor = meta.GetValue("Author")?.ToString();
-					item.ModVersion = meta.GetValue("Version")?.ToString();
-					item.ModWebsite = meta.GetValue("Website")?.ToString();
-					item.ModIconPath = FindIconForItem(item.Icon, configTexts)?.ModdedIconFilePath;
-				}
-
-				tmpItemList.Add(item);
-				//PluginLog.Debug($"Added item {item.ItemId} [{item.FormattedName}] for mod {item.ModName} || {item.ModDirectory}");
+			var it = GetChangedItemAdapterListSubscriber.Invoke() // get the list of changed items per mod and adapter
+				.Where(r => !ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == r.ModDirectory)) // filter out blacklisted mods
+				.SelectMany((p, l) => p.ChangedItems.Select((v, k) => (p.ModDirectory, TryExtractEquipItemData(v.Value)))) // extract equip item data and keep the item id for filtering
+				.Where(u => u.Item2 != null).Select(u => (u.ModDirectory, u.Item2!.Value)) // remove nullability after filtering out nulls
+				;
+			if (ConfigurationManager.Config.PenumbraUseModListCollection) {
+				return it.Where(m => {
+					return IsModAppliedInCollectionCached(m.ModDirectory);
+				});
+			} else {
+				PluginLog.Debug($"Not filtering modded items by collection. Total count: {it.Count()}");
 			}
-			PluginServices.Storage.ModsReloadingCur++;
+			return it;
+		} catch (Exception) {
+			return [];
 		}
-		return tmpItemList;
+	}
+
+
+
+	internal List<InventoryItem> GetModdedInventoryItems() {
+
+		ResetCache();
+
+		var moddedItems = PluginServices.Penumbra.GetModdedEquipItemsNotBlacklisted();
+		PluginLog.Debug($"Found {moddedItems.Count()} modded items from Penumbra after filtering blacklisted mods.");
+
+		PluginServices.Storage.ModsReloadingMax = moddedItems.Count();
+
+		List<InventoryItem> inventoryItems = moddedItems.Select((p) => {
+			var name = GetModNameCache(p.ModDir);
+			var meta = GetModMetaCached(p.ModDir);
+			var configTexts = GetModConfigFileTextCached(p.ModDir);
+
+
+			var item = new InventoryItem((InventoryType)InventoryTypeExtra.ModdedItems, p.Item.Id.Item.Id) {
+				ModDirectory = p.ModDir,
+				ModName = name,
+				ModModelPath = p.Item.ModelString,
+			};
+
+
+			if (meta != null && meta.HasValues) {
+				item.ModAuthor = meta.GetValue("Author")?.ToString();
+				item.ModVersion = meta.GetValue("Version")?.ToString();
+				item.ModWebsite = meta.GetValue("Website")?.ToString();
+				item.ModIconPath = FindIconForItem(item.Icon, configTexts)?.ModdedIconFilePath;
+			}
+
+			PluginServices.Storage.ModsReloadingCur++;
+
+			return item;
+		}).ToList();
+
+		ResetCache();
+
+		return inventoryItems;
+	}
+
+	internal void GetAllModSettings() {
+		var collection = ConfigurationManager.Config.PenumbraCollectionModList;
+		var collectionId = GetCurrentCollectionGuid();
+		if (collectionId == null) {
+			PluginLog.Debug(collection == null
+				? $"No collection specified for mod list filtering. Cannot get all mod settings. Collection name from config: {ConfigurationManager.Config.PenumbraCollectionModList}"
+				: $"Failed to get current collection ID for collection {collection}. Cannot get all mod settings for collection {collection}.");
+			return;
+		}
+		var response = GetAllModSettingsSubscriber.Invoke(collectionId.Value, false, false);
+		if (response.Item1 != PenumbraApiEc.Success || response.Item2 == null) {
+			PluginLog.Warning($"Failed to get all mod settings for collection {collection}. Status: {response.Item1}");
+			return;
+		}
+		var allSettings = response.Item2;
+		foreach (var setting in allSettings) {
+			var modDir = setting.Key;
+			var enabledState = setting.Value.Item1;
+			var priority = setting.Value.Item2;
+			var options = setting.Value.Item3;
+			var inherited = setting.Value.Item4;
+			PluginLog.Debug($"Mod: {modDir}, Enabled: {enabledState}, Priority: {priority}, Inherited: {inherited}");
+			foreach (var optionGroup in options) {
+				var groupName = optionGroup.Key;
+				var enabledOptions = optionGroup.Value;
+				PluginLog.Debug($"  Option Group: {groupName}, Enabled Options: {string.Join(", ", enabledOptions)}");
+			}
+		}
 	}
 	internal static (string FoundIconGamePath, string ModdedIconFilePath)? FindIconForItem(uint iconId, Dictionary<string, string> configTexts) {
 		List<string> possibleIconPaths = ModdedIconStorage.PossibleIconPaths(iconId);
@@ -202,36 +228,38 @@ internal class PenumbraIpc : IDisposable {
 	}
 	internal Dictionary<string, string> GetConfigFileTexts(string modDirectory) {
 		string? bp = GetModDirectoryCached();
+		//PluginLog.Debug($"Getting config file texts for mod {modDirectory} with base path {bp}");
 		if (bp != null) {
 
 			var jsonsPath = Path.Combine(bp, modDirectory);
 
-			string[] files = Directory.GetFiles(jsonsPath, "*.json");
-			return files.ToDictionary(n => n, File.ReadAllText);
+			//PluginLog.Debug($"Looking for config files in {jsonsPath}");
+
+			// Verify the path exists before attempting enumeration
+			if (!Directory.Exists(jsonsPath)) {
+				PluginLog.Warning($"Config directory does not exist: {jsonsPath}");
+				return new();
+			}
+
+			try {
+				string[] files = Directory.GetFiles(jsonsPath, "*.json", SearchOption.TopDirectoryOnly);
+				//PluginLog.Debug($"Found {files.Length} config files for mod {modDirectory}: {string.Join(", ", files)}");
+				return files.ToDictionary(n => n, File.ReadAllText);
+			} catch (UnauthorizedAccessException ex) {
+				PluginLog.Warning($"Access denied reading config files from {jsonsPath}: {ex.Message}");
+				return new();
+			} catch (Exception ex) {
+				PluginLog.Error(ex, $"Failed to read config files from {jsonsPath}");
+				return new();
+			}
 		}
 		return new();
 	}
 
 
-	internal IEnumerable<EquipItem> GetChangedEquipItemsForCollection(string collectionName) {
-		return this.GetChangedItemsForCollection(collectionName).Where(o => {
-			return o.Value?.GetType().ToString() == typeof(EquipItem).ToString();
-			try {
-				PluginLog.Debug($"change type: {o.Value?.GetType()??"null"}");
-				EquipItem ddd = (PseudoEquipItem)o.Value;
-				return true;
-			} catch (Exception e) {
-				PluginLog.Debug(e, $"failed to load item from penumbra");
-			}
 
-			return false;
-		}).Select(i => {
-			var qsd = (EquipItem)(PseudoEquipItem)i.Value;
 
-			PluginLog.Debug($"changed equip item: {qsd.Name} || {qsd.Id} || {i.Key}");
-			return qsd;
-		});
-	}
+
 
 	internal string? GetModDirectory() {
 		try {
@@ -241,95 +269,144 @@ internal class PenumbraIpc : IDisposable {
 		}
 	}
 
+
+
+	///////////// cache
+	private void ResetCache() {
+		ModDirectoryCache = null;
+		ModNameCache = null;
+		ModMetaCache = new();
+		ModConfigFileTextCache = new();
+		ModCollectionStateCache = null;
+	}
+
 	private string? ModDirectoryCache = null;
 	internal string? GetModDirectoryCached()
 		=> ModDirectoryCache ??= GetModDirectory();
-	
 
-
-
-	/// <summary> Try to set the enabled state of a mod in a collection. </summary>
-	internal bool TrySetMod(string collection, string directory, bool enabled) {
-		try {
-			return TrySetModSubscriber.Invoke(CollectionNameToGuid(collection), directory, enabled) == PenumbraApiEc.Success;
-		} catch (Exception) {
-			return false;
+	private Dictionary<string, string>? ModNameCache = new();
+	internal string? GetModNameCache(string modDirectory) {
+		if(ModNameCache == null) {
+			ModNameCache = GetMods().ToDictionary(p => p.Path, p => p.Name);
 		}
+		if (ModNameCache != null && ModNameCache.ContainsKey(modDirectory))
+			return ModNameCache[modDirectory];
+		return null;
 	}
-
-	/// <summary> Try to set the inheritance state of a mod in a collection. </summary>
-	/// <returns>ModMissing, CollectionMissing, NothingChanged or Success.</returns>
-	internal PenumbraApiEc TryInheritMod(string collectionName, string modDirectory, string modName, bool inherit) {
-		try {
-			return TryInheritModSubscriber.Invoke(CollectionNameToGuid(collectionName), modDirectory, inherit, modName);
-		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
+	private Dictionary<string, JObject?> ModMetaCache = new();
+	internal JObject? GetModMetaCached(string modDirectory) {
+		if (!ModMetaCache.ContainsKey(modDirectory)) {
+			var meta = GetModMeta(modDirectory);
+			ModMetaCache[modDirectory] = meta;
 		}
+		return ModMetaCache[modDirectory];
 	}
-
-
-	/// <summary>
-	/// Obtain the enabled state, the priority, the settings of a mod given by its <paramref name="modDirectory" /> name or <paramref name="modName" /> in the specified collection.
-	/// </summary>
-	/// <param name="collectionName">Specify the collection.</param>
-	/// <param name="modDirectory">Specify the mod via its directory name.</param>
-	/// <param name="modName">Specify the mod via its (non-unique) display name.</param>
-	/// <param name="ignoreInheritance">Whether the settings need to be from the given collection or can be inherited from any other by it.</param>
-	/// <returns>ModMissing, CollectionMissing or Success. <para />
-	/// On Success, a tuple of Enabled State, Priority, a dictionary of option group names and lists of enabled option names and a bool whether the settings are inherited or not.</returns>
-	internal CurrentSettings GetCurrentModSettings(string collectionName, string modDirectory, string modName, bool ignoreInheritance) {
-		try {
-			var response = GetCurrentModSettingsSubscriber.Invoke(CollectionNameToGuid(collectionName), modDirectory, modName, ignoreInheritance);
-			var status = response.Item1;
-			var info = response.Item2;
-			var state = info?.Item4;
-			return (CurrentSettings)response;
-		} catch (Exception) {
-			return (PenumbraApiEc.UnknownError, null);
+	private Dictionary<string, Dictionary<string, string>> ModConfigFileTextCache = new();
+	internal Dictionary<string, string> GetModConfigFileTextCached(string modDirectory) {
+		if (!ModConfigFileTextCache.ContainsKey(modDirectory)) {
+			ModConfigFileTextCache[modDirectory] = GetConfigFileTexts(modDirectory);
 		}
+		return ModConfigFileTextCache[modDirectory];
 	}
-	internal bool IsModAppliedInCollection(string collectionName, string modDirectory, string modName, bool ignoreInheritance = true) {
-		return false;
-		// todo fix GetCurrentModSettingsSubscriber
-		try {
-			var response = GetCurrentModSettingsSubscriber.Invoke(CollectionNameToGuid(collectionName), modDirectory, modName, ignoreInheritance);
-			var status = response.Item1;
-			var info = response.Item2;
-			var state = info?.Item4 ?? false;
+	private Dictionary<string, bool>? ModCollectionStateCache = null;
+	internal bool IsModAppliedInCollectionCached(string modDirectory) {
+		var collection = ConfigurationManager.Config.PenumbraCollectionModList;
+
+		var collectionId = CollectionNameToGuid(collection);
+
+		if (ModCollectionStateCache == null) {
+
+			var response = GetAllModSettingsSubscriber.Invoke(collectionId, false, false);
+
+			if (response.Item1 != PenumbraApiEc.Success || response.Item2 == null) {
+				//PluginLog.Warning($"Failed to get all mod settings for collection {collection} when caching collection state. Status: {response.Item1}");
+				return false;
+			}
+			var allSettings = response.Item2;
+
+			ModCollectionStateCache = allSettings.Select(s => {
+				var state = s.Value.Item1;
+				//PluginLog.Debug($"Caching collection [{collection}] state for mod {s.Key} in collection {collection}: {state}");
+				return (s.Key, state);
+			}).ToDictionary(p => p.Key, p => p.state);
+		}
+		if(ModCollectionStateCache != null && ModCollectionStateCache.TryGetValue(modDirectory, out var state)) {
 			return state;
+		}
+		return false;
+	}
+
+	internal bool SetTemporaryModSettings(InventoryItem item) {
+		if (item.ModDirectory == null || item.ModName == null) return false;
+		var player = PluginServices.Context.LocalPlayer?.ObjectIndex;
+		if (player == null) return false;
+
+		try {
+			PluginLog.Debug($"Setting temporary mod settings for player {player.Value} and mod {item.ModDirectory},{item.ModName}");
+			var returned = SetTemporaryModSettingsPlayerSubscriber.Invoke(
+				player.Value,
+				item.ModDirectory,
+				false,
+				true,
+				0,
+				new Dictionary<string,
+				IReadOnlyList<string>>(),
+				"Dresser",
+				0,
+				item.ModName);
+			return returned == PenumbraApiEc.Success;
 		} catch (Exception) {
 			return false;
 		}
 	}
+	internal bool RemoveTemporaryModSettings(InventoryItem item) {
+		if(item.ModDirectory == null || item.ModName == null) return false;
+		var player = PluginServices.Context.LocalPlayer?.ObjectIndex;
+		if (player == null) return false;
 
-
-	/// <inheritdoc cref="Penumbra.Api.IPenumbraApi.TrySetModPriority"/>
-	internal PenumbraApiEc TrySetModPriority(string collectionName, string modDirectory, string modName, int priority) {
 		try {
-			return TrySetModPrioritySubscriber.Invoke(CollectionNameToGuid(collectionName), modDirectory, priority, modName);
+			var returned = RemoveTemporaryModSettingsPlayerSubscriber.Invoke(
+				player.Value,
+				item.ModDirectory,
+				0,
+				item.ModName);
+			return returned == PenumbraApiEc.Success;
 		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
+			return false;
 		}
 	}
+	internal bool RemoveAllTemporaryModSettings() {
+		var player = PluginServices.Context.LocalPlayer?.ObjectIndex;
+		if (player == null) return false;
 
-	internal PenumbraApiEc TrySetModSettings(string collectionName, string modDirectory, string modName, string optionGroupName, IReadOnlyList<string> options) {
 		try {
-			return TrySetModSettingsSubscriber.Invoke(CollectionNameToGuid(collectionName), modDirectory, optionGroupName, options, modName);
+			var returned = RemoveAllTemporaryModSettingsPlayerSubscriber.Invoke(player.Value);
+			return returned == PenumbraApiEc.Success;
 		} catch (Exception) {
-			return PenumbraApiEc.UnknownError;
+			return false;
 		}
 	}
 
 	/// <returns>The name of the collection assigned to the given <paramref name="type"/> or an empty string if none is assigned or type is invalid.</returns>
-	internal string GetCollectionForType(ApiCollectionType type) {
+	internal Guid? GetCollectionForType(ApiCollectionType type) {
 		try {
-			return GetCollectionForTypeSubscriber.Invoke(type)?.Name ?? "";
+			return GetCollectionForTypeSubscriber.Invoke(type)?.Id;
 		} catch (Exception) {
-			return "";
+			return null;
 		}
 	}
-	internal string GetCollectionForLocalPlayerCharacter() {
+	internal Guid? GetCollectionGuidForLocalPlayerCharacter() {
 		return GetCollectionForType(ApiCollectionType.Yourself);
+	}
+	internal Guid? GetCurrentCollectionGuid() {
+		return GetCollectionForType(ApiCollectionType.Current);
+	}
+	internal string? GetCurrentCollectionName() {
+		try {
+			return GetCollectionForTypeSubscriber.Invoke(ApiCollectionType.Current)?.Name;
+		} catch (Exception) {
+			return null;
+		}
 	}
 
 
@@ -367,21 +444,132 @@ internal class PenumbraIpc : IDisposable {
 
 	internal int CountModsDresserApplyCollection() {
 		return -1;
-		// todo fix it
-		return GetEnabledModsForCollection(ConfigurationManager.Config.PenumbraCollectionApply, true).Count();
 	}
-	internal void CleanDresserApplyCollection() {
 
-		foreach(var mod in GetEnabledModsForCollection(ConfigurationManager.Config.PenumbraCollectionApply, true)){
-			CleanDresserApplyMod(mod);
-		}
-
-	}
-	internal void CleanDresserApplyMod((string Path, string Name) mod) {
-		PluginLog.Debug($"reset apply state of mod {mod.Path},{mod.Name}");
-		TryInheritMod(ConfigurationManager.Config.PenumbraCollectionApply, mod.Path, mod.Name, true);
+	internal void CleanDresserApplyMod(InventoryItem item) {
+		PluginLog.Debug($"reset apply state of mod {item.ModDirectory},{item.ModName}");
+		RemoveTemporaryModSettings(item);
 	}
 	internal Guid CollectionNameToGuid(string collectionName) {
 		return this.GetCollectionsByIdentifierSubscriber.Invoke(collectionName).First().Id;
+	}
+
+
+
+
+
+
+
+
+
+	////////////////////////////////////////
+	/// Debug / extract EquipItem data 
+	////////////////////////////////////////
+
+	private static EquipItem? TryExtractEquipItemData(object? item) {
+		if (item == null)
+			return null;
+
+		try {
+			var itemType = item.GetType();
+			if (itemType.Name != nameof(EquipItem))
+				return null;
+
+			// Try to invoke the remote EquipItem's explicit operator to PseudoEquipItem
+			var opExplicitMethod = itemType.GetMethod(
+				"op_Explicit",
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public,
+				null,
+				new[] { itemType },
+				null
+			);
+
+			if (opExplicitMethod != null && opExplicitMethod.ReturnType == typeof(PseudoEquipItem)) {
+				// Invoke the operator to get PseudoEquipItem
+				var pseudo = (PseudoEquipItem)opExplicitMethod.Invoke(null, new object[] { item })!;
+
+				// Now use the implicit operator to convert to our local EquipItem
+				return (EquipItem)pseudo;
+			}
+
+			return null;
+		} catch (Exception ex) {
+			PluginLog.Debug(ex, "Failed to extract EquipItem via operator");
+			return null;
+		}
+	}
+	private static string DumpEquipItemFields(object? item) {
+		if (item == null)
+			return "Item is null";
+
+		try {
+			var type = item.GetType();
+			var sb = new System.Text.StringBuilder();
+			sb.AppendLine($"=== {type.FullName} ===");
+			sb.AppendLine($"AssemblyVersion: {type.Assembly.GetName().Version}");
+
+			var fields = type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+			foreach (var field in fields) {
+				var value = field.GetValue(item);
+
+				// If it's a struct/class with an Id property, try to extract it
+				if (value != null) {
+					var idProp = value.GetType().GetProperty("Id");
+					if (idProp != null) {
+						var idValue = idProp.GetValue(value);
+						sb.AppendLine($"{field.Name}: {value?.GetType().Name} => Id: {idValue}");
+					} else {
+						sb.AppendLine($"{field.Name}: {value}");
+					}
+				} else {
+					sb.AppendLine($"{field.Name}: null");
+				}
+			}
+
+			return sb.ToString();
+		} catch (Exception ex) {
+			return $"Error dumping fields: {ex}";
+		}
+	}
+
+	internal bool GetChangedItemAdapterDictionaryPrintToLog() {
+		try {
+			var ddd = GetChangedItemAdapterDictionarySubscriber.Invoke();
+
+			foreach ((var i, var j) in ddd) {
+				foreach ((var k, var l) in j) {
+					var data = TryExtractEquipItemData(l);
+					if (data == null) continue;
+					// Dump all fields for debugging
+					PluginLog.Debug(DumpEquipItemFields(l));
+
+					PluginLog.Debug($"mod: {i} || adapter: {k} || type: {l?.GetType()} || id: {data.Value.Id} || name: {data.Value.Name}");
+				}
+			}
+
+			return true;
+		} catch (Exception) {
+			return false;
+		}
+	}
+
+	internal bool GetChangedItemAdapterListPrintToLog() {
+		try {
+			var ddd = GetChangedItemAdapterListSubscriber.Invoke();
+
+			foreach ((var i, var j) in ddd) {
+				foreach ((var k, var l) in j) {
+					var data = TryExtractEquipItemData(l);
+					if (data == null) continue;
+
+					PluginLog.Debug($"mod: {i} || adapter: {k} || type: {l?.GetType()} || id: {data.Value.Id} || name: {data.Value.Name}");
+				}
+			}
+
+			return true;
+		} catch (Exception) {
+			return false;
+		}
 	}
 }
