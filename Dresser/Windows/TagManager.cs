@@ -12,10 +12,15 @@ using Dresser.Services;
 using Dresser.Structs.Dresser;
 using Dresser.Windows.Components;
 
+using Newtonsoft.Json;
+
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace Dresser.Windows {
 	public class TagManager : Window, IDisposable {
@@ -27,6 +32,8 @@ namespace Dresser.Windows {
 		private GlamourPlateSlot? EditingTagSlot = null;
 		private bool IsEditingTag = false;
 		private string NewTagName = string.Empty;
+		private Dictionary<string, bool> SlotFoldStates = new(); // Track which slots are folded using string keys
+		private string ImportErrorMessage = string.Empty;
 
 		public TagManager(Plugin plugin) : base("Tag Manager", ImGuiWindowFlags.NoScrollbar) {
 			this.SizeConstraints = new WindowSizeConstraints {
@@ -41,11 +48,11 @@ namespace Dresser.Windows {
 		public override void Draw() {
 			var tags = Tag.All();
 
-			// Filter section
+			// Filter and toolbar section in one line
 			ImGui.AlignTextToFramePadding();
 			ImGui.Text("Search:");
 			ImGui.SameLine();
-			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2 - ImGui.GetStyle().ItemSpacing.X);
+			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 3.5f - ImGui.GetStyle().ItemSpacing.X);
 			ImGui.InputText("##TagSearchFilter", ref SearchFilter, 128);
 
 			ImGui.SameLine();
@@ -57,13 +64,38 @@ namespace Dresser.Windows {
 			var selectedSlotIndex = SelectedSlotFilter.HasValue 
 				? (int)SelectedSlotFilter.Value + 2
 				: (SearchFilter.IsNullOrEmpty() ? 0 : 1);
-			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 3f - ImGui.GetStyle().ItemSpacing.X);
 			if (ImGui.Combo("##TagSlotFilter", ref selectedSlotIndex, slotOptions)) {
 				SelectedSlotFilter = selectedSlotIndex switch {
 					0 => null, // All slots
 					1 => null, // No slot restriction (but we'll filter)
 					_ => (GlamourPlateSlot)(selectedSlotIndex - 2)
 				};
+			}
+
+			// New Tag input in toolbar
+			ImGui.SameLine();
+			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight() * 4 - ImGui.GetStyle().ItemSpacing.X * 3);
+			if (ImGui.InputText("##NewTagNameInput", ref NewTagName, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
+				CreateNewTag();
+			}
+
+			// Export button
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.Download, "Export tags to clipboard (Ctrl to skip compression)", default, "##ExportTags")) {
+				ExportTagsToClipboard();
+			}
+
+			// Import button
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.Upload, "Import tags from clipboard", default, "##ImportTags")) {
+				ImportTagsFromClipboard();
+			}
+
+			// Delete all button
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Bomb, "Hold CTRL+SHIFT to unlock the delete all button. This will delete all tags.", new Vector2(ImGui.GetFrameHeight(), 0), "##DeleteAllTags")) {
+				ShowDeleteAllConfirmation();
 			}
 
 			ImGui.Separator();
@@ -80,9 +112,18 @@ namespace Dresser.Windows {
 				.ThenBy(t => t.Name)
 				.ToList();
 
+			// Show import error if any
+			if (!ImportErrorMessage.IsNullOrEmpty()) {
+				ImGui.TextColored(new Vector4(1, 0, 0, 1), ImportErrorMessage);
+				if (ImGui.IsItemClicked()) {
+					ImportErrorMessage = string.Empty;
+				}
+				ImGui.Separator();
+			}
+
 			// Main content area with two sections: tag list and editor
 			var contentAvailable = ImGui.GetContentRegionAvail();
-			var listWidth = contentAvailable.X / 2.5f;
+			var listWidth = 150f; // Fixed width for tag list
 
 			ImGui.BeginGroup();
 			DrawTagList(filteredTags, listWidth);
@@ -93,6 +134,9 @@ namespace Dresser.Windows {
 			ImGui.BeginGroup();
 			DrawTagEditor(contentAvailable.X - listWidth - ImGui.GetStyle().ItemSpacing.X);
 			ImGui.EndGroup();
+
+			// Draw delete all confirmation modal
+			DrawDeleteAllConfirmationModal();
 		}
 
 		private void DrawTagList(List<Tag> filteredTags, float width) {
@@ -100,68 +144,86 @@ namespace Dresser.Windows {
 			ImGui.Text($"Tags ({filteredTags.Count})");
 			ImGui.Separator();
 
-			GlamourPlateSlot? currentSlot = null;
+			// Group tags by slot using int keys to avoid null key issues
+			// Key: -1 for null (universal), 0+ for enum values
+			var tagsBySlotKey = new Dictionary<int, List<Tag>>();
+			var slotKeyToSlot = new Dictionary<int, GlamourPlateSlot?>(); // Map int key back to actual slot
+
 			foreach (var tag in filteredTags) {
-				// Draw slot header
-				if (tag.Slot.HasValue && !EqualityComparer<GlamourPlateSlot?>.Default.Equals(tag.Slot, currentSlot)) {
-					if (currentSlot.HasValue) ImGui.Spacing();
-					ImGui.TextDisabled(tag.Slot.Value.ToString().AddSpaceBeforeCapital());
-					ImGui.Separator();
-					currentSlot = tag.Slot;
-				} else if (!tag.Slot.HasValue && currentSlot.HasValue) {
-					ImGui.Spacing();
-					ImGui.TextDisabled("Universal Tags");
-					ImGui.Separator();
-					currentSlot = null;
+				var slotKey = tag.Slot.HasValue ? (int)tag.Slot.Value : -1;
+
+				if (!tagsBySlotKey.ContainsKey(slotKey)) {
+					tagsBySlotKey[slotKey] = new List<Tag>();
+					slotKeyToSlot[slotKey] = tag.Slot;
 				}
+				tagsBySlotKey[slotKey].Add(tag);
+			}
 
-				var isSelected = SelectedTag?.Id == tag.Id;
-				var tagColor = tag.Color();
-				ImGui.PushStyleColor(ImGuiCol.Button, isSelected ? tagColor * 1.2f : tagColor * 0.3f);
-				ImGui.PushStyleColor(ImGuiCol.ButtonHovered, tagColor * 0.5f);
-				ImGui.PushStyleColor(ImGuiCol.ButtonActive, tagColor * 0.7f);
-
-				var buttonLabel = $"{tag.Name}##TagButton{tag.Id}";
-				if (ImGui.Button(buttonLabel, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
-					SelectedTag = tag;
-					EditingTagName = tag.Name;
-					EditingTagSlot = tag.Slot;
-					IsEditingTag = false;
+			// Initialize fold states for new slots
+			foreach (var slotKey in tagsBySlotKey.Keys) {
+				var foldStateKey = slotKey == -1 ? "slot_null" : $"slot_{slotKey}";
+				if (!SlotFoldStates.ContainsKey(foldStateKey)) {
+					SlotFoldStates[foldStateKey] = true; // Default to open
 				}
+			}
 
-				ImGui.PopStyleColor(3);
+			// Sort slots: universal (-1) first, then by enum value
+			var sortedSlotKeys = tagsBySlotKey.Keys.OrderBy(k => k).ToList();
 
-				// Context menu for delete
-				if (ImGui.BeginPopupContextItem($"TagListContext{tag.Id}")) {
-					if (ImGui.Selectable("Delete", false)) {
-						Tag.Remove(tag);
-						if (SelectedTag?.Id == tag.Id) {
-							SelectedTag = null;
+			// Draw slot groups with tree structure
+			foreach (var slotKey in sortedSlotKeys) {
+				var tags = tagsBySlotKey[slotKey];
+				if (tags.Count == 0) continue;
+
+				var slot = slotKeyToSlot[slotKey];
+				var slotName = slot.HasValue ? slot.Value.ToString().AddSpaceBeforeCapital() : "Universal Tags";
+				var foldStateKey = slotKey == -1 ? "slot_null" : $"slot_{slotKey}";
+
+				// Safely get the fold state for this slot
+				bool isFolded = SlotFoldStates.TryGetValue(foldStateKey, out var foldState) ? foldState : true;
+				ImGui.SetNextItemOpen(isFolded);
+
+				if (ImGui.TreeNode($"{slotName}##slot_{foldStateKey}")) {
+					SlotFoldStates[foldStateKey] = true;
+
+					foreach (var tag in tags) {
+						var isSelected = SelectedTag?.Id == tag.Id;
+						var tagColor = tag.Color();
+						ImGui.PushStyleColor(ImGuiCol.Button, isSelected ? tagColor * 1.2f : tagColor * 0.3f);
+						ImGui.PushStyleColor(ImGuiCol.ButtonHovered, tagColor * 0.5f);
+						ImGui.PushStyleColor(ImGuiCol.ButtonActive, tagColor * 0.7f);
+
+						var buttonLabel = $"{tag.Name}##TagButton{tag.Id}";
+						ImGui.Indent();
+						if (ImGui.Button(buttonLabel, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
+							SelectedTag = tag;
+							EditingTagName = tag.Name;
+							EditingTagSlot = tag.Slot;
 							IsEditingTag = false;
 						}
-						ImGui.CloseCurrentPopup();
+						ImGui.Unindent();
+
+						ImGui.PopStyleColor(3);
+
+						// Context menu for delete
+						if (ImGui.BeginPopupContextItem($"TagListContext{tag.Id}")) {
+							if (ImGui.Selectable("Delete", false)) {
+								Tag.Remove(tag);
+								if (SelectedTag?.Id == tag.Id) {
+									SelectedTag = null;
+									IsEditingTag = false;
+								}
+								ImGui.CloseCurrentPopup();
+							}
+							ImGui.EndPopup();
+						}
 					}
-					ImGui.EndPopup();
+
+					ImGui.TreePop();
+				} else {
+					SlotFoldStates[foldStateKey] = false;
 				}
 			}
-
-			ImGui.Spacing();
-			ImGui.Separator();
-			ImGui.Spacing();
-
-			// Create new tag section
-			ImGui.AlignTextToFramePadding();
-			ImGui.Text("New Tag:");
-			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight() - ImGui.GetStyle().ItemSpacing.X);
-			if (ImGui.InputText("##NewTagNameInput", ref NewTagName, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
-				CreateNewTag();
-			}
-
-			ImGui.SameLine();
-			if (ImGui.Button("+##CreateNewTag", new Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight()))) {
-				CreateNewTag();
-			}
-			GuiHelpers.Tooltip("Create a new tag (or press Enter in the input field)");
 
 			ImGui.EndChildFrame();
 		}
@@ -192,6 +254,133 @@ namespace Dresser.Windows {
 			EditingTagName = newTag.Name;
 			EditingTagSlot = newTag.Slot;
 			IsEditingTag = false;
+		}
+
+		private void ExportTagsToClipboard() {
+			try {
+				var exportData = new {
+					tags = ConfigurationManager.Config.SavedTags.ToList(),
+					tagLinks = ConfigurationManager.Config.ItemTags.ToList()
+				};
+
+				var json = JsonConvert.SerializeObject(exportData, Formatting.None);
+
+				// Check if Ctrl is held to skip compression
+				bool skipCompression = ImGui.GetIO().KeyCtrl;
+
+				string clipboardContent;
+				if (skipCompression) {
+					clipboardContent = json;
+				} else {
+					// Compress and encode
+					var compressed = CompressString(json);
+					clipboardContent = Convert.ToBase64String(compressed);
+				}
+
+				ImGui.SetClipboardText(clipboardContent);
+				PluginLog.Information($"Exported {ConfigurationManager.Config.SavedTags.Count} tags to clipboard");
+				ImportErrorMessage = string.Empty;
+			} catch (Exception ex) {
+				PluginLog.Error($"Failed to export tags: {ex.Message}");
+				ImportErrorMessage = $"Export failed: {ex.Message}";
+			}
+		}
+
+		private void ImportTagsFromClipboard() {
+			try {
+				var clipboardContent = ImGui.GetClipboardText();
+				if (clipboardContent.IsNullOrEmpty()) {
+					ImportErrorMessage = "Clipboard is empty";
+					return;
+				}
+
+				string json = clipboardContent;
+
+				// Try to decompress if it looks like base64
+				if (!clipboardContent.StartsWith("{")) {
+					try {
+						var compressed = Convert.FromBase64String(clipboardContent);
+						json = DecompressString(compressed);
+					} catch {
+						// If decompression fails, try treating it as raw JSON
+						json = clipboardContent;
+					}
+				}
+
+				var importData = JsonConvert.DeserializeObject<ImportExportData>(json);
+				if (importData == null || (importData.tags.Count == 0 && importData.tagLinks.Count == 0)) {
+					ImportErrorMessage = "Invalid or empty import data";
+					return;
+				}
+
+				int tagsAdded = 0;
+				int tagsMerged = 0;
+				var importedTagIdMap = new Dictionary<uint, uint>(); // Old ID -> New ID
+
+				// Import tags with merging
+				foreach (var importedTag in importData.tags) {
+					var existingTag = Tag.TagNameEquals(importedTag.Name);
+					if (existingTag != null) {
+						// Merge: map the old ID to the existing one
+						importedTagIdMap[importedTag.Id] = existingTag.Id;
+						tagsMerged++;
+					} else {
+						// Create new tag
+						var newTag = new Tag(importedTag.Name) {
+							Slot = importedTag.Slot
+						};
+						ConfigurationManager.Config.SavedTags.Add(newTag);
+						importedTagIdMap[importedTag.Id] = newTag.Id;
+						tagsAdded++;
+					}
+				}
+
+				// Import tag links
+				int linksAdded = 0;
+				foreach (var importedLink in importData.tagLinks) {
+					if (importedTagIdMap.TryGetValue(importedLink.Tag, out var newTagId)) {
+						var newLink = new TagLink(importedLink.Item, newTagId);
+						if (!ConfigurationManager.Config.ItemTags.Contains(newLink)) {
+							ConfigurationManager.Config.ItemTags.Add(newLink);
+							TagStore.AddTag(newLink);
+							linksAdded++;
+						}
+					}
+				}
+
+				ConfigurationManager.Config.Save();
+				TagStore.LoadLinks();
+
+				ImportErrorMessage = $"Imported {tagsAdded} new tags, merged {tagsMerged} existing tags, added {linksAdded} tag associations";
+				PluginLog.Information(ImportErrorMessage);
+			} catch (Exception ex) {
+				PluginLog.Error($"Failed to import tags: {ex.Message}");
+				ImportErrorMessage = $"Import failed: {ex.Message}";
+			}
+		}
+
+		private void ShowDeleteAllConfirmation() {
+			ImGui.OpenPopup("Delete All Tags##Confirmation");
+		}
+
+		private byte[] CompressString(string text) {
+			var buffer = Encoding.UTF8.GetBytes(text);
+			using (var ms = new MemoryStream()) {
+				using (var gzs = new GZipStream(ms, CompressionMode.Compress, true)) {
+					gzs.Write(buffer, 0, buffer.Length);
+				}
+				return ms.ToArray();
+			}
+		}
+
+		private string DecompressString(byte[] buffer) {
+			using (var ms = new MemoryStream(buffer)) {
+				using (var gzs = new GZipStream(ms, CompressionMode.Decompress, true)) {
+					using (var sr = new StreamReader(gzs)) {
+						return sr.ReadToEnd();
+					}
+				}
+			}
 		}
 
 		private void DrawTagEditor(float width) {
@@ -334,5 +523,69 @@ namespace Dresser.Windows {
 				}
 			}
 		}
+
+		private void DrawDeleteAllConfirmationModal() {
+			var center = ImGui.GetMainViewport().GetCenter();
+			ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+
+			bool isOpen = true;
+			if (ImGui.BeginPopupModal("Delete All Tags##Confirmation", ref isOpen, ImGuiWindowFlags.AlwaysAutoResize)) {
+				ImGui.TextColored(new Vector4(1, 0.3f, 0.3f, 1), "WARNING: This action cannot be undone!");
+				ImGui.Spacing();
+				ImGui.Text($"Are you sure you want to delete ALL {ConfigurationManager.Config.SavedTags.Count} tags?");
+				ImGui.Text("This will also remove all tag associations from items.");
+				ImGui.Spacing();
+
+				var buttonWidth = (ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X) / 2;
+				if (ImGui.Button("Delete All", new Vector2(buttonWidth, 0))) {
+					DeleteAllTags();
+					ImGui.CloseCurrentPopup();
+				}
+
+				ImGui.SameLine();
+				if (ImGui.Button("Cancel", new Vector2(buttonWidth, 0))) {
+					ImGui.CloseCurrentPopup();
+				}
+
+				ImGui.EndPopup();
+			}
+		}
+
+		private void DeleteAllTags() {
+			try {
+				var tagIds = ConfigurationManager.Config.SavedTags.Select(t => t.Id).ToList();
+
+				// Remove all tag associations
+				foreach (var tagId in tagIds) {
+					var itemIds = TagStore.GetItemsForTag(tagId).ToList();
+					foreach (var itemId in itemIds) {
+						var link = ConfigurationManager.Config.ItemTags.FirstOrDefault(l => l.Item == itemId && l.Tag == tagId);
+						if (link.Item != 0 || link.Tag != 0) {
+							ConfigurationManager.Config.ItemTags.Remove(link);
+							TagStore.RemoveTag(link);
+						}
+					}
+				}
+
+				// Remove all tags
+				ConfigurationManager.Config.SavedTags.Clear();
+				ConfigurationManager.Config.Save();
+				TagStore.LoadLinks();
+
+				SelectedTag = null;
+				IsEditingTag = false;
+				ImportErrorMessage = "All tags deleted";
+				PluginLog.Information($"Deleted all {tagIds.Count} tags");
+			} catch (Exception ex) {
+				PluginLog.Error($"Failed to delete all tags: {ex.Message}");
+				ImportErrorMessage = $"Failed to delete tags: {ex.Message}";
+			}
+		}
+	}
+
+	public class ImportExportData {
+		public List<Tag> tags { get; set; } = [];
+		public List<TagLink> tagLinks { get; set; } = [];
 	}
 }
+
