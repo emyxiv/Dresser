@@ -4,21 +4,21 @@
     "net10.0-windows7.0": {
       "AllaganLib.Data": {
         "type": "Direct",
-        "requested": "[2.0.0, )",
-        "resolved": "2.0.0",
-        "contentHash": "Ptgb1vIadCtxv1TUKHhxYgKKCpGrv/BvPh4RRtDLwc8dNue75D9Xz5RiEG9Od4OKXGlBEbrN+rHwf0zod0W58Q==",
+        "requested": "[2.0.3, )",
+        "resolved": "2.0.3",
+        "contentHash": "H4KJPFgu/Nz3BnSrpmiYX25DAccezilWharyWa3lv0tZdaIyBqlGnvBsuo3tITCYnRXOZbSx2M6cH0JaZ6jn6w==",
         "dependencies": {
           "CSVFile": "3.2.1"
         }
       },
       "AllaganLib.Interface": {
         "type": "Direct",
-        "requested": "[2.0.0, )",
-        "resolved": "2.0.0",
-        "contentHash": "AKkDh9oc8p1OZRnFa0TVtv3uSPOhO5yQgc/JdJ613+oXE8MY0LmWYJMEGZDndbAJGej2/FKmAT05FN/bQco+Cw==",
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "ppYglvUhW5FFpBokqOblOKS11yBizbKSrNpcY8/za1oIy3cRbWvY6IBHrCXjLvdrRsUfyKFvZifuerQzKCyHFQ==",
         "dependencies": {
-          "AllaganLib.Data": "2.0.0",
-          "AllaganLib.Shared": "2.0.0",
+          "AllaganLib.Data": "2.0.3",
+          "AllaganLib.Shared": "2.1.0",
           "Autofac": "9.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.1",
           "NaturalSort.Extension": "4.4.1"
@@ -26,9 +26,9 @@
       },
       "DalamudPackager": {
         "type": "Direct",
-        "requested": "[14.0.1, )",
-        "resolved": "14.0.1",
-        "contentHash": "y0WWyUE6dhpGdolK3iKgwys05/nZaVf4ZPtIjpLhJBZvHxkkiE23zYRo7K7uqAgoK/QvK5cqF6l3VG5AbgC6KA=="
+        "requested": "[14.0.2, )",
+        "resolved": "14.0.2",
+        "contentHash": "dQJeq+8eyHzra4Cg5eZ/3LAeS3/UpvvLriYJGSncMK9LqJ7Q4B6jwcOsxo3PfxVd15xj+IzVFxkPqIBmPQu8/w=="
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
@@ -64,8 +64,8 @@
       },
       "AllaganLib.Shared": {
         "type": "Transitive",
-        "resolved": "2.0.3",
-        "contentHash": "M4xbFzrhczZ9MlzAFMI2w058WMIxh/woGlwJVwbC/AodLkaUmryCQF8ilkZ41yklQT1caGmHfiUuiwM9pw1Ndw==",
+        "resolved": "2.1.0",
+        "contentHash": "idrUYGQKy4Ot+nqZKhyO9WED37AxbxlBw8uv0QyWkSldyBHYuLrGOae1QybblEaDbLJtW0FuHcLYgYi8AA1tiw==",
         "dependencies": {
           "Autofac": "9.0.0",
           "Microsoft.Extensions.Hosting": "10.0.1",
