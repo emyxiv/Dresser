@@ -33,7 +33,6 @@ namespace Dresser.Windows {
 		private bool IsEditingTag = false;
 		private string NewTagName = string.Empty;
 		private Dictionary<string, bool> SlotFoldStates = new(); // Track which slots are folded using string keys
-		private string ImportErrorMessage = string.Empty;
 
 		public TagManager(Plugin plugin) : base("Tag Manager", ImGuiWindowFlags.NoScrollbar) {
 			this.SizeConstraints = new WindowSizeConstraints {
@@ -76,19 +75,23 @@ namespace Dresser.Windows {
 			// New Tag input in toolbar
 			ImGui.SameLine();
 			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight() * 4 - ImGui.GetStyle().ItemSpacing.X * 3);
-			if (ImGui.InputText("##NewTagNameInput", ref NewTagName, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
+			if (ImGui.InputTextWithHint("##NewTagNameInput","Add new tag...", ref NewTagName, 128, ImGuiInputTextFlags.EnterReturnsTrue)) {
+				CreateNewTag();
+			}
+			ImGui.SameLine();
+			if(GuiHelpers.IconButtonTooltip(FontAwesomeIcon.Plus, "Create new tag", default, "##CreateTag")) {
 				CreateNewTag();
 			}
 
 			// Export button
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.Download, "Export tags to clipboard (Ctrl to skip compression)", default, "##ExportTags")) {
+			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileExport, "Export tags to clipboard (Hold Ctrl for clear json export)", default, "##ExportTags")) {
 				ExportTagsToClipboard();
 			}
 
 			// Import button
 			ImGui.SameLine();
-			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.Upload, "Import tags from clipboard", default, "##ImportTags")) {
+			if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.FileImport, "Import tags from clipboard", default, "##ImportTags")) {
 				ImportTagsFromClipboard();
 			}
 
@@ -112,18 +115,19 @@ namespace Dresser.Windows {
 				.ThenBy(t => t.Name)
 				.ToList();
 
-			// Show import error if any
-			if (!ImportErrorMessage.IsNullOrEmpty()) {
-				ImGui.TextColored(new Vector4(1, 0, 0, 1), ImportErrorMessage);
-				if (ImGui.IsItemClicked()) {
-					ImportErrorMessage = string.Empty;
-				}
-				ImGui.Separator();
-			}
-
 			// Main content area with two sections: tag list and editor
 			var contentAvailable = ImGui.GetContentRegionAvail();
-			var listWidth = 150f; // Fixed width for tag list
+
+			// Dynamic width for tag list
+			var maxTagNameWidth = filteredTags.Any() ? filteredTags.Max(t => ImGui.CalcTextSize(t.Name).X) : 150f;
+			var maxSlotNameWidth = Enum.GetValues<GlamourPlateSlot>().Cast<GlamourPlateSlot>()
+				.Select(s => s.ToString().AddSpaceBeforeCapital())
+				.Select(n => ImGui.CalcTextSize(n).X)
+				.DefaultIfEmpty(0)
+				.Max();
+			var tagLineMaxWidth = ImGui.GetStyle().IndentSpacing + maxTagNameWidth;
+			var slotLineMaxWidth = (ImGui.GetFontSize() * 2) + ImGui.GetStyle().FramePadding.X + maxSlotNameWidth;
+			var listWidth = Math.Max(tagLineMaxWidth, slotLineMaxWidth) + (ImGui.GetStyle().FramePadding.X * 2) + (ImGui.GetFontSize() * 2);
 
 			ImGui.BeginGroup();
 			DrawTagList(filteredTags, listWidth);
@@ -189,13 +193,14 @@ namespace Dresser.Windows {
 					foreach (var tag in tags) {
 						var isSelected = SelectedTag?.Id == tag.Id;
 						var tagColor = tag.Color();
-						ImGui.PushStyleColor(ImGuiCol.Button, isSelected ? tagColor * 1.2f : tagColor * 0.3f);
-						ImGui.PushStyleColor(ImGuiCol.ButtonHovered, tagColor * 0.5f);
-						ImGui.PushStyleColor(ImGuiCol.ButtonActive, tagColor * 0.7f);
+						//ImGui.PushStyleColor(ImGuiCol.Button, isSelected ? tagColor * 1.2f : tagColor * 0.3f);
+						//ImGui.PushStyleColor(ImGuiCol.ButtonHovered, tagColor * 0.5f);
+						//ImGui.PushStyleColor(ImGuiCol.ButtonActive, tagColor * 0.7f);
 
 						var buttonLabel = $"{tag.Name}##TagButton{tag.Id}";
 						ImGui.Indent();
-						if (ImGui.Button(buttonLabel, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
+						if (ImGui.Selectable(buttonLabel)) {
+						//if (ImGui.Button(buttonLabel, new Vector2(ImGui.GetContentRegionAvail().X, 0))) {
 							SelectedTag = tag;
 							EditingTagName = tag.Name;
 							EditingTagSlot = tag.Slot;
@@ -203,20 +208,20 @@ namespace Dresser.Windows {
 						}
 						ImGui.Unindent();
 
-						ImGui.PopStyleColor(3);
+						//ImGui.PopStyleColor(3);
 
 						// Context menu for delete
-						if (ImGui.BeginPopupContextItem($"TagListContext{tag.Id}")) {
-							if (ImGui.Selectable("Delete", false)) {
-								Tag.Remove(tag);
-								if (SelectedTag?.Id == tag.Id) {
-									SelectedTag = null;
-									IsEditingTag = false;
-								}
-								ImGui.CloseCurrentPopup();
-							}
-							ImGui.EndPopup();
-						}
+						//if (ImGui.BeginPopupContextItem($"TagListContext{tag.Id}")) {
+						//	if (ImGui.Selectable("Delete", false)) {
+						//		Tag.Remove(tag);
+						//		if (SelectedTag?.Id == tag.Id) {
+						//			SelectedTag = null;
+						//			IsEditingTag = false;
+						//		}
+						//		ImGui.CloseCurrentPopup();
+						//	}
+						//	ImGui.EndPopup();
+						//}
 					}
 
 					ImGui.TreePop();
@@ -278,11 +283,14 @@ namespace Dresser.Windows {
 				}
 
 				ImGui.SetClipboardText(clipboardContent);
-				PluginLog.Information($"Exported {ConfigurationManager.Config.SavedTags.Count} tags to clipboard");
-				ImportErrorMessage = string.Empty;
+				var importErrorMessage = $"Exported {ConfigurationManager.Config.SavedTags.Count} tags to clipboard" + (skipCompression ? " (clear json)" : "");
+				PluginLog.Information(importErrorMessage);
+				PluginServices.ChatGui.Print(importErrorMessage);
 			} catch (Exception ex) {
 				PluginLog.Error($"Failed to export tags: {ex.Message}");
-				ImportErrorMessage = $"Export failed: {ex.Message}";
+				var importErrorMessage = $"Export failed: {ex.Message}";
+				PluginServices.ChatGui.PrintError(importErrorMessage);
+
 			}
 		}
 
@@ -290,7 +298,7 @@ namespace Dresser.Windows {
 			try {
 				var clipboardContent = ImGui.GetClipboardText();
 				if (clipboardContent.IsNullOrEmpty()) {
-					ImportErrorMessage = "Clipboard is empty";
+					PluginServices.ChatGui.PrintError("Clipboard is empty");
 					return;
 				}
 
@@ -309,7 +317,7 @@ namespace Dresser.Windows {
 
 				var importData = JsonConvert.DeserializeObject<ImportExportData>(json);
 				if (importData == null || (importData.tags.Count == 0 && importData.tagLinks.Count == 0)) {
-					ImportErrorMessage = "Invalid or empty import data";
+					PluginServices.ChatGui.PrintError("Invalid or empty import data");
 					return;
 				}
 
@@ -351,11 +359,14 @@ namespace Dresser.Windows {
 				ConfigurationManager.Config.Save();
 				TagStore.LoadLinks();
 
-				ImportErrorMessage = $"Imported {tagsAdded} new tags, merged {tagsMerged} existing tags, added {linksAdded} tag associations";
-				PluginLog.Information(ImportErrorMessage);
+				var importErrorMessage = $"Imported {tagsAdded} new tags, merged {tagsMerged} existing tags, associated {linksAdded} items to tags";
+
+				PluginServices.ChatGui.Print(importErrorMessage);
+				PluginLog.Information(importErrorMessage);
 			} catch (Exception ex) {
 				PluginLog.Error($"Failed to import tags: {ex.Message}");
-				ImportErrorMessage = $"Import failed: {ex.Message}";
+				var importErrorMessage = $"Import failed: {ex.Message}";
+				PluginServices.ChatGui.PrintError(importErrorMessage);
 			}
 		}
 
@@ -407,8 +418,7 @@ namespace Dresser.Windows {
 			} else {
 				if (ImGui.InputText("##EditTagNameInput", ref EditingTagName, 128, ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll)) {
 					if (!EditingTagName.IsNullOrEmpty() && EditingTagName != SelectedTag.Name) {
-						// Rename logic - would need to be added to Tag class
-						PluginLog.Warning("Tag renaming not yet implemented in Tag class");
+						SelectedTag.Name = EditingTagName;
 					}
 					IsEditingTag = false;
 				}
@@ -417,14 +427,10 @@ namespace Dresser.Windows {
 				}
 			}
 
-			ImGui.Spacing();
-			ImGui.Separator();
-			ImGui.Spacing();
-
 			// Slot assignment
 			ImGui.AlignTextToFramePadding();
 			ImGui.Text("Slot Restriction:");
-			ImGui.Spacing();
+			ImGui.SameLine();
 
 			var slotOptions = new[] { "Universal (no slot restriction)" }
 				.Concat(Enum.GetValues<GlamourPlateSlot>().Select(s => s.ToString().AddSpaceBeforeCapital()))
@@ -574,11 +580,13 @@ namespace Dresser.Windows {
 
 				SelectedTag = null;
 				IsEditingTag = false;
-				ImportErrorMessage = "All tags deleted";
+				var importErrorMessage = "All tags deleted";
 				PluginLog.Information($"Deleted all {tagIds.Count} tags");
+				PluginServices.ChatGui.Print(importErrorMessage);
 			} catch (Exception ex) {
 				PluginLog.Error($"Failed to delete all tags: {ex.Message}");
-				ImportErrorMessage = $"Failed to delete tags: {ex.Message}";
+				var importErrorMessage = $"Failed to delete tags: {ex.Message}";
+				PluginServices.ChatGui.PrintError(importErrorMessage);
 			}
 		}
 	}

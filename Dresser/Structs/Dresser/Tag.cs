@@ -20,7 +20,7 @@ namespace Dresser.Structs.Dresser {
 
 	public class Tag {
 		public uint Id { get; }
-		public string Name { get; }
+		public string Name { get; set; }
 		public GlamourPlateSlot? Slot { get; set; } = null;
 		private uint? CategoryId { get; set; } = null;
 
@@ -33,6 +33,7 @@ namespace Dresser.Structs.Dresser {
 		}
 		public Tag(string name) : this(GenerateId(), name, null, null) { }
 
+		[JsonIgnore]
 		public HashSet<uint> Items => ByTag(this);
 
 
