@@ -13,6 +13,7 @@ using Penumbra.Api.Helpers;
 using Penumbra.GameData.Structs;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,6 +52,8 @@ internal class PenumbraIpc : IDisposable {
 
 	private Penumbra.Api.IpcSubscribers.GetModPath GetModPathSubscriber;
 
+	private Penumbra.Api.IpcSubscribers.GetCurrentModSettingsWithTemp GetCurrentModSettingsWithTempSubscriber;
+
 
 
 
@@ -85,6 +88,8 @@ internal class PenumbraIpc : IDisposable {
 		QueryTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.QueryTemporaryModSettingsPlayer(PluginServices.PluginInterface);
 
 		GetModPathSubscriber = new global::Penumbra.Api.IpcSubscribers.GetModPath(PluginServices.PluginInterface);
+
+		GetCurrentModSettingsWithTempSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCurrentModSettingsWithTemp(PluginServices.PluginInterface);
 
 		RegisterEvents();
 	}
@@ -406,15 +411,40 @@ internal class PenumbraIpc : IDisposable {
 		if (player == null) return false;
 
 		try {
+
+			var colGuid = GetCollectionGuidForLocalPlayerCharacter();
+			if(colGuid == null) return false;
+			var getSettingsRes = GetCurrentModSettingsWithTempSubscriber.Invoke(
+				colGuid.Value,
+				item.ModDirectory,
+				item.ModName,
+				false,
+				false,
+				0);
+			var tuple = getSettingsRes.Item2;
+			var options = tuple?.Item3;
+			var enabled = tuple?.Item1;
+			var priority = tuple?.Item2;
+			var inherited = tuple?.Item4;
+			var unknown = tuple?.Item5;
+
+			Dictionary<string, IReadOnlyList<string>> optionsSafe = [];
+			if(options != null) {
+				optionsSafe = options.ToDictionary(
+					g => g.Key,
+					g => (IReadOnlyList<string>)g.Value.ToList()
+				);
+			}
+
+
 			PluginLog.Debug($"Setting temporary mod settings for player {player.Value} and mod {item.ModDirectory},{item.ModName}");
 			var returned = SetTemporaryModSettingsPlayerSubscriber.Invoke(
 				player.Value,
 				item.ModDirectory,
 				false,
 				true,
-				0,
-				new Dictionary<string,
-				IReadOnlyList<string>>(),
+				priority ?? 0,
+				optionsSafe,
 				"Dresser",
 				0,
 				item.ModName);
