@@ -412,12 +412,16 @@ public class ConfigWindow : Window, IDisposable {
 		// put that at the end
 		DrawModBlacklistSelector();
 		DrawModPathBlacklistSection();
+		DrawModPathWhitelistSection();
 	}
 
 	private static List<string>? ModPathsAvailableToBlacklist = null;
 	private static string ModPathsBlackListSearch = "";
 	private static bool ModPathsBlackListSearchOpen = false;
 	private static string ModPathsBlackListTextInput = "";
+
+	private static List<string>? ModPathsAvailableForWhitelist = null;
+	private static string ModPathsWhiteListTextInput = "";
 
 	private void DrawModPathBlacklistSection() {
 		ImGui.Spacing();
@@ -514,6 +518,116 @@ public class ConfigWindow : Window, IDisposable {
 			if (ImGui.BeginChildFrame(411143, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 4))) {
 				var matchingPaths = ModPathsAvailableToBlacklist
 					.Where(modPath => PluginServices.Penumbra.PathMatchesBlacklistPattern(modPath, ModPathsBlackListTextInput))
+					.ToList();
+
+				if (matchingPaths.Count == 0) {
+					ImGui.TextDisabled("(no mods match this pattern)");
+				} else {
+					foreach (var modPath in matchingPaths) {
+						ImGui.TextUnformatted(modPath);
+					}
+				}
+
+				ImGui.EndChildFrame();
+			}
+		}
+	}
+
+	private void DrawModPathWhitelistSection() {
+		ImGui.Spacing();
+		if (ImGui.CollapsingHeader("Whitelist by Path##DrawPenumbraConfigs")) {
+			ImGui.TextWrapped("Whitelist mods by their folder path (case-insensitive). When a whitelist is active, ONLY mods matching these patterns will be used. For example, \"main1\" will only allow \"main1/sub1/mod1\", \"main1/sub2/mod2\", etc.");
+			ImGui.Spacing();
+
+			ImGui.AlignTextToFramePadding();
+			ImGui.Text("Whitelisted paths");
+			GuiHelpers.Tooltip($"Only mods whose path starts with any of these will be used when creating the list of modded items. The blacklist is ignored when a whitelist is active.");
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileExport, "ExportButton##AddToPathWhitelist##PenumbraConfig##ConfigWindow", "Export list to Clipboard as JSON"))
+				JsonConvert.SerializeObject(ConfigurationManager.Config.PenumbraModsWhitelistByPath).ToClipboard();
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileImport, "ImportButton##AddToPathWhitelist##PenumbraConfig##ConfigWindow", "Import list from JSON Clipboard")) {
+				try {
+					var decodedWhitelist = JsonConvert.DeserializeObject<List<string>>(ImGui.GetClipboardText());
+					if (decodedWhitelist != null) {
+						foreach (var path in decodedWhitelist) {
+							if (!ConfigurationManager.Config.PenumbraModsWhitelistByPath.Contains(path)) {
+								ConfigurationManager.Config.PenumbraModsWhitelistByPath.Add(path);
+							}
+						}
+					}
+				} catch (Exception) { }
+			}
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Trash, "Clear whitelist\nHold ctrl + Shift to confirm", default, "TrashButton##AddToPathWhitelist##PenumbraConfig##ConfigWindow"))
+				ConfigurationManager.Config.PenumbraModsWhitelistByPath.Clear();
+
+			if (ImGui.BeginChildFrame(411144, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 5))) {
+				for (int i = ConfigurationManager.Config.PenumbraModsWhitelistByPath.Count - 1; i >= 0; i--) {
+					var path = ConfigurationManager.Config.PenumbraModsWhitelistByPath[i];
+					if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Trash, $"{path}##TrashButton##AddToPathWhitelist##PenumbraConfig##ConfigWindow", "Remove from whitelist")) {
+						ConfigurationManager.Config.PenumbraModsWhitelistByPath.RemoveAt(i);
+						if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+					}
+					ImGui.SameLine();
+					ImGui.TextUnformatted(path);
+				}
+
+				ImGui.EndChildFrame();
+			}
+
+			DrawModPathWhitelistInput();
+		}
+	}
+
+	private void DrawModPathWhitelistInput() {
+		// Get all available mod paths once
+		ModPathsAvailableForWhitelist ??= PluginServices.Penumbra.GetMods()
+			.SelectMany(mod => {
+				var path = PluginServices.Penumbra.GetModPathCacheCached(mod.Path);
+				if (string.IsNullOrEmpty(path)) return Enumerable.Empty<string>();
+				return Enumerable.Repeat(path, 1);
+			})
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+			.ToList();
+
+		ImGui.Spacing();
+		ImGui.Text("Add new path to whitelist");
+
+		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+		if (ImGui.InputText("##PathWhitelistInput", ref ModPathsWhiteListTextInput, 256, ImGuiInputTextFlags.EnterReturnsTrue)) {
+			// Enter key pressed - add the path
+			if (!string.IsNullOrWhiteSpace(ModPathsWhiteListTextInput)) {
+				var pathToAdd = ModPathsWhiteListTextInput.Trim();
+				if (!ConfigurationManager.Config.PenumbraModsWhitelistByPath.Contains(pathToAdd, StringComparer.OrdinalIgnoreCase)) {
+					ConfigurationManager.Config.PenumbraModsWhitelistByPath.Add(pathToAdd);
+					ModPathsWhiteListTextInput = "";
+					if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+				}
+			}
+		}
+
+		ImGui.SameLine();
+		if (ImGui.Button("Add##PathWhitelistAdd")) {
+			if (!string.IsNullOrWhiteSpace(ModPathsWhiteListTextInput)) {
+				var pathToAdd = ModPathsWhiteListTextInput.Trim();
+				if (!ConfigurationManager.Config.PenumbraModsWhitelistByPath.Contains(pathToAdd, StringComparer.OrdinalIgnoreCase)) {
+					ConfigurationManager.Config.PenumbraModsWhitelistByPath.Add(pathToAdd);
+					ModPathsWhiteListTextInput = "";
+					if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+				}
+			}
+		}
+
+		// Live preview
+		if (!string.IsNullOrWhiteSpace(ModPathsWhiteListTextInput)) {
+			ImGui.Spacing();
+			ImGui.TextDisabled("Whitelisted mods preview from input:");
+			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+			if (ImGui.BeginChildFrame(411145, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 4))) {
+				var matchingPaths = ModPathsAvailableForWhitelist
+					.Where(modPath => PluginServices.Penumbra.PathMatchesBlacklistPattern(modPath, ModPathsWhiteListTextInput))
 					.ToList();
 
 				if (matchingPaths.Count == 0) {

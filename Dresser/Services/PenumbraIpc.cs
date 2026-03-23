@@ -370,6 +370,14 @@ internal class PenumbraIpc : IDisposable {
 		var modPath = GetModPathCacheCached(modDirectory);
 		if (string.IsNullOrEmpty(modPath)) return false;
 
+		// If whitelist has items, whitelist takes precedence
+		if (ConfigurationManager.Config.PenumbraModsWhitelistByPath.Count > 0) {
+			return !ConfigurationManager.Config.PenumbraModsWhitelistByPath.Any(whitelistedPattern => 
+				PathMatchesBlacklistPattern(modPath, whitelistedPattern)
+			);
+		}
+
+		// Otherwise use blacklist
 		return ConfigurationManager.Config.PenumbraModsBlacklistByPath.Any(blacklistedPattern => 
 			PathMatchesBlacklistPattern(modPath, blacklistedPattern)
 		);
