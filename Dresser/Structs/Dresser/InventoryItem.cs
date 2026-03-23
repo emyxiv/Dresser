@@ -261,6 +261,9 @@ namespace Dresser.Structs.Dresser {
 			if (!IsModded()) return true;
 			if (ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == this.ModDirectory))
 				return false;
+			// Check modpath blacklist
+			if (PluginServices.Penumbra.IsModPathBlacklisted(this.ModDirectory ?? ""))
+				return false;
 			return true;
 		}
 

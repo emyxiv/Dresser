@@ -103,12 +103,16 @@ internal class PenumbraIpc : IDisposable {
 		}
 	}
 	internal IList<(string Path, string Name)> GetNotBlacklistedMods()
-		=> GetMods().Where(m => !ConfigurationManager.Config.PenumbraModsBlacklist.Contains(m)).ToList();
+		=> GetMods().Where(m => 
+			!ConfigurationManager.Config.PenumbraModsBlacklist.Contains(m) 
+			&& !IsModPathBlacklisted(m.Path)
+		).ToList();
 
 	internal IEnumerable<(string ModDir, EquipItem Item)> GetModdedEquipItemsNotBlacklisted() {
 		try {
 			var it = GetChangedItemAdapterListSubscriber.Invoke() // get the list of changed items per mod and adapter
-				.Where(r => !ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == r.ModDirectory)) // filter out blacklisted mods
+				.Where(r => !ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == r.ModDirectory) // filter out blacklisted mod directories
+					&& !IsModPathBlacklisted(r.ModDirectory)) // filter out blacklisted mod paths
 				.SelectMany((p, l) => p.ChangedItems.Select((v, k) => (p.ModDirectory, TryExtractEquipItemData(v.Value)))) // extract equip item data and keep the item id for filtering
 				.Where(u => u.Item2 != null).Select(u => (u.ModDirectory, u.Item2!.Value)) // remove nullability after filtering out nulls
 				;
@@ -360,6 +364,32 @@ internal class PenumbraIpc : IDisposable {
 			ModPathCache[modDirectory] = GetModPathString(modDirectory);
 		}
 		return ModPathCache[modDirectory];
+	}
+
+	internal bool IsModPathBlacklisted(string modDirectory) {
+		var modPath = GetModPathCacheCached(modDirectory);
+		if (string.IsNullOrEmpty(modPath)) return false;
+
+		return ConfigurationManager.Config.PenumbraModsBlacklistByPath.Any(blacklistedPattern => 
+			PathMatchesBlacklistPattern(modPath, blacklistedPattern)
+		);
+	}
+
+	internal bool PathMatchesBlacklistPattern(string modPath, string pattern) {
+		// Normalize path separators to forward slash
+		modPath = modPath.Replace('\\', '/');
+		pattern = pattern.Replace('\\', '/').TrimEnd('/');
+
+		// Exact match
+		if (modPath.Equals(pattern, StringComparison.OrdinalIgnoreCase)) 
+			return true;
+
+		// Prefix match: pattern matches if modPath starts with pattern followed by /
+		// Example: "main1" blacklist matches "main1/sub1", "main1/sub1/mod1", etc.
+		if (modPath.StartsWith(pattern + "/", StringComparison.OrdinalIgnoreCase)) 
+			return true;
+
+		return false;
 	}
 
 	internal bool SetTemporaryModSettings(InventoryItem item) {

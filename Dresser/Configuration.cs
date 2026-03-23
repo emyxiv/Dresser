@@ -217,6 +217,7 @@ namespace Dresser {
 
 		public List<InventoryItem> PenumbraModdedItems = new List<InventoryItem>();
 		public List<(string Path, string Name)> PenumbraModsBlacklist = new();
+		public List<string> PenumbraModsBlacklistByPath = new();
 
 		// inventory tool stuff
 		public bool AutoSave { get; set; } = true;

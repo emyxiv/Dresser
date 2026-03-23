@@ -318,11 +318,13 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.TextWrapped($"This mod browsing feature is experimental.");
 			ImGui.TextWrapped($"There are a few quirks.");
 
-			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"The mod will scan for all the mods that change items, see below in \"Scan and Blacklist\".");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"Dresser will scan through Penumbra for all the mods that change items, see below in \"Scan\". When the scan finds an item, it will add it to the Unobtained category of item \"Modded Items\"");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"Blacklisted mods or mod paths will be ignored during the scan. After modifying the blacklists, it is recommended to execute \"Reload modded items\" in \"Scan\"");
 			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"The application of mods is made through temporary sate, similar to Glamourer's \"Use Temporary Mod Settings\".");
 			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"When browsing items, changing from one to another will disable the previous and enable the next very quickly, these transitions may look odd.");
 			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"It might synchronize with friends through penumbra/glamourer, but the transition speed may upset the sync.");
 			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"Mix and matching with 2 mods affecting the same items will result in conflict, one of the items will not be displayed correctly.");
+			ImGui.Bullet(); ImGui.SameLine(); ImGui.TextWrapped($"If a mod replaces the icon of the affected gear item, Dresser will try replace the icon even if the mod is disabled (Experimental)");
 
 		}
 		ImGui.Spacing();
@@ -348,7 +350,7 @@ public class ConfigWindow : Window, IDisposable {
 
 
 		ImGui.Spacing();
-		if (ImGui.CollapsingHeader("Scan and Blacklist##DrawPenumbraConfigs", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("Scan##DrawPenumbraConfigs", ImGuiTreeNodeFlags.DefaultOpen)) {
 
 			ImGui.Text($"{ConfigurationManager.Config.PenumbraModdedItems.Count} modded items in Config, {PluginServices.Storage.AdditionalItems[(InventoryType)Storage.InventoryTypeExtra.ModdedItems].Count} in memory");
 
@@ -364,9 +366,10 @@ public class ConfigWindow : Window, IDisposable {
 				GearBrowser.RecomputeItems();
 			}
 			if (PluginServices.Storage.IsReloadingMods) ImGui.EndDisabled();
+		}
+		ImGui.Spacing();
+		if (ImGui.CollapsingHeader("Individual Mod Blacklist##DrawPenumbraConfigs", ImGuiTreeNodeFlags.DefaultOpen)) {
 
-
-			ImGui.Spacing();
 			ImGui.AlignTextToFramePadding();
 			ImGui.Text("Blacklisted mods");
 			GuiHelpers.Tooltip($"Mods listed here will be ignored when creating the list of modded items");
@@ -408,6 +411,122 @@ public class ConfigWindow : Window, IDisposable {
 
 		// put that at the end
 		DrawModBlacklistSelector();
+		DrawModPathBlacklistSection();
+	}
+
+	private static List<string>? ModPathsAvailableToBlacklist = null;
+	private static string ModPathsBlackListSearch = "";
+	private static bool ModPathsBlackListSearchOpen = false;
+	private static string ModPathsBlackListTextInput = "";
+
+	private void DrawModPathBlacklistSection() {
+		ImGui.Spacing();
+		if (ImGui.CollapsingHeader("Blacklist by Path##DrawPenumbraConfigs")) {
+			ImGui.TextWrapped("Blacklist mods by their folder path (case-insensitive). For example, \"main1\" will blacklist \"main1/sub1/mod1\", \"main1/sub2/mod2\", etc.");
+			ImGui.Spacing();
+
+			ImGui.AlignTextToFramePadding();
+			ImGui.Text("Blacklisted paths");
+			GuiHelpers.Tooltip($"Mods whose path starts with any of these will be ignored when creating the list of modded items");
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileExport, "ExportButton##AddToPathBlackList##PenumbraConfig##ConfigWindow", "Export list to Clipboard as JSON"))
+				JsonConvert.SerializeObject(ConfigurationManager.Config.PenumbraModsBlacklistByPath).ToClipboard();
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.FileImport, "ImportButton##AddToPathBlackList##PenumbraConfig##ConfigWindow", "Import list from JSON Clipboard")) {
+				try {
+					var decodedBlacklist = JsonConvert.DeserializeObject<List<string>>(ImGui.GetClipboardText());
+					if (decodedBlacklist != null) {
+						foreach (var path in decodedBlacklist) {
+							if (!ConfigurationManager.Config.PenumbraModsBlacklistByPath.Contains(path)) {
+								ConfigurationManager.Config.PenumbraModsBlacklistByPath.Add(path);
+							}
+						}
+					}
+				} catch (Exception) { }
+			}
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Trash, "Empty blacklist\nHold ctrl + Shift to confirm", default, "TrashButton##AddToPathBlackList##PenumbraConfig##ConfigWindow"))
+				ConfigurationManager.Config.PenumbraModsBlacklistByPath.Clear();
+
+			if (ImGui.BeginChildFrame(411142, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 5))) {
+				for (int i = ConfigurationManager.Config.PenumbraModsBlacklistByPath.Count - 1; i >= 0; i--) {
+					var path = ConfigurationManager.Config.PenumbraModsBlacklistByPath[i];
+					if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Trash, $"{path}##TrashButton##AddToPathBlackList##PenumbraConfig##ConfigWindow", "Remove from blacklist")) {
+						ConfigurationManager.Config.PenumbraModsBlacklistByPath.RemoveAt(i);
+						if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+					}
+					ImGui.SameLine();
+					ImGui.TextUnformatted(path);
+				}
+
+				ImGui.EndChildFrame();
+			}
+
+			DrawModPathBlacklistInput();
+		}
+	}
+
+	private void DrawModPathBlacklistInput() {
+		// Get all available mod paths once
+		ModPathsAvailableToBlacklist ??= PluginServices.Penumbra.GetMods()
+			.SelectMany(mod => {
+				var path = PluginServices.Penumbra.GetModPathCacheCached(mod.Path);
+				if (string.IsNullOrEmpty(path)) return Enumerable.Empty<string>();
+				return Enumerable.Repeat(path, 1);
+			})
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+			.ToList();
+
+		ImGui.Spacing();
+		ImGui.Text("Add new path to blacklist");
+
+		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+		if (ImGui.InputText("##PathBlacklistInput", ref ModPathsBlackListTextInput, 256, ImGuiInputTextFlags.EnterReturnsTrue)) {
+			// Enter key pressed - add the path
+			if (!string.IsNullOrWhiteSpace(ModPathsBlackListTextInput)) {
+				var pathToAdd = ModPathsBlackListTextInput.Trim();
+				if (!ConfigurationManager.Config.PenumbraModsBlacklistByPath.Contains(pathToAdd, StringComparer.OrdinalIgnoreCase)) {
+					ConfigurationManager.Config.PenumbraModsBlacklistByPath.Add(pathToAdd);
+					ModPathsBlackListTextInput = "";
+					if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+				}
+			}
+		}
+
+		ImGui.SameLine();
+		if (ImGui.Button("Add##PathBlacklistAdd")) {
+			if (!string.IsNullOrWhiteSpace(ModPathsBlackListTextInput)) {
+				var pathToAdd = ModPathsBlackListTextInput.Trim();
+				if (!ConfigurationManager.Config.PenumbraModsBlacklistByPath.Contains(pathToAdd, StringComparer.OrdinalIgnoreCase)) {
+					ConfigurationManager.Config.PenumbraModsBlacklistByPath.Add(pathToAdd);
+					ModPathsBlackListTextInput = "";
+					if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+				}
+			}
+		}
+
+		// Live preview
+		if (!string.IsNullOrWhiteSpace(ModPathsBlackListTextInput)) {
+			ImGui.Spacing();
+			ImGui.TextDisabled("Blacklisted mods preview from input:");
+			ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+			if (ImGui.BeginChildFrame(411143, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 4))) {
+				var matchingPaths = ModPathsAvailableToBlacklist
+					.Where(modPath => PluginServices.Penumbra.PathMatchesBlacklistPattern(modPath, ModPathsBlackListTextInput))
+					.ToList();
+
+				if (matchingPaths.Count == 0) {
+					ImGui.TextDisabled("(no mods match this pattern)");
+				} else {
+					foreach (var modPath in matchingPaths) {
+						ImGui.TextUnformatted(modPath);
+					}
+				}
+
+				ImGui.EndChildFrame();
+			}
+		}
 	}
 
 	private void DrawAboutConfigs() {
