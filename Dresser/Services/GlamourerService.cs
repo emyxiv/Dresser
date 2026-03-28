@@ -13,6 +13,7 @@ using Dresser.Logic.Glamourer;
 using Dresser.Structs.Dresser;
 
 using Glamourer.Api.Enums;
+using Glamourer.Api.Helpers;
 using Glamourer.Api.IpcSubscribers;
 
 using Lumina.Excel.Sheets;
@@ -23,7 +24,7 @@ using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
 namespace Dresser.Services {
-	internal class GlamourerService : IDisposable {
+	internal partial class GlamourerService : IDisposable {
 
 
 		private const bool EnableAllApply = true;
@@ -38,6 +39,8 @@ namespace Dresser.Services {
 		private GetState GetStateSubscriber;
 		private ApplyState ApplyStateSubscriber;
 
+		public static EventSubscriber<nint, StateChangeType> StateChangedWithTypeProvider;
+
 		public GlamourerService(IDalamudPluginInterface pluginInterface) {
 
 			ApiVersionSubscriber = new ApiVersion(pluginInterface);
@@ -48,8 +51,18 @@ namespace Dresser.Services {
 			ApplyStateSubscriber = new ApplyState(pluginInterface);
 			_throttler = new Throttler<Task>(0);
 
+			StateChangedWithTypeProvider = global::Glamourer.Api.IpcSubscribers.StateChangedWithType.Subscriber(pluginInterface);
+			StateChangedWithType += OnStateChangedWithType;
 		}
-		public void Dispose() {}
+
+		public event Action<nint, StateChangeType> StateChangedWithType {
+			add => StateChangedWithTypeProvider.Event += value;
+			remove => StateChangedWithTypeProvider.Event -= value;
+		}
+
+		public void Dispose() {
+			StateChangedWithType -= OnStateChangedWithType;
+		}
 
 		public bool IsInitialized() { try { return ApiVersions().Major >= 0; } catch (Exception) { return false; } }
 		public (int Major, int Minor) ApiVersions() { try { return ApiVersionSubscriber.Invoke(); } catch (Exception) { return (-1, -1); } }
@@ -59,10 +72,10 @@ namespace Dresser.Services {
 
 		public JObject? GetState() {
 			var index = PluginServices.Context.LocalPlayer?.ObjectIndex;
-			if(index == null) return null;
+			if (index == null) return null;
 
 			(GlamourerApiEc response, JObject? charaState) result = GetStateSubscriber.Invoke((int)index);
-			if(result.response != GlamourerApiEc.Success) return null;
+			if (result.response != GlamourerApiEc.Success) return null;
 
 			return result.charaState;
 		}
@@ -265,7 +278,7 @@ namespace Dresser.Services {
 
 			foreach ((var equipSlot, var equipItem) in customItemIds)
 			{
-				SetItem(character, equipSlot, equipItem, item.Stain, item.Stain2);
+				SetItemWithTracking(character, equipSlot, equipItem, item.Stain, item.Stain2);
 			}
 			return;
 		}
