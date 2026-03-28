@@ -28,6 +28,22 @@ namespace Dresser.Services {
 		// Track changes initiated by our app to filter them out
 		private HashSet<StateChangeType> _pendingLocalChanges = new();
 
+		/// <summary>
+		/// Refresh the cached state to match the provided player state.
+		/// Call this when switching contexts (e.g., changing plates, opening windows).
+		/// </summary>
+		public void RefreshCachedState(JObject currentState) {
+			PluginLog.Debug("Refreshing cached state");
+			try {
+				if (currentState != null) {
+					lock (_cacheLock) {
+						_lastCachedState = (JObject)currentState.DeepClone();
+					}
+				}
+			} catch (Exception e) {
+				PluginLog.Error(e, "Failed to refresh cached state");
+			}
+		}
 
 
 		private void OnStateChangedWithType(nint gameObjectPtr, StateChangeType changeType) {
@@ -199,7 +215,6 @@ namespace Dresser.Services {
 			if (equipment == null || lastEquipment == null) return;
 
 			var changedSlots = GetChangedEquipmentSlots(equipment, lastEquipment);
-			PluginLog.Debug($"r: {changedSlots.Count}");
 			if (changedSlots.Count == 0) return;
 
 			PluginLog.Debug("External equipment change detected:");
@@ -228,6 +243,7 @@ namespace Dresser.Services {
 
 				// Check if anything changed
 				if (currentItemId != lastItemId || currentStain != lastStain || currentStain2 != lastStain2) {
+					//PluginLog.Debug($"Detected change in slot {slotName}: ItemId {lastItemId} → {currentItemId}, Stain {lastStain} → {currentStain}, Stain2 {lastStain2} → {currentStain2}");
 					changes.Add((slotName, currentItemId, currentStain, currentStain2));
 				}
 			}

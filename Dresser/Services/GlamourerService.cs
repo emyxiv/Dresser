@@ -244,6 +244,7 @@ namespace Dresser.Services {
 					}
 				}
 
+				RefreshCachedState(state);
 				return state;
 			});
 		}
