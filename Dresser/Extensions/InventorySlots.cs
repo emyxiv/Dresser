@@ -30,6 +30,23 @@ namespace Dresser.Extensions {
 				_ => throw new Exception($"Unidentified GlamourPlateSlot: {slot}")
 			};
 		}
+		public static GlamourPlateSlot ToGlamourPlateSlot(this Penumbra.GameData.Enums.EquipSlot slot) {
+			return slot switch {
+				Penumbra.GameData.Enums.EquipSlot.MainHand => GlamourPlateSlot.MainHand,
+				Penumbra.GameData.Enums.EquipSlot.OffHand => GlamourPlateSlot.OffHand,
+				Penumbra.GameData.Enums.EquipSlot.Head => GlamourPlateSlot.Head,
+				Penumbra.GameData.Enums.EquipSlot.Body => GlamourPlateSlot.Body,
+				Penumbra.GameData.Enums.EquipSlot.Hands => GlamourPlateSlot.Hands,
+				Penumbra.GameData.Enums.EquipSlot.Legs => GlamourPlateSlot.Legs,
+				Penumbra.GameData.Enums.EquipSlot.Feet => GlamourPlateSlot.Feet,
+				Penumbra.GameData.Enums.EquipSlot.Ears => GlamourPlateSlot.Ears,
+				Penumbra.GameData.Enums.EquipSlot.Neck => GlamourPlateSlot.Neck,
+				Penumbra.GameData.Enums.EquipSlot.Wrists => GlamourPlateSlot.Wrists,
+				Penumbra.GameData.Enums.EquipSlot.RFinger => GlamourPlateSlot.RightRing,
+				Penumbra.GameData.Enums.EquipSlot.LFinger => GlamourPlateSlot.LeftRing,
+				_ => throw new Exception($"Unidentified EquipSlot: {slot}")
+			};
+		}
 		public static EquipIndex? ToEquipIndex(this GlamourPlateSlot slot) {
 			return slot switch {
 				GlamourPlateSlot.Head => EquipIndex.Head,
