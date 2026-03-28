@@ -92,22 +92,21 @@ namespace Dresser.Services {
 		}
 
 		private async void ApplyItemsAppearancesOnPlayer(InventoryItemSet set) {
-			set.ApplyAppearance();
 
 
 			var mods = set.Items.Where(i => i.Value?.IsModded() ?? false).DistinctBy(i => i.Value?.GetMod()).Select(i=>i.Value?.GetMod());
 			var numberOfMods = mods.Count();
-			if (numberOfMods == 0) return;
+			if (numberOfMods > 0) {
+				PrepareMods(set);
+				var character = PluginServices.Context.LocalPlayer;
+				foreach ((var s, var item) in set.Items) {
 
+					if (item == null || !item.IsModded() || character == null) continue;
 
-			PrepareMods(set);
-			var character = PluginServices.Context.LocalPlayer;
-			foreach ((var s, var item) in set.Items)
-			{
-
-				if(item == null || !item.IsModded() || character == null) continue;
+				}
 
 			}
+			set.ApplyAppearance();
 
 		}
 		private void PrepareMods(InventoryItemSet set) {
