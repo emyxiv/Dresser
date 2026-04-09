@@ -119,7 +119,9 @@ internal class PenumbraIpc : IDisposable {
 				.Where(r => !ConfigurationManager.Config.PenumbraModsBlacklist.Any(m => m.Path == r.ModDirectory) // filter out blacklisted mod directories
 					&& !IsModPathBlacklisted(r.ModDirectory)) // filter out blacklisted mod paths
 				.SelectMany((p, l) => p.ChangedItems.Select((v, k) => (p.ModDirectory, TryExtractEquipItemData(v.Value)))) // extract equip item data and keep the item id for filtering
-				.Where(u => u.Item2 != null).Select(u => (u.ModDirectory, u.Item2!.Value)) // remove nullability after filtering out nulls
+				.Where(u => u.Item2 != null 
+					&& !ConfigurationManager.Config.PenumbraModsBlacklistByItemId.Any(b => b.Path == u.ModDirectory && b.ItemId == u.Item2.Value.Id.Item.Id)) // remove nullability and filter blacklisted mod+item combinations
+				.Select(u => (u.ModDirectory, u.Item2!.Value)) // remove nullability after filtering out nulls
 				;
 			if (ConfigurationManager.Config.PenumbraUseModListCollection) {
 				return it.Where(m => {

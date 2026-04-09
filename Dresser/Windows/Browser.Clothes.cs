@@ -740,6 +740,8 @@ namespace Dresser.Windows
 				item.LinkInChatHistory();
 			if (itemInv.IsModded() && ImGui.Selectable("Blacklist this Mod"))
 				ConfigWindow.AddModToBlacklist((itemInv.ModDirectory, itemInv.ModName)!);
+			if (itemInv.IsModded() && ImGui.Selectable("Blacklist this modded item"))
+				ConfigWindow.AddModItemToBlacklist((itemInv.ModDirectory!, (uint)itemInv.Item.RowId));
 			if (itemInv.IsModded() && ImGui.Selectable("Open in Penumbra"))
 				PluginServices.Penumbra.OpenModWindow((itemInv.ModDirectory, itemInv.ModName)!);
 

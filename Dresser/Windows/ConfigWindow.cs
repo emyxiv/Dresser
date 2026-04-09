@@ -413,6 +413,7 @@ public class ConfigWindow : Window, IDisposable {
 		DrawModBlacklistSelector();
 		DrawModPathBlacklistSection();
 		DrawModPathWhitelistSection();
+		DrawModItemBlacklistSection();
 	}
 
 	private static List<string>? ModPathsAvailableToBlacklist = null;
@@ -643,6 +644,39 @@ public class ConfigWindow : Window, IDisposable {
 		}
 	}
 
+	private void DrawModItemBlacklistSection() {
+		ImGui.Spacing();
+		if (ImGui.CollapsingHeader("Blacklist by Mod+Item##DrawPenumbraConfigs")) {
+			ImGui.TextWrapped("Blacklist specific items from specific mods. For example, if a mod changes both boots and gloves, you can blacklist just the gloves.");
+			ImGui.Spacing();
+
+			ImGui.AlignTextToFramePadding();
+			ImGui.Text("Blacklisted mod items");
+			GuiHelpers.Tooltip("These mod+item combinations will be ignored when creating the list of modded items");
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Trash, "Clear all\nHold ctrl + Shift to confirm", default, "TrashButton##AddToItemBlackList##PenumbraConfig##ConfigWindow"))
+				ConfigurationManager.Config.PenumbraModsBlacklistByItemId.Clear();
+
+			if (ImGui.BeginChildFrame(411146, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeightWithSpacing() * 5))) {
+				var itemsToRemove = new List<(string, uint)>();
+				foreach (var (modPath, itemId) in ConfigurationManager.Config.PenumbraModsBlacklistByItemId) {
+					var modName = PluginServices.Penumbra.GetModNameCache(modPath) ?? modPath;
+					if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Trash, $"{modPath}#{itemId}##TrashButton##AddToItemBlackList##PenumbraConfig##ConfigWindow", "Remove from blacklist")) {
+						itemsToRemove.Add((modPath, itemId));
+					}
+					ImGui.SameLine();
+					ImGui.TextUnformatted($"{modName} - Item {itemId}");
+					GuiHelpers.Tooltip($"Mod: {modPath}\nItem ID: {itemId}");
+				}
+				foreach (var item in itemsToRemove) {
+					ConfigurationManager.Config.PenumbraModsBlacklistByItemId.Remove(item);
+					if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+				}
+				ImGui.EndChildFrame();
+			}
+		}
+	}
+
 	private void DrawAboutConfigs() {
 		ImGui.TextWrapped("Dresser is a plugin to manage your glamours and inventories, with a special focus on portable glamours.\n" +
 			"Feel free to look for help or provide feedback on our Discord");
@@ -660,6 +694,10 @@ public class ConfigWindow : Window, IDisposable {
 	public static void AddModToBlacklist((string Path, string Name) mod) {
 		ConfigurationManager.Config.PenumbraModsBlacklist.Add(mod);
 		ModsAvailableToBlacklist = null;
+		if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+	}
+	public static void AddModItemToBlacklist((string Path, uint ItemId) modItem) {
+		ConfigurationManager.Config.PenumbraModsBlacklistByItemId.Add(modItem);
 		if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
 	}
 	private void DrawModBlacklistSelector() {
