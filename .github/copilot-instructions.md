@@ -10,9 +10,9 @@ Dresser is a tool part of an imGui project built in C#.
 It consumes various IPCs and offer an intuitive GUI for the user to enjoy design outfits by mixing & matching clothes parts.
 
 
-## Tools
+## Agent Behavior Rules
 
-Do not use command lines to edit a file.
-You have access to powershell, not a bash, so most of the linux commands are not available.
-
-
+- **Never use terminal commands to edit files** (no `sed`, `awk`, `echo >`, `cat >`, `tee`, `mv`, `cp` for file content changes, etc.)
+- Always use the built-in file editing tool to modify source files so changes appear in the VS Code diff view.
+- If you need to create or modify a file, use the edit tool — not the shell.
+- Terminal use is only allowed for: running builds, tests, installs, or read-only inspection commands.
