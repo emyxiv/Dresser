@@ -694,11 +694,11 @@ public class ConfigWindow : Window, IDisposable {
 	public static void AddModToBlacklist((string Path, string Name) mod) {
 		ConfigurationManager.Config.PenumbraModsBlacklist.Add(mod);
 		ModsAvailableToBlacklist = null;
-		if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+		PluginServices.Storage.ReloadMods();
 	}
 	public static void AddModItemToBlacklist((string Path, uint ItemId) modItem) {
 		ConfigurationManager.Config.PenumbraModsBlacklistByItemId.Add(modItem);
-		if (Plugin.GetInstance().GearBrowser.IsOpen) GearBrowser.RecomputeItems();
+		PluginServices.Storage.ReloadMods();
 	}
 	private void DrawModBlacklistSelector() {
 		ModsAvailableToBlacklist ??= PluginServices.Penumbra.GetNotBlacklistedMods().ToList();

@@ -712,6 +712,8 @@ namespace Dresser.Windows
 
 			var item = itemInv.Item;
 
+			if (itemInv.IsModded() && ImGui.Selectable("Open in Penumbra"))
+				PluginServices.Penumbra.OpenModWindow((itemInv.ModDirectory, itemInv.ModName)!);
 			if (PluginServices.ItemVendorLocation.IsInitialized() && PluginServices.ItemVendorLocation.HasItemInfoProvider(item.RowId))
 				if (ImGui.Selectable($"{char.ConvertFromUtf32(0xE086)} Vendor Location"))
 					item.OpenInItemVendorLocation();
@@ -740,10 +742,8 @@ namespace Dresser.Windows
 				item.LinkInChatHistory();
 			if (itemInv.IsModded() && ImGui.Selectable("Blacklist this Mod"))
 				ConfigWindow.AddModToBlacklist((itemInv.ModDirectory, itemInv.ModName)!);
-			if (itemInv.IsModded() && ImGui.Selectable("Blacklist this modded item"))
+			if (itemInv.IsModded() && ImGui.Selectable("Blacklist this item for this mod"))
 				ConfigWindow.AddModItemToBlacklist((itemInv.ModDirectory!, (uint)itemInv.Item.RowId));
-			if (itemInv.IsModded() && ImGui.Selectable("Open in Penumbra"))
-				PluginServices.Penumbra.OpenModWindow((itemInv.ModDirectory, itemInv.ModName)!);
 
 			if (item.CanTryOn && ImGui.Selectable("Try On"))
 				item.TryOn();
