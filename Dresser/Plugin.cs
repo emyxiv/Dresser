@@ -11,7 +11,8 @@ using Dresser.Interop;
 using Dresser.Interop.Addons;
 using Dresser.Logic;
 using Dresser.Services;
-using Dresser.Windows;
+using Dresser.Core;
+using Dresser.Gui;
 
 using System;
 

@@ -10,9 +10,10 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility.Signatures;
 
+using Dresser.Core;
 using Dresser.Extensions;
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
+using Dresser.Models;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -24,7 +25,7 @@ using Lumina.Extensions;
 
 using Cabinet = Lumina.Excel.Sheets.Cabinet;
 using InventoryItem = FFXIVClientStructs.FFXIV.Client.Game.InventoryItem;
-using InventoryItemDr = Dresser.Structs.Dresser.InventoryItem;
+using InventoryItemDr = Dresser.Models.InventoryItem;
 using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
 
 

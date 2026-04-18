@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Dresser.Core;
 using Dresser.Services;
 
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using InventoryItem = Dresser.Models.InventoryItem;
 
 namespace Dresser.Logic {
 	public class InventoryItemOrder {

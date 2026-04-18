@@ -1,8 +1,8 @@
 ﻿using CriticalCommonLib.Extensions;
 
 using Dresser.Interop.Hooks;
-using Dresser.Structs.Actor;
-using Dresser.Structs.Dresser;
+using Dresser.Models.Actor;
+using Dresser.Models;
 
 using System;
 

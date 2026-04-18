@@ -1,6 +1,6 @@
 using Dalamud.Game.ClientState.Objects.SubKinds;
 
-using Dresser.Structs.Actor;
+using Dresser.Models.Actor;
 
 using System;
 using System.Runtime.InteropServices;

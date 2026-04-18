@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Windowing;
 
+using Dresser.Core;
 using Dresser.Services;
 
 using System.Collections.Generic;

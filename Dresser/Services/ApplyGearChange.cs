@@ -7,9 +7,10 @@ using Dresser.Enums;
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
-using Dresser.Windows;
-using Dresser.Windows.Components;
+using Dresser.Models;
+using Dresser.Core;
+using Dresser.Gui;
+using Dresser.Gui.Components;
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using InventoryItem = Dresser.Models.InventoryItem;
 
 namespace Dresser.Services {
 	public partial class ApplyGearChange : IDisposable {

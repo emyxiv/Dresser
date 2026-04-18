@@ -11,8 +11,10 @@ using Dalamud.Plugin.Services;
 using Dresser.Interop.Addons;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
+using Dresser.Core;
 using Dresser.Services;
-using Dresser.Structs.Dresser;
+using Dresser.Services.Ipc;
+using Dresser.Models;
 
 namespace Dresser {
 	internal class PluginServices {

@@ -2,8 +2,10 @@
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
-using Dresser.Structs.Actor;
-using Dresser.Structs.Dresser;
+using Dresser.Services.Ipc;
+using Dresser.Models.Actor;
+using Dresser.Core;
+using Dresser.Models;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 

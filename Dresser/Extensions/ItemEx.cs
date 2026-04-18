@@ -17,12 +17,12 @@ using Dalamud.Interface.Textures;
 using Dalamud.Utility;
 
 using Dresser.Logic;
+using Dresser.Core;
 using Dresser.Logic.Glamourer;
 using Dresser.Services;
-using Dresser.Structs;
-using Dresser.Structs.Actor;
-using Dresser.Structs.Dresser;
-using Dresser.Windows;
+using Dresser.Models;
+using Dresser.Models.Actor;
+using Dresser.Gui;
 
 using Lumina.Data;
 using Lumina.Excel.Sheets;
@@ -30,7 +30,8 @@ using Lumina.Excel.Sheets;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
-using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using ActorEquipIndex = Dresser.Models.Actor.EquipIndex;
+using CriticalInventoryItem = Dresser.Models.InventoryItem;
 using EquipSlot = Penumbra.GameData.Enums.EquipSlot;
 using InteropGlamourPlateSlot = Dresser.Interop.Hooks.GlamourPlateSlot;
 
@@ -81,16 +82,16 @@ namespace Dresser.Extensions {
 
 			//if (slot.Value.MainHand == 1) return EquipIndex.MainHand;
 			//if (slot.Value.OffHand == 1) return EquipIndex.OffHand;
-			if (slot.Value.Head == 1) return Structs.Actor.EquipIndex.Head;
-			if (slot.Value.Body == 1) return Structs.Actor.EquipIndex.Chest;
-			if (slot.Value.Gloves == 1) return Structs.Actor.EquipIndex.Hands;
-			if (slot.Value.Legs == 1) return Structs.Actor.EquipIndex.Legs;
-			if (slot.Value.Feet == 1) return Structs.Actor.EquipIndex.Feet;
-			if (slot.Value.Ears == 1) return Structs.Actor.EquipIndex.Earring;
-			if (slot.Value.Neck == 1) return Structs.Actor.EquipIndex.Necklace;
-			if (slot.Value.Wrists == 1) return Structs.Actor.EquipIndex.Bracelet;
-			if (slot.Value.FingerR == 1) return Structs.Actor.EquipIndex.RingRight;
-			if (slot.Value.FingerL == 1) return Structs.Actor.EquipIndex.RingLeft;
+			if (slot.Value.Head == 1) return ActorEquipIndex.Head;
+			if (slot.Value.Body == 1) return ActorEquipIndex.Chest;
+			if (slot.Value.Gloves == 1) return ActorEquipIndex.Hands;
+			if (slot.Value.Legs == 1) return ActorEquipIndex.Legs;
+			if (slot.Value.Feet == 1) return ActorEquipIndex.Feet;
+			if (slot.Value.Ears == 1) return ActorEquipIndex.Earring;
+			if (slot.Value.Neck == 1) return ActorEquipIndex.Necklace;
+			if (slot.Value.Wrists == 1) return ActorEquipIndex.Bracelet;
+			if (slot.Value.FingerR == 1) return ActorEquipIndex.RingRight;
+			if (slot.Value.FingerL == 1) return ActorEquipIndex.RingLeft;
 			return null;
 		}
 

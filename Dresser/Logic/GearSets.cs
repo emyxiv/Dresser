@@ -6,8 +6,8 @@ using AllaganLib.GameSheets.Sheets;
 
 using Dalamud.Interface.Textures;
 
-using Dresser.Structs;
-using Dresser.Windows.Components;
+using Dresser.Models;
+using Dresser.Gui.Components;
 
 using Dalamud.Bindings.ImGui;
 

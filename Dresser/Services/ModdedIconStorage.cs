@@ -2,7 +2,7 @@
 using Dalamud.Utility;
 
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
+using Dresser.Models;
 
 using Lumina.Data.Files;
 

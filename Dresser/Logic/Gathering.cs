@@ -1,10 +1,11 @@
 ﻿using CriticalCommonLib.Enums;
 
+using Dresser.Core;
 using Dresser.Extensions;
 using Dresser.Interop;
 using Dresser.Interop.Hooks;
 using Dresser.Services;
-using Dresser.Structs.Dresser;
+using Dresser.Models;
 
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 

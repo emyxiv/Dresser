@@ -19,16 +19,16 @@ using Dresser.Extensions;
 using Dresser.Interop;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
-using Dresser.Windows;
+using Dresser.Models;
+using Dresser.Gui;
 
 using Lumina.Data.Files;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
 
-using static Dresser.Windows.Components.GuiHelpers;
+using static Dresser.Gui.Components.GuiHelpers;
 
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using InventoryItem = Dresser.Models.InventoryItem;
 
 
 namespace Dresser.Services {

@@ -6,13 +6,14 @@ using CriticalCommonLib.Models;
 
 using Dalamud.Utility;
 
+using Dresser.Core;
 using Dresser.Services;
 
 using Lumina.Excel.Sheets;
 
 using static Dresser.Services.Storage;
 
-using CriticalInventoryItem = Dresser.Structs.Dresser.InventoryItem;
+using CriticalInventoryItem = Dresser.Models.InventoryItem;
 
 namespace Dresser.Extensions {
 	internal static class InventoryItemExtensions {

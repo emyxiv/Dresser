@@ -5,16 +5,16 @@ using CriticalCommonLib.Models;
 using Dalamud.Configuration;
 
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
-using Dresser.Windows;
+using Dresser.Models;
+using Dresser.Gui;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using InventoryItem = Dresser.Structs.Dresser.InventoryItem;
-using static Dresser.Windows.GearBrowser;
+using InventoryItem = Dresser.Models.InventoryItem;
+using static Dresser.Gui.GearBrowser;
 using System.Text.Json.Serialization;
 
 using Dresser.Enums;

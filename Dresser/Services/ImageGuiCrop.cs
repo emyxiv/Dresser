@@ -3,8 +3,8 @@ using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
-using Dresser.Windows.Components;
+using Dresser.Models;
+using Dresser.Gui.Components;
 
 using Dalamud.Bindings.ImGui;
 

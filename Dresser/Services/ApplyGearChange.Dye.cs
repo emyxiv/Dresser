@@ -2,9 +2,9 @@
 using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
-using Dresser.Structs.Dresser;
-using Dresser.Structs.Dresser.DyeHistory;
-using Dresser.Windows;
+using Dresser.Models;
+using Dresser.Models.DyeHistory;
+using Dresser.Gui;
 
 namespace Dresser.Services {
 	public partial class ApplyGearChange {

@@ -2,7 +2,7 @@
 
 using Dalamud.Interface.Textures;
 
-using Dresser.Structs.Dresser;
+using Dresser.Models;
 
 using Lumina.Data.Files;
 
