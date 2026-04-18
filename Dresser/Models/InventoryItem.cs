@@ -22,6 +22,7 @@ using Lumina.Excel.Sheets;
 using static Dresser.Services.Storage;
 
 using CriticalInventoryItem = CriticalCommonLib.Models.InventoryItem;
+using InventoryCategory = CriticalCommonLib.Models.InventoryCategory;
 
 namespace Dresser.Models {
 	public partial class InventoryItem : CriticalInventoryItem {
@@ -301,6 +302,79 @@ namespace Dresser.Models {
 			if (!PluginServices.ItemVendorLocation.IsInitialized()) return null;
 			_providerInfo = PluginServices.ItemVendorLocation.GetItemInfoProvider(ItemId);
 			return _providerInfo;
+		}
+
+		// --- Merged from Extensions/InventoryItem.cs ---
+
+		public bool IsGlamourPlateApplicable()
+			=> SortedContainer == InventoryType.GlamourChest || SortedContainer == InventoryType.Armoire;
+		public bool IsFadedInBrowser()
+			=> ConfigurationManager.Config.FadeIconsIfNotHiddingTooltip && !IsGlamourPlateApplicable();
+
+		public bool IsFilterDisplayable() {
+			var returnVal = false;
+			var displayInventoryCategories = ConfigurationManager.Config.FilterInventoryCategory;
+			if (displayInventoryCategories.TryGetValue(SortedContainer.ToInventoryCategory(), out bool shouldCategoryBeDisplayed))
+				returnVal |= shouldCategoryBeDisplayed;
+			var displayInventoryTypes = ConfigurationManager.Config.FilterInventoryType;
+			if (displayInventoryTypes.TryGetValue(SortedContainer, out bool shouldTypeBeDisplayed))
+				returnVal |= shouldTypeBeDisplayed;
+			return returnVal;
+		}
+
+		public bool IsAppearanceDifferent(InventoryItem? item2)
+			=> (ItemId) != (item2?.ItemId ?? 0) || (Stain) != (item2?.Stain ?? 0);
+		public bool IsInFilterLevelRanges() {
+			var elmin = (int)ConfigurationManager.Config.filterEquipLevel.X;
+			var elmax = (int)ConfigurationManager.Config.filterEquipLevel.Y;
+			var el = Item.Base.LevelEquip;
+			var ilmin = (int)ConfigurationManager.Config.filterItemLevel.X;
+			var ilmax = (int)ConfigurationManager.Config.filterItemLevel.Y;
+			var il = Item.Base.LevelItem.RowId;
+			return elmin <= el && el <= elmax && ilmin <= il && il <= ilmax;
+		}
+
+		public bool IsObtained() {
+			return !(SortedCategory == 0 && ((int)SortedContainer >= (int)InventoryTypeExtra.AllItems || (int)SortedContainer == 0));
+		}
+		public string FormattedInventoryCategoryType() {
+			var cat = SortedCategory;
+			var catForm = cat.ToFriendlyName();
+			var type = SortedContainer;
+			var typeForm = type.ToFormattedName();
+			if (cat == 0) {
+				if ((int)type >= (int)InventoryTypeExtra.AllItems)
+					catForm = "Not Owned";
+				else if (type == 0) {
+					catForm = "Location Not Found";
+					typeForm = "";
+				}
+			}
+			return cat switch {
+				InventoryCategory.GlamourChest or InventoryCategory.Armoire
+					=> catForm,
+				InventoryCategory.RetainerBags
+					=> $"{FormattedOwnerName()}  -  {typeForm}",
+				InventoryCategory.RetainerEquipped or InventoryCategory.RetainerMarket
+					=> $"{FormattedOwnerName()}  -  {cat.FormattedName()}",
+				_
+					=> $"{catForm}  -  {typeForm}".Trim("\r\n -".ToCharArray())
+			};
+		}
+		public string FormattedOwnerName() {
+			var id = InRetainer ? RetainerId : PluginServices.ClientState.LocalContentId;
+			var charaName = PluginServices.Objects.SearchById(id)?.Name;
+			if (charaName != null) return charaName.TextValue;
+			return "Retainer";
+		}
+
+		public string StainName() {
+			var stainEntry = StainEntry;
+			return stainEntry?.Name.ToDalamudString().ToString() ?? "";
+		}
+		public string Stain2Name() {
+			var stainEntry = PluginServices.DataManager.GetExcelSheet<Stain>().First(s => s.RowId == Stain2);
+			return stainEntry.Name.ToDalamudString().ToString() ?? "";
 		}
 
 	}
