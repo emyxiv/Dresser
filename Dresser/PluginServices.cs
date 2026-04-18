@@ -16,6 +16,8 @@ using Dresser.Services;
 using Dresser.Services.Ipc;
 using Dresser.Models;
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Dresser {
 	internal class PluginServices {
 		[PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
@@ -36,6 +38,8 @@ namespace Dresser {
         [PluginService] public static IGameConfig GameConfig { get; set; } = null!;
         [PluginService] public static ICondition Condition { get; set; } = null!;
         [PluginService] public static IGameInteropProvider GameInteropProvider { get; set; } = null!;
+
+		private static ServiceProvider _serviceProvider = null!;
 
 		public static PenumbraIpc Penumbra { get; private set; } = null!;
 		//public static IChatUtilities ChatUtilities { get; private set; } = null!;
@@ -71,44 +75,31 @@ namespace Dresser {
 
 			dalamud.Create<PluginServices>();
 
-			var gd = DataManager.GameData;
-			var smso = new SheetManagerStartupOptions()
-			{
-				BuildNpcLevels = true,
-				BuildNpcShops = true,
-				BuildItemInfoCache = true,
-				CalculateLookups = true,
-                PersistInDataShare = true,
-                CacheInDataShare = true
-			};
-			SheetManager = new SheetManager(dalamud, gd, smso);
-			InventoryItemFactory = new InventoryItemFactory(SheetManager, DataManager);
+			_serviceProvider = ServiceRegistration.ConfigureServices(dalamud, plugin);
 
-			Context = new Context();
+			// Resolve in order to control initialization sequence
+			SheetManager = _serviceProvider.GetRequiredService<SheetManager>();
+			InventoryItemFactory = _serviceProvider.GetRequiredService<InventoryItemFactory>();
 
-			HotkeyService = new HotkeyService(Framework, KeyState);
-			ImageGuiCrop = new ImageGuiCrop();
-			Penumbra = new PenumbraIpc();
-			Storage = new Storage();
-			//ChatUtilities = new ChatUtilities();
+			Context = _serviceProvider.GetRequiredService<Context>();
+
+			HotkeyService = _serviceProvider.GetRequiredService<HotkeyService>();
+			ImageGuiCrop = _serviceProvider.GetRequiredService<ImageGuiCrop>();
+			Penumbra = _serviceProvider.GetRequiredService<PenumbraIpc>();
+			Storage = _serviceProvider.GetRequiredService<Storage>();
 
 			ConfigurationManager.Load();
 			TagStore.LoadLinks();
-			//GameInterface = new GameInterface(Service.GameInteropProvider);
 			HotkeySetup.Init();
 
-			ModdedIconStorage = new ModdedIconStorage();
-			ItemVendorLocation = new ItemVendorLocation(dalamud);
-			AllaganTools = new AllaganToolsService(dalamud);
-			Glamourer = new GlamourerService(dalamud);
-			//CharacterMonitor = new CharacterMonitor(Service.Framework, Service.ClientState, Service.ExcelCache);
-			// GameUi = new GameUiManager(Framework, DalamudGameGui, PluginLog);
-			// OverlayService = new OverlayService(GameUi);
-			// TryOn = new TryOn(Framework, PluginLog);
-			GlamourPlates = new();
-			ApplyGearChange = new ApplyGearChange(plugin);
+			ModdedIconStorage = _serviceProvider.GetRequiredService<ModdedIconStorage>();
+			ItemVendorLocation = _serviceProvider.GetRequiredService<ItemVendorLocation>();
+			AllaganTools = _serviceProvider.GetRequiredService<AllaganToolsService>();
+			Glamourer = _serviceProvider.GetRequiredService<GlamourerService>();
+			GlamourPlates = _serviceProvider.GetRequiredService<GlamourPlates>();
+			ApplyGearChange = _serviceProvider.GetRequiredService<ApplyGearChange>();
 
-			Actions = new Actions();
+			Actions = _serviceProvider.GetRequiredService<Actions>();
 
 			PluginLoaded = true;
 			OnPluginLoaded?.Invoke();
@@ -119,44 +110,10 @@ namespace Dresser {
 			ConfigurationManager.ClearQueue();
 			ConfigurationManager.Save();
 
-			Actions.Dispose();
-			ModdedIconStorage.Dispose();
-			Storage.Dispose();
-			// OverlayService.Dispose();
-			// TryOn.Dispose();
-			// GameUi.Dispose();
-			//CharacterMonitor.Dispose();
-			AllaganTools.Dispose();
-			Glamourer.Dispose();
-			ItemVendorLocation.Dispose();
-
-			Context.Dispose();
-
-			//GameInterface.Dispose();
-			HotkeyService.Dispose();
-			ImageGuiCrop.Dispose();
-			ApplyGearChange.Dispose();
-			Penumbra.Dispose();
-
-			GlamourPlates.Dispose();
-
-			Actions = null!;
-			AllaganTools = null!;
-			Glamourer = null!;
-			ItemVendorLocation = null!;
-			//CharacterMonitor = null!;
-			//ChatUtilities = null!;
-			Context = null!;
-			// GameUi = null!;
-			// TryOn = null!;
-			// OverlayService = null!;
-			GlamourPlates = null!;
-			ModdedIconStorage = null!;
-			//GameInterface = null!;
-			HotkeyService = null!;
-			ImageGuiCrop = null!;
-			ApplyGearChange = null!;
-			Penumbra = null!;
+			// ServiceProvider.Dispose() disposes all IDisposable singletons
+			// in reverse creation order
+			_serviceProvider.Dispose();
+			_serviceProvider = null!;
 		}
 	}
 

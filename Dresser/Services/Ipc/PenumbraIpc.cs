@@ -60,7 +60,7 @@ internal class PenumbraIpc : IDisposable {
 
 	private EventSubscriber<string, string>? Test { get; set; }
 
-	internal PenumbraIpc() {
+	public PenumbraIpc() {
 		GetChangedItemsForCollectionSubscriber = new global::Penumbra.Api.IpcSubscribers.GetChangedItemsForCollection(PluginServices.PluginInterface);
 		GetCollectionsByIdentifierSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCollectionsByIdentifier(PluginServices.PluginInterface);
 

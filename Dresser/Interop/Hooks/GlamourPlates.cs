@@ -474,7 +474,7 @@ namespace Dresser.Interop.Hooks {
 		}
 
 
-		internal GlamourPlates() {
+		public GlamourPlates() {
 			_glamourDresserApplyThrottler = new Throttler<Task<SetGlamourPlateSlotReturn>>(0);
 
 			PluginServices.GameInteropProvider.InitializeFromAttributes(this);
