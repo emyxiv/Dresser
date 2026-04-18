@@ -49,9 +49,6 @@ namespace Dresser.Gui.Components {
 		public static GlamourPlateSlot? ContexMenuItemSlot = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
-		//public static bool DrawIcon(IDalamudTextureWrap image, Dye? dye, InventoryItem item, byte DyeCount)
-		//	=> DrawIcon(image, dye, DyeCount, item, out bool _);
-
 		public static void DrawIcon(InventoryItem? item) {
 			bool __ = false;
 			bool ___ = false;
@@ -70,11 +67,9 @@ namespace Dresser.Gui.Components {
 			item ??= Gathering.EmptyItemSlot();
 
 			// item variables
-			//var dye = PluginServices.Storage.Dyes!.FirstOrDefault(d => d.RowId == item?.Stain);
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
 			if (image == null && emptySlot == null) emptySlot = item.Item.GlamourPlateSlot();
 			var isEquippableByCurrentClass = true;
-			// Service.ExcelCache.IsItemEquippableBy(item!.Item.ClassJobCategory.Row, PluginServices.Context.LocalPlayerClass.RowId);
 			var isEquippableByGenderRaceGc = item.Item.CanBeEquipedByPlayedRaceGenderGc();
 			var DyeCount = item.Item.Base.DyeCount;
 			var isApplicable = !item.IsFadedInBrowser();

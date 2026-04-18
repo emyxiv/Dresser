@@ -10,7 +10,6 @@ using Dresser.Models;
 using Newtonsoft.Json.Linq;
 
 using Penumbra.Api.Enums;
-using Penumbra.Api.Helpers;
 using Penumbra.GameData.Structs;
 
 using System;
@@ -32,14 +31,10 @@ internal class PenumbraIpc : IDisposable {
 	private Penumbra.Api.IpcSubscribers.GetChangedItemsForCollection GetChangedItemsForCollectionSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetCollectionsByIdentifier   GetCollectionsByIdentifierSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetCurrentModSettings GetCurrentModSettingsSubscriber;
-	//private Penumbra.Api.IpcSubscribers.TrySetModPriority     TrySetModPrioritySubscriber;
-	//private Penumbra.Api.IpcSubscribers.TrySetModSettings     TrySetModSettingsSubscriber;
-	//private Penumbra.Api.IpcSubscribers.TryInheritMod         TryInheritModSubscriber;
 	private Penumbra.Api.IpcSubscribers.ApiVersion                   ApiVersionsSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetEnabledState              GetEnabledStateSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetCollection         GetCollectionForTypeSubscriber;
 	private Penumbra.Api.IpcSubscribers.GetModDirectory              GetModDirectorySubscriber;
-	//private Penumbra.Api.IpcSubscribers.TrySetMod             TrySetModSubscriber;
 	private Penumbra.Api.IpcSubscribers.OpenMainWindow               OpenMainWindowSubscriber;
 
 	private Penumbra.Api.IpcSubscribers.RemoveTemporaryModSettingsPlayer RemoveTemporaryModSettingsPlayerSubscriber;
@@ -56,25 +51,16 @@ internal class PenumbraIpc : IDisposable {
 	private Penumbra.Api.IpcSubscribers.GetCurrentModSettingsWithTemp GetCurrentModSettingsWithTempSubscriber;
 
 
-
-
-	private EventSubscriber<string, string>? Test { get; set; }
-
 	public PenumbraIpc() {
 		GetChangedItemsForCollectionSubscriber = new global::Penumbra.Api.IpcSubscribers.GetChangedItemsForCollection(PluginServices.PluginInterface);
 		GetCollectionsByIdentifierSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCollectionsByIdentifier(PluginServices.PluginInterface);
 
 		GetModsSubscriber = new global::Penumbra.Api.IpcSubscribers.GetModList(PluginServices.PluginInterface);
-		//GetChangedItemsSubscriber = new global::Penumbra.Api.IpcSubscribers.Legacy.GetChangedItems       (PluginServices.PluginInterface);
 		GetCurrentModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCurrentModSettings (PluginServices.PluginInterface);
-		//TrySetModPrioritySubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetModPriority     (PluginServices.PluginInterface);
-		//TrySetModSettingsSubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetModSettings     (PluginServices.PluginInterface);
-		//TryInheritModSubscriber = new global::Penumbra.Api.IpcSubscribers.TryInheritMod         (PluginServices.PluginInterface);
 		ApiVersionsSubscriber = new global::Penumbra.Api.IpcSubscribers.ApiVersion                   (PluginServices.PluginInterface);
 		GetEnabledStateSubscriber = new global::Penumbra.Api.IpcSubscribers.GetEnabledState              (PluginServices.PluginInterface);
 		GetCollectionForTypeSubscriber = new global::Penumbra.Api.IpcSubscribers.GetCollection  (PluginServices.PluginInterface);
 		GetModDirectorySubscriber = new global::Penumbra.Api.IpcSubscribers.GetModDirectory              (PluginServices.PluginInterface);
-		//TrySetModSubscriber = new global::Penumbra.Api.IpcSubscribers.TrySetMod             (PluginServices.PluginInterface);
 		OpenMainWindowSubscriber = new global::Penumbra.Api.IpcSubscribers.OpenMainWindow               (PluginServices.PluginInterface);
 
 		RemoveTemporaryModSettingsPlayerSubscriber = new global::Penumbra.Api.IpcSubscribers.RemoveTemporaryModSettingsPlayer(PluginServices.PluginInterface);

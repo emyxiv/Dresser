@@ -34,12 +34,10 @@ using InventoryItem = Dresser.Models.InventoryItem;
 namespace Dresser.Services {
 	internal class Storage : IDisposable {
 
-		//public ExcelSheet<Dye>? Dyes = null;
 		public static string HighResolutionSufix = "_hr1";
 
 		public const int PlateNumber = Offsets.TotalPlates;
 		public Dictionary<GlamourPlateSlot, FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData> SlotMirageItems = new();
-		//public static Dictionary<GlamourPlateSlot, InventoryItem> SlotInventoryItems = new();
 		public FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.GlamourPlate[]? Pages = null;
 		public FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.GlamourPlate? DisplayPage = null;
 		public Dictionary<byte, Vector4> RarityColors = new();
@@ -65,7 +63,6 @@ namespace Dresser.Services {
 			MaxEquipLevel = (ushort)PluginServices.DataManager.Excel.GetSheet<Item>().Max(a=>a.LevelEquip);
 			MaxItemLevel = PluginServices.DataManager.Excel.GetSheet<Item>().Max(a=>a.LevelItem.Value.RowId);
 
-			//Dyes = Sheets.GetSheet<Dye>();
 			// ui colors:
 			// bad: 14
 
@@ -97,9 +94,6 @@ namespace Dresser.Services {
 			PluginServices.OnPluginLoaded += LoadAdditionalItems;
 		}
 		public void Dispose() {
-			//Dyes = null;
-			//Sheets.Cache.Clear();
-
 			foreach((var k, (var h, var s)) in FontHandles) h.Dispose();
 			FontHandles.Clear();
 		}
@@ -193,7 +187,6 @@ namespace Dresser.Services {
 		}
 		public Dictionary<AdditionalItem, Dictionary<InventoryType, string>> FilterNames;
 		public Dictionary<InventoryType, List<InventoryItem>> AdditionalItems;
-		//public Dictionary<AdditionalItem, Dictionary<InventoryType, HashSet<InventoryItem>>> AdditionalItems = FilterNames.ToDictionary(fn=>fn.Key,fn=>fn.Value.ToDictionary(itn=>itn.Key,itn=> new HashSet<InventoryItem>()));
 
 		// all items
 		public static HashSet<InventoryType> FilterAll = new() { (InventoryType)InventoryTypeExtra.AllItems, };

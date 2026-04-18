@@ -42,14 +42,8 @@ namespace Dresser {
 		private static ServiceProvider _serviceProvider = null!;
 
 		public static PenumbraIpc Penumbra { get; private set; } = null!;
-		//public static IChatUtilities ChatUtilities { get; private set; } = null!;
 		public static HotkeyService HotkeyService { get; private set; } = null!;
-		//public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
-		//public static GameInterface GameInterface { get; private set; } = null!;
-		// public static GameUiManager GameUi { get; private set; } = null!;
 		public static SheetManager SheetManager { get; private set; } = null!;
-		// public static OverlayService OverlayService { get; private set; } = null!;
-		// public static TryOn TryOn { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
 		public static ItemVendorLocation ItemVendorLocation { get; private set; } = null!;

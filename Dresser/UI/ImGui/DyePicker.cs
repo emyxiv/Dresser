@@ -28,17 +28,11 @@ public class DyePicker {
 
 
 	public void Draw() {
-		// TitleBar.CloseButton(this,default,true);
-
 		DrawLogic();
-		// if(ImGui.IsKeyPressed(ImGuiKey.Escape)) this.IsOpen = false;
 	}
 
 
 
-
-
-	//  Method
 	// Constants
 	private const ImGuiKey KeyBindBrowseUp = ImGuiKey.UpArrow;
 	private const ImGuiKey KeyBindBrowseDown = ImGuiKey.DownArrow;
@@ -53,7 +47,6 @@ public class DyePicker {
 	private static int? LastSelectedItemKey = null;
 	private static int Columns = 12;
 	private static int IndexKey = 0;
-	//public static Stain? CurrentDye2 = null;
 	const ushort MaxDyeIndex = 2;
 	public static Dictionary<ushort, Stain?> CurrentDyesInEditor = new();
 	public static Dictionary<ushort,byte?> CurrentDyeList = new();
@@ -91,8 +84,6 @@ public class DyePicker {
 
 
 		ImGui.BeginChildFrame(9151,new Vector2(ImGui.GetContentRegionAvail().X, ItemIcon.IconSize.Y + (ItemIcon.IconSize.Y *_headerPaddingIconSizeMult.Y *2)), ImGuiWindowFlags.NoScrollbar);
-		// ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
-		// ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ConfigurationManager.Config.DyePickerDyeSize * _multiplicatorDyeSpacing);
 
 
 
@@ -101,7 +92,6 @@ public class DyePicker {
 		} catch(Exception e) {
 			PluginLog.Error(e, "Error while drawing dye picker header line 2");
 		}finally {
-			// ImGui.PopStyleVar(2);
 			ImGui.EndChildFrame();
 		}
 
@@ -135,10 +125,6 @@ public class DyePicker {
 	private void DrawStainAvailable() {
 
 		IEnumerable<Stain> dyesFiltered = Dyes;
-		// if (DyeNameSearch.Length > 0) {
-		// 	dyesFiltered = Dyes.Where(i => i.Name.ToString().Contains(DyeNameSearch, StringComparison.OrdinalIgnoreCase));
-		// }
-
 
 			IndexKey = 0;
 			bool isOneSelected = false; // allows one selection per foreach
@@ -213,12 +199,6 @@ public class DyePicker {
 						|| ImGui.GetIO().MouseDown[(int)ImGuiMouseButton.Left] // this is already handled by DrawStainIcon()
 						);
 
-		// try {
-		//
-		// } catch (Exception e) {
-		// 	PluginLog.Error(e, "Error in DrawDyePickerItem");
-		// }
-
 		return (selecting, ImGui.IsItemFocused());
 	}
 	private Vector2 CalculateStainAvailableSize() {
@@ -279,8 +259,6 @@ public class DyePicker {
 		var endPos = startPos + bordSize;
 
 		var draw = ImGui.GetWindowDrawList();
-		// selecting = ImGui.ColorButton($"{i.Name}##{i.RowId}", i.ColorVector4(), ImGuiColorEditFlags.NoDragDrop, ConfigurationManager.Config.DyePickerDyeSize);
-		// var selecting = GuiHelpers.GameButton(UldBundle.ColorChooser_StainColor, $"{i.Name}##{i.RowId}","",ConfigurationManager.Config.DyePickerDyeSize,i.ColorVector4());
 
 		var size = ConfigurationManager.Config.DyePickerDyeSize;
 		var tint = i.ColorVector4();
@@ -322,13 +300,6 @@ public class DyePicker {
 		// if dye is metallic, put some gloss
 		if (i.IsMetallic) {
 			var stainMetalTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainMetallic);
-			// if (stainMetalTex != null) draw.AddImage(
-			// 	stainMetalTex.Handle,
-			// 	startPos,
-			// 	endPos,
-			// 	Vector2.One,
-			// 	Vector2.Zero,
-			// 	ImGui.ColorConvertFloat4ToU32(Vector4.One.Darken(0.3f).WithAlpha(0.9f)));
 			if (stainMetalTex != null) draw.AddImage(
 				stainMetalTex.Handle,
 				startPos,
@@ -336,14 +307,6 @@ public class DyePicker {
 				Vector2.One,
 				Vector2.Zero,
 				ImGui.ColorConvertFloat4ToU32(colorMetal));
-			// if (stainMetalTex != null) draw.AddImage(
-			// 	stainMetalTex.Handle,
-			// 	startPos,
-			// 	endPos,
-			// 	Vector2.One,
-			// 	Vector2.Zero,
-			// 	ImGui.ColorConvertFloat4ToU32(i.ColorVector4().Darken(0f).WithAlpha(0.3f)));
-
 		}
 		// put a border
 		var stainBorderTex = PluginServices.ImageGuiCrop.GetPart(UldBundle.ColorChooser_StainOutline);
