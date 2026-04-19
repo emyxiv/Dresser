@@ -738,7 +738,7 @@ public class ConfigWindow : Window, IDisposable {
 			ImGui.Checkbox($"Display how many items applied in title bar##Debug##GearBrowserConfig", ref ConfigurationManager.Config.DebugDisplayModedInTitleBar);
 		}
 		if (ImGui.CollapsingHeader("Manual triggers")) {
-			if (ImGui.Button("AppearanceUpdateNakedOrWearing2##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing2();
+			if (ImGui.Button("AppearanceUpdateNakedOrWearing##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.AppearanceUpdateNakedOrWearing();
 			if (ImGui.Button("ReApplyAppearanceAfterEquipUpdate##Manual triggers##Debug##ConfigWindow")) PluginServices.ApplyGearChange.ReApplyAppearanceAfterEquipUpdate();
 			//if (ImGui.Button($"CleanDresserApplyCollection ({PluginServices.Penumbra.CountModsDresserApplyCollection()})##Manual triggers##Debug##ConfigWindow")) PluginServices.Penumbra.CleanDresserApplyCollection();
 			if (ImGui.Button($"Save config##Manual triggers##Debug##ConfigWindow")) ConfigurationManager.SaveAsync();
