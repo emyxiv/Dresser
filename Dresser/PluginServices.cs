@@ -3,13 +3,15 @@ using AllaganLib.GameSheets.Service;
 using CriticalCommonLib.Services;
 
 using Dalamud.Game;
+using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
 using Dresser.Interop.Addons;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
+using Dresser.Interop.Overlays;
 using Dresser.Logic;
 using Dresser.Core;
 using Dresser.Services;
@@ -38,6 +40,7 @@ namespace Dresser {
         [PluginService] public static IGameConfig GameConfig { get; set; } = null!;
         [PluginService] public static ICondition Condition { get; set; } = null!;
         [PluginService] public static IGameInteropProvider GameInteropProvider { get; set; } = null!;
+        [PluginService] public static IAddonLifecycle AddonLifecycle { get; set; } = null!;
 
 		private static ServiceProvider _serviceProvider = null!;
 
@@ -54,7 +57,8 @@ namespace Dresser {
 
 
 		internal static AddonManager AddonManager = null!;
-		internal static GlamourPlates GlamourPlates = null!;
+		internal static MiragePlateAgent MiragePlateAgent = null!;
+		internal static MiragePlateOverlayController MiragePlateOverlay = null!;
 		internal static Storage Storage = null!;
 		internal static ApplyGearChange ApplyGearChange = null!;
 		internal static Context Context = null!;
@@ -90,8 +94,9 @@ namespace Dresser {
 			ItemVendorLocation = _serviceProvider.GetRequiredService<ItemVendorLocation>();
 			AllaganTools = _serviceProvider.GetRequiredService<AllaganToolsService>();
 			Glamourer = _serviceProvider.GetRequiredService<GlamourerService>();
-			GlamourPlates = _serviceProvider.GetRequiredService<GlamourPlates>();
+			MiragePlateAgent = _serviceProvider.GetRequiredService<MiragePlateAgent>();
 			ApplyGearChange = _serviceProvider.GetRequiredService<ApplyGearChange>();
+			MiragePlateOverlay = new MiragePlateOverlayController();
 
 			Actions = _serviceProvider.GetRequiredService<Actions>();
 
@@ -103,6 +108,8 @@ namespace Dresser {
 			PluginLoaded = false;
 			ConfigurationManager.ClearQueue();
 			ConfigurationManager.Save();
+
+			MiragePlateOverlay?.Dispose();
 
 			// ServiceProvider.Dispose() disposes all IDisposable singletons
 			// in reverse creation order

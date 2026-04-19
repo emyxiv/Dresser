@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,7 +11,7 @@ using CriticalCommonLib.Extensions;
 using Dalamud.Utility;
 
 using Dresser.Extensions;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Gui;

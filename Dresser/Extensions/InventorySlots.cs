@@ -1,6 +1,6 @@
-﻿using CriticalCommonLib.Extensions;
+using CriticalCommonLib.Extensions;
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Models;
 
 using System;

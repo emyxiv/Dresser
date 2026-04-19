@@ -1,4 +1,4 @@
-﻿using CriticalCommonLib.Enums;
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Extensions;
 using CriticalCommonLib.Models;
 
@@ -18,7 +18,7 @@ using static Dresser.Gui.GearBrowser;
 using System.Text.Json.Serialization;
 
 using Dresser.Enums;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 
 namespace Dresser {
 	[Serializable]

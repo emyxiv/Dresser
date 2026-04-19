@@ -13,6 +13,8 @@ using Dresser.Services;
 using Dresser.Core;
 using Dresser.Gui;
 
+using KamiToolKit;
+
 using System;
 
 
@@ -38,6 +40,7 @@ namespace Dresser {
 			ICommandManager commandManager) {
 			PluginInstance = this;
 			PluginServices.Init(pluginInterface, this);
+			KamiToolKitLibrary.Initialize(pluginInterface);
 
 
 			ConfigurationManager.Config.ConfigurationChanged += ConfigOnConfigurationChanged;
@@ -91,6 +94,7 @@ namespace Dresser {
 
 
 			AddonListeners.Dispose();
+			KamiToolKitLibrary.Dispose();
 			PluginServices.Dispose();
 		}
 

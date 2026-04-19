@@ -2,6 +2,9 @@ using Dresser.Core;
 using Dresser.Logic;
 using Dresser.Services;
 
+using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+
 using System;
 
 namespace Dresser.Interop.Addons {
@@ -18,6 +21,12 @@ namespace Dresser.Interop.Addons {
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent += OnMiragePrismPrismBoxReceiveEvent;
 
+			// IAddonLifecycle — addon state transitions (setup/teardown)
+			PluginServices.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MiragePrismMiragePlate", OnMiragePlateSetup);
+			PluginServices.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "MiragePrismMiragePlate", OnMiragePlateFinalize);
+			PluginServices.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MiragePrismPrismBox", OnPrismBoxSetup);
+			PluginServices.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "MiragePrismPrismBox", OnPrismBoxFinalize);
+
 			OnPlateChanged += OnPlateChangedDo;
 
 			OnLogin();
@@ -31,10 +40,17 @@ namespace Dresser.Interop.Addons {
 			var MiragePrismMiragePlate = PluginServices.AddonManager.Get<MiragePrismMiragePlateAddon>();
 			MiragePrismMiragePlate.ReceiveEvent -= OnGlamourPlatesReceiveEvent;
 			//MiragePrismMiragePlate.OnShow -= OnGlamourPlatesShow;
-			Context.OnChangeGlamingAtDresser += OnGlamourPlatesShow2;
+			Context.OnChangeGlamingAtDresser -= OnGlamourPlatesShow2;
 
 			var MiragePrismPrismBox = PluginServices.AddonManager.Get<MiragePrismPrismBoxAddon>();
 			MiragePrismPrismBox.ReceiveEvent -= OnMiragePrismPrismBoxReceiveEvent;
+
+			// IAddonLifecycle cleanup
+			PluginServices.AddonLifecycle.UnregisterListener(OnMiragePlateSetup);
+			PluginServices.AddonLifecycle.UnregisterListener(OnMiragePlateFinalize);
+			PluginServices.AddonLifecycle.UnregisterListener(OnPrismBoxSetup);
+			PluginServices.AddonLifecycle.UnregisterListener(OnPrismBoxFinalize);
+
 			OnPlateChanged -= OnPlateChangedDo;
 
 
@@ -82,7 +98,6 @@ namespace Dresser.Interop.Addons {
 			}
 			if (e.SenderID == 5 && e.EventArgs->Int == 0) {
 				// if change plate + discards
-				// PluginServices.OverlayService.RefreshOverlayStates();
 			}
 			if (e.SenderID == 4 && e.EventArgs->Int == 0) {
 				// click "yes" when asked to saving changes
@@ -119,6 +134,20 @@ namespace Dresser.Interop.Addons {
 			if (dialogs != null && dialogs.DialogInfo?.Label == "FailedSomeAskWhatToDo") dialogs.IsOpen = false;
 			PluginServices.ApplyGearChange.CheckIfLeavingPlateWasApplied(oldPlateIndex);
 			PluginServices.ApplyGearChange.ExecuteChangesOnSelectedPlate();
+		}
+
+		// IAddonLifecycle callbacks
+		private static void OnMiragePlateSetup(AddonEvent type, AddonArgs args) {
+			PluginLog.Debug("MiragePrismMiragePlate PostSetup");
+		}
+		private static void OnMiragePlateFinalize(AddonEvent type, AddonArgs args) {
+			PluginLog.Debug("MiragePrismMiragePlate PreFinalize");
+		}
+		private static void OnPrismBoxSetup(AddonEvent type, AddonArgs args) {
+			PluginLog.Debug("MiragePrismPrismBox PostSetup");
+		}
+		private static void OnPrismBoxFinalize(AddonEvent type, AddonArgs args) {
+			PluginLog.Debug("MiragePrismPrismBox PreFinalize");
 		}
 	}
 

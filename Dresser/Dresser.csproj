@@ -56,6 +56,7 @@
     <PackageReference Include="Glamourer.Api" Version="2.8.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
+    <ProjectReference Include="..\KamiToolKit\KamiToolKit.csproj" />
     <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
   </ItemGroup>
 

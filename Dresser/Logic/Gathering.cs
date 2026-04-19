@@ -1,9 +1,9 @@
-﻿using CriticalCommonLib.Enums;
+using CriticalCommonLib.Enums;
 
 using Dresser.Core;
 using Dresser.Extensions;
 using Dresser.Interop;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Services;
 using Dresser.Models;
 

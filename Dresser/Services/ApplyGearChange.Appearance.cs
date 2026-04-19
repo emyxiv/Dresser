@@ -8,7 +8,7 @@ using CriticalCommonLib.Enums;
 
 using Dresser.Enums;
 using Dresser.Extensions;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Models;
 using Dresser.Gui;

@@ -8,7 +8,7 @@ using Dalamud.Interface.Windowing;
 using Dresser.Core;
 using Dresser.Enums;
 using Dresser.Extensions;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Services.Ipc;
@@ -229,13 +229,13 @@ public class ConfigWindow : Window, IDisposable {
 		ImGui.Checkbox($"Show job icons on plate buttons", ref ConfigurationManager.Config.CurrentGearPortablePlateJobIcons);
 		ImGui.Checkbox($"Show job background colors on plate buttons", ref ConfigurationManager.Config.CurrentGearPortablePlateJobBgColors);
 
-		if (!GlamourPlates.IsAnyPlateSelectionOpen())
+		if (!MiragePlateAgent.IsAnyPlateSelectionOpen())
 			ImGui.BeginDisabled();
 		var posBefore = ImGui.GetCursorPos();
 		if (ImGui.Button("Re-import Glamour Plates and erase pending plates"))
 			PluginServices.ApplyGearChange.OverwritePendingWithActualPlates();
 		var size = ImGui.GetItemRectSize();
-		if (!GlamourPlates.IsAnyPlateSelectionOpen()) {
+		if (!MiragePlateAgent.IsAnyPlateSelectionOpen()) {
 			ImGui.EndDisabled();
 			ImGui.SetCursorPos(posBefore);
 			ImGui.InvisibleButton($"reimportDisabledTooltim", size);

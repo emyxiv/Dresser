@@ -6,7 +6,7 @@
 
 using CriticalCommonLib.Enums;
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Models;
 
@@ -34,7 +34,7 @@ namespace Dresser.Services {
 
 
 		// ── Overlay Highlight State ──────────────────────────────────────
-		// These are read by OverlayService to color the plate tabs in the dresser UI.
+		// These are read by MiragePlateOverlayController to color the plate tabs in the dresser UI.
 
 		public Dictionary<ushort, Vector4?> HighlightPlatesRadio = new();
 		public bool? HighlightSaveButton = false;
@@ -145,7 +145,7 @@ namespace Dresser.Services {
 		/// and records which slots succeeded/failed.
 		/// </summary>
 		private IEnumerable<GlamourPlateSlot> ApplyToDresserPlateAndRecord(InventoryItemSet set, ushort plateIndex) {
-			var successfullyApplied = PluginServices.GlamourPlates.SetGlamourPlateSlot(set);
+			var successfullyApplied = PluginServices.MiragePlateAgent.SetGlamourPlateSlot(set);
 
 			if (successfullyApplied.Any()) {
 				AppliedPending[plateIndex] = set.Copy();

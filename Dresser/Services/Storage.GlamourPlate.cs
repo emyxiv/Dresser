@@ -4,7 +4,7 @@ using System.Linq;
 using CriticalCommonLib.Enums;
 
 using Dresser.Interop;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Models;
 
 

@@ -17,7 +17,7 @@ using Dalamud.Interface.Textures;
 using Dalamud.Utility;
 
 using Dresser.Logic;
-using Dresser.Logic.Glamourer;
+using Dresser.Logic.Ipc.Glamourer;
 using Dresser.Models;
 using Dresser.Gui;
 
@@ -29,7 +29,7 @@ using Penumbra.GameData.Structs;
 
 using CriticalInventoryItem = Dresser.Models.InventoryItem;
 using EquipSlot = Penumbra.GameData.Enums.EquipSlot;
-using InteropGlamourPlateSlot = Dresser.Interop.Hooks.GlamourPlateSlot;
+using InteropGlamourPlateSlot = Dresser.Interop.Agents.GlamourPlateSlot;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {

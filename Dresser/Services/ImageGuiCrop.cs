@@ -1,7 +1,7 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Models;
 using Dresser.Gui.Components;

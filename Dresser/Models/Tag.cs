@@ -1,7 +1,7 @@
-﻿using AllaganLib.GameSheets.Sheets.Rows;
+using AllaganLib.GameSheets.Sheets.Rows;
 
 using Dresser.Core;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Services;
 using Dresser.Gui;
 

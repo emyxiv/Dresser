@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,8 +29,8 @@ using InventoryItemDr = Dresser.Models.InventoryItem;
 using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
 
 
-namespace Dresser.Interop.Hooks {
-	internal class GlamourPlates : IDisposable {
+namespace Dresser.Interop.Agents {
+	internal class MiragePlateAgent : IDisposable {
 
 		// https://github.com/caitlyn-gg/Glamaholic/blob/main/Glamaholic/GameFunctions.cs
 
@@ -39,7 +39,7 @@ namespace Dresser.Interop.Hooks {
 		[Signature(Signatures.GetCabinetItemId)] private readonly GetCabinetItemIdDelegate GetCabinetItemId = null!;
 
 
-		internal unsafe static AgentMiragePrismMiragePlate* MiragePlateAgent => AgentMiragePrismMiragePlate.Instance();
+		internal unsafe static AgentMiragePrismMiragePlate* PlateAgent => AgentMiragePrismMiragePlate.Instance();
 		internal unsafe FFXIVClientStructs.FFXIV.Client.Game.UI.Cabinet* Armoire => &UIState.Instance()->Cabinet;
 		internal unsafe bool ArmoireLoaded => this.Armoire->IsCabinetLoaded();
 		internal unsafe static AgentMiragePrismPrismBox* PrismBoxAgent => AgentMiragePrismPrismBox.Instance();
@@ -56,8 +56,8 @@ namespace Dresser.Interop.Hooks {
 			bool isActiveMiragePrismPrismBox = false;
 			bool isActiveCabinet = false;
 
-			if (MiragePlateAgent != null)
-				isActiveMiragePrismMiragePlate = MiragePlateAgent->IsAgentActive();
+			if (PlateAgent != null)
+				isActiveMiragePrismMiragePlate = PlateAgent->IsAgentActive();
 			if (PrismBoxAgent != null)
 				isActiveMiragePrismPrismBox = PrismBoxAgent->IsAgentActive();
 			if (CabinetAgent != null)
@@ -66,12 +66,12 @@ namespace Dresser.Interop.Hooks {
 			return isLocked && isActiveMiragePrismMiragePlate && (isActiveMiragePrismPrismBox || isActiveCabinet);
 		}
 		internal unsafe static bool IsAnyPlateSelectionOpen() {
-			return MiragePlateAgent->IsAgentActive();
+			return PlateAgent->IsAgentActive();
 		}
 
 		internal unsafe ushort? CurrentPlateIndex() {
 
-			var agent = MiragePlateAgent;
+			var agent = PlateAgent;
 			if (agent == null || agent->Data == null) {
 				return null;
 			}
@@ -91,7 +91,7 @@ namespace Dresser.Interop.Hooks {
 			HashSet<GlamourPlateSlot> successfullyApplied = new();
 
 
-			var agent = MiragePlateAgent;
+			var agent = PlateAgent;
 			if (agent == null) {
 				return successfullyApplied;
 			}
@@ -184,7 +184,7 @@ namespace Dresser.Interop.Hooks {
 			return task.Result;
 		}
 		private unsafe SetGlamourPlateSlotReturn SetGlamourPlateSlotFramework(InventoryItemDr applyItem, ref UsedStains usedStains, GlamourPlateSlot? applyItemSlot = null) {
-			var agent = MiragePlateAgent;
+			var agent = PlateAgent;
 			if (agent == null) {
 				return SetGlamourPlateSlotReturn.failed;
 			}
@@ -435,7 +435,7 @@ namespace Dresser.Interop.Hooks {
 		private static unsafe Dictionary<GlamourPlateSlot, SavedGlamourItem>? CurrentPlate {
 			get {
 
-				var agent = MiragePlateAgent;
+				var agent = PlateAgent;
 				if (agent == null || agent->Data == null) {
 					return null;
 				}
@@ -474,7 +474,7 @@ namespace Dresser.Interop.Hooks {
 		}
 
 
-		public GlamourPlates() {
+		public MiragePlateAgent() {
 			_glamourDresserApplyThrottler = new Throttler<Task<SetGlamourPlateSlotReturn>>(0);
 
 			PluginServices.GameInteropProvider.InitializeFromAttributes(this);

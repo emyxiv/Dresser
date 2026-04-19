@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,9 +8,9 @@ using Dalamud.Plugin;
 
 using Dresser.Core;
 using Dresser.Extensions;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
-using Dresser.Logic.Glamourer;
+using Dresser.Logic.Ipc.Glamourer;
 using Dresser.Models;
 
 using Glamourer.Api.Enums;

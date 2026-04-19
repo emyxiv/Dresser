@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 
@@ -8,7 +8,7 @@ using CriticalCommonLib.Enums;
 
 using Dresser.Extensions;
 using Dresser.Interop;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Models;
@@ -17,7 +17,7 @@ using Dalamud.Bindings.ImGui;
 
 using Lumina.Excel.Sheets;
 
-using GlamourPlates = Dresser.Interop.Hooks.GlamourPlates;
+using GlamourPlates = Dresser.Interop.Agents.MiragePlateAgent;
 using UsedStains = System.Collections.Generic.Dictionary<(uint, uint), uint>;
 
 namespace Dresser.Gui.Components {
@@ -49,7 +49,7 @@ namespace Dresser.Gui.Components {
 		}
 
 		private unsafe static void CheckAgent() {
-			var agent = GlamourPlates.MiragePlateAgent;
+			var agent = GlamourPlates.PlateAgent;
 			if (agent == null) {
 				return;
 			}
@@ -98,11 +98,11 @@ namespace Dresser.Gui.Components {
 		private static int SlotData_PlateIndex = 0;
 		private static int SlotData_SlotIndex = 0;
 		private unsafe static void DrawSlotData() {
-			if (GlamourPlates.MiragePlateAgent == null) {
+			if (GlamourPlates.PlateAgent == null) {
 				return;
 			}
 
-			var editorInfo = *(IntPtr*)((IntPtr)GlamourPlates.MiragePlateAgent + HeadSize);
+			var editorInfo = *(IntPtr*)((IntPtr)GlamourPlates.PlateAgent + HeadSize);
 			if (editorInfo == IntPtr.Zero) {
 				ImGui.TextColored(ConfigurationManager.Config.ColorBad, $"agent inactive");
 				return;
@@ -182,11 +182,11 @@ namespace Dresser.Gui.Components {
 
 		}
 		private unsafe static void DrawAllDataHex() {
-			if (GlamourPlates.MiragePlateAgent == null) {
+			if (GlamourPlates.PlateAgent == null) {
 				return;
 			}
 
-			var editorInfo = *(IntPtr*)((IntPtr)GlamourPlates.MiragePlateAgent + HeadSize);
+			var editorInfo = *(IntPtr*)((IntPtr)GlamourPlates.PlateAgent + HeadSize);
 			if (editorInfo == IntPtr.Zero) {
 				ImGui.TextColored(ConfigurationManager.Config.ColorBad, $"agent inactive");
 				return;
@@ -210,13 +210,13 @@ namespace Dresser.Gui.Components {
 
 		private static void DrawTestFunctions() {
 			UsedStains usedStains = new();
-			//if (ImGui.Button("Clean")) PluginServices.GlamourPlates.ClearGlamourPlateSlot(GlamourPlateSlot.Head);
+			//if (ImGui.Button("Clean")) PluginServices.MiragePlateAgent.ClearGlamourPlateSlot(GlamourPlateSlot.Head);
 			//ImGui.SameLine();
 
 			if (ImGui.Button("Set")) {
 				var inventoryItem = new InventoryItem(InventoryType.GlamourChest, 24591);
 				if (inventoryItem.ItemId != 0) {
-					PluginServices.GlamourPlates.SetGlamourPlateSlot(inventoryItem, ref usedStains);
+					PluginServices.MiragePlateAgent.SetGlamourPlateSlot(inventoryItem, ref usedStains);
 				}
 			}
 			ImGui.SameLine();
@@ -227,7 +227,7 @@ namespace Dresser.Gui.Components {
 					Stain2 = 82,
 				};
 				if (inventoryItem.ItemId != 0) {
-					PluginServices.GlamourPlates.SetGlamourPlateSlot(inventoryItem, ref usedStains);
+					PluginServices.MiragePlateAgent.SetGlamourPlateSlot(inventoryItem, ref usedStains);
 				}
 			}
 			ImGui.SameLine();
@@ -238,18 +238,18 @@ namespace Dresser.Gui.Components {
 					Stain2 = 96,
 				};
 				if (inventoryItem.ItemId != 0) {
-					PluginServices.GlamourPlates.SetGlamourPlateSlot(inventoryItem, ref usedStains);
+					PluginServices.MiragePlateAgent.SetGlamourPlateSlot(inventoryItem, ref usedStains);
 				}
 			}
 			//ImGui.SameLine();
 
 			//if (ImGui.Button("Dye 1")) {
-			//	PluginServices.GlamourPlates.ModifyGlamourPlateSlot(GlamourPlateSlot.Head, 87, 0, ref usedStains);
+			//	PluginServices.MiragePlateAgent.ModifyGlamourPlateSlot(GlamourPlateSlot.Head, 87, 0, ref usedStains);
 			//}
 			//ImGui.SameLine();
 
 			//if (ImGui.Button("Dye 2")) {
-			//	PluginServices.GlamourPlates.ModifyGlamourPlateSlot(GlamourPlateSlot.Head, 91, 1, ref usedStains);
+			//	PluginServices.MiragePlateAgent.ModifyGlamourPlateSlot(GlamourPlateSlot.Head, 91, 1, ref usedStains);
 			//}
 		}
 		private static void DrawDresserContentsChecks() {

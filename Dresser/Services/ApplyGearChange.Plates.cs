@@ -3,7 +3,7 @@
 /// portable plates, overwriting pending plates from actual game data, and compiling
 /// "todo" tasks (items not yet owned) for each plate.
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Models;
 
@@ -56,7 +56,7 @@ namespace Dresser.Services {
 		/// in the glamour dresser or plate selection UI.
 		/// </summary>
 		public void OverwritePendingWithCurrentPlate() {
-			ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = GlamourPlates.CurrentSet().RemoveEmpty();
+			ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = MiragePlateAgent.CurrentSet().RemoveEmpty();
 			ReApplyAppearanceAfterEquipUpdate();
 		}
 

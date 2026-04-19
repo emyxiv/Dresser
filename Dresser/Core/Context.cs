@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 
@@ -10,7 +10,7 @@ using Dalamud.Game.Config;
 using Dalamud.Interface.Windowing;
 
 using Dresser.Interop.Addons;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 
 using Lumina.Excel.Sheets;
 
@@ -21,7 +21,7 @@ namespace Dresser.Core {
 		public bool IsCurrentGearWindowOpen = false;
 		public bool IsBrowserWindowOpen = false;
 		public bool IsDyePickerPopupOpen = false;
-		public bool IsAnyPlateSelectionOpen => GlamourPlates.IsAnyPlateSelectionOpen();
+		public bool IsAnyPlateSelectionOpen => MiragePlateAgent.IsAnyPlateSelectionOpen();
 		public ushort? SelectedPlate = null;
 
 		public IPlayerCharacter? LocalPlayer = null;
@@ -68,12 +68,12 @@ namespace Dresser.Core {
 
 		public Window? LastFocusedWindow = null;
 		public void Refresh() {
-			IsGlamingAtDresser = GlamourPlates.IsGlamingAtDresser();
+			IsGlamingAtDresser = MiragePlateAgent.IsGlamingAtDresser();
 			if (IsGlamingAtDresser != _lastState_IsGlamingAtDresser) OnChangeGlamingAtDresser?.Invoke(IsGlamingAtDresser);
 			_lastState_IsGlamingAtDresser = IsGlamingAtDresser;
 
 			if (IsGlamingAtDresser) {
-				SelectedPlate = PluginServices.GlamourPlates.CurrentPlateIndex();
+				SelectedPlate = PluginServices.MiragePlateAgent.CurrentPlateIndex();
 				if(SelectedPlate != null && SelectedPlate != LastState_SelectedPlate) {
 					AddonListeners.TriggerPlateChanged(SelectedPlate, LastState_SelectedPlate);
 				}

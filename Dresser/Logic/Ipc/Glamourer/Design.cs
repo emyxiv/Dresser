@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Dresser.Extensions;
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 
 using Lumina.Excel.Sheets;
 
@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
-namespace Dresser.Logic.Glamourer;
+namespace Dresser.Logic.Ipc.Glamourer;
 
 public static class Design {
 

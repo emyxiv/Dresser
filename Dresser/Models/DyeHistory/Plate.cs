@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 using CriticalCommonLib.Extensions;
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 
 namespace Dresser.Models.DyeHistory {

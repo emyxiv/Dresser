@@ -5,7 +5,7 @@
 
 using CriticalCommonLib.Enums;
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Models;
 

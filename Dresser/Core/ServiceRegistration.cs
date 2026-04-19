@@ -3,7 +3,7 @@ using AllaganLib.GameSheets.Service;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-using Dresser.Interop.Hooks;
+using Dresser.Interop.Agents;
 using Dresser.Services;
 using Dresser.Services.Ipc;
 
@@ -65,7 +65,7 @@ internal static class ServiceRegistration
 		services.AddSingleton<ItemVendorLocation>();
 		services.AddSingleton<AllaganToolsService>();
 		services.AddSingleton<GlamourerService>();
-		services.AddSingleton<GlamourPlates>();
+		services.AddSingleton<MiragePlateAgent>();
 		services.AddSingleton<ApplyGearChange>();
 		services.AddSingleton<Actions>();
 
