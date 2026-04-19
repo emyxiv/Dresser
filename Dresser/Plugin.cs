@@ -39,8 +39,8 @@ namespace Dresser {
 			IDalamudPluginInterface pluginInterface,
 			ICommandManager commandManager) {
 			PluginInstance = this;
-			PluginServices.Init(pluginInterface, this);
 			KamiToolKitLibrary.Initialize(pluginInterface);
+			PluginServices.Init(pluginInterface, this);
 
 
 			ConfigurationManager.Config.ConfigurationChanged += ConfigOnConfigurationChanged;
