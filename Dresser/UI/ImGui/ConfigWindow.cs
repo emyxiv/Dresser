@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dresser.Interop.Addons;
 
 namespace Dresser.Gui;
 
@@ -823,6 +824,9 @@ public class ConfigWindow : Window, IDisposable {
 
 
 		}
+		if (ImGui.CollapsingHeader("KTK Overlay")) {
+			DrawKtkOverlayDebug();
+		}
 	}
 	private void DrawItemVendorButton(uint itemId) {
 		if (ImGui.Button($"GetItemInfoProvider {itemId}##ItemVendorLocationIPC##Debug##ConfigWindow")) {
@@ -838,6 +842,37 @@ public class ConfigWindow : Window, IDisposable {
 			PluginServices.ItemVendorLocation.OpenUiWithItemId(itemId);
 		}
 
+	}
+
+	private static int _ktkDebugTabIndex = 0;
+	private static Vector4 _ktkDebugColor = new Vector4(8f, 63f, 153f, 255f) / 255f;
+	private void DrawKtkOverlayDebug() {
+		var overlay = PluginServices.MiragePlateOverlay;
+		if (overlay == null) {
+			ImGui.TextDisabled("MiragePlateOverlayController is not initialized.");
+			return;
+		}
+
+		var name = overlay.DebugGetName();
+		var isVisible = overlay.DebugIsVisible();
+		ImGui.TextColored(isVisible ? ItemIcon.ColorGood : ItemIcon.ColorBad,$"Overlay {name} is {(isVisible ? "visible" : "hidden")}.");
+		if (isVisible){
+			ImGui.SliderInt("Tab Index##KTKOverlay", ref _ktkDebugTabIndex, 0, 19);
+			ImGui.ColorEdit4("Color##KTKOverlay", ref _ktkDebugColor);
+	
+			if (ImGui.Button("Apply Color to Tab##KTKOverlay")) {
+				overlay.DebugSetTabColor((uint)_ktkDebugTabIndex, _ktkDebugColor);
+			}
+			ImGui.SameLine();
+			if (ImGui.Button("Apply to All Tabs##KTKOverlay")) {
+				for (uint i = 0; i < 20; i++)
+					overlay.DebugSetTabColor(i, _ktkDebugColor);
+			}
+			ImGui.SameLine();
+			if (ImGui.Button("Reset All Tabs##KTKOverlay")) {
+				overlay.DebugClearTabs();
+			}
+		}
 	}
 
 	private void DrawGlamourerIpcDebug() {

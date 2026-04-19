@@ -8,6 +8,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 
 using KamiToolKit.Controllers;
 
+using Penumbra.GameData.Data;
+
 namespace Dresser.Interop.Overlays {
 	internal unsafe class MiragePlateOverlayController : IDisposable {
 		private const int RadioButtonOffsetId = 6;
@@ -15,11 +17,14 @@ namespace Dresser.Interop.Overlays {
 
 		private readonly AddonController _controller;
 		private Dictionary<uint, Vector4?> _tabColours = CreateEmptyTabs();
+		private bool _hasActiveHighlights = false;
+		private bool _needsClear = false;
 
 		public MiragePlateOverlayController() {
 			_controller = new AddonController {
 				AddonName = "MiragePrismMiragePlate",
 				OnRefresh = OnRefresh,
+				OnUpdate = OnUpdate,
 				OnFinalize = OnFinalize,
 			};
 			_controller.Enable();
@@ -27,7 +32,17 @@ namespace Dresser.Interop.Overlays {
 
 		private void OnRefresh(AtkUnitBase* addon) {
 			UpdateState();
-			ApplyTabColors(addon);
+		}
+
+		private void OnUpdate(AtkUnitBase* addon) {
+			if (_hasActiveHighlights) {
+				// Re-apply every frame to combat game hover/selection overrides
+				ApplyTabColors(addon);
+			} else if (_needsClear) {
+				// Clear once after highlights are removed
+				ApplyTabColors(addon);
+				_needsClear = false;
+			}
 		}
 
 		private void OnFinalize(AtkUnitBase* addon) {
@@ -46,6 +61,7 @@ namespace Dresser.Interop.Overlays {
 			} else {
 				_tabColours = CreateEmptyTabs();
 			}
+			RefreshActiveState();
 		}
 
 		private void ApplyTabColors(AtkUnitBase* addon) {
@@ -54,23 +70,27 @@ namespace Dresser.Interop.Overlays {
 				var nodeId = (uint)(RadioButtonOffsetId + tab);
 				var radioButton = (AtkComponentNode*)addon->GetNodeById(nodeId);
 				if (radioButton == null || (ushort)radioButton->AtkResNode.Type < 1000) return;
-				var atkResNode = (AtkResNode*)radioButton;
+
+				var nineGrid = radioButton->Component->UldManager.SearchNodeById(4);
+
+				if (nineGrid == null) continue;
+
 				if (newColour.HasValue) {
-					atkResNode->Color.A = (byte)(newColour.Value.W * 255.0f);
-					atkResNode->AddBlue = (short)(newColour.Value.Z * 255.0f);
-					atkResNode->AddRed = (short)(newColour.Value.X * 255.0f);
-					atkResNode->AddGreen = (short)(newColour.Value.Y * 255.0f);
-					atkResNode->MultiplyRed = 30;
-					atkResNode->MultiplyGreen = 30;
-					atkResNode->MultiplyBlue = 30;
+					nineGrid->Color.A = (byte)(newColour.Value.W * 255.0f);
+					nineGrid->AddBlue = (short)(newColour.Value.Z * 255.0f);
+					nineGrid->AddRed = (short)(newColour.Value.X * 255.0f);
+					nineGrid->AddGreen = (short)(newColour.Value.Y * 255.0f);
+					nineGrid->MultiplyRed = 30;
+					nineGrid->MultiplyGreen = 30;
+					nineGrid->MultiplyBlue = 30;
 				} else {
-					atkResNode->Color.A = 255;
-					atkResNode->AddBlue = 0;
-					atkResNode->AddRed = 0;
-					atkResNode->AddGreen = 0;
-					atkResNode->MultiplyRed = 100;
-					atkResNode->MultiplyGreen = 100;
-					atkResNode->MultiplyBlue = 100;
+					nineGrid->Color.A = 255;
+					nineGrid->AddBlue = 0;
+					nineGrid->AddRed = 0;
+					nineGrid->AddGreen = 0;
+					nineGrid->MultiplyRed = 100;
+					nineGrid->MultiplyGreen = 100;
+					nineGrid->MultiplyBlue = 100;
 				}
 			}
 		}
@@ -87,6 +107,41 @@ namespace Dresser.Interop.Overlays {
 			}
 			return dict;
 		}
+
+		private void RefreshActiveState() {
+			var wasActive = _hasActiveHighlights;
+			_hasActiveHighlights = false;
+			foreach (var color in _tabColours.Values) {
+				if (color.HasValue) {
+					_hasActiveHighlights = true;
+					break;
+				}
+			}
+			// If we just went from active to inactive, need one final clear pass
+			if (wasActive && !_hasActiveHighlights)
+				_needsClear = true;
+		}
+
+		public void DebugSetTabColor(uint tabIndex, Vector4 color) {
+			if (tabIndex < PlateCount)
+				_tabColours[tabIndex] = color;
+			RefreshActiveState();
+		}
+
+		public void DebugClearTabs() {
+			_tabColours = CreateEmptyTabs();
+			RefreshActiveState();
+		}
+        public bool DebugIsVisible() {
+            try {
+                return FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlate.Instance()->IsAddonShown();
+            } catch {
+                return false;
+            }
+        }
+        public string DebugGetName() {
+            return _controller.AddonName;
+        }
 
 		public void Dispose() {
 			_controller.Dispose();
