@@ -5,7 +5,6 @@ using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
-using Dresser.Models.Actor;
 
 using System;
 using System.Collections.Generic;
@@ -24,16 +23,6 @@ namespace Dresser.Models {
 		}
 		public InventoryItemSet(Dictionary<GlamourPlateSlot, InventoryItem?> items) {
 			Items = items;
-		}
-		public InventoryItemSet(Dictionary<EquipIndex, ItemEquip>? modelItems) {
-			Items = new();
-			if (modelItems != null)
-				foreach ((var e, var i) in modelItems) {
-					//PluginLog.Debug($"store item {e} => {i.Id}");
-
-					var slot = e.ToGlamourPlateSlot();
-					this.SetSlot(slot, InventoryItem.FromItemEquip(i, slot));
-				}
 		}
 		public InventoryItemSet(GlamourPlateSlot slot, InventoryItem item) {
 			Items = new Dictionary<GlamourPlateSlot, InventoryItem?> { { slot, item } };

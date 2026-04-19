@@ -325,29 +325,7 @@ namespace Dresser.Services {
 			return GetCurrentAppearance(slot).GetSlot(slot);
 		}*/
 		public InventoryItemSet GetCurrentAppearance(GlamourPlateSlot? slot = null)
-		{
-			return PluginServices.Glamourer.GetSet();
-			InventoryItemSet foundAppearance;
-
-			if(slot == null || !slot.Value.IsWeapon()) {
-				var appearanceBackupEquip = PluginServices.Context.LocalPlayer?.EquipmentModels().Dictionary();
-				foundAppearance = new InventoryItemSet(appearanceBackupEquip);
-			} else {
-				foundAppearance = new InventoryItemSet();
-			}
-
-			if(slot == null || slot == GlamourPlateSlot.MainHand) {
-				var appearanceBackupWeaponMain = PluginServices.Context.LocalPlayer?.MainHandModels().Equip ?? new();
-				foundAppearance.SetSlot(GlamourPlateSlot.MainHand, InventoryItem.FromWeaponEquip(appearanceBackupWeaponMain, GlamourPlateSlot.MainHand));
-			}
-
-			if (slot == null || slot == GlamourPlateSlot.OffHand) {
-				var appearanceBackupWeaponOff = PluginServices.Context.LocalPlayer?.OffHandModels().Equip ?? new();
-				foundAppearance.SetSlot(GlamourPlateSlot.OffHand, InventoryItem.FromWeaponEquip(appearanceBackupWeaponOff, GlamourPlateSlot.OffHand));
-			}
-
-			return foundAppearance;
-		}
+			=> PluginServices.Glamourer.GetSet();
 		public void RestoreAppearance() {
 			PluginLog.Verbose("Restoring appearance");
 

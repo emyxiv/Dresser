@@ -14,7 +14,6 @@ using Dresser.Extensions;
 using Dresser.Interop.Hooks;
 using Dresser.Logic;
 using Dresser.Services;
-using Dresser.Models.Actor;
 using Dresser.Gui;
 
 using Lumina.Excel.Sheets;
@@ -145,11 +144,6 @@ namespace Dresser.Models {
 			return !this.ModDirectory.IsNullOrWhitespace();
 		}
 
-		public bool IsModDifferent(InventoryItem? item2) {
-			return this.ModName == item2?.ModName
-				&& this.ModDirectory == item2?.ModDirectory
-				&& this.ModModelPath == item2?.ModModelPath;
-		}
 		public bool IsMod((string Path, string Name)? mod) {
 			if (mod == null) return false; // always say it's different, even if both are null, it's not a mod
 			return this.ModName == mod?.Name
@@ -160,85 +154,6 @@ namespace Dresser.Models {
 			return (this.ModDirectory ?? "", this.ModName ?? "");
 		}
 
-		public ItemEquip ToItemEquip() {
-			var itemModelMain = this.Item.ModelMainItemModel();
-
-			return new() {
-				Id = itemModelMain.Id,
-				Variant = (byte)itemModelMain.Variant,
-				Dye = this.Item.IsDyeable1() ? this.Stain : (byte)0,
-				Dye2 = this.Item.IsDyeable2() ? this.Stain2 : (byte)0,
-			};
-		}
-		public WeaponEquip ToWeaponEquip(WeaponIndex index) {
-
-			var itemModel = index == WeaponIndex.MainHand || Item.IsMainModelOnOffhand() ? Item.ModelMainItemModel() : Item.ModelSubItemModel();
-			return new() {
-				Set = itemModel.Id,
-				Base = itemModel.Base,
-				Variant = itemModel.Variant,
-				Dye = this.Item.IsDyeable1() ? this.Stain : (byte)0,
-				Dye2 = this.Item.IsDyeable2() ? this.Stain2 : (byte)0,
-			};
-		}
-
-		public static InventoryItem? FromItemEquip(ItemEquip? itemEquip, GlamourPlateSlot slot) {
-			if (itemEquip == null || itemEquip.Value.Id == 0) return null;
-			var dd = FromModelMain(itemEquip.Value.ToModelId(), slot);
-			if (dd != null) return new InventoryItem(InventoryType.Bag0, dd.RowId) {
-				Stain = itemEquip.Value.Dye,
-				Stain2 = itemEquip.Value.Dye
-			};
-			return null;
-		}
-
-		public static InventoryItem? FromWeaponEquip(WeaponEquip? weaponEquip, GlamourPlateSlot slot) {
-			if (weaponEquip == null || weaponEquip.Value.Set == 0) return null;
-
-			//PluginLog.Debug($"appearance: Set:{weaponEquip.Value.Set}, Variant:{weaponEquip.Value.Base}, variant:{weaponEquip.Value.Variant}  ==> {weaponEquip.Value.ToModelId()}");
-			//uint stoladressId = 39937;
-			//var stoladress = Service.ExcelCache.AllItems.Where(item => item.Value.RowId == stoladressId).First().Value;
-			//PluginLog.Debug($"manderville wings: {stoladress.RowId} => model:m:{stoladress.ModelMain} s:{stoladress.ModelSub}");
-
-
-			var dd = slot.ToWeaponIndex() == WeaponIndex.MainHand || weaponEquip.Value.IsMainModelOnOffhand() ? FromModelWeaponMain(weaponEquip.Value.ToModelId(), slot) : FromModelWeaponSub(weaponEquip.Value.ToModelId(), slot);
-			if (dd != null) return new InventoryItem(InventoryType.Bag0, dd.RowId) {
-				Stain = weaponEquip.Value.Dye,
-				Stain2 = weaponEquip.Value.Dye2
-			};
-			return null;
-		}
-		public static ItemRow? FromModelMain(ulong model, GlamourPlateSlot slot) {
-
-			var equipSlotCategory = slot.ToEquipSlotCategoryByte();
-			var ddddd = PluginServices.SheetManager.GetSheet<ItemSheet>().Where(item => item.Base.ModelMain == model && item.Base.EquipSlotCategory.RowId == equipSlotCategory);
-			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
-			//foreach((var id,var item) in ddddd) {
-			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
-
-			//}
-			return ddddd.FirstOrDefault();
-		}
-		public static ItemRow? FromModelWeaponMain(ulong model, GlamourPlateSlot slot) {
-
-			//var equipSlotCategory = slot.ToEquipSlotCategoryByte();
-			var ddddd = PluginServices.SheetManager.GetSheet<ItemSheet>().Where(item => item.Base.ModelMain == model);
-			//PluginLog.Debug($"looking for item... {model} => {ddddd.Count()}");
-			//foreach ((var id, var item) in ddddd) {
-			//	PluginLog.Debug($"     found item {id} {item.NameString} {item.ModelMain} {item.ModelSub} => {item.EquipSlotCategory.Row == slot.ToEquipSlotCategoryByte()}");
-
-			//}
-			return ddddd.FirstOrDefault();
-		}
-		public static ItemRow? FromModelWeaponSub(ulong model, GlamourPlateSlot slot) {
-			return PluginServices.SheetManager.GetSheet<ItemSheet>().FirstOrDefault(item => item.Base.ModelSub == model);
-		}
-
-
-		public WeaponEquip ToWeaponEquipMain()
-			=> ToWeaponEquip(WeaponIndex.MainHand);
-		public WeaponEquip ToWeaponEquipSub()
-			=> ToWeaponEquip(WeaponIndex.OffHand);
 		public IEnumerable<InventoryItem> GetDyesInInventories(int dyeIndex) {
 			var stainTransient = PluginServices.DataManager.GetExcelSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
 

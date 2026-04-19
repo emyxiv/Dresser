@@ -17,11 +17,8 @@ using Dalamud.Interface.Textures;
 using Dalamud.Utility;
 
 using Dresser.Logic;
-using Dresser.Core;
 using Dresser.Logic.Glamourer;
-using Dresser.Services;
 using Dresser.Models;
-using Dresser.Models.Actor;
 using Dresser.Gui;
 
 using Lumina.Data;
@@ -30,7 +27,6 @@ using Lumina.Excel.Sheets;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
-using ActorEquipIndex = Dresser.Models.Actor.EquipIndex;
 using CriticalInventoryItem = Dresser.Models.InventoryItem;
 using EquipSlot = Penumbra.GameData.Enums.EquipSlot;
 using InteropGlamourPlateSlot = Dresser.Interop.Hooks.GlamourPlateSlot;
@@ -75,43 +71,6 @@ namespace Dresser.Extensions {
 				//InteropGlamourPlateSlot.SoulCrystal => 13 + 1,
 				_ => throw new Exception($"Unidentified GlamourPlateSlot: {slot}")
 			};
-		}
-		public static EquipIndex? EquipIndex(this ItemRow item) {
-			var slot = item.EquipSlotCategory?.Base;
-			if(slot == null) return null;
-
-			//if (slot.Value.MainHand == 1) return EquipIndex.MainHand;
-			//if (slot.Value.OffHand == 1) return EquipIndex.OffHand;
-			if (slot.Value.Head == 1) return ActorEquipIndex.Head;
-			if (slot.Value.Body == 1) return ActorEquipIndex.Chest;
-			if (slot.Value.Gloves == 1) return ActorEquipIndex.Hands;
-			if (slot.Value.Legs == 1) return ActorEquipIndex.Legs;
-			if (slot.Value.Feet == 1) return ActorEquipIndex.Feet;
-			if (slot.Value.Ears == 1) return ActorEquipIndex.Earring;
-			if (slot.Value.Neck == 1) return ActorEquipIndex.Necklace;
-			if (slot.Value.Wrists == 1) return ActorEquipIndex.Bracelet;
-			if (slot.Value.FingerR == 1) return ActorEquipIndex.RingRight;
-			if (slot.Value.FingerL == 1) return ActorEquipIndex.RingLeft;
-			return null;
-		}
-
-		public static EquipSlot? PenumbraEquipIndex(this ItemRow item) {
-			var slot = item.EquipSlotCategory?.Base;
-			if(slot == null) return null;
-
-			if (slot.Value.MainHand == 1) return EquipSlot.MainHand;
-			if (slot.Value.OffHand == 1) return EquipSlot.OffHand;
-			if (slot.Value.Head == 1) return EquipSlot.Head;
-			if (slot.Value.Body == 1) return EquipSlot.Body;
-			if (slot.Value.Gloves == 1) return EquipSlot.Hands;
-			if (slot.Value.Legs == 1) return EquipSlot.Legs;
-			if (slot.Value.Feet == 1) return EquipSlot.Feet;
-			if (slot.Value.Ears == 1) return EquipSlot.Ears;
-			if (slot.Value.Neck == 1) return EquipSlot.Neck;
-			if (slot.Value.Wrists == 1) return EquipSlot.Wrists;
-			if (slot.Value.FingerR == 1) return EquipSlot.RFinger;
-			if (slot.Value.FingerL == 1) return EquipSlot.LFinger;
-			return null;
 		}
 
 		public static FullEquipType ToFullEquipType(this ItemRow item, bool isMainHand) {
