@@ -7,7 +7,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-using Dresser.Interop;
 using Dresser.Interop.Addons;
 using Dresser.Logic;
 using Dresser.Services;
@@ -47,7 +46,6 @@ namespace Dresser {
 
 			Gathering.Init();
 
-			Methods.Init();
 			AddonListeners.Init();
 
 

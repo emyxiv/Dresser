@@ -8,7 +8,6 @@
 		internal const int WeaponMainHand = ActorDrawData + 0x010;
 		internal const int WeaponOffHand = ActorDrawData + 0x080;
 		internal const int Equipment = ActorDrawData + 0x1D0;
-		internal const int Customize = ActorDrawData + 0x220;
 
 		// MiragePrism
 		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L164

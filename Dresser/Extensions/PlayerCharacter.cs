@@ -78,18 +78,6 @@ namespace Dresser.Extensions {
 		public static Weapon OffHandModels(this SubKindsPlayerCharacter playerCharacter)
 			=> playerCharacter.WeaponModels(WeaponIndex.OffHand);
 
-		/*public static void Equip(this SubKindsPlayerCharacter playerCharacter, EquipIndex index, ItemEquip item) {
-			if (Methods.ActorChangeEquip == null) return;
-			Methods.ChangeEquip(playerCharacter.Address + Offsets.ActorDrawData, index, item);
-			if(index == EquipIndex.Head) playerCharacter.DisplayHeadGearIfHidden();
-		}*/
-
-		/*public static void Equip(this SubKindsPlayerCharacter playerCharacter, WeaponIndex slot, WeaponEquip item) {
-			if (Methods.ActorChangeWeapon == null) return;
-			Methods.ChangeWeapon(playerCharacter.Address + Offsets.ActorDrawData, slot, item);
-			//playerCharacter.DisplayWeaponIfHidden();
-		}*/
-
 		/*public unsafe static void DisplayHeadGearIfHidden(this SubKindsPlayerCharacter playerCharacter) {
 			if (PluginServices.Context.MustGlamourerApply()) return;
 			var drawData = ((Character*)playerCharacter.Address)->DrawData;
