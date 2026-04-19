@@ -2,8 +2,7 @@
 	internal static class Offsets {
 
 		// MiragePrism
-		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L164
-		// https://git.anna.lgbt/ascclemens/Glamaholic/src/commit/d9b283e7fd4865b0e7b518405f5fcb6b52235d70/Glamaholic/GameFunctions.cs#L243
+		// https://github.com/caitlyn-gg/Glamaholic/blob/main/Glamaholic/GameFunctions.cs
 		//  box
 		internal const int TotalBoxSlot = 800;
 		//internal const int BoxSlotSize = 136;
