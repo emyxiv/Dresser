@@ -30,7 +30,6 @@ namespace Dresser {
 		internal ConfigWindow ConfigWindow { get; init; }
 		internal GearBrowser GearBrowser { get; init; }
 		internal CurrentGear CurrentGear { get; init; }
-		internal DyePicker DyePicker { get; init; }
 		internal TagManager TagManager { get; init; }
 		internal Dialogs? Dialogs = null;
 
@@ -52,13 +51,11 @@ namespace Dresser {
 			ConfigWindow = new ConfigWindow(this);
 			GearBrowser = new GearBrowser(this);
 			CurrentGear = new CurrentGear(this);
-			// DyePicker = new DyePicker(this);
 			TagManager = new TagManager(this);
 			Dialogs = new Dialogs(this);
 			WindowSystem.AddWindow(ConfigWindow);
 			WindowSystem.AddWindow(GearBrowser);
 			WindowSystem.AddWindow(CurrentGear);
-			// WindowSystem.AddWindow(DyePicker);
 			WindowSystem.AddWindow(TagManager);
 			WindowSystem.AddWindow(Dialogs);
 
