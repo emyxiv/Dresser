@@ -1,4 +1,4 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/14.0.1">
+﻿<Project Sdk="Dalamud.NET.Sdk/14.0.2">
   <PropertyGroup>
       <LangVersion>preview</LangVersion>
       <Version>0.6.0.5</Version>
@@ -54,7 +54,7 @@
     <PackageReference Include="AllaganLib.Data" Version="2.0.3" />
     <PackageReference Include="AllaganLib.Interface" Version="2.1.0" />
     <PackageReference Include="Glamourer.Api" Version="2.8.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
     <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
     <ProjectReference Include="..\Penumbra.GameData\Penumbra.GameData.csproj" />
   </ItemGroup>
