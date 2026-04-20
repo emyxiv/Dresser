@@ -137,6 +137,32 @@ public class ConfigWindow : Window, IDisposable {
 		if(ImGui.Checkbox($"(Experimental) Pass Hotkeys to the game through window##Behaviours##Config", ref ConfigurationManager.Config.WindowsHotkeysPasstoGame))
 			HotkeySetup.Init();
 
+		var useNativeCurrentGear = ConfigurationManager.Config.UseNativeCurrentGear;
+		var enableKtk = ConfigurationManager.Config.EnableKtk;
+		if (ImGui.Checkbox($"(Experimental) Enable KamiToolKit native UI##Behaviours##Config", ref enableKtk))
+			ConfigurationManager.Config.EnableKtk = enableKtk;
+		GuiHelpers.Tooltip("Master toggle for KamiToolKit native UI. Requires plugin reload to take effect.");
+
+		if (enableKtk) {
+			ImGui.Indent();
+			if (ImGui.Checkbox($"Native CurrentGear##Behaviours##Config", ref useNativeCurrentGear)) {
+				ConfigurationManager.Config.UseNativeCurrentGear = useNativeCurrentGear;
+				var plugin = Plugin.GetInstance();
+				if (useNativeCurrentGear && plugin.KtkCurrentGear == null) {
+					plugin.InitKtkCurrentGear();
+				}
+			}
+			GuiHelpers.Tooltip("Use native game UI elements for the CurrentGear window.");
+
+			var useNativeGearBrowser = ConfigurationManager.Config.UseNativeGearBrowser;
+			ImGui.BeginDisabled();
+			if (ImGui.Checkbox($"Native GearBrowser##Behaviours##Config", ref useNativeGearBrowser))
+				ConfigurationManager.Config.UseNativeGearBrowser = useNativeGearBrowser;
+			ImGui.EndDisabled();
+			GuiHelpers.Tooltip("Not yet implemented.");
+			ImGui.Unindent();
+		}
+
 		ImGui.Checkbox($"Enable Debug##Behaviours##Config", ref ConfigurationManager.Config.Debug);
 
 
@@ -826,6 +852,20 @@ public class ConfigWindow : Window, IDisposable {
 		}
 		if (ImGui.CollapsingHeader("KTK Overlay")) {
 			DrawKtkOverlayDebug();
+		}
+		if (ImGui.CollapsingHeader("KTK Debug")) {
+			var ktkDebugDualView = ConfigurationManager.Config.KtkDebugDualView;
+			if (ImGui.Checkbox($"Dual View (show ImGui + KTK side by side)##KTKDebug##Debug", ref ktkDebugDualView))
+				ConfigurationManager.Config.KtkDebugDualView = ktkDebugDualView;
+			GuiHelpers.Tooltip("When enabled, opening Dresser shows both the ImGui and KTK CurrentGear windows for comparison.");
+
+			var plugin = Plugin.GetInstance();
+			ImGui.TextColored(
+				plugin.KtkCurrentGear != null ? ItemIcon.ColorGood : ItemIcon.ColorBad,
+				$"KtkCurrentGear: {(plugin.KtkCurrentGear != null ? "loaded" : "not loaded")}");
+			ImGui.TextColored(
+				plugin.KtkCurrentGear?.IsOpen == true ? ItemIcon.ColorGood : ItemIcon.ColorGrey,
+				$"KtkCurrentGear visible: {plugin.KtkCurrentGear?.IsOpen}");
 		}
 	}
 	private void DrawItemVendorButton(uint itemId) {

@@ -227,6 +227,13 @@ namespace Dresser {
 
 		public bool SaveBackgroundFilter { get; set; } = false;
 		public string? ActiveBackgroundFilter { get; set; } = null;
+
+		// Experimental: use KamiToolKit native UI instead of ImGui
+		public bool EnableKtk { get; set; } = false;
+		public bool UseNativeCurrentGear { get; set; } = false;
+		public bool UseNativeGearBrowser { get; set; } = false;
+		public bool KtkDebugDualView { get; set; } = false;
+
 		public void MarkReloaded() {
 			if (!SaveBackgroundFilter) {
 				ActiveBackgroundFilter = null;

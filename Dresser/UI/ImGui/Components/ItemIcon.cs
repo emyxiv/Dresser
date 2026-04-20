@@ -11,6 +11,7 @@ using Dresser.Core;
 using Dresser.Extensions;
 using Dresser.Interop.Agents;
 using Dresser.Logic;
+using Dresser.Models.ViewModels;
 using Dresser.Services;
 using Dresser.Models;
 
@@ -49,12 +50,23 @@ namespace Dresser.Gui.Components {
 		public static GlamourPlateSlot? ContexMenuItemSlot = null;
 		public static bool IsHidingTooltip => PluginServices.KeyState[VirtualKey.MENU] || PluginServices.KeyState[VirtualKey.LMENU] || PluginServices.KeyState[VirtualKey.RMENU];
 
+		// --- InventoryItem convenience wrappers (delegate to ItemRenderData overloads) ---
+
 		public static void DrawIcon(InventoryItem? item) {
-			bool __ = false;
-			bool ___ = false;
-			DrawIcon(item, ref ___, ref __, out var _, out var _);
+			DrawIcon(ItemRenderData.From(item));
 		}
 		public static bool DrawIcon(InventoryItem? item, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, out bool clickedStain, GlamourPlateSlot? emptySlot = null, Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
+			return DrawIcon(ItemRenderData.From(item, emptySlot), ref isHovered, ref isTooltipActive, out clickedMiddle, out clickedStain, contextAction, sizeMod);
+		}
+
+		// --- Primary overloads consuming ItemRenderData ---
+
+		public static void DrawIcon(ItemRenderData renderData) {
+			bool __ = false;
+			bool ___ = false;
+			DrawIcon(renderData, ref ___, ref __, out var _, out var _);
+		}
+		public static bool DrawIcon(ItemRenderData renderData, ref bool isHovered, ref bool isTooltipActive, out bool clickedMiddle, out bool clickedStain, Action<InventoryItem, GlamourPlateSlot?>? contextAction = null, float sizeMod = 1) {
 			clickedMiddle = false;
 			clickedStain = false;
 
@@ -64,7 +76,8 @@ namespace Dresser.Gui.Components {
 				|| PluginServices.Context.LocalPlayerClass == null
 				) return false;
 
-			item ??= Gathering.EmptyItemSlot();
+			var item = renderData.Source ?? Gathering.EmptyItemSlot();
+			var emptySlot = renderData.Slot;
 
 			// item variables
 			var image = ConfigurationManager.Config.ShowImagesInBrowser ? IconWrapper.Get(item) : null;
@@ -72,15 +85,14 @@ namespace Dresser.Gui.Components {
 			var isEquippableByCurrentClass = true;
 			var isEquippableByGenderRaceGc = item.Item.CanBeEquipedByPlayedRaceGenderGc();
 			var DyeCount = item.Item.Base.DyeCount;
-			var isApplicable = !item.IsFadedInBrowser();
-			var iconImageFlag = isApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
+			var iconImageFlag = renderData.IsApplicable ? IconImageFlag.None : IconImageFlag.NotAppliable;
 
-			if (item.ItemId == 0)
+			if (renderData.IsEmpty)
 				image = null;
 			var clicked = DrawImage(image, ref isHovered, out clickedMiddle, out clickedStain, iconImageFlag, item,contextAction, emptySlot, sizeMod);
 			var isTooltipActive2 = isTooltipActive;
 
-			if (item != null && item.ItemId != 0 && !IsHidingTooltip)
+			if (!renderData.IsEmpty && !IsHidingTooltip)
 				GuiHelpers.Tooltip(() => {
 					if (isTooltipActive2) return;
 
@@ -185,7 +197,7 @@ namespace Dresser.Gui.Components {
 							ImGui.TextColored(ColorBad, "Locks: " + string.Join(", ", item.Item.EquipSlotCategory?.BlockedSlots.Select(s => s.Humanize()) ?? []));
 						}
 						// inventory where the item is if owned (only new line if there is a "Locks")
-						ImGui.TextColored(isApplicable ? ColorBronze : ColorBad, item.FormattedInventoryCategoryType());
+						ImGui.TextColored(renderData.IsApplicable ? ColorBronze : ColorBad, item.FormattedInventoryCategoryType());
 
 						// job/class allowed
 						ImGui.TextColored(isEquippableByCurrentClass ? ColorGood : ColorBad, $"{item.Item.Base.ClassJobCategory.Value.Name}");

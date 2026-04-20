@@ -7,6 +7,7 @@ using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Plugin.Services;
 
 using Dresser.Interop.Addons;
@@ -41,6 +42,7 @@ namespace Dresser {
         [PluginService] public static ICondition Condition { get; set; } = null!;
         [PluginService] public static IGameInteropProvider GameInteropProvider { get; set; } = null!;
         [PluginService] public static IAddonLifecycle AddonLifecycle { get; set; } = null!;
+        [PluginService] public static INotificationManager NotificationManager { get; set; } = null!;
 
 		private static ServiceProvider _serviceProvider = null!;
 

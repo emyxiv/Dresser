@@ -14,6 +14,7 @@ using Dalamud.Interface.Windowing;
 using Dresser.Extensions;
 using Dresser.Interop.Agents;
 using Dresser.Logic;
+using Dresser.Models.ViewModels;
 using Dresser.Services;
 using Dresser.Models;
 using Dresser.Gui.Components;
@@ -324,11 +325,12 @@ public partial class CurrentGear : Window, IDisposable {
 			int i = 0;
 			foreach (var slot in SlotOrder) {
 				var item = plateItems.GetSlot(slot);
+				var renderData = ItemRenderData.From(item, slot);
 
 				bool isHovered = slot == HoveredSlot;
 				bool wasHovered = isHovered;
 				isHovered |= GearBrowser.SelectedSlot == slot;
-				var iconClicked = ItemIcon.DrawIcon(item, ref isHovered, ref isTooltipActive, out bool clickedMiddle, out bool clickedStain, slot, ContextMenuCurrent);
+				var iconClicked = ItemIcon.DrawIcon(renderData, ref isHovered, ref isTooltipActive, out bool clickedMiddle, out bool clickedStain, ContextMenuCurrent);
 				if (isHovered)
 					HoveredSlot = slot;
 				else if (!isHovered && wasHovered)

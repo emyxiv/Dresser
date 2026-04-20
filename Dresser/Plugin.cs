@@ -5,6 +5,7 @@ using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Plugin.Services;
 
 using Dresser.Interop.Addons;
@@ -12,6 +13,7 @@ using Dresser.Logic;
 using Dresser.Services;
 using Dresser.Core;
 using Dresser.Gui;
+using Dresser.UI.Ktk;
 
 using KamiToolKit;
 
@@ -34,6 +36,8 @@ namespace Dresser {
 		internal CurrentGear CurrentGear { get; init; }
 		internal TagManager TagManager { get; init; }
 		internal Dialogs? Dialogs = null;
+		internal KtkCurrentGear? KtkCurrentGear = null;
+		private bool _ktkCurrentGearCrashed = false;
 
 		public Plugin(
 			IDalamudPluginInterface pluginInterface,
@@ -62,7 +66,9 @@ namespace Dresser {
 			WindowSystem.AddWindow(TagManager);
 			WindowSystem.AddWindow(Dialogs);
 
-
+			if (ConfigurationManager.Config.EnableKtk) {
+				InitKtkCurrentGear();
+			}
 
 			PluginServices.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) {
 				HelpMessage = "Open dresser."
@@ -75,10 +81,49 @@ namespace Dresser {
 
 		}
 
+		public void InitKtkCurrentGear() {
+			PluginLog.Debug("Plugin.InitKtkCurrentGear: begin");
+			try {
+				KtkCurrentGear = new KtkCurrentGear {
+					InternalName = "DresserCurrentGear",
+					Title = "Plate Creation",
+					Size = new System.Numerics.Vector2(220, 420),
+				};
+				PluginLog.Debug($"Plugin.InitKtkCurrentGear: instance created (InternalName={KtkCurrentGear.InternalName})");
+				KtkCurrentGear.OnCrashFallback = () => {
+					PluginLog.Error("KTK crashed — falling back to ImGui CurrentGear");
+					_ktkCurrentGearCrashed = true;
+					KtkCurrentGear?.Dispose();
+					KtkCurrentGear = null;
+					CurrentGear.IsOpen = true;
+					PluginServices.NotificationManager.AddNotification(new Notification {
+						Title = "Dresser",
+						Content = "Native CurrentGear UI crashed. Fell back to ImGui. The native UI will stay disabled until the plugin is reloaded.",
+						Type = NotificationType.Error,
+						Minimized = false,
+						InitialDuration = TimeSpan.FromSeconds(8),
+					});
+				};
+				PluginLog.Debug("Plugin.InitKtkCurrentGear: complete");
+			} catch (Exception e) {
+				PluginLog.Error(e, "Failed to init KtkCurrentGear — falling back to ImGui");
+				_ktkCurrentGearCrashed = true;
+				KtkCurrentGear = null;
+				PluginServices.NotificationManager.AddNotification(new Notification {
+					Title = "Dresser",
+					Content = "Failed to initialize native CurrentGear UI. Using ImGui instead.",
+					Type = NotificationType.Error,
+					Minimized = false,
+					InitialDuration = TimeSpan.FromSeconds(8),
+				});
+			}
+		}
+
 		public void Dispose() {
 			PluginServices.ApplyGearChange.RestoreAppearance();
 			PluginServices.ApplyGearChange.ClearApplyDresser();
 
+			KtkCurrentGear?.Dispose();
 			ConfigWindow.Dispose();
 			GearBrowser.Dispose();
 			CurrentGear.Dispose();
@@ -117,22 +162,42 @@ namespace Dresser {
 			ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
 		}
 		public void DrawMainUI() {
-			CurrentGear.IsOpen = true;
+			var cfg = ConfigurationManager.Config;
+			var ktkReady = cfg.EnableKtk && cfg.UseNativeCurrentGear && !_ktkCurrentGearCrashed && KtkCurrentGear != null;
+			if (ktkReady) {
+				KtkCurrentGear!.Open();
+				CurrentGear.IsOpen = cfg.KtkDebugDualView;
+			} else {
+				CurrentGear.IsOpen = true;
+			}
 		}
 		public void DrawConfigUI() {
 			ConfigWindow.IsOpen = true;
 		}
 		public void ToggleDresser() {
-			CurrentGear.IsOpen = !IsDresserVisible();
-			GearBrowser.IsOpen = !IsDresserVisible();
+			if (IsDresserVisible()) {
+				CloseDresser();
+			} else {
+				OpenDresser();
+			}
 		}
 		public void OpenDresser() {
-			//PluginLog.Debug($"OpenDresser");
-			CurrentGear.IsOpen = true;
+			var cfg = ConfigurationManager.Config;
+			var ktkReady = cfg.EnableKtk && cfg.UseNativeCurrentGear && !_ktkCurrentGearCrashed && KtkCurrentGear != null;
+			PluginLog.Debug($"OpenDresser: ktkReady={ktkReady} EnableKtk={cfg.EnableKtk} UseNative={cfg.UseNativeCurrentGear} crashed={_ktkCurrentGearCrashed} KtkCurrentGear={(KtkCurrentGear == null ? "null" : "ready")}");
+
+			if (ktkReady) {
+				KtkCurrentGear!.Open();
+				// In dual-view debug mode, also keep ImGui open for comparison
+				CurrentGear.IsOpen = cfg.KtkDebugDualView;
+			} else {
+				CurrentGear.IsOpen = true;
+			}
 			GearBrowser.IsOpen = true;
 		}
 		public void CloseDresser() {
 			//PluginLog.Debug($"CloseDresser");
+			KtkCurrentGear?.Close();
 			CurrentGear.IsOpen = false;
 			GearBrowser.IsOpen = false;
 		}
@@ -149,7 +214,7 @@ namespace Dresser {
 				GearBrowser.Collapsed = false;
 		}
 		public bool IsDresserVisible()
-			=> CurrentGear.IsOpen;
+			=> CurrentGear.IsOpen || (KtkCurrentGear?.IsOpen ?? false);
 		public bool IsBrowserVisible()
 			=> GearBrowser.IsOpen;
 		public void OpenDialog(DialogInfo dialogInfo) {
