@@ -61,6 +61,8 @@ namespace Dresser.UI.Ktk {
 				PluginLog.Debug("KtkCurrentGear.OnSetup: container attached, building slot grid");
 
 				BuildSlotGrid();
+				RecalculateSize();
+
 				PluginLog.Debug("KtkCurrentGear.OnSetup: complete");
 			} catch (Exception e) {
 				PluginLog.Error(e, "KtkCurrentGear.OnSetup crashed");
@@ -68,7 +70,17 @@ namespace Dresser.UI.Ktk {
 			}
 		}
 
-		protected override void OnUpdate(AtkUnitBase* addon) {
+        private void RecalculateSize() {
+			var newSize = (_slotsGrid.Size * SlotScale) // slots grid size
+				// + (ContentPadding * 2.0f + new Vector2(0, 4))
+				+ ContentStartPosition // + title bar height and top padding
+				+ new Vector2(0, 25) // + extra height because there is something missing in this calculation and the window is too short, this is a temporary hack until I figure out what it is 
+				;
+			SetWindowSize(newSize);
+			_mainContainer.Size = newSize;
+        }
+
+        protected override void OnUpdate(AtkUnitBase* addon) {
 			if (_hasCrashed) return;
 			try {
 				RefreshSlots();
@@ -82,17 +94,16 @@ namespace Dresser.UI.Ktk {
 			PluginLog.Debug($"KtkCurrentGear.BuildSlotGrid: creating {SlotOrder.Count} slots");
 			_slotsGrid = new GridNode {
 				Position = new Vector2(0, 0),
-				Size = new Vector2(ContentSize.X, ContentSize.Y),
+				Size = new Vector2(48, 48) * new Vector2(2, 6),
 				GridSize = new GridSize(2, 6),
+				Scale = new Vector2(SlotScale),
 			};
 			_slotsGrid.AttachNode(_mainContainer);
 
 			int col = 0;
 			int row = 0;
 			foreach (var slot in SlotOrder) {
-				var slotNode = new KtkItemSlot(slot, _resolver) {
-					Scale = new Vector2(SlotScale),
-				};
+				var slotNode = new KtkItemSlot(slot, _resolver);
 				slotNode.OnSlotClicked = OnSlotClicked;
 				slotNode.OnSlotMiddleClicked = OnSlotMiddleClicked;
 				slotNode.OnSlotHovered = OnSlotHovered;

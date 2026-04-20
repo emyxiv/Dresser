@@ -31,6 +31,7 @@ namespace Dresser.UI.Ktk.Nodes {
 		public Action<GlamourPlateSlot>? OnSlotUnhovered;
 
 		private bool _isEmpty = true;
+		private bool _isHovered = false;
 
 		public KtkItemSlot(GlamourPlateSlot slot, UldPartResolver resolver) {
 			_slot = slot;
@@ -48,9 +49,10 @@ namespace Dresser.UI.Ktk.Nodes {
 
 			// Frame overlay
 			_frameNode = KtkTextureFactory.CreateFrameImageNode(resolver, new Vector2(48, 48));
-			_frameNode.Position = new Vector2(-2, 0);
+			_frameNode.Position = new Vector2(0, 0);
 			_frameNode.PartId = 4; // ItemSlot frame (index 4 in IconA_Frame)
-			_frameNode.AttachNode(this);
+			_frameNode.NodeId = 18; // Before cooldown node for correct layering
+			_frameNode.AttachNode(_iconNode.IconExtras.CooldownNode, KamiToolKit.Classes.NodePosition.BeforeTarget);
 
 			// Empty slot placeholder icon (shown when no item equipped)
 			_emptySlotNode = KtkTextureFactory.CreateEmptySlotNode(slot, resolver, new Vector2(48, 48));
@@ -106,7 +108,7 @@ namespace Dresser.UI.Ktk.Nodes {
 		/// Set whether this slot is visually selected (highlighted).
 		/// </summary>
 		public void SetSelected(bool selected) {
-			_iconNode.IconExtras.HoveredBorderImageNode.IsVisible = selected;
+			_iconNode.IconExtras.HoveredBorderImageNode.IsVisible = selected || _isHovered;
 		}
 
 		public GlamourPlateSlot Slot => _slot;
@@ -119,10 +121,12 @@ namespace Dresser.UI.Ktk.Nodes {
 		}
 
 		private void OnMouseOver(AtkEventListener* thisPtr, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData) {
+			_isHovered = true;
 			OnSlotHovered?.Invoke(_slot);
 		}
 
 		private void OnMouseOut(AtkEventListener* thisPtr, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData) {
+			_isHovered = false;
 			OnSlotUnhovered?.Invoke(_slot);
 		}
 	}
