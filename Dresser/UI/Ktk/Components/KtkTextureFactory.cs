@@ -33,7 +33,7 @@ namespace Dresser.UI.Ktk.Components {
 			var node = new ImageNode {
 				Size = size ?? new Vector2(part.Width, part.Height),
 				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled,
-				WrapMode = WrapMode.Tile,
+				WrapMode = WrapMode.Stretch,
 			};
 			node.AddPart(part);
 			node.PartId = 0;
