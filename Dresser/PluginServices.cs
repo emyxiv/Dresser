@@ -50,6 +50,7 @@ namespace Dresser {
 		public static HotkeyService HotkeyService { get; private set; } = null!;
 		public static SheetManager SheetManager { get; private set; } = null!;
 		public static ImageGuiCrop ImageGuiCrop { get; private set; } = null!;
+		public static UldPartResolver UldPartResolver { get; private set; } = null!;
 		public static ModdedIconStorage ModdedIconStorage { get; private set; } = null!;
 		public static ItemVendorLocation ItemVendorLocation { get; private set; } = null!;
 		public static AllaganToolsService AllaganTools { get; private set; } = null!;
@@ -85,6 +86,7 @@ namespace Dresser {
 
 			HotkeyService = _serviceProvider.GetRequiredService<HotkeyService>();
 			ImageGuiCrop = _serviceProvider.GetRequiredService<ImageGuiCrop>();
+			UldPartResolver = _serviceProvider.GetRequiredService<UldPartResolver>();
 			Penumbra = _serviceProvider.GetRequiredService<PenumbraIpc>();
 			Storage = _serviceProvider.GetRequiredService<Storage>();
 

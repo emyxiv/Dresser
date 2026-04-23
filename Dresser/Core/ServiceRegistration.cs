@@ -59,6 +59,7 @@ internal static class ServiceRegistration
 		// Services
 		services.AddSingleton<HotkeyService>();
 		services.AddSingleton<ImageGuiCrop>();
+		services.AddSingleton<UldPartResolver>();
 		services.AddSingleton<PenumbraIpc>();
 		services.AddSingleton<Storage>();
 		services.AddSingleton<ModdedIconStorage>();
