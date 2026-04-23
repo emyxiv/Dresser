@@ -342,8 +342,7 @@ public partial class CurrentGear : Window, IDisposable {
 					PluginServices.ApplyGearChange.ExecuteCurrentContextRemoveItem(item, slot);
 				if (clickedStain)
 				{
-					Plugin.GetInstance().GearBrowser.SwitchToDyesMode();
-					PluginServices.ApplyGearChange.OpenBrowserAndUncollapse();
+					PluginServices.ApplyGearChange.OpenDyeBrowserForCurrentSelectedSlot(slot);
 				}
 
 				if (i % 2 == 0)

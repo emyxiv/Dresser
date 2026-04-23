@@ -1,4 +1,5 @@
 ﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 
 using Lumina.Excel.Sheets;
 
@@ -11,6 +12,17 @@ namespace Dresser.Extensions {
 			if (stain.Color == 0) return new(0, 0, 0, 0);
 			var c = ImGui.ColorConvertU32ToFloat4(stain.Color);
 			return new Vector4(c.Z, c.Y, c.X, 1);
+		}
+		public static Vector3 ColorTo3Channels(this Stain stain) {
+			if (stain.Color == 0) return new(0, 0, 0);
+			var c = ImGui.ColorConvertU32ToFloat4(stain.Color);
+			return new Vector3(c.Z, c.Y, c.X);
+		}
+		public static Vector3 ColorToStainAdd(this Stain stain) {
+			if (stain.Color == 0) return new(0, 0, 0);
+
+			var c = ImGui.ColorConvertU32ToFloat4(stain.Color);
+			return new Vector3(c.Z, c.Y, c.X) - new Vector3(1, 1, 1);
 		}
 		public static bool IsValid(this Stain stain)
 			 => stain.Shade != 0;

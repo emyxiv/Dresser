@@ -11,6 +11,12 @@ namespace Dresser.Services {
 
 		private static History DyeHistory = new();
 
+		public void OpenDyeBrowserForCurrentSelectedSlot(GlamourPlateSlot slot, ushort? stainIndex = null) {
+			PluginServices.ApplyGearChange.ExecuteCurrentItem(slot);
+			if(stainIndex.HasValue) DyePicker.DyeIndex = (ushort)(stainIndex+1);
+			Plugin.GetInstance().GearBrowser.SwitchToDyesMode();
+		}
+
 		/// <summary>Records a dye change in the history unless it originates from an undo/redo action.</summary>
 		public static void DyeHistoryAdd(ushort plate, GlamourPlateSlot slot, ushort dyeIndex, ushort dyeIdFrom, ushort dyeIdTo, bool isUndoOrRedo = false) {
 			if (isUndoOrRedo) return; // do not add a history entry if this is an undo or redo

@@ -1,4 +1,4 @@
-using Dalamud.Interface;
+﻿using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
 
 using Dresser.Interop.Agents;
@@ -11,6 +11,7 @@ using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 using Dalamud.Utility;
+using KamiToolKit.Classes;
 
 namespace Dresser.Services {
 	internal class ImageGuiCrop : IDisposable {
@@ -169,7 +170,7 @@ namespace Dresser.Services {
 		}
 	}
 
-	internal class UldBundle {
+	public class UldBundle {
 		public string Tex;
 		public string Uld;
 		public int Index; // index
@@ -181,6 +182,18 @@ namespace Dresser.Services {
 			Uld = uld;
 			Index = index;
 			Handle = handle;
+		}
+		/// <summary>
+		/// convert to part for TKT, will throw if fails to resolve
+		/// </summary>
+		/// <param name="uldBundle"></param>
+		public static explicit operator Part(UldBundle uldBundle) {
+			var partDivider = PluginServices.UldPartResolver.Resolve(uldBundle);
+			if (partDivider == null) {
+				PluginLog.Warning($"Failed to resolve {uldBundle.Handle} for window background");
+				throw new System.Exception($"Failed to resolve {uldBundle.Handle} for window background");
+			}
+			return partDivider;
 		}
 
 		//public static bool operator ==(UldBundle left, UldBundle? right) {
@@ -225,6 +238,8 @@ namespace Dresser.Services {
 		public static UldBundle ItemSlot              => new(BuildTexPath("IconA_Frame"), "ui/uld/Character.uld", 4, "ItemSlot");
 		public static UldBundle SlotHighlightInner    => new(BuildTexPath("IconA_Frame"), "ui/uld/Character.uld", 5, "SlotHighlightInner");
 		public static UldBundle SlotHighlight         => new(BuildTexPath("IconA_Frame"), "ui/uld/Character.uld", 16, "SlotHighlight");
+		public static UldBundle StainCircleEmpty       => new(BuildTexPath("IconA_Frame"), "ui/uld/MiragePrismPlate.uld", 18, "StainCircleEmpty");
+		public static UldBundle StainCircleFilled       => new(BuildTexPath("IconA_Frame"), "ui/uld/MiragePrismPlate.uld", 15, "StainCircleFilled");
 
 
 		// handle: character
@@ -358,6 +373,12 @@ namespace Dresser.Services {
 		public static UldBundle ItemDetail_Glamour => new(BuildTexPath("ItemDetailPutIn"), "ui/uld/ItemDetail.uld", 4, "ItemDetail_Glamour");
 		public static UldBundle ItemDetail_GlamourSetItem => new(BuildTexPath("ItemDetailPutIn"), "ui/uld/ItemDetail.uld", 7, "ItemDetail_GlamourSetItem");
 
+
+
+		public static UldBundle MiragePrismMiragePlate_Frame => new(BuildTexPath("MiragePrismPlate"), "ui/uld/MiragePrismPlate.uld", 0, "MiragePrismMiragePlate_Frame");
+		public static UldBundle MiragePrismMiragePlate_Divider => new(BuildTexPath("WindowA_Line"), "ui/uld/MiragePrismPlate.uld", 0, "MiragePrismMiragePlate_Frame");
+		public static UldBundle MiragePrismMiragePlate_CloseButton => new(BuildTexPath("WindowA_Button"), "ui/uld/MiragePrismPlate.uld", 0, "MiragePrismMiragePlate_CloseButton");
+		public static UldBundle MiragePrismMiragePlate_CloseButtonBg => new(BuildTexPath("AreaMap"), "ui/uld/MiragePrismPlate.uld", 0, "MiragePrismMiragePlate_CloseButtonBg");
 
 	}
 }

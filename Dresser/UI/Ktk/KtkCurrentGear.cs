@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
+using Dalamud.Interface.Windowing;
+
+using Dresser.Gui;
+
 using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Models;
@@ -12,8 +16,11 @@ using Dresser.UI.Ktk.Nodes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 using KamiToolKit;
+using KamiToolKit.Classes;
 using KamiToolKit.Nodes;
+using KamiToolKit.Premade.Node;
 using KamiToolKit.Premade.Node.Simple;
+using KamiToolKit.Timelines;
 
 namespace Dresser.UI.Ktk {
 	/// <summary>
@@ -37,7 +44,7 @@ namespace Dresser.UI.Ktk {
 
 		public KtkCurrentGear() : base() {
 			PluginLog.Debug("KtkCurrentGear: constructor called");
-			_resolver = new UldPartResolver();
+			_resolver = PluginServices.UldPartResolver;
 		}
 
 		public static readonly List<GlamourPlateSlot> SlotOrder = new() {
@@ -49,18 +56,20 @@ namespace Dresser.UI.Ktk {
 			GlamourPlateSlot.Feet, GlamourPlateSlot.LeftRing,
 		};
 
+		private Vector2 MarginX = new(20, 0);
 		protected override void OnSetup(AtkUnitBase* addon) {
 			PluginLog.Debug($"KtkCurrentGear.OnSetup: called (InternalAddon=0x{(nint)addon:X})");
 			try {
 				PluginLog.Debug($"KtkCurrentGear.OnSetup: ContentStartPosition={ContentStartPosition} ContentSize={ContentSize}");
 				_mainContainer = new SimpleComponentNode {
-					Position = ContentStartPosition,
+					Position = ContentStartPosition + MarginX,
 					Size = ContentSize,
 				};
 				_mainContainer.AttachNode(this);
 				PluginLog.Debug("KtkCurrentGear.OnSetup: container attached, building slot grid");
 
 				BuildSlotGrid();
+				BuildBottomButtons();
 				RecalculateSize();
 
 				PluginLog.Debug("KtkCurrentGear.OnSetup: complete");
@@ -70,25 +79,53 @@ namespace Dresser.UI.Ktk {
 			}
 		}
 
-        private void RecalculateSize() {
-			var newSize = (_slotsGrid.Size * SlotScale) // slots grid size
-				// + (ContentPadding * 2.0f + new Vector2(0, 4))
-				+ ContentStartPosition // + title bar height and top padding
-				+ new Vector2(0, 25) // + extra height because there is something missing in this calculation and the window is too short, this is a temporary hack until I figure out what it is 
-				;
-			SetWindowSize(newSize);
-			_mainContainer.Size = newSize;
-        }
 
-        protected override void OnUpdate(AtkUnitBase* addon) {
-			if (_hasCrashed) return;
-			try {
-				RefreshSlots();
-			} catch (Exception e) {
-				PluginLog.Error(e, "KtkCurrentGear.OnUpdate crashed");
-				HandleCrash();
-			}
-		}
+
+        public static Func<WindowNodeBase>? CreateWindowNodeFunc => () => {
+			
+			// var size = new Vector2(220, 420);
+			var window = new MiragePlateWindowNode ();
+			// window.Size = size;
+
+			// window.ConfigurationButtonNode.IsVisible = true;
+
+			// var part = PluginServices.UldPartResolver.Resolve(UldBundle.MiragePrismMiragePlate_Frame);
+			// if (part == null) {
+			// 	PluginLog.Warning("Failed to resolve MiragePrismMiragePlate_Frame for window background");
+			// } else {
+			// 	// window.BackgroundImageNode.DetachNode();
+			// 	// window.BackgroundNode.DetachNode();
+			// 	// window.BorderNode.DetachNode();
+
+			// 	// var nineGridNode = new NineGridNode {
+			// 	// 	// Size = window.ContentSize,
+			// 	// 	Parts = [part],
+			// 	// 	Offsets = new Vector4(20, 260, 80, 80),
+			// 	// 	NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.Fill | NodeFlags.EmitsEvents,
+			// 	// 	NodeId = 11, // replace BackgroundNode
+			// 	// };
+			// 	// nineGridNode.AddTimeline(new TimelineBuilder()
+			// 	// 	.AddFrameSetWithFrame(1, 9, 1, addColor: new Vector3(0.0f), multiplyColor: new Vector3(80.0f))
+			// 	// 	.AddFrameSetWithFrame(10, 19, 10, addColor: new Vector3(0.0f), multiplyColor: new Vector3(100.0f))
+			// 	// 	.AddFrameSetWithFrame(20, 29, 20, addColor: new Vector3(0.0f), multiplyColor: new Vector3(80.0f))
+			// 	// 	.Build());
+
+			// 	// nineGridNode.AttachNode(window.HeaderCollisionNode, NodePosition.AfterTarget);
+
+			// 	// window.DividingLineNode.Alpha = 127;
+			// 	// window.DividingLineNode.TexturePath = "ui/uld/WindowA_Line.tex";
+			// 	// window.DividingLineNode.Height = 28;
+			// 	// window.DividingLineNode.Color = 
+			// 	// window.TitleNode.TextColor = new Vector4(new Vector3(0.932f), 1.0f);
+			// 	// window.TitleNode.TextOutlineColor = new Vector4(new Vector3(0.502f), 1.0f);
+			// 	// window.TitleNode. NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.Visible | NodeFlags.AnchorLeft | NodeFlags.EmitsEvents;
+			// }
+
+			return window;
+		};
+
+
+
 
 		private void BuildSlotGrid() {
 			PluginLog.Debug($"KtkCurrentGear.BuildSlotGrid: creating {SlotOrder.Count} slots");
@@ -108,6 +145,7 @@ namespace Dresser.UI.Ktk {
 				slotNode.OnSlotMiddleClicked = OnSlotMiddleClicked;
 				slotNode.OnSlotHovered = OnSlotHovered;
 				slotNode.OnSlotUnhovered = OnSlotUnhovered;
+				slotNode.StainNodes.ForEach(s => s.OnSlotClicked = OnStainClicked);
 
 				slotNode.AttachNode(_slotsGrid[col, row]);
 				_slots[slot] = slotNode;
@@ -122,7 +160,67 @@ namespace Dresser.UI.Ktk {
 			}
 			PluginLog.Debug("KtkCurrentGear.BuildSlotGrid: complete");
 		}
+		private void BuildBottomButtons() {
+			var buttonContainer = new SimpleComponentNode {
+				Position = new Vector2(0, _slotsGrid.Size.Y * SlotScale + 10), // Below slots with some padding
+				Size = new Vector2(200, 30),
+			};
+			buttonContainer.AttachNode(_mainContainer);
 
+
+			var toggleWeapon = new ImageToggleNode(UldBundle.CircleSmallWeapon) {
+				Size = new Vector2(28.0f, 28.0f),
+				Position = new Vector2(0.0f, 0.0f),
+				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
+				TextTooltip = "Hide/Display main and offhand weapons.",
+			};
+			toggleWeapon.AttachNode(buttonContainer);
+			var toggleHeadgear = new ImageToggleNode(UldBundle.CircleSmallHat) {
+				Size = new Vector2(28.0f, 28.0f),
+				Position = new Vector2(28.0f, 0.0f),
+				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
+				TextTooltip = "Hide/Display headgear.",
+			};
+			toggleHeadgear.AttachNode(buttonContainer);
+			var toggleVisor = new ImageToggleNode(UldBundle.CircleSmallVisor) {
+				Size = new Vector2(28.0f, 28.0f),
+				Position = new Vector2(56.0f, 0.0f),
+				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
+				TextTooltip = "Manually adjust visor.",
+			};
+			toggleVisor.AttachNode(buttonContainer);
+        }
+
+
+        private void RecalculateSize() {
+
+			var innerSize = _slotsGrid.Size * SlotScale;
+
+			_mainContainer.CollisionNode.Size = innerSize;
+			_mainContainer.Size = innerSize;
+			
+			
+// 
+			var newSize = (_slotsGrid.Size * SlotScale) // slots grid size
+				+ (MarginX * 2)
+				// + (ContentPadding * 2.0f + new Vector2(0, 4))
+				// + ContentStartPosition // + title bar height and top padding
+				+ new Vector2(0, this.WindowNode?.HeaderHeight ?? 0) // + extra height for title bar and padding, since ContentStartPosition doesn't seem to be working correctly for some reason
+				+ new Vector2(0, 65) // button height + padding
+				;
+			SetWindowSize(newSize);
+			
+			// .GetCollisionNodeById(1).Size = newSize; // Background node
+        }
+        protected override void OnUpdate(AtkUnitBase* addon) {
+			if (_hasCrashed) return;
+			try {
+				RefreshSlots();
+			} catch (Exception e) {
+				PluginLog.Error(e, "KtkCurrentGear.OnUpdate crashed");
+				HandleCrash();
+			}
+		}
 		private void RefreshSlots() {
 			var selectedSlot = ConfigurationManager.Config.CurrentGearSelectedSlot;
 
@@ -161,6 +259,18 @@ namespace Dresser.UI.Ktk {
 		private static void OnSlotUnhovered(GlamourPlateSlot slot) {
 			// Clear hover state
 		}
+		private static void OnStainClicked(GlamourPlateSlot slot, Lumina.Excel.Sheets.Stain? stain, ushort stainIndex) {
+			try {
+				PluginServices.ApplyGearChange.ExecuteCurrentItem(slot);
+				DyePicker.DyeIndex = (ushort)(stainIndex+1);
+				Plugin.GetInstance().GearBrowser.SwitchToDyesMode();
+			} catch (Exception e) {
+				PluginLog.Error(e, $"Error handling stain click for {slot} stain {stainIndex}");
+			}
+
+		}
+
+
 
 		// --- Crash Recovery ---
 
@@ -175,7 +285,9 @@ namespace Dresser.UI.Ktk {
 			OnCrashFallback?.Invoke();
 		}
 
-		private static float SlotScale => 1.7f * ConfigurationManager.Config.IconSizeMult;
+		private static float SlotScale => 1.5f 
+		// * ConfigurationManager.Config.IconSizeMult
+		;
 
 		public new void Dispose() {
 			_resolver.Dispose();

@@ -8,6 +8,7 @@ namespace Dresser.Gui
 			return posInfoSearchInitial;
 		}
 		private DyePicker _dyePicker;
+		public DyePicker GetDyePicker() => _dyePicker;
 
 		private void DrawDyes() {
 			_dyePicker.Draw();
