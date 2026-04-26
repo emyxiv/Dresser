@@ -35,6 +35,8 @@ namespace Dresser.UI.Ktk {
 		private readonly Dictionary<GlamourPlateSlot, KtkItemSlot> _slots = new();
 		private SimpleComponentNode _mainContainer = null!;
 		private GridNode _slotsGrid = null!;
+		private PlateSelectorNode _plateSelector = null!;
+		private SimpleComponentNode _bottomButtonContainer = null!;
 		private bool _hasCrashed;
 
 		/// <summary>
@@ -56,7 +58,8 @@ namespace Dresser.UI.Ktk {
 			GlamourPlateSlot.Feet, GlamourPlateSlot.LeftRing,
 		};
 
-		private Vector2 MarginX = new(20, 0);
+		private readonly float Padding = 10.0f;
+		private readonly Vector2 MarginX = new(20, 0);
 		protected override void OnSetup(AtkUnitBase* addon) {
 			PluginLog.Debug($"KtkCurrentGear.OnSetup: called (InternalAddon=0x{(nint)addon:X})");
 			try {
@@ -68,6 +71,7 @@ namespace Dresser.UI.Ktk {
 				_mainContainer.AttachNode(this);
 				PluginLog.Debug("KtkCurrentGear.OnSetup: container attached, building slot grid");
 
+				BuildPlateSelectionRadios();
 				BuildSlotGrid();
 				BuildBottomButtons();
 				RecalculateSize();
@@ -126,11 +130,43 @@ namespace Dresser.UI.Ktk {
 
 
 
+		private void BuildPlateSelectionRadios() {
+			_plateSelector = new PlateSelectorNode() {
+				Position = new Vector2(0, 0),
+				Size = new Vector2(200, 30),
+				MaxRows = ConfigurationManager.Config.NumberofPendingPlateNextColumn,
+				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
+			};
+
+			// 
+			foreach( (var plateNumber, var plateType) in CurrentGear.GetAllPlateNumbers()) {
+
+
+				var plateName = plateType switch {
+					CurrentGear.PlateType.Sandbox => "",
+					CurrentGear.PlateType.Normal => $"{plateNumber + 1}",
+					CurrentGear.PlateType.Free => $"{plateNumber - Storage.PlateNumber + 1}",
+					_ => ""
+				};
+				_plateSelector.AddButton(plateName, () => PluginServices.ApplyGearChange.changeCurrentPendingPlate(plateNumber));
+
+				// if(plateNumber == ushort.MaxValue) {
+				// 	// ImGui.SameLine();
+				// 	// ImGui.SetCursorPos(ImGui.GetCursorPos() + new Vector2(10 * ConfigurationManager.Config.IconSizeMult, 0));
+				// }
+			}
+			// CurrentGear.GetAllPlateNumbers().ForEach(plateNumber => {
+
+
+			// });
+			
+			_plateSelector.AttachNode(_mainContainer);
+		}
 
 		private void BuildSlotGrid() {
 			PluginLog.Debug($"KtkCurrentGear.BuildSlotGrid: creating {SlotOrder.Count} slots");
 			_slotsGrid = new GridNode {
-				Position = new Vector2(0, 0),
+				Position = new Vector2(_plateSelector.Size.X + Padding, 0),
 				Size = new Vector2(48, 48) * new Vector2(2, 6),
 				GridSize = new GridSize(2, 6),
 				Scale = new Vector2(SlotScale),
@@ -161,11 +197,11 @@ namespace Dresser.UI.Ktk {
 			PluginLog.Debug("KtkCurrentGear.BuildSlotGrid: complete");
 		}
 		private void BuildBottomButtons() {
-			var buttonContainer = new SimpleComponentNode {
-				Position = new Vector2(0, _slotsGrid.Size.Y * SlotScale + 10), // Below slots with some padding
+			_bottomButtonContainer = new SimpleComponentNode {
+				Position = new Vector2(_plateSelector.Size.X + Padding, _slotsGrid.Size.Y * SlotScale + Padding), // Below slots with some padding
 				Size = new Vector2(200, 30),
 			};
-			buttonContainer.AttachNode(_mainContainer);
+			_bottomButtonContainer.AttachNode(_mainContainer);
 
 
 			var toggleWeapon = new ImageToggleNode(UldBundle.CircleSmallWeapon) {
@@ -174,39 +210,46 @@ namespace Dresser.UI.Ktk {
 				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
 				TextTooltip = "Hide/Display main and offhand weapons.",
 			};
-			toggleWeapon.AttachNode(buttonContainer);
+			toggleWeapon.AttachNode(_bottomButtonContainer);
 			var toggleHeadgear = new ImageToggleNode(UldBundle.CircleSmallHat) {
 				Size = new Vector2(28.0f, 28.0f),
 				Position = new Vector2(28.0f, 0.0f),
 				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
 				TextTooltip = "Hide/Display headgear.",
 			};
-			toggleHeadgear.AttachNode(buttonContainer);
+			toggleHeadgear.AttachNode(_bottomButtonContainer);
 			var toggleVisor = new ImageToggleNode(UldBundle.CircleSmallVisor) {
 				Size = new Vector2(28.0f, 28.0f),
 				Position = new Vector2(56.0f, 0.0f),
 				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
 				TextTooltip = "Manually adjust visor.",
 			};
-			toggleVisor.AttachNode(buttonContainer);
-        }
+			toggleVisor.AttachNode(_bottomButtonContainer);
+        }		
 
 
         private void RecalculateSize() {
 
-			var innerSize = _slotsGrid.Size * SlotScale;
+			var plateSelectorSize = _plateSelector.Size;
+			var slotGridSize = _slotsGrid.Size * SlotScale;
+			var bottomButtonsSize = _bottomButtonContainer.Size;
 
-			_mainContainer.CollisionNode.Size = innerSize;
-			_mainContainer.Size = innerSize;
+
+			var contentSize = new Vector2(
+				slotGridSize.X + Padding + plateSelectorSize.X,
+				Math.Max(plateSelectorSize.Y, slotGridSize.Y + Padding + bottomButtonsSize.Y));
+
+			_mainContainer.CollisionNode.Size = contentSize;
+			_mainContainer.Size = contentSize;
 			
 			
 // 
-			var newSize = (_slotsGrid.Size * SlotScale) // slots grid size
+			var newSize = contentSize // slots grid size
 				+ (MarginX * 2)
 				// + (ContentPadding * 2.0f + new Vector2(0, 4))
 				// + ContentStartPosition // + title bar height and top padding
 				+ new Vector2(0, this.WindowNode?.HeaderHeight ?? 0) // + extra height for title bar and padding, since ContentStartPosition doesn't seem to be working correctly for some reason
-				+ new Vector2(0, 65) // button height + padding
+				// + new Vector2(0, 65) // button height + padding
 				;
 			SetWindowSize(newSize);
 			

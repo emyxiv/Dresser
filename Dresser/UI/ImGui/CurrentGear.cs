@@ -155,6 +155,23 @@ public partial class CurrentGear : Window, IDisposable {
 
 	private IDalamudTextureWrap? RadioActive = null;
 	private IDalamudTextureWrap? RadioInActive = null;
+	public static ushort MaxPlates => (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates + 1u);
+	public enum PlateType {
+		Sandbox,
+		Normal,
+		Free,
+	}
+	public static Dictionary<ushort, PlateType> GetAllPlateNumbers() {
+		var dic = new Dictionary<ushort, PlateType>() {
+            { ushort.MaxValue, PlateType.Sandbox } // SandBox plate
+        };
+
+		for (ushort i = 0; i < MaxPlates; i++) {
+			var type = i + 1 > Storage.PlateNumber ? PlateType.Free : PlateType.Normal;
+			dic.Add(i, type);
+		}
+		return dic;
+	}
 	private void DrawPlateSelector() {
 		GearSets.FetchGearSets();
 
@@ -169,11 +186,10 @@ public partial class CurrentGear : Window, IDisposable {
 			var radioSize = radioOiriginalSize * new Vector2(0.75f, 0.85f);
 			//var radioSize = RadioInActive.Item4 * new Vector2(0.75f, 0.85f);
 
-			ushort maxPlates = (ushort)(Storage.PlateNumber + ConfigurationManager.Config.NumberOfFreePendingPlates + 1u);
 			bool anythingHovered = false;
 
 			var questionMarkPos = ImGui.GetCursorPos() + new Vector2(radioSize.X, - (SizeGameCircleIcons.Y * 0.05f));
-			DrawPlateButton(ushort.MaxValue, radioSize, ref anythingHovered, maxPlates);
+			DrawPlateButton(ushort.MaxValue, radioSize, ref anythingHovered);
 			var nextPlatesPos = ImGui.GetCursorPos();
 
 			ImGui.SetCursorPos(questionMarkPos);
@@ -185,10 +201,19 @@ public partial class CurrentGear : Window, IDisposable {
 			ImGui.SetCursorPos(nextPlatesPos);
 
 			ImGui.BeginGroup();
+			// foreach( (var plateNumber, var plateType) in GetAllPlateNumbers()) {
+			// 	DrawPlateButton(plateNumber, radioSize, ref anythingHovered);
 
-			for (ushort plateNumber = 0; plateNumber < maxPlates; plateNumber++)
+			// 	if(plateNumber == ushort.MaxValue) {
+			// 		// ImGui.SameLine();
+			// 		// ImGui.SetCursorPos(ImGui.GetCursorPos() + new Vector2(10 * ConfigurationManager.Config.IconSizeMult, 0));
+			// 	}
+			// }
+
+
+			for (ushort plateNumber = 0; plateNumber < MaxPlates; plateNumber++)
 			{
-				DrawPlateButton(plateNumber, radioSize, ref anythingHovered, maxPlates);
+				DrawPlateButton(plateNumber, radioSize, ref anythingHovered);
 			}
 			if (!anythingHovered) PlateSlotButtonHovering = null;
 			ImGui.EndGroup();
@@ -204,7 +229,7 @@ public partial class CurrentGear : Window, IDisposable {
 
 		ImGui.SameLine();
 	}
-	private void DrawPlateButton(ushort plateNumber, Vector2 radioSize,ref bool anythingHovered, ushort maxPlates)
+	private void DrawPlateButton(ushort plateNumber, Vector2 radioSize,ref bool anythingHovered)
 	{
 		var isSandboxPlate = plateNumber == ushort.MaxValue;
 		var isFreePlate = plateNumber + 1 > Storage.PlateNumber;
@@ -276,7 +301,7 @@ public partial class CurrentGear : Window, IDisposable {
 			anythingHovered = true;
 			PlateSlotButtonHovering = plateNumber;
 		}
-		if ((plateNumber + 1) % ConfigurationManager.Config.NumberofPendingPlateNextColumn == 0 && plateNumber + 1 != maxPlates) {
+		if ((plateNumber + 1) % ConfigurationManager.Config.NumberofPendingPlateNextColumn == 0 && plateNumber + 1 != MaxPlates) {
 			ImGui.EndGroup();
 			ImGui.SameLine();
 
