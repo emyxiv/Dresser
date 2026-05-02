@@ -28,7 +28,7 @@ using Dalamud.Bindings.ImGui;
 using InventoryItem = Dresser.Models.InventoryItem;
 
 using static Dresser.Services.Storage;
-using OtterGui.Text.Widget;
+using ImSharp;
 
 namespace Dresser.Gui
 {
@@ -422,7 +422,8 @@ namespace Dresser.Gui
 					_  => TagFilterStateFlag.Neutral
 				};
 
-				if ((new TriStateCheckbox()).Draw($"{tag.Name}##TagFilters##Clothes##Browser", ref stateEnum, TagFilterStateFlag.Include, TagFilterStateFlag.Exclude)) {
+				// if ((new TriStateCheckbox()).Draw($"{tag.Name}##TagFilters##Clothes##Browser", ref stateEnum, TagFilterStateFlag.Include, TagFilterStateFlag.Exclude)) {	
+				if (Im.Checkbox<TagFilterStateFlag>($"{tag.Name}##TagFilters##Clothes##Browser", ref stateEnum, TagFilterStateFlag.Exclude)) {
 					// Cycle through states: 0 -> 1 -> -1 -> 0
 					int newState = (state + 2) % 3 - 1;
 					if (newState == 0) {

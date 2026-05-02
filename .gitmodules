@@ -13,9 +13,9 @@
 [submodule "Penumbra.String"]
 	path = Penumbra.String
 	url = https://github.com/Ottermandias/Penumbra.String
-[submodule "OtterGui"]
-	path = OtterGui
-	url = https://github.com/Ottermandias/OtterGui.git
 [submodule "KamiToolKit"]
 	path = KamiToolKit
 	url = https://github.com/MidoriKami/KamiToolKit
+[submodule "Luna"]
+	path = Luna
+	url = https://github.com/Ottermandias/Luna.git
