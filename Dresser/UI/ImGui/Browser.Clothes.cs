@@ -28,7 +28,6 @@ using Dalamud.Bindings.ImGui;
 using InventoryItem = Dresser.Models.InventoryItem;
 
 using static Dresser.Services.Storage;
-using ImSharp;
 
 namespace Dresser.Gui
 {
@@ -416,33 +415,17 @@ namespace Dresser.Gui
 
 				ConfigurationManager.Config.FilterTagStates.TryGetValue(tag.Id, out var state);
 
-				var stateEnum = state switch {
-					1  => TagFilterStateFlag.Include,
-					-1 => TagFilterStateFlag.Exclude,
-					_  => TagFilterStateFlag.Neutral
-				};
-
-				// if ((new TriStateCheckbox()).Draw($"{tag.Name}##TagFilters##Clothes##Browser", ref stateEnum, TagFilterStateFlag.Include, TagFilterStateFlag.Exclude)) {	
-				if (Im.Checkbox<TagFilterStateFlag>($"{tag.Name}##TagFilters##Clothes##Browser", ref stateEnum, TagFilterStateFlag.Exclude)) {
-					// Cycle through states: 0 -> 1 -> -1 -> 0
-					int newState = (state + 2) % 3 - 1;
-					if (newState == 0) {
+				if (GuiHelpers.DrawTagTriStateCheckbox($"{tag.Name}##TagFilters##Clothes##Browser", ref state)) {
+					if (state == 0) {
 						ConfigurationManager.Config.FilterTagStates.Remove(tag.Id);
 					} else {
-						ConfigurationManager.Config.FilterTagStates[tag.Id] = newState;
+						ConfigurationManager.Config.FilterTagStates[tag.Id] = state;
 					}
 					changed = true;
 				}
 
 			}
 			return changed;
-		}
-
-		[Flags]
-		enum TagFilterStateFlag {
-			Neutral,
-			Include,
-			Exclude,
 		}
 
 		private static bool PassesTagFilters(InventoryItem item) {
