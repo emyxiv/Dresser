@@ -33,6 +33,10 @@ using InteropGlamourPlateSlot = Dresser.Interop.Agents.GlamourPlateSlot;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
+		public static bool IsDye(this ItemRow item) {
+			return PluginServices.DataManager.Excel.GetSheet<Lumina.Excel.Sheets.Stain>().Any(t => t.Item.Any(i => i.Value.RowId == item.RowId));
+		}
+			
 		public static InteropGlamourPlateSlot? GlamourPlateSlot(this ItemRow item)
 		{
 			var slot = item.EquipSlotCategory?.Base;

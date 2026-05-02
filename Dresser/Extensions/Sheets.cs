@@ -2,6 +2,8 @@
 
 using Lumina.Excel.Sheets;
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Dresser.Extensions {
@@ -14,6 +16,10 @@ namespace Dresser.Extensions {
 		}
 		public static bool IsValid(this Stain stain)
 			 => stain.Shade != 0;
+		public static List<Item> PossibleItems(this Stain stain) {
+			return [.. stain.Item.Select(i=>i.Value)];
+		}
+
 
 		public static bool IsTypeTank(this ClassJob classJob)
 			=> classJob.JobType == 1 || classJob.Role == 1; // Role 1 will include the GLA and MRD classes

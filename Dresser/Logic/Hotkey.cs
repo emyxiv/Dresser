@@ -29,7 +29,7 @@ namespace Dresser.Logic {
 		}
 		private bool OnWindowFocusedHotkey() {
 
-			Window? focusedWindow = null;
+			IWindow? focusedWindow = null;
 			if (!ConfigurationManager.Config.WindowsHotkeysAllowAfterLoosingFocus) {
 				var windowSystem = Plugin.GetInstance().WindowSystem;
 				if (!windowSystem.HasAnyFocus) return false;

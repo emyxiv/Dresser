@@ -782,7 +782,7 @@ public class ConfigWindow : Window, IDisposable {
 				ImGui.TableNextColumn();
 				ImGui.TextUnformatted($"{characterId}");
 				ImGui.TableNextColumn();
-				ImGui.TextUnformatted($"{(characterId.ToString().StartsWith("3") ? "Retainer": (PluginServices.ClientState.LocalContentId == characterId ? "Player Character" : "Unknown"))}");
+				ImGui.TextUnformatted($"{(characterId.ToString().StartsWith("3") ? "Retainer": (PluginServices.Context.LocalPlayerCharacterId == characterId ? "Player Character" : "Unknown"))}");
 			}
 
 			ImGui.EndTable();

@@ -155,14 +155,20 @@ namespace Dresser.Models {
 		}
 
 		public IEnumerable<InventoryItem> GetDyesInInventories(int dyeIndex) {
-			var stainTransient = PluginServices.DataManager.GetExcelSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
+			var possibleStainItems = PluginServices.DataManager.GetExcelSheet<Stain>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2)).PossibleItems();
+			// var stainTransient = PluginServices.DataManager.GetExcelSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
 
 			var inventories = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true);
-			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient.Item1.RowId || v.ItemId == stainTransient.Item2.RowId)).Where(i=>i.ItemId != 0);
+			// var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient.Item1.RowId || v.ItemId == stainTransient.Item2.RowId)).Where(i=>i.ItemId != 0);
+			var foundDyes = inventories.SelectMany(ip => ip.Value.Join(
+				possibleStainItems,
+				a=>a.ItemId,
+				b=>b.RowId,
+				(a,b) => a)).Where(i=>i.ItemId != 0);
 
 			if(!foundDyes.Any()) {
-				var defaultStainRowId = stainTransient.Item1.RowId;
-				if(defaultStainRowId != null) {
+				var defaultStainRowId = possibleStainItems.FirstOrDefault().RowId;
+				if(defaultStainRowId != 0) {
 					var unobtainedDye = new InventoryItem((InventoryType)InventoryTypeExtra.AllItems, (uint)defaultStainRowId);
 
 					foundDyes = new List<InventoryItem>() { unobtainedDye };
@@ -277,7 +283,7 @@ namespace Dresser.Models {
 			};
 		}
 		public string FormattedOwnerName() {
-			var id = InRetainer ? RetainerId : PluginServices.ClientState.LocalContentId;
+			var id = InRetainer ? RetainerId : PluginServices.Context.LocalPlayerCharacterId;
 			var charaName = PluginServices.Objects.SearchById(id)?.Name;
 			if (charaName != null) return charaName.TextValue;
 			return "Retainer";
