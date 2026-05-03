@@ -8,6 +8,7 @@
 		"InternalName": "Dresser",
 		"AssemblyVersion": "0.7.0.0",
 		"RepoUrl": "https://github.com/emyxiv/Dresser",
+		"IconUrl": "https://raw.githubusercontent.com/emyxiv/Dresser/master/icon.png",
 		"ApplicableVersion": "any",
 		"DalamudApiLevel": 15,
 		"DownloadCount": 1913,
