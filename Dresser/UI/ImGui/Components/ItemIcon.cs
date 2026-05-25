@@ -169,6 +169,11 @@ namespace Dresser.Gui.Components {
 						if (isModdedItem) {
 
 							ImGui.TextColored(ModdedItemColor, $"by {item.ModAuthor}");
+							var modImportTime = item.ModImportTime();
+							if(modImportTime != null) {
+								ImGui.SameLine();
+								ImGui.Text($" imported on [{modImportTime.Value.ToString("dd MMM yyyy")}]");
+							}
 							if (ConfigurationManager.Config.IconTooltipShowDev) {
 								// LINE BREAK
 								ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");

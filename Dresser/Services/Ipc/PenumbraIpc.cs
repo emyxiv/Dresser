@@ -317,6 +317,25 @@ internal class PenumbraIpc : IDisposable {
 		}
 		return ModMetaCache[modDirectory];
 	}
+	private Dictionary<string, DateTime?> ModImportDateCache = new();
+	internal DateTime? GetModImportDateCached(string modDirectory) {
+		if (!ModImportDateCache.ContainsKey(modDirectory)) {
+			var importDate = GetModImportDate(modDirectory);
+			ModImportDateCache[modDirectory] = importDate;
+		}
+		return ModImportDateCache[modDirectory];
+	}
+	private DateTime? GetModImportDate(string modDirectory) {
+		string? bp = GetModDirectoryCached();
+		if (bp != null) {
+			var metaPath = Path.Combine(bp, modDirectory, "meta.json");
+			if (File.Exists(metaPath)) {
+				var creationTime = File.GetCreationTime(metaPath);
+				return creationTime;
+			}
+		}
+		return null;
+	}
 	private Dictionary<string, Dictionary<string, string>> ModConfigFileTextCache = new();
 	internal Dictionary<string, string> GetModConfigFileTextCached(string modDirectory) {
 		if (!ModConfigFileTextCache.ContainsKey(modDirectory)) {

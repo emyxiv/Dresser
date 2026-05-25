@@ -20,6 +20,7 @@ namespace Dresser.Logic {
 					OrderMethod.ItemLevel => ItemLevel,
 					OrderMethod.ItemId => ItemId,
 					OrderMethod.ItemPatch => ItemPatch,
+					OrderMethod.ModImportDate => ModImportDate,
 					_ => null,
 				};
 
@@ -72,6 +73,7 @@ namespace Dresser.Logic {
 			ItemLevel,
 			ItemId,
 			ItemPatch,
+			ModImportDate,
 		}
 
 		private static uint Level(InventoryItem i)
@@ -82,5 +84,11 @@ namespace Dresser.Logic {
 			=> i.ItemId;
 		private static uint ItemPatch(InventoryItem i)
 			=> (uint)(i.Item.Patch * 100);
+		private static uint ModImportDate(InventoryItem i) {
+			var importTime = i.ModImportTime();
+			if(importTime == null) return 0;
+			var unix = new DateTimeOffset(importTime.Value).ToUnixTimeSeconds();
+			return (uint)unix;
+		}
 	}
 }

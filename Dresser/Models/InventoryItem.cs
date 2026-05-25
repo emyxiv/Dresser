@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -297,6 +298,9 @@ namespace Dresser.Models {
 			var stainEntry = PluginServices.DataManager.GetExcelSheet<Stain>().First(s => s.RowId == Stain2);
 			return stainEntry.Name.ToDalamudString().ToString() ?? "";
 		}
+
+		public DateTime? ModImportTime()
+			=> this.ModDirectory == null ? null : PluginServices.Penumbra.GetModImportDateCached(this.ModDirectory);
 
 	}
 }
