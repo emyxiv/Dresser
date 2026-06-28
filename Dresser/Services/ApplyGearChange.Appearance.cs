@@ -69,19 +69,17 @@ namespace Dresser.Services {
 			var clonedItem = item.Clone();
 			DyePickerRefreshNewItem(clonedItem, true);
 
-			var slot = clonedItem.Item.GlamourPlateSlot();
+			var slot = ConfigurationManager.Config.CurrentGearSelectedSlot;
 
-			if (slot != null) {
-				if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
-					plate = new();
-					ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
-				}
-				CurrentPreviousModdedItem = plate.GetSlot(slot.Value);
-				plate.SetSlot(slot.Value, clonedItem);
-
-				PrepareModsAndDo(clonedItem, slot.Value, ApplyItemAppearanceOnPlayer);
-				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
+				plate = new();
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
 			}
+			CurrentPreviousModdedItem = plate.GetSlot(slot);
+			plate.SetSlot(slot, clonedItem);
+
+			PrepareModsAndDo(clonedItem, slot, ApplyItemAppearanceOnPlayer);
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
 
 		/// <summary>
