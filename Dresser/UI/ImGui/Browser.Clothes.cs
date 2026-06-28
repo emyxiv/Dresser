@@ -847,7 +847,7 @@ namespace Dresser.Gui
 
 				if (GuiHelpers.TextButtonNoBg(label, "Click on the Glamour Outfit name to apply all items", ItemIcon.ColorBronze)) {
 					foreach (var it in setUse.SetItems.Select(i => InventoryItem.New(i.RowId, 0, 0))) {
-						PluginServices.ApplyGearChange.ExecuteBrowserItem(it);
+						PluginServices.ApplyGearChange.ExecuteBrowserItem(it, true);
 					}
 				}
 				DrawListOfItemIcons(setUse.SetItems, 5000+ outfitCounter);
