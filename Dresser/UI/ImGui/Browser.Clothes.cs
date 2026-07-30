@@ -731,7 +731,7 @@ namespace Dresser.Gui
 				ConfigWindow.AddModItemToBlacklist((itemInv.ModDirectory!, (uint)itemInv.Item.RowId));
 
 			if (item.CanTryOn && ImGui.Selectable("Try On"))
-				item.TryOn();
+				itemInv.TryOn();
 			//if (item.CanOpenCraftLog && ImGui.Selectable("Open Crafting Log"))
 			//	PluginServices.GameInterface.OpenCraftingLog(item.RowId);
 

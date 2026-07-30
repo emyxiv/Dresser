@@ -255,8 +255,9 @@ namespace Dresser.Extensions {
 		}
 		//=> PluginServices.ChatUtilities.LinkItem(item);
 		public static void TryOn(this ItemRow item) {
-			// if (item.CanTryOn && PluginServices.TryOn.CanUseTryOn)
-			// 	PluginServices.TryOn.TryOnItem(item);
+			if (item.CanTryOn) {
+				FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentTryon.TryOn(0, item.RowId, 0, 0);
+			}
 		}
 		//public static void OpenCraftingLog(this ItemRow item) {
 		//	if (item.CanOpenCraftLog)

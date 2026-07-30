@@ -228,6 +228,11 @@ namespace Dresser.Models {
 
 		// --- Merged from Extensions/InventoryItem.cs ---
 
+		public void TryOn() {
+			if (this.Item.CanTryOn) {
+				FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentTryon.TryOn(0, this.ItemId, this.Stain, this.Stain2);
+			}
+		}
 		public bool IsGlamourPlateApplicable()
 			=> SortedContainer == InventoryType.GlamourChest || SortedContainer == InventoryType.Armoire;
 		public bool IsFadedInBrowser()
