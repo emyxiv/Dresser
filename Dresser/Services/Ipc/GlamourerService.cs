@@ -115,7 +115,14 @@ namespace Dresser.Services.Ipc {
 				var itemJson = equipJson?[slot.ToPenumbraEquipSlot().ToString()];
 				InventoryItem item;
 
-				var itemId = ((((uint?)itemJson?["ItemId"]) ?? 0));
+				uint itemId;
+				try {
+					itemId = ((uint?)itemJson?["ItemId"]) ?? 0;
+				}
+				catch (OverflowException) {
+					PluginLog.Warning($"Attempted to cast [{itemJson?["ItemId"] ?? "null"}] into (uint?) but thrown an overflow exception.\n{itemJson}");
+					itemId = 0;
+				}
 				if (itemId is > 4294967100u or 0) item = InventoryItem.Zero;
 				else item = InventoryItem.New(
 					itemId,
