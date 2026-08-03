@@ -116,9 +116,9 @@ namespace Dresser.Gui
 				ImGui.SameLine();
 
 				ImGui.BeginGroup();
-				ImGui.BeginChildFrame(84, ImGui.GetContentRegionAvail() - new Vector2(0, 0));
+				ImGui.BeginChild("##FilterFrame##Right##Sidebar##GearBrowser", ImGui.GetContentRegionAvail() - new Vector2(0, 0));
 				if (DrawFilters()) RecomputeItems();
-				ImGui.EndChildFrame();
+				ImGui.EndChild();
 				ImGui.EndGroup();
 			}
 		}
@@ -612,7 +612,24 @@ namespace Dresser.Gui
 				widthAdjusted = available.X;
 			}
 
-			ImGui.BeginChildFrame(76,  new Vector2(widthAdjusted, available.Y));
+			var itemChildFrameSize = new Vector2(widthAdjusted, available.Y);
+			ImGui.BeginChildFrame(76,  itemChildFrameSize);
+			var outerDrawlist = ImGui.GetWindowDrawList();
+
+			var itemInnerChildFramePos = ImGui.GetWindowPos();
+
+			var shadowHeightTop = 35f * ConfigurationManager.Config.IconSizeMult;
+			var shadowHeightBot = 22f * ConfigurationManager.Config.IconSizeMult;
+			var paddingSize = new Vector2(0);
+
+			var gradientTopMin = itemInnerChildFramePos - paddingSize;
+			var gradientTopMax = new Vector2(itemInnerChildFramePos.X + widthAdjusted , itemInnerChildFramePos.Y + shadowHeightTop) + paddingSize;
+
+			var gradientBotMin = new Vector2(itemInnerChildFramePos.X,                                    itemInnerChildFramePos.Y + itemChildFrameSize.Y - shadowHeightBot);
+			var gradientBotMax = new Vector2(itemInnerChildFramePos.X + widthAdjusted , itemInnerChildFramePos.Y + itemChildFrameSize.Y);
+			var mustShowTopShadow = ImGui.GetScrollY() > 0;
+			var mustShowBotShadow = ImGui.GetScrollY() < ImGui.GetScrollMaxY();
+
 
 			BrowserIndex? selectedItemHash = SelectedInventoryItem == null ? null : (BrowserIndex)SelectedInventoryItem;
 			if (Items != null && ItemsCount > 0)
@@ -688,6 +705,25 @@ namespace Dresser.Gui
 			}
 
 			JustRecomputed = false;
+
+			// add a top shadow if we are not at the top
+			if(mustShowTopShadow) {
+				outerDrawlist.AddRectFilledMultiColor(gradientTopMin, gradientTopMax,
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0.85f)),
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0.85f)),
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0)),
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0))
+					);
+			}
+			// add a bottom shadow if we are not at the bottom
+			if(mustShowBotShadow) {
+				outerDrawlist.AddRectFilledMultiColor(gradientBotMin, gradientBotMax,
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0)),
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0)),
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0.85f)),
+					ImGui.ColorConvertFloat4ToU32(new(new Vector3(0f), 0.85f))
+					);
+			}
 
 			ImGui.EndChildFrame();
 			Styler.PopStyleCollection();
