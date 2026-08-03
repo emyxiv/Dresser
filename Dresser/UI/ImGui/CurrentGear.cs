@@ -378,29 +378,89 @@ public partial class CurrentGear : Window, IDisposable {
 	private string FormattedNameCurrentPlate()
 		=> FormattedPlateName(ConfigurationManager.Config.SelectedCurrentPlate);
 	private static string FormattedPlateName(ushort plateNumber) {
-		var isTargetFreePlate = plateNumber + 1 > Storage.PlateNumber;
-		var prefix = isTargetFreePlate ? "Free p" : "P";
-		var number = isTargetFreePlate ? plateNumber - Storage.PlateNumber : plateNumber;
-		return $"{prefix}late #{number}";
+		if(plateNumber == ushort.MaxValue)
+			return $"Plate Sandbox";
+		
+		string prefix;
+		int number;
 
+		var isTargetFreePlate = plateNumber + 1 > Storage.PlateNumber;
+		if (isTargetFreePlate) {
+			prefix = "Free plate";
+			number = plateNumber - Storage.PlateNumber + 1;
+		} else {
+			prefix = "Plate";
+			number = plateNumber + 1;
+		}
+
+		return $"{prefix} #{number}";
 	}
 	private void ContextMenuPlateSelector(ushort plateNumber) {
+		if(!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var set)) {
+			return;
+		}
+
+
+		// show some info
 		ImGui.TextDisabled($"{FormattedPlateName(plateNumber)}");
-		ImGui.Spacing();
+		ImGui.NewLine();
+
+		// button: cleanup every items on the plate
 		if (GuiHelpers.IconButtonHoldConfirm(FontAwesomeIcon.Broom, $"Remove every items from this plate ({FormattedPlateName(plateNumber)})", default, $"##{plateNumber}##clear##PlateSelector##CurrentGear")) {
-			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var set)) {
-				set.EmptyAllItemsToNull();
-				set.ApplyAppearance();
-			}
+			set.EmptyAllItemsToNull();
+			set.ApplyAppearance();
 		}
 		ImGui.SameLine();
-		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowRightArrowLeft, $"Swap contents of current ({FormattedNameCurrentPlate()}) with contents of {FormattedPlateName(plateNumber)}", default, $"##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear")) {
-			if (ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(plateNumber, out var targetPlateInvItems) && ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out var currentPlateInvItems)) {
-				ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = targetPlateInvItems.Copy();
-				ConfigurationManager.Config.PendingPlateItemsCurrentChar[plateNumber] = currentPlateInvItems.Copy();
+
+
+		// button: if not the same plate, offer to swap
+		var isSamePlate = ConfigurationManager.Config.SelectedCurrentPlate == plateNumber;
+		if(isSamePlate) ImGui.BeginDisabled();
+		if (GuiHelpers.IconButtonTooltip(FontAwesomeIcon.ArrowRightArrowLeft, $"Swap contents of current [{FormattedNameCurrentPlate()}] with contents of [{FormattedPlateName(plateNumber)}]", default, $"##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear")) {
+			var currentSet = PluginServices.ApplyGearChange.GetCurrentPlate();
+			if (currentSet != null) {
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = set.Copy();
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[plateNumber] = currentSet.Value.Copy();
 				ConfigurationManager.Config.SelectedCurrentPlate = plateNumber;
 			}
 		}
+		if(isSamePlate) ImGui.EndDisabled();
+
+		// button: export set to glamourer
+		ImGui.NewLine();
+		if (ImGui.Selectable("Export Design to Glamourer")) {
+			// create a mini window to write the name
+			MiniWindow.Create(
+				$"Design Name##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear",
+				() => MiniWindowContentsExportToGlamourer(plateNumber, set)
+			);
+		}
+	}
+
+	private static bool? MiniWindowContentsExportToGlamourer(ushort plateNumber, InventoryItemSet set) {
+		string name = "";
+		var submitted = false;
+
+		// a label
+		ImGui.Text("name");
+		ImGui.SameLine();
+
+		// input
+		ImGui.SetNextItemWidth(ImGui.GetFontSize() * 20);
+		ImGui.SetKeyboardFocusHere();
+		submitted |= ImGui.InputText($"##InputName##NameDesignWindow##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear", ref name, 255, ImGuiInputTextFlags.EnterReturnsTrue);
+		ImGui.SameLine();
+
+		// the Ok button
+		submitted |= ImGui.Button($"Ok##NameDesignWindow##{plateNumber}##swapWithCurrent##PlateSelector##CurrentGear");
+
+		// if submitting, send the signals
+		if (submitted) {
+			PluginServices.Glamourer.AddDesignFromItemSet(set, name, out var createdGuid);
+			PluginLog.Debug($"Created design {createdGuid}");
+			return false; // close
+		}
+		return null;	
 	}
 
 	private static void CheckPendingPlateItems() {

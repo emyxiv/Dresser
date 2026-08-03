@@ -44,6 +44,7 @@ namespace Dresser.Services.Ipc {
 
 		public GlamourerService(IDalamudPluginInterface pluginInterface) {
 
+			// Main
 			ApiVersionSubscriber = new ApiVersion(pluginInterface);
 			SetItemSubscriber = new SetItem(pluginInterface);
 			RevertStateSubscriber = new RevertState(pluginInterface);
@@ -52,6 +53,12 @@ namespace Dresser.Services.Ipc {
 			ApplyStateSubscriber = new ApplyState(pluginInterface);
 			_throttler = new Throttler<Task>(0);
 
+			// Designs
+			_addDesignSubscriber = new AddDesign(pluginInterface);
+			_getDesignListSubscriber = new GetDesignList(pluginInterface);
+			_getDesignJObjectSubscriber = new GetDesignJObject(pluginInterface);
+
+			// State change
 			StateChangedWithTypeProvider = global::Glamourer.Api.IpcSubscribers.StateChangedWithType.Subscriber(pluginInterface);
 			StateChangedWithType += OnStateChangedWithType;
 		}

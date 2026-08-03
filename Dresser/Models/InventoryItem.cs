@@ -90,6 +90,9 @@ namespace Dresser.Models {
 		}
 
 
+		public Item ToItemRow() {
+			return PluginServices.DataManager.GetExcelSheet<Item>().GetRow(Item.RowId);
+		}
 		public static CriticalInventoryItem ToCritical(InventoryItem item) {
             var cclItem = new CriticalInventoryItem(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet);
             cclItem.FromInventoryItem(item);

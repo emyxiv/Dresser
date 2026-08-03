@@ -881,6 +881,18 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.Button("GetState##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.GetState()}");
 		}
+		ImGui.SameLine();
+		if (ImGui.Button("Get First Design##GlamourerIPC##Debug##ConfigWindow")) {
+			var designList = PluginServices.Glamourer.GetDesignList();
+			if(designList.Count > 0) {
+				PluginLog.Debug($"{PluginServices.Glamourer.GetDesignJObject(designList.First().Key)}");
+			} else {
+				PluginLog.Debug($"No designs available");
+			}
+		}
+
+
+
 		if (ImGui.Button("SetMetaData Hat##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Hat)}");
 		}
@@ -892,6 +904,17 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.Button("SetMetaData Weapon##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Weapon)}");
 		}
+
+
+		var newDesignName = "ABCDEFG01981984";
+		if (ImGui.Button($"Create [{newDesignName}] design From Current Plate##GlamourerIPC##Debug##ConfigWindow")) {
+			var set = PluginServices.ApplyGearChange.GetCurrentPlate();
+			if(set != null) {
+				PluginServices.Glamourer.AddDesignFromItemSet(set.Value, newDesignName, out var createdGuid);
+				PluginLog.Debug($"Created design {createdGuid}");
+			}
+		}
+		
 
 	}
 	private void DrawPenumbraIpcDebug() {

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Dresser.Extensions;
 using Dresser.Interop.Agents;
+using Dresser.Models;
 
 using Lumina.Excel.Sheets;
 
@@ -16,7 +18,7 @@ namespace Dresser.Logic.Ipc.Glamourer;
 
 public static class Design {
 
-/*
+
 	public static string PrepareDesign(JObject design, InventoryItemSet set) {
 
 		design["Name"] = "DresserAnywhere Auto Apply";
@@ -50,10 +52,21 @@ public static class Design {
 
 			// if item id == 0, make it empty and apply
 			// else display the item
+			var itemRow = item.ToItemRow();
 
 			CustomItemId? mainItem = null;
 			if (item.ItemId == 0) mainItem = NothingId(slot.ToPenumbraEquipSlot()).Id;
-			else mainItem = FromInventoryItem(item.Item, slot, ret);
+			else {
+				var designDict = FromInventoryItem(itemRow, slot, ret);
+
+				if(designDict.Count > 0) {
+					var designCustomIdPair = designDict.First();
+					// var ddsq = designCustomIdPair.Value;
+					// var dddd = ddsq.Item.Id;
+					mainItem = designCustomIdPair.Value.Id;
+					
+				} else mainItem = NothingId(slot.ToPenumbraEquipSlot()).Id;
+			}
 
 			//var hackedId = mainItem.Id | 1ul << 48;
 
@@ -66,10 +79,10 @@ public static class Design {
 				ret[slot.ToPenumbraEquipSlot().ToString()] = SerializeItem(mainItem.Value, item.Stain, false, true, true, false);
 				if (slot == GlamourPlateSlot.MainHand) {
 					//&& !item.Item.IsMainModelOnOffhand()
-					var sameItemOnOffhand = item.Item.ToFullEquipType2(false).IsOffhandType();
+					var sameItemOnOffhand = item.Item.ToFullEquipType(false).IsOffhandType();
 
 					if (sameItemOnOffhand) {
-						ret[EquipSlot.OffHand.ToString()] = SerializeItem(EquipItem.FromOffhand(item.Item).Id, item.Stain, false, true, true, false);
+						ret[EquipSlot.OffHand.ToString()] = SerializeItem(EquipItem.FromOffhand(itemRow).Id, item.Stain, false, true, true, false);
 						overwritesOffhand = true;
 					}
 				}
@@ -85,7 +98,7 @@ public static class Design {
 		design["Equipment"] = ret;
 
 	}
-*/
+
 	public static Dictionary<EquipSlot,CustomItemId> FromInventoryItem(Item item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
 		var equipItem = slot switch {
 			GlamourPlateSlot.MainHand  => EquipItem.FromMainhand(item),
@@ -206,7 +219,7 @@ public static class Design {
 	};
 
 
-	private static string ShareBase64(JObject jObject) {
+	public static string ShareBase64(JObject jObject) {
 		var json = jObject.ToString(Formatting.None);
 		var compressed = json.Compress(6);
 		return Convert.ToBase64String(compressed);
@@ -216,23 +229,49 @@ public static class Design {
 		byteArray.DecompressToString(out var json);
 		return JObject.Parse(json);
 	}
-	static void TurnOffAllApplies(ref JObject json) {
+	public static JObject FromBase64v6(string base64) {
+		var bytes = System.Convert.FromBase64String(base64);
 
-		var propertyName = "Apply";
+		var version1 = bytes[0];
+		PluginLog.Debug($"Detected glamourer design version {version1}");
+		// if(version1 == 5) {
+		// 	var Base64SizeV4 = 95;
+		// 	bytes   = bytes[Base64SizeV4..];
+		// }
+		var version2 = bytes.DecompressToString(out var decompressed);
+		// PluginLog.Debug($"json:\n{decompressed}");
+		// PluginLog.Debug($"Detected glamourer design version {version1} => {version2}");
+		var jObj2 = JObject.Parse(decompressed);
+		return jObj2;
+	}
+	public static void TurnOffAllApplies(ref JObject json) {
+
 		foreach (var property in json.Properties()) {
-			if (property.Name == propertyName) {
+			if (property.Name == "Apply" || property.Name == "ApplyStain" || property.Name == "ApplyCrest") {
 				property.Value = false;
 			}
 
-			if (property.Value.Type == JTokenType.Object || property.Value.Type == JTokenType.Array) {
+			if (property.Value.Type == JTokenType.Object) {
 				var value = (JObject)property.Value;
 				TurnOffAllApplies(ref value);
+			} else if (property.Value.Type == JTokenType.Array) {
+				foreach (var item in (JArray)property.Value) {
+					if (item.Type == JTokenType.Object) {
+						var value = (JObject)item;
+						TurnOffAllApplies(ref value);
+					}
+				}
 			}
 		}
 	}
 
 	public static ItemId NothingId(EquipSlot slot)
-	=> uint.MaxValue - 128 - (uint)slot.ToSlot();
+	=> slot switch  {
+		EquipSlot.MainHand => 1601,
+		EquipSlot.OffHand => 4294966874,
+		_ => uint.MaxValue - 128 - (uint)slot.ToSlot(),
+	};
+	//  slot == EquipSlot.MainHand ? 1601 : uint.MaxValue - 128 - (uint)slot.ToSlot();
 
 	public static ItemId SmallclothesId(EquipSlot slot)
 		=> uint.MaxValue - 256 - (uint)slot.ToSlot();
