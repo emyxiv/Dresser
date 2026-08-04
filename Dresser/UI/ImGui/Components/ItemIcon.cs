@@ -30,7 +30,7 @@ using InventoryItem = Dresser.Models.InventoryItem;
 
 namespace Dresser.Gui.Components {
 	internal class ItemIcon {
-		public static Vector2 IconSize => new Vector2(120) * ConfigurationManager.Config.IconSizeMult;
+		public static Vector2 IconSize => new Vector2(120) * Styler.IconSizeMultiplier2D;
 		public static Vector2 TooltipFramePadding => new Vector2(ImGui.GetFontSize() * 0.2f);
 		public static Vector2 TooltipItemSpacing => TooltipFramePadding;
 		public static float DyeBorder => 3 * ConfigurationManager.Config.IconSizeMult;

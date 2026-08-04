@@ -108,6 +108,18 @@ namespace Dresser {
 		public bool CollapsibleOtherTips = true;
 		public bool CollapsibleKnownIssues = true;
 
+		// ---- Style Variables ----
+		public bool EnableCustomTheme = true;
+		public float StyleVariableFramePadding = 10f;
+		public float StyleVariableItemSpacing = 15f;
+		public float StyleVariableWindowPadding = 15f;
+
+		public float StyleVariableFrameRounding = 10f;
+		public float StyleVariableFrameBorderSize = 3f;
+		public float StyleVariableScrollbarSize = 7f;
+		public float StyleVariableWindowRounding = 10f;
+		public float StyleVariableWindowBorderSize = 3f;
+
 		// ---- Colors ----
 		// frames
 		public Vector4 CollectionColorBackground = new Vector4(113, 98, 119, 200) / 255;

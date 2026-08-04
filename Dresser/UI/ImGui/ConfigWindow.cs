@@ -46,6 +46,7 @@ public class ConfigWindow : Window, IDisposable {
 			}},
 			{"Style",new () {
 				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
+				{ "Variables", DrawVariablesStyleConfig },
 				{ "Colors", DrawColorStyleConfig },
 			}},
 			{"Mod Browser",new () {
@@ -1001,6 +1002,23 @@ public class ConfigWindow : Window, IDisposable {
 
 	}
 
+	private void DrawVariablesStyleConfig() {
+
+		ImGui.TextDisabled("Global (Plate Creation & Item Gear Browser)");
+		ImGui.Checkbox($"Enable Custom Theme##Variables##Style##Config", ref ConfigurationManager.Config.EnableCustomTheme);
+
+		ImGui.TextDisabled("Spacing and Sizing");
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableFramePadding    ), "Frame Padding",     0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorFramePadding     * Styler.IconSizeMultiplier2D})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableItemSpacing     ), "Item Spacing",      0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorItemSpacing      * Styler.IconSizeMultiplier2D})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableFrameRounding   ), "Frame Rounding",    0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorFrameRounding    * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableFrameBorderSize ), "Frame BorderSize",  0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorFrameBorderSize  * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableScrollbarSize   ), "Scrollbar Size",    0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorScrollbarSize    * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableWindowPadding   ), "Window Padding",    0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorWindowPadding    * Styler.IconSizeMultiplier2D})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableWindowRounding  ), "Window Rounding",   0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorWindowRounding   * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableWindowBorderSize), "Window BorderSize", 0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorWindowBorderSize * Styler.IconSizeMultiplier})"); }
+
+
+	}
 	private void DrawColorStyleConfig() {
 		ImGui.TextDisabled("Frames");
 		ConfigControls.ConfigColorVecot4(nameof(Configuration.CollectionColorBackground), "Window Background", "Background color for the frames that contain items", ImGuiColorEditFlags.None);
