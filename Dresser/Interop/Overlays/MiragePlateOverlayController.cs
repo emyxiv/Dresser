@@ -15,19 +15,21 @@ namespace Dresser.Interop.Overlays {
 		private const int RadioButtonOffsetId = 6;
 		private const int PlateCount = 20;
 
-		private readonly AddonController _controller;
+		private AddonController? _controller = null;
 		private Dictionary<uint, Vector4?> _tabColours = CreateEmptyTabs();
 		private bool _hasActiveHighlights = false;
 		private bool _needsClear = false;
 
 		public MiragePlateOverlayController() {
-			_controller = new AddonController {
-				AddonName = "MiragePrismMiragePlate",
-				OnRefresh = OnRefresh,
-				OnUpdate = OnUpdate,
-				OnFinalize = OnFinalize,
-			};
-			_controller.Enable();
+			PluginServices.Framework.RunOnFrameworkThread(() => {
+				_controller = new AddonController {
+					AddonName = "MiragePrismMiragePlate",
+					OnRefresh = OnRefresh,
+					OnUpdate = OnUpdate,
+					OnFinalize = OnFinalize,
+				};
+				_controller.Enable();
+			});
 		}
 
 		private void OnRefresh(AtkUnitBase* addon) {
@@ -140,11 +142,11 @@ namespace Dresser.Interop.Overlays {
             }
         }
         public string DebugGetName() {
-            return _controller.AddonName;
+            return _controller?.AddonName ?? "N/A";
         }
 
 		public void Dispose() {
-			_controller.Dispose();
+			_controller?.Dispose();
 		}
 	}
 }
