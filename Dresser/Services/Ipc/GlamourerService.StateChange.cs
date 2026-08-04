@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Objects.Types;
 
 using Dresser.Logic;
+using Dresser.Logic.Ipc.Glamourer;
 using Dresser.Models;
 
 using Glamourer.Api.Enums;
@@ -131,7 +132,7 @@ namespace Dresser.Services.Ipc {
 				var prev = lastEquip[slotName];
 				if (curr == null) continue;
 
-				if ((uint?)curr["ItemId"] != (uint?)prev?["ItemId"] ||
+				if ((ulong?)curr["ItemId"] != (ulong?)prev?["ItemId"] ||
 					(byte?)curr["Stain"] != (byte?)prev?["Stain"] ||
 					(byte?)curr["Stain2"] != (byte?)prev?["Stain2"]) {
 					return true;
@@ -145,10 +146,10 @@ namespace Dresser.Services.Ipc {
 			var lastEquip = last["Equipment"];
 			if (currentEquip == null || lastEquip == null) return false;
 
-			var mainHandCurr = (uint?)currentEquip["MainHand"]?["ItemId"] ?? 0;
-			var mainHandLast = (uint?)lastEquip["MainHand"]?["ItemId"] ?? 0;
-			var offHandCurr = (uint?)currentEquip["OffHand"]?["ItemId"] ?? 0;
-			var offHandLast = (uint?)lastEquip["OffHand"]?["ItemId"] ?? 0;
+			var mainHandCurr = (ulong?)currentEquip["MainHand"]?["ItemId"] ?? 0;
+			var mainHandLast = (ulong?)lastEquip["MainHand"]?["ItemId"] ?? 0;
+			var offHandCurr = (ulong?)currentEquip["OffHand"]?["ItemId"] ?? 0;
+			var offHandLast = (ulong?)lastEquip["OffHand"]?["ItemId"] ?? 0;
 
 			return mainHandCurr != mainHandLast || offHandCurr != offHandLast;
 		}
@@ -233,11 +234,12 @@ namespace Dresser.Services.Ipc {
 
 				if (currentData == null) continue;
 
-				var currentItemId = (uint?)currentData["ItemId"] ?? 0;
+				var currentItemId = Design.DesignIdToItemId(((ulong?)currentData["ItemId"]) ?? 0ul, slot);
 				var currentStain = (byte?)currentData["Stain"] ?? 0;
 				var currentStain2 = (byte?)currentData["Stain2"] ?? 0;
 
-				var lastItemId = (uint?)lastData?["ItemId"] ?? 0;
+
+				var lastItemId = Design.DesignIdToItemId(((ulong?)lastData?["ItemId"]) ?? 0ul, slot);
 				var lastStain = (byte?)lastData?["Stain"] ?? 0;
 				var lastStain2 = (byte?)lastData?["Stain2"] ?? 0;
 
@@ -257,10 +259,10 @@ namespace Dresser.Services.Ipc {
 
 			if (equipment == null || lastEquipment == null) return;
 
-			var mainHandCurr = (uint?)equipment["MainHand"]?["ItemId"] ?? 0;
-			var mainHandLast = (uint?)lastEquipment["MainHand"]?["ItemId"] ?? 0;
-			var offHandCurr = (uint?)equipment["OffHand"]?["ItemId"] ?? 0;
-			var offHandLast = (uint?)lastEquipment["OffHand"]?["ItemId"] ?? 0;
+			var mainHandCurr = (ulong?)equipment["MainHand"]?["ItemId"] ?? 0;
+			var mainHandLast = (ulong?)lastEquipment["MainHand"]?["ItemId"] ?? 0;
+			var offHandCurr = (ulong?)equipment["OffHand"]?["ItemId"] ?? 0;
+			var offHandLast = (ulong?)lastEquipment["OffHand"]?["ItemId"] ?? 0;
 
 			if (mainHandCurr == mainHandLast && offHandCurr == offHandLast) return;
 

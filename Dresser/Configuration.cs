@@ -37,6 +37,8 @@ namespace Dresser {
 		public bool EnablePenumbraModding = false;
 		public bool ForceStandaloneAppearanceApply = true;
 		public bool DebugDisplayModedInTitleBar = false;
+		public bool DebugLogForTroubleshooting = false;
+		public bool EnableVerboseGlamourerIpc = false;
 
 		public InventoryItemSet DisplayPlateItems { get; set; } = new();
 		[Obsolete]

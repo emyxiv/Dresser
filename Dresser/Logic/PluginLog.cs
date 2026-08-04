@@ -12,9 +12,19 @@ namespace Dresser.Logic {
 		public static void Information(Exception? exception, string messageTemplate, params object[] values) => PluginServices.PluginLog.Information(exception, messageTemplate, values);
 		public static void Info(string messageTemplate, params object[] values) => PluginServices.PluginLog.Info(messageTemplate, values);
 		public static void Info(Exception? exception, string messageTemplate, params object[] values) => PluginServices.PluginLog.Info(exception, messageTemplate, values);
-		public static void Debug(string messageTemplate, params object[] values) => PluginServices.PluginLog.Debug(messageTemplate, values);
-		public static void Debug(Exception? exception, string messageTemplate, params object[] values) => PluginServices.PluginLog.Debug(exception, messageTemplate, values);
-		public static void Verbose(string messageTemplate, params object[] values) => PluginServices.PluginLog.Verbose(messageTemplate, values);
+        public static void Debug(string messageTemplate, params object[] values) {
+			if(!ConfigurationManager.Config.DebugLogForTroubleshooting)
+				return;
+            PluginServices.PluginLog.Debug(messageTemplate, values);
+        }
+
+        public static void Debug(Exception? exception, string messageTemplate, params object[] values) {
+			if(!ConfigurationManager.Config.DebugLogForTroubleshooting)
+				return;
+            PluginServices.PluginLog.Debug(exception, messageTemplate, values);
+        }
+
+        public static void Verbose(string messageTemplate, params object[] values) => PluginServices.PluginLog.Verbose(messageTemplate, values);
 		public static void Verbose(Exception? exception, string messageTemplate, params object[] values) => PluginServices.PluginLog.Verbose(exception, messageTemplate, values);
 	}
 }

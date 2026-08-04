@@ -733,6 +733,7 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("Toggle debug stuff")) {
 			ImGui.Checkbox($"Display debug info##Debug##GearBrowserConfig", ref ConfigurationManager.Config.IconTooltipShowDev);
 			//ImGui.Checkbox($"Force Standalone Appearance Apply##Debug##GearBrowserConfig", ref ConfigurationManager.Config.ForceStandaloneAppearanceApply);
+			ImGui.Checkbox($"Enable very verbose debug Logging for troubleshooting##Debug##GearBrowserConfig", ref ConfigurationManager.Config.DebugLogForTroubleshooting);
 
 
 		}
@@ -761,6 +762,9 @@ public class ConfigWindow : Window, IDisposable {
 		}
 		if (ImGui.CollapsingHeader("TestUld")) {
 			ImageGuiCrop.TestParts();
+		}
+		if (ImGui.CollapsingHeader("Test Item Sets")) {
+			DrawTestItemSetsDebug();
 		}
 		if (ImGui.CollapsingHeader("Glamour Plate Interop")) {
 			GlamourPlateDebug.Draw();
@@ -829,7 +833,31 @@ public class ConfigWindow : Window, IDisposable {
 			DrawKtkOverlayDebug();
 		}
 	}
-	private void DrawItemVendorButton(uint itemId) {
+
+    private void DrawTestItemSetsDebug() {
+		if (ImGui.Button("Current plate Set ##DebugItemSets##Debug##ConfigWindow")) {
+			var set = PluginServices.ApplyGearChange.GetCurrentPlate();
+			if (set != null) {
+				foreach((var slot, var item) in set.Value.Items) {
+					PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+				}
+			} else {
+				PluginLog.Debug("current plate is null");
+			}
+		}
+		if (ImGui.Button("Current Backup plate set ##DebugItemSets##Debug##ConfigWindow")) {
+			var set = PluginServices.ApplyGearChange.GetBackedUpAppearance();
+			if (set != null) {
+				foreach((var slot, var item) in set.Value.Items) {
+					PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+				}
+			} else {
+				PluginLog.Debug("backed up appearance is null");
+			}
+		}
+    }
+
+    private void DrawItemVendorButton(uint itemId) {
 		if (ImGui.Button($"GetItemInfoProvider {itemId}##ItemVendorLocationIPC##Debug##ConfigWindow")) {
 
 			var zz = PluginServices.ItemVendorLocation.GetItemInfoProvider(itemId);
@@ -879,8 +907,19 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawGlamourerIpcDebug() {
 		if(PluginServices.Context.LocalPlayer == null) return;
 
+		ImGui.Checkbox($"Enable Verbose log messages on each Ipc calls##Variables##Style##Config", ref ConfigurationManager.Config.EnableVerboseGlamourerIpc);
+
+
 		if (ImGui.Button("GetState##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.GetState()}");
+		}
+		ImGui.SameLine();
+		if (ImGui.Button("GetSet##GlamourerIPC##Debug##ConfigWindow")) {
+			var set = PluginServices.Glamourer.GetSet();
+			foreach((var slot, var item) in set.Items) {
+				PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+			}
+
 		}
 		ImGui.SameLine();
 		if (ImGui.Button("Get First Design##GlamourerIPC##Debug##ConfigWindow")) {

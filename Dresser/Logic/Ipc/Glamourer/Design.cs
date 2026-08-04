@@ -11,6 +11,7 @@ using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Penumbra.GameData.DataContainers;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
@@ -279,5 +280,51 @@ public static class Design {
 	public static ItemId NothingId(FullEquipType type)
 		=> uint.MaxValue - 384 - (uint)type;
 
+
+	public static uint DesignIdToItemId(ulong key, GlamourPlateSlot slot) {
+		EquipSlot? equipSlot;
+		try {
+			equipSlot = slot.ToPenumbraEquipSlot();
+		} catch (Exception) {
+			equipSlot = null;
+		}
+		return DesignIdToItemId(key, equipSlot);
+	}
+	public static uint DesignIdToItemId(ulong key, EquipSlot? slot = null) {
+
+		// kinda known to be empty, for offhands?
+		
+		var customId = (CustomItemId) key;
+		var itemId = customId.Item.StripModifiers.Id;
+
+		// TODO: there seems to be a bug, maybe in glamourer
+		//    I managed to get this head item id  "ItemId": 282574488338433,
+		//    By doing the manipulation (with Glamourer alone) use design > restore to automaton
+		//    It shows the head item as "Unknown (1-0)" and when Dresser tries to parse the huge number, it produces errors
+		//
+		//    The slot should be empty anyway
+		//    And casting it to CustomItemId seems to put the id to 0, which is what we want
+
+
+		// seems like these are empty slots, maybe for different items
+		if(key > 4294966000ul && key < 4294999999ul) {
+			if (ConfigurationManager.Config.EnableVerboseGlamourerIpc) {
+				var offset = (long)key - uint.MaxValue;
+				PluginLog.Debug($"[Design Item ID Debug] found near max value with offset: {offset}");
+			}
+			itemId = 0;
+		}
+
+
+		if(ConfigurationManager.Config.EnableVerboseGlamourerIpc && (uint)key != itemId) {
+			PluginLog.Debug($"[Design Item ID Debug] Converted {key} => {itemId} (split: {customId.Split})");			
+		}
+		return itemId;
+	}
+	public static ulong ItemIdToDesignId(Item item, GlamourPlateSlot slot) {
+		if(slot == GlamourPlateSlot.MainHand) return IdentificationListWeapons.ToKey(EquipItem.FromMainhand(item));
+		if(slot == GlamourPlateSlot.OffHand) return IdentificationListWeapons.ToKey(EquipItem.FromOffhand(item));
+		return IdentificationListEquipment.ToKey(EquipItem.FromArmor(item));
+	}
 
 }
