@@ -317,6 +317,25 @@ internal class PenumbraIpc : IDisposable {
 		}
 		return ModMetaCache[modDirectory];
 	}
+	private Dictionary<string, DateTime?> ModImportDateCache = new();
+	internal DateTime? GetModImportDateCached(string modDirectory) {
+		if (!ModImportDateCache.ContainsKey(modDirectory)) {
+			var importDate = GetModImportDate(modDirectory);
+			ModImportDateCache[modDirectory] = importDate;
+		}
+		return ModImportDateCache[modDirectory];
+	}
+	private DateTime? GetModImportDate(string modDirectory) {
+		string? bp = GetModDirectoryCached();
+		if (bp != null) {
+			var metaPath = Path.Combine(bp, modDirectory, "meta.json");
+			if (File.Exists(metaPath)) {
+				var creationTime = File.GetCreationTime(metaPath);
+				return creationTime;
+			}
+		}
+		return null;
+	}
 	private Dictionary<string, Dictionary<string, string>> ModConfigFileTextCache = new();
 	internal Dictionary<string, string> GetModConfigFileTextCached(string modDirectory) {
 		if (!ModConfigFileTextCache.ContainsKey(modDirectory)) {
@@ -401,21 +420,13 @@ internal class PenumbraIpc : IDisposable {
 
 		try {
 
-			var colGuid = GetCollectionGuidForLocalPlayerCharacter();
-			if(colGuid == null) return false;
-			var getSettingsRes = GetCurrentModSettingsWithTempSubscriber.Invoke(
-				colGuid.Value,
-				item.ModDirectory,
-				item.ModName,
-				false,
-				false,
-				0);
-			var tuple = getSettingsRes.Item2;
-			var options = tuple?.Item3;
-			var enabled = tuple?.Item1;
-			var priority = tuple?.Item2;
-			var inherited = tuple?.Item4;
-			var unknown = tuple?.Item5;
+			var tuple = GetCurrentSettingsForMod(item);
+			if(tuple == null) return false;
+			var options = tuple?.Options;
+			var enabled = tuple?.Enabled;
+			var priority = tuple?.Priority;
+			var inherited = tuple?.Inherited;
+			var unknown = tuple?.Unk1;
 
 			Dictionary<string, IReadOnlyList<string>> optionsSafe = [];
 			if(options != null) {
@@ -441,6 +452,21 @@ internal class PenumbraIpc : IDisposable {
 		} catch (Exception) {
 			return false;
 		}
+	}
+	internal (bool Enabled, int Priority, Dictionary<string, List<string>> Options, bool Inherited, bool Unk1)? GetCurrentSettingsForMod(InventoryItem item) {
+		if(item.ModDirectory == null) return null;
+		var colGuid = GetCollectionGuidForLocalPlayerCharacter();
+		if(colGuid == null) return null;
+		var getSettingsRes = GetCurrentModSettingsWithTempSubscriber.Invoke(
+			colGuid.Value,
+			item.ModDirectory,
+			item.ModName ?? "",
+			false,
+			false,
+			0);
+		if(getSettingsRes.Item1 != PenumbraApiEc.Success) return null;
+		return getSettingsRes.Item2;
+
 	}
 	internal bool RemoveTemporaryModSettings(InventoryItem item) {
 		if(item.ModDirectory == null || item.ModName == null) return false;

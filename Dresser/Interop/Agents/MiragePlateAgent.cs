@@ -147,7 +147,7 @@ namespace Dresser.Interop.Agents {
 				return false;
 			}
 
-			return this.Armoire->IsItemInCabinet((int)row.Value.RowId);
+			return this.Armoire->IsItemInCabinet(row.Value.RowId);
 		}
 
 		internal unsafe uint? ArmoireIndexIfPresent(uint itemId) {
@@ -156,7 +156,7 @@ namespace Dresser.Interop.Agents {
 				return null;
 			}
 
-			var isInArmoire = this.Armoire->IsItemInCabinet((int)row.Value.RowId);
+			var isInArmoire = this.Armoire->IsItemInCabinet(row.Value.RowId);
 			return isInArmoire
 				? row.Value.RowId
 				: null;
@@ -271,7 +271,7 @@ namespace Dresser.Interop.Agents {
 
 				var cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
 				//var cabinetId = GetCabinetItemId(&UIState.Instance()->Cabinet, applyItem.ItemId);
-				if (cabinetId != -1 && this.Armoire->IsItemInCabinet(cabinetId)) {
+				if (cabinetId != -1 && this.Armoire->IsItemInCabinet((uint)cabinetId)) {
 					info = (FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource.Cabinet, (int)cabinetId, applyItem.ItemId, 0, 0);
 					// PluginLog.Verbose($"Item Found in {FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMiragePrismMiragePlateData.ItemSource.Cabinet} slot {cabinetId}");
 				}
@@ -372,15 +372,17 @@ namespace Dresser.Interop.Agents {
 		private unsafe InventoryItem* SelectStainItem(byte stainId, ref UsedStains usedStains, out uint bestItemId) {
 			var inventory = InventoryManager.Instance();
 
-			var transient = PluginServices.DataManager.GetExcelSheet<StainTransient>()!.GetRowOrDefault(stainId);
+			var stain = PluginServices.DataManager.GetExcelSheet<Stain>()!.GetRow(stainId);
+			var possibleDyeItems = stain.PossibleItems();
 
 			InventoryItem* item = null;
 
-			bestItemId = transient?.Item1.ValueNullable?.RowId ?? (transient?.Item2.ValueNullable?.RowId ?? 0);
+			// bestItemId = transient?.Item1.ValueNullable?.RowId ?? (transient?.Item2.ValueNullable?.RowId ?? 0);
+			bestItemId = possibleDyeItems.FirstOrDefault().RowId;
 
-			var items = new[] { transient?.Item1.ValueNullable, transient?.Item2.ValueNullable };
+			var items = possibleDyeItems;
 			foreach (var dyeItem in items) {
-				if (dyeItem == null || dyeItem.Value.RowId == 0) {
+				if (dyeItem.RowId == 0) {
 					continue;
 				}
 
@@ -394,7 +396,7 @@ namespace Dresser.Interop.Agents {
 						var address = ((uint)type, (uint)i);
 						var invItem = inv->Items[i];
 
-						if (invItem.ItemId != dyeItem.Value.RowId) {
+						if (invItem.ItemId != dyeItem.RowId) {
 							continue;
 						}
 

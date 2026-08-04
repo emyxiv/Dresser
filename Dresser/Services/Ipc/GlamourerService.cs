@@ -44,6 +44,7 @@ namespace Dresser.Services.Ipc {
 
 		public GlamourerService(IDalamudPluginInterface pluginInterface) {
 
+			// Main
 			ApiVersionSubscriber = new ApiVersion(pluginInterface);
 			SetItemSubscriber = new SetItem(pluginInterface);
 			RevertStateSubscriber = new RevertState(pluginInterface);
@@ -52,6 +53,12 @@ namespace Dresser.Services.Ipc {
 			ApplyStateSubscriber = new ApplyState(pluginInterface);
 			_throttler = new Throttler<Task>(0);
 
+			// Designs
+			_addDesignSubscriber = new AddDesign(pluginInterface);
+			_getDesignListSubscriber = new GetDesignList(pluginInterface);
+			_getDesignJObjectSubscriber = new GetDesignJObject(pluginInterface);
+
+			// State change
 			StateChangedWithTypeProvider = global::Glamourer.Api.IpcSubscribers.StateChangedWithType.Subscriber(pluginInterface);
 			StateChangedWithType += OnStateChangedWithType;
 		}
@@ -77,6 +84,10 @@ namespace Dresser.Services.Ipc {
 
 			(GlamourerApiEc response, JObject? charaState) result = GetStateSubscriber.Invoke((int)index);
 			if (result.response != GlamourerApiEc.Success) return null;
+
+			if (ConfigurationManager.Config.EnableVerboseGlamourerIpc) {
+				PluginLog.Debug($"Executed Glamourer API GetState, received JSON:\n{result.charaState}");
+			}
 
 			return result.charaState;
 		}
@@ -108,8 +119,9 @@ namespace Dresser.Services.Ipc {
 				var itemJson = equipJson?[slot.ToPenumbraEquipSlot().ToString()];
 				InventoryItem item;
 
-				var itemId = ((((uint?)itemJson?["ItemId"]) ?? 0));
-				if (itemId is > 4294967100u or 0) item = InventoryItem.Zero;
+				var itemId = Design.DesignIdToItemId(((ulong?)itemJson?["ItemId"]) ?? 0ul, slot);
+
+				if (itemId == 0) item = InventoryItem.Zero;
 				else item = InventoryItem.New(
 					itemId,
 					((byte?)itemJson?["Stain"]) ?? 0,
@@ -125,6 +137,13 @@ namespace Dresser.Services.Ipc {
 
 				// PluginLog.Debug($"test GetSet item: {slot.ToPenumbraEquipSlot()}: {itemId} => {item.ItemId}");
 				set.SetSlot(slot, item);
+			}
+
+			if (ConfigurationManager.Config.EnableVerboseGlamourerIpc) {
+				PluginLog.Debug($"Executed Glamourer GetSet, generated set:");
+				foreach((var slot, var item) in set.Items) {
+					PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+				}
 			}
 			return set;
 		}
@@ -163,8 +182,15 @@ namespace Dresser.Services.Ipc {
 				return PluginServices.Framework.RunOnFrameworkThread(() =>
 				{
 					var newState = callback.Invoke(originalState);
+					if (ConfigurationManager.Config.EnableVerboseGlamourerIpc && newState == null) {
+							PluginLog.Debug($"Call to Glamourer API SetState but new state is null, aborting.");
+					}
+
 					if(newState == null) return;
 					ApplyMetaDataToState(ref newState,[]);
+					if (ConfigurationManager.Config.EnableVerboseGlamourerIpc) {
+						PluginLog.Debug($"Call to Glamourer API SetState:\n{newState}");
+					}
 					ApplyStateSubscriber.Invoke(newState, character.ObjectIndex, 0U, ApplyFlag.Equipment |  ApplyFlag.Customization  | ApplyFlag.Once);
 				});
 			});
@@ -174,11 +200,16 @@ namespace Dresser.Services.Ipc {
 			try {
 				_throttler.Throttle(() =>
 				{
-					// PluginLog.Warning($"                         ---        SetItem      ---                                   \n{new StackTrace()}");
-					// if (!EnableAllApply) return;
+					
+					var equipSlot = (ApiEquipSlot)slot;
+					var itemUlong = NothingOrItem(slot, itemId);
+					var stainsList =  new List<byte>() {stainId, stainId2};
+					if (ConfigurationManager.Config.EnableVerboseGlamourerIpc) {
+						PluginLog.Debug($"Scheduled execution on framework thread for Glamourer API SetItem:\n   EquipSlot:{equipSlot}\n   itemUlong:{itemUlong}\n   stainsList:{stainsList}");
+					}
 					return PluginServices.Framework.RunOnFrameworkThread(() =>
 					{
-						SetItemSubscriber.Invoke(character.ObjectIndex, (ApiEquipSlot)slot, NothingOrItem(slot, itemId), new List<byte>() {stainId, stainId2});
+						SetItemSubscriber.Invoke(character.ObjectIndex, equipSlot, itemUlong, stainsList);
 					});
 
 				});

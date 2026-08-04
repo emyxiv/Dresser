@@ -31,7 +31,7 @@ using InventoryItem = Dresser.Models.InventoryItem;
 
 namespace Dresser.Gui.Components {
 	internal class ItemIcon {
-		public static Vector2 IconSize => new Vector2(120) * ConfigurationManager.Config.IconSizeMult;
+		public static Vector2 IconSize => new Vector2(120) * Styler.IconSizeMultiplier2D;
 		public static Vector2 TooltipFramePadding => new Vector2(ImGui.GetFontSize() * 0.2f);
 		public static Vector2 TooltipItemSpacing => TooltipFramePadding;
 		public static float DyeBorder => 3 * ConfigurationManager.Config.IconSizeMult;
@@ -181,6 +181,11 @@ namespace Dresser.Gui.Components {
 						if (isModdedItem) {
 
 							ImGui.TextColored(ModdedItemColor, $"by {item.ModAuthor}");
+							var modImportTime = item.ModImportTime();
+							if(modImportTime != null) {
+								ImGui.SameLine();
+								ImGui.Text($" imported on [{modImportTime.Value.ToString("dd MMM yyyy")}]");
+							}
 							if (ConfigurationManager.Config.IconTooltipShowDev) {
 								// LINE BREAK
 								ImGui.TextColored(ColorGreyDark, $"[{item.ModModelPath}]");

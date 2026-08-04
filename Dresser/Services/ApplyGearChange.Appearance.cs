@@ -63,25 +63,29 @@ namespace Dresser.Services {
 		/// Called when the user selects an item from the gear browser.
 		/// Clones the item, updates the current plate, applies mods if needed, and shows it on the player.
 		/// </summary>
-		public void ExecuteBrowserItem(InventoryItem item) {
+		public void ExecuteBrowserItem(InventoryItem item, bool isGlamourSet = false) {
 			PluginLog.Verbose($"Execute apply item {item.Item.NameString} {item.Item.RowId}");
 
 			var clonedItem = item.Clone();
 			DyePickerRefreshNewItem(clonedItem, true);
 
-			var slot = clonedItem.Item.GlamourPlateSlot();
-
-			if (slot != null) {
-				if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
-					plate = new();
-					ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
-				}
-				CurrentPreviousModdedItem = plate.GetSlot(slot.Value);
-				plate.SetSlot(slot.Value, clonedItem);
-
-				PrepareModsAndDo(clonedItem, slot.Value, ApplyItemAppearanceOnPlayer);
-				CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
+			var slot = ConfigurationManager.Config.CurrentGearSelectedSlot;
+			if(isGlamourSet) {
+				var slot2 = clonedItem.Item.GlamourPlateSlot();
+				if(slot2 != null) {
+					slot = slot2.Value;	
+				} 
 			}
+
+			if (!ConfigurationManager.Config.PendingPlateItemsCurrentChar.TryGetValue(ConfigurationManager.Config.SelectedCurrentPlate, out InventoryItemSet plate)) {
+				plate = new();
+				ConfigurationManager.Config.PendingPlateItemsCurrentChar[ConfigurationManager.Config.SelectedCurrentPlate] = plate;
+			}
+			CurrentPreviousModdedItem = plate.GetSlot(slot);
+			plate.SetSlot(slot, clonedItem);
+
+			PrepareModsAndDo(clonedItem, slot, ApplyItemAppearanceOnPlayer);
+			CompileTodoTasks(ConfigurationManager.Config.SelectedCurrentPlate);
 		}
 
 		/// <summary>

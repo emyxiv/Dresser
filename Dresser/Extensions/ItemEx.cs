@@ -33,6 +33,10 @@ using InteropGlamourPlateSlot = Dresser.Interop.Agents.GlamourPlateSlot;
 
 namespace Dresser.Extensions {
 	internal static class ItemExExtention {
+		public static bool IsDye(this ItemRow item) {
+			return PluginServices.DataManager.Excel.GetSheet<Lumina.Excel.Sheets.Stain>().Any(t => t.Item.Any(i => i.Value.RowId == item.RowId));
+		}
+			
 		public static InteropGlamourPlateSlot? GlamourPlateSlot(this ItemRow item)
 		{
 			var slot = item.EquipSlotCategory?.Base;
@@ -251,8 +255,9 @@ namespace Dresser.Extensions {
 		}
 		//=> PluginServices.ChatUtilities.LinkItem(item);
 		public static void TryOn(this ItemRow item) {
-			// if (item.CanTryOn && PluginServices.TryOn.CanUseTryOn)
-			// 	PluginServices.TryOn.TryOnItem(item);
+			if (item.CanTryOn) {
+				FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentTryon.TryOn(0, item.RowId, 0, 0);
+			}
 		}
 		//public static void OpenCraftingLog(this ItemRow item) {
 		//	if (item.CanOpenCraftLog)

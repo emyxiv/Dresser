@@ -66,7 +66,7 @@ namespace Dresser.Core {
 		public delegate void OnChangeGlamingAtDresserDelegate(bool newIsGlamingAtDresser);
 		public static event OnChangeGlamingAtDresserDelegate? OnChangeGlamingAtDresser;
 
-		public Window? LastFocusedWindow = null;
+		public IWindow? LastFocusedWindow = null;
 		public void Refresh() {
 			IsGlamingAtDresser = MiragePlateAgent.IsGlamingAtDresser();
 			if (IsGlamingAtDresser != _lastState_IsGlamingAtDresser) OnChangeGlamingAtDresser?.Invoke(IsGlamingAtDresser);

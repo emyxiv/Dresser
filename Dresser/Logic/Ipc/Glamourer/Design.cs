@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Dresser.Extensions;
 using Dresser.Interop.Agents;
+using Dresser.Models;
 
 using Lumina.Excel.Sheets;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Penumbra.GameData.DataContainers;
 using Penumbra.GameData.Enums;
 using Penumbra.GameData.Structs;
 
@@ -16,7 +19,7 @@ namespace Dresser.Logic.Ipc.Glamourer;
 
 public static class Design {
 
-/*
+
 	public static string PrepareDesign(JObject design, InventoryItemSet set) {
 
 		design["Name"] = "DresserAnywhere Auto Apply";
@@ -50,10 +53,21 @@ public static class Design {
 
 			// if item id == 0, make it empty and apply
 			// else display the item
+			var itemRow = item.ToItemRow();
 
 			CustomItemId? mainItem = null;
 			if (item.ItemId == 0) mainItem = NothingId(slot.ToPenumbraEquipSlot()).Id;
-			else mainItem = FromInventoryItem(item.Item, slot, ret);
+			else {
+				var designDict = FromInventoryItem(itemRow, slot, ret);
+
+				if(designDict.Count > 0) {
+					var designCustomIdPair = designDict.First();
+					// var ddsq = designCustomIdPair.Value;
+					// var dddd = ddsq.Item.Id;
+					mainItem = designCustomIdPair.Value.Id;
+					
+				} else mainItem = NothingId(slot.ToPenumbraEquipSlot()).Id;
+			}
 
 			//var hackedId = mainItem.Id | 1ul << 48;
 
@@ -66,10 +80,10 @@ public static class Design {
 				ret[slot.ToPenumbraEquipSlot().ToString()] = SerializeItem(mainItem.Value, item.Stain, false, true, true, false);
 				if (slot == GlamourPlateSlot.MainHand) {
 					//&& !item.Item.IsMainModelOnOffhand()
-					var sameItemOnOffhand = item.Item.ToFullEquipType2(false).IsOffhandType();
+					var sameItemOnOffhand = item.Item.ToFullEquipType(false).IsOffhandType();
 
 					if (sameItemOnOffhand) {
-						ret[EquipSlot.OffHand.ToString()] = SerializeItem(EquipItem.FromOffhand(item.Item).Id, item.Stain, false, true, true, false);
+						ret[EquipSlot.OffHand.ToString()] = SerializeItem(EquipItem.FromOffhand(itemRow).Id, item.Stain, false, true, true, false);
 						overwritesOffhand = true;
 					}
 				}
@@ -85,7 +99,7 @@ public static class Design {
 		design["Equipment"] = ret;
 
 	}
-*/
+
 	public static Dictionary<EquipSlot,CustomItemId> FromInventoryItem(Item item, GlamourPlateSlot slot, JObject? equipmentDesign = null) {
 		var equipItem = slot switch {
 			GlamourPlateSlot.MainHand  => EquipItem.FromMainhand(item),
@@ -206,7 +220,7 @@ public static class Design {
 	};
 
 
-	private static string ShareBase64(JObject jObject) {
+	public static string ShareBase64(JObject jObject) {
 		var json = jObject.ToString(Formatting.None);
 		var compressed = json.Compress(6);
 		return Convert.ToBase64String(compressed);
@@ -216,23 +230,49 @@ public static class Design {
 		byteArray.DecompressToString(out var json);
 		return JObject.Parse(json);
 	}
-	static void TurnOffAllApplies(ref JObject json) {
+	public static JObject FromBase64v6(string base64) {
+		var bytes = System.Convert.FromBase64String(base64);
 
-		var propertyName = "Apply";
+		var version1 = bytes[0];
+		PluginLog.Debug($"Detected glamourer design version {version1}");
+		// if(version1 == 5) {
+		// 	var Base64SizeV4 = 95;
+		// 	bytes   = bytes[Base64SizeV4..];
+		// }
+		var version2 = bytes.DecompressToString(out var decompressed);
+		// PluginLog.Debug($"json:\n{decompressed}");
+		// PluginLog.Debug($"Detected glamourer design version {version1} => {version2}");
+		var jObj2 = JObject.Parse(decompressed);
+		return jObj2;
+	}
+	public static void TurnOffAllApplies(ref JObject json) {
+
 		foreach (var property in json.Properties()) {
-			if (property.Name == propertyName) {
+			if (property.Name == "Apply" || property.Name == "ApplyStain" || property.Name == "ApplyCrest") {
 				property.Value = false;
 			}
 
-			if (property.Value.Type == JTokenType.Object || property.Value.Type == JTokenType.Array) {
+			if (property.Value.Type == JTokenType.Object) {
 				var value = (JObject)property.Value;
 				TurnOffAllApplies(ref value);
+			} else if (property.Value.Type == JTokenType.Array) {
+				foreach (var item in (JArray)property.Value) {
+					if (item.Type == JTokenType.Object) {
+						var value = (JObject)item;
+						TurnOffAllApplies(ref value);
+					}
+				}
 			}
 		}
 	}
 
 	public static ItemId NothingId(EquipSlot slot)
-	=> uint.MaxValue - 128 - (uint)slot.ToSlot();
+	=> slot switch  {
+		EquipSlot.MainHand => 1601,
+		EquipSlot.OffHand => 4294966874,
+		_ => uint.MaxValue - 128 - (uint)slot.ToSlot(),
+	};
+	//  slot == EquipSlot.MainHand ? 1601 : uint.MaxValue - 128 - (uint)slot.ToSlot();
 
 	public static ItemId SmallclothesId(EquipSlot slot)
 		=> uint.MaxValue - 256 - (uint)slot.ToSlot();
@@ -240,5 +280,51 @@ public static class Design {
 	public static ItemId NothingId(FullEquipType type)
 		=> uint.MaxValue - 384 - (uint)type;
 
+
+	public static uint DesignIdToItemId(ulong key, GlamourPlateSlot slot) {
+		EquipSlot? equipSlot;
+		try {
+			equipSlot = slot.ToPenumbraEquipSlot();
+		} catch (Exception) {
+			equipSlot = null;
+		}
+		return DesignIdToItemId(key, equipSlot);
+	}
+	public static uint DesignIdToItemId(ulong key, EquipSlot? slot = null) {
+
+		// kinda known to be empty, for offhands?
+		
+		var customId = (CustomItemId) key;
+		var itemId = customId.Item.StripModifiers.Id;
+
+		// TODO: there seems to be a bug, maybe in glamourer
+		//    I managed to get this head item id  "ItemId": 282574488338433,
+		//    By doing the manipulation (with Glamourer alone) use design > restore to automaton
+		//    It shows the head item as "Unknown (1-0)" and when Dresser tries to parse the huge number, it produces errors
+		//
+		//    The slot should be empty anyway
+		//    And casting it to CustomItemId seems to put the id to 0, which is what we want
+
+
+		// seems like these are empty slots, maybe for different items
+		if(key > 4294966000ul && key < 4294999999ul) {
+			if (ConfigurationManager.Config.EnableVerboseGlamourerIpc) {
+				var offset = (long)key - uint.MaxValue;
+				PluginLog.Debug($"[Design Item ID Debug] found near max value with offset: {offset}");
+			}
+			itemId = 0;
+		}
+
+
+		if(ConfigurationManager.Config.EnableVerboseGlamourerIpc && (uint)key != itemId) {
+			PluginLog.Debug($"[Design Item ID Debug] Converted {key} => {itemId} (split: {customId.Split})");			
+		}
+		return itemId;
+	}
+	public static ulong ItemIdToDesignId(Item item, GlamourPlateSlot slot) {
+		if(slot == GlamourPlateSlot.MainHand) return IdentificationListWeapons.ToKey(EquipItem.FromMainhand(item));
+		if(slot == GlamourPlateSlot.OffHand) return IdentificationListWeapons.ToKey(EquipItem.FromOffhand(item));
+		return IdentificationListEquipment.ToKey(EquipItem.FromArmor(item));
+	}
 
 }

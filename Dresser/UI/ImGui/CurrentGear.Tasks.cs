@@ -58,11 +58,8 @@ public partial class CurrentGear
 					ImGui.TableSetupColumn("Location", ImGuiTableColumnFlags.WidthStretch, 100.0f, 3);
 					ImGui.TableHeadersRow();
 
-					var ddd = PluginServices.DataManager.Excel.GetSheet<StainTransient>();
 					foreach (var taskedItem in taskedItems) {
-						var isDye = PluginServices.DataManager.Excel.GetSheet<StainTransient>()
-							.Any(t => t.Item1.RowId == taskedItem.ItemId
-									|| t.Item2.RowId == taskedItem.ItemId);
+						var isDye = taskedItem.Item.IsDye();
 
 						ImGui.TableNextRow();
 						ImGui.TableNextColumn();

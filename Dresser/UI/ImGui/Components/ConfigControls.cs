@@ -107,5 +107,70 @@ namespace Dresser.Gui.Components {
 			}
 			return false;
 		}
+		public static bool ConfigFloat(string propertyName, string label, float speed = 1f, float min = 0f, float max = 0f)
+			=> ConfigFloat(propertyName, label, "", out _, speed, min, max);
+		public static bool ConfigFloat(string propertyName, string label, string description, out bool filterActiveAfter, float speed = 1f, float min = 0f, float max = 0f, bool displayChangedColor = false) {
+			filterActiveAfter = false;
+
+			// get current value
+			var fieldInfo = typeof(Configuration).GetField(propertyName);
+			if (fieldInfo == null) return false;
+			var valueGet = fieldInfo?.GetValue(ConfigurationManager.Config);
+			if (valueGet == null || valueGet.GetType() != typeof(float)) return false;
+			var value = (float)valueGet;
+
+			// get default value
+			var valueDefaultObj = fieldInfo?.GetValue(ConfigurationManager.Default);
+			if (valueDefaultObj == null || valueDefaultObj.GetType() != typeof(float)) return false;
+			var valueDefault = (float)valueDefaultObj;
+
+			var numberInputFrameWidth = ImGui.GetFontSize() * 4;
+
+			// From
+			// ----
+			var isActiveFilter = value != valueDefault;
+			filterActiveAfter |= isActiveFilter;
+			if (displayChangedColor && isActiveFilter) {
+				ImGui.PushStyleColor(ImGuiCol.FrameBg, Styler.FilterIndicatorFrameColor);
+				ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, Styler.FilterIndicatorFrameHoveredColor);
+				ImGui.PushStyleColor(ImGuiCol.FrameBgActive, Styler.FilterIndicatorFrameActiveColor);
+			}
+
+			ImGui.SetNextItemWidth(numberInputFrameWidth);
+			var isChanged = ImGui.DragFloat($"##Float##Input##{propertyName}##{label}", ref value, speed, min, max, "%.2f", ImGuiSliderFlags.AlwaysClamp);
+			if (displayChangedColor && isActiveFilter) ImGui.PopStyleColor(3);
+
+			ImGui.SameLine();
+
+			// Label
+			// -----
+			string visibleLabel = label.LabelVisibleText();
+
+			ImGui.SameLine();
+			if (!description.IsNullOrWhitespace()) {
+				GuiHelpers.TextTooltip(visibleLabel, description);
+			} else {
+				ImGui.Text(visibleLabel);
+			}
+
+			// reset to default
+			// ----------------
+			ImGui.SameLine();
+			if (GuiHelpers.IconButtonNoBg(FontAwesomeIcon.Undo, $"##Undo##Input##{propertyName}##{label}", "Reset to default value")) {
+				value = valueDefault;
+				isChanged = true;
+			}
+
+			// Update value
+			// ------------
+			if (isChanged) {
+				var minClamp = min == 0f ? float.MinValue : min;
+				var maxClamp = max == 0f ? float.MaxValue : max;
+				value = Math.Clamp(value, minClamp, maxClamp);
+				fieldInfo?.SetValue(ConfigurationManager.Config, value);
+				return true;
+			}
+			return false;
+		}
 	}
 }

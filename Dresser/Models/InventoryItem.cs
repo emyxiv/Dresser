@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -71,6 +72,11 @@ namespace Dresser.Models {
 		public InventoryItem(InventoryType inventoryType, uint itemId) : this(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
 			this.SortedContainer = inventoryType;
 		}
+		public InventoryItem(uint itemId) : this(InventoryType.Bag0, itemId) {}
+		public InventoryItem(uint itemId, byte stain1, byte stain2) : this(itemId) {
+			this.Stain = stain1;
+			this.Stain2 = stain2;
+		}
 		public InventoryItem(InventoryType inventoryType, uint itemId, string modName, string modDirectory, string modModelPath) : this(inventoryType, itemId) {
 			this.ModName = modName;
 			this.ModDirectory = modDirectory;
@@ -89,6 +95,9 @@ namespace Dresser.Models {
 		}
 
 
+		public Item ToItemRow() {
+			return PluginServices.DataManager.GetExcelSheet<Item>().GetRow(Item.RowId);
+		}
 		public static CriticalInventoryItem ToCritical(InventoryItem item) {
             var cclItem = new CriticalInventoryItem(PluginServices.InventoryItemFactory.ItemSheet, PluginServices.InventoryItemFactory.StainSheet);
             cclItem.FromInventoryItem(item);
@@ -155,14 +164,20 @@ namespace Dresser.Models {
 		}
 
 		public IEnumerable<InventoryItem> GetDyesInInventories(int dyeIndex) {
-			var stainTransient = PluginServices.DataManager.GetExcelSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
+			var possibleStainItems = PluginServices.DataManager.GetExcelSheet<Stain>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2)).PossibleItems();
+			// var stainTransient = PluginServices.DataManager.GetExcelSheet<StainTransient>().FirstOrDefault(st => st.RowId == (dyeIndex == 1 ? this.Stain : this.Stain2));
 
 			var inventories = PluginServices.AllaganTools.GetItemsLocalCharsRetainers(true);
-			var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient.Item1.RowId || v.ItemId == stainTransient.Item2.RowId)).Where(i=>i.ItemId != 0);
+			// var foundDyes = inventories.SelectMany(ip => ip.Value.Where(v => v.ItemId == stainTransient.Item1.RowId || v.ItemId == stainTransient.Item2.RowId)).Where(i=>i.ItemId != 0);
+			var foundDyes = inventories.SelectMany(ip => ip.Value.Join(
+				possibleStainItems,
+				a=>a.ItemId,
+				b=>b.RowId,
+				(a,b) => a)).Where(i=>i.ItemId != 0);
 
 			if(!foundDyes.Any()) {
-				var defaultStainRowId = stainTransient.Item1.RowId;
-				if(defaultStainRowId != null) {
+				var defaultStainRowId = possibleStainItems.FirstOrDefault().RowId;
+				if(defaultStainRowId != 0) {
 					var unobtainedDye = new InventoryItem((InventoryType)InventoryTypeExtra.AllItems, (uint)defaultStainRowId);
 
 					foundDyes = new List<InventoryItem>() { unobtainedDye };
@@ -221,6 +236,11 @@ namespace Dresser.Models {
 
 		// --- Merged from Extensions/InventoryItem.cs ---
 
+		public void TryOn() {
+			if (this.Item.CanTryOn) {
+				FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentTryon.TryOn(0, this.ItemId, this.Stain, this.Stain2);
+			}
+		}
 		public bool IsGlamourPlateApplicable()
 			=> SortedContainer == InventoryType.GlamourChest || SortedContainer == InventoryType.Armoire;
 		public bool IsFadedInBrowser()
@@ -277,7 +297,7 @@ namespace Dresser.Models {
 			};
 		}
 		public string FormattedOwnerName() {
-			var id = InRetainer ? RetainerId : PluginServices.ClientState.LocalContentId;
+			var id = InRetainer ? RetainerId : PluginServices.Context.LocalPlayerCharacterId;
 			var charaName = PluginServices.Objects.SearchById(id)?.Name;
 			if (charaName != null) return charaName.TextValue;
 			return "Retainer";
@@ -291,6 +311,9 @@ namespace Dresser.Models {
 			var stainEntry = PluginServices.DataManager.GetExcelSheet<Stain>().First(s => s.RowId == Stain2);
 			return stainEntry.Name.ToDalamudString().ToString() ?? "";
 		}
+
+		public DateTime? ModImportTime()
+			=> this.ModDirectory == null ? null : PluginServices.Penumbra.GetModImportDateCached(this.ModDirectory);
 
 	}
 }

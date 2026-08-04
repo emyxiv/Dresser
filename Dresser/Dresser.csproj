@@ -1,4 +1,4 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/14.0.2">
+﻿<Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
       <LangVersion>preview</LangVersion>
       <Version>0.6.0.5</Version>
@@ -61,12 +61,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="DalamudPackager" Version="14.0.2" />
+    <PackageReference Update="DalamudPackager" Version="15.0.0" />
   </ItemGroup>
 
   <ProjectExtensions>
     <DalamudPlugin>
-      <ApiLevel>14</ApiLevel>
+      <ApiLevel>15</ApiLevel>
       <Author>emyxiv</Author>
       <Name>Dresser</Name>
       <Punchline>Make glamouring more enjoyable</Punchline>

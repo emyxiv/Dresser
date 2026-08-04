@@ -365,5 +365,75 @@ namespace Dresser.Gui.Components {
 			drawList.AddRectFilled(position, position + size,ImGui.ColorConvertFloat4ToU32(colorBg), rounding);
 			return ImGui.InvisibleButton(label, size);
 		}
+
+		/// <summary>
+		/// Draws a tri-state checkbox cycling: empty → checkmark (include) → X (exclude) → empty.
+		/// Does not use ImSharp. Uses plain ImGui draw list calls.
+		/// </summary>
+		public static bool DrawTagTriStateCheckbox(string label, ref int state) {
+			var currentState = state;
+
+			var pos      = ImGui.GetCursorScreenPos();
+			var sz       = ImGui.GetFrameHeight();
+			var drawList = ImGui.GetWindowDrawList();
+
+			// Split display text from ImGui ID (## separator)
+			var sepIdx  = label.IndexOf("##", StringComparison.Ordinal);
+			var display = sepIdx >= 0 ? label[..sepIdx] : label;
+
+			// Invisible button covers the square + spacing + label text
+			var labelSize = ImGui.CalcTextSize(display);
+			float itemW   = sz + ImGui.GetStyle().ItemInnerSpacing.X + labelSize.X;
+			ImGui.InvisibleButton(label, new Vector2(itemW, sz));
+			bool clicked = ImGui.IsItemClicked(ImGuiMouseButton.Left);
+			bool hovered = ImGui.IsItemHovered();
+			bool active  = ImGui.IsItemActive();
+
+			// Checkbox frame
+			uint bgCol = active && hovered ? ImGui.GetColorU32(ImGuiCol.FrameBgActive)
+			           : hovered           ? ImGui.GetColorU32(ImGuiCol.FrameBgHovered)
+			           :                     ImGui.GetColorU32(ImGuiCol.FrameBg);
+			var boxMax = pos + new Vector2(sz, sz);
+			drawList.AddRectFilled(pos, boxMax, bgCol, ImGui.GetStyle().FrameRounding);
+			if(ImGui.GetStyle().FrameBorderSize > 0){
+				drawList.AddRect(pos, boxMax, ImGui.GetColorU32(ImGuiCol.Border), ImGui.GetStyle().FrameRounding, ImGui.GetStyle().FrameBorderSize);
+			}
+
+			// Symbol
+			uint  checkCol  = ImGui.GetColorU32(ImGuiCol.CheckMark);
+			float thickness = MathF.Max(sz / 8.0f, 1.5f);
+
+			if (currentState == 1) {
+				// Checkmark — direct port of ImGui's RenderCheckMark with matching outer padding
+				float pad    = MathF.Max(1f, (float)(int)(sz / 6f));
+				var   cmPos  = pos + new Vector2(pad, pad);
+				float cmSz   = sz - pad * 2f;
+				float thick  = MathF.Max(cmSz / 5f, 1f);
+				cmSz  -= thick * 0.5f;
+				cmPos += new Vector2(thick * 0.25f, thick * 0.25f);
+				float third  = cmSz / 3f;
+				float bx     = cmPos.X + third;
+				float by     = cmPos.Y + cmSz - third * 0.5f;
+				drawList.PathLineTo(new Vector2(cmPos.X,        by - third));
+				drawList.PathLineTo(new Vector2(bx,             by));
+				drawList.PathLineTo(new Vector2(cmPos.X + cmSz, by - cmSz + third));
+				drawList.PathStroke(checkCol, ImDrawFlags.None, thick);
+			} else if (currentState == -1) {
+				// Cross / X
+				float pad = sz / 4.0f;
+				drawList.AddLine(pos + new Vector2(pad,      pad),      pos + new Vector2(sz - pad, sz - pad), checkCol, thickness);
+				drawList.AddLine(pos + new Vector2(sz - pad, pad),      pos + new Vector2(pad,      sz - pad), checkCol, thickness);
+			}
+
+			// Label text
+			var textPos = pos + new Vector2(sz + ImGui.GetStyle().ItemInnerSpacing.X, ImGui.GetStyle().FramePadding.Y);
+			drawList.AddText(textPos, ImGui.GetColorU32(ImGuiCol.Text), display);
+
+			if (clicked) {
+				state = currentState switch { 0 => 1, 1 => -1, _ => 0 };
+				return true;
+			}
+			return false;
+		}
 	}
 }

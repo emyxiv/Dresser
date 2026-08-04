@@ -46,6 +46,7 @@ public class ConfigWindow : Window, IDisposable {
 			}},
 			{"Style",new () {
 				{ "Windows & sizing", DrawWindowsAndSizingConfigs },
+				{ "Variables", DrawVariablesStyleConfig },
 				{ "Colors", DrawColorStyleConfig },
 			}},
 			{"Mod Browser",new () {
@@ -299,6 +300,10 @@ public class ConfigWindow : Window, IDisposable {
 
 		}
 		ImGui.TextWrapped("Glamourer is required to display glamours directly on your character.");
+		if (PluginServices.Context.GlamourerState) {
+			ImGui.Checkbox($"Reflect in Dresser the changes made in Glamourer##OptionalPlugins##ConfigWindow", ref ConfigurationManager.Config.GlamourerChangesReflectedOnDresser);
+			GuiHelpers.Tooltip("Items and/or dyes of the current plate will be overwritten when an item/dye change is executed in Glamourer.");
+		}
 	}
 	private void OptionalPlugins() {
 /*
@@ -758,6 +763,7 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("Toggle debug stuff")) {
 			ImGui.Checkbox($"Display debug info##Debug##GearBrowserConfig", ref ConfigurationManager.Config.IconTooltipShowDev);
 			//ImGui.Checkbox($"Force Standalone Appearance Apply##Debug##GearBrowserConfig", ref ConfigurationManager.Config.ForceStandaloneAppearanceApply);
+			ImGui.Checkbox($"Enable very verbose debug Logging for troubleshooting##Debug##GearBrowserConfig", ref ConfigurationManager.Config.DebugLogForTroubleshooting);
 
 
 		}
@@ -787,6 +793,9 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.CollapsingHeader("TestUld")) {
 			ImageGuiCrop.TestParts();
 		}
+		if (ImGui.CollapsingHeader("Test Item Sets")) {
+			DrawTestItemSetsDebug();
+		}
 		if (ImGui.CollapsingHeader("Glamour Plate Interop")) {
 			GlamourPlateDebug.Draw();
 		}
@@ -808,7 +817,7 @@ public class ConfigWindow : Window, IDisposable {
 				ImGui.TableNextColumn();
 				ImGui.TextUnformatted($"{characterId}");
 				ImGui.TableNextColumn();
-				ImGui.TextUnformatted($"{(characterId.ToString().StartsWith("3") ? "Retainer": (PluginServices.ClientState.LocalContentId == characterId ? "Player Character" : "Unknown"))}");
+				ImGui.TextUnformatted($"{(characterId.ToString().StartsWith("3") ? "Retainer": (PluginServices.Context.LocalPlayerCharacterId == characterId ? "Player Character" : "Unknown"))}");
 			}
 
 			ImGui.EndTable();
@@ -868,7 +877,31 @@ public class ConfigWindow : Window, IDisposable {
 				$"KtkCurrentGear visible: {plugin.KtkCurrentGear?.IsOpen}");
 		}
 	}
-	private void DrawItemVendorButton(uint itemId) {
+
+    private void DrawTestItemSetsDebug() {
+		if (ImGui.Button("Current plate Set ##DebugItemSets##Debug##ConfigWindow")) {
+			var set = PluginServices.ApplyGearChange.GetCurrentPlate();
+			if (set != null) {
+				foreach((var slot, var item) in set.Value.Items) {
+					PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+				}
+			} else {
+				PluginLog.Debug("current plate is null");
+			}
+		}
+		if (ImGui.Button("Current Backup plate set ##DebugItemSets##Debug##ConfigWindow")) {
+			var set = PluginServices.ApplyGearChange.GetBackedUpAppearance();
+			if (set != null) {
+				foreach((var slot, var item) in set.Value.Items) {
+					PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+				}
+			} else {
+				PluginLog.Debug("backed up appearance is null");
+			}
+		}
+    }
+
+    private void DrawItemVendorButton(uint itemId) {
 		if (ImGui.Button($"GetItemInfoProvider {itemId}##ItemVendorLocationIPC##Debug##ConfigWindow")) {
 
 			var zz = PluginServices.ItemVendorLocation.GetItemInfoProvider(itemId);
@@ -918,9 +951,32 @@ public class ConfigWindow : Window, IDisposable {
 	private void DrawGlamourerIpcDebug() {
 		if(PluginServices.Context.LocalPlayer == null) return;
 
+		ImGui.Checkbox($"Enable Verbose log messages on each Ipc calls##Variables##Style##Config", ref ConfigurationManager.Config.EnableVerboseGlamourerIpc);
+
+
 		if (ImGui.Button("GetState##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.GetState()}");
 		}
+		ImGui.SameLine();
+		if (ImGui.Button("GetSet##GlamourerIPC##Debug##ConfigWindow")) {
+			var set = PluginServices.Glamourer.GetSet();
+			foreach((var slot, var item) in set.Items) {
+				PluginLog.Debug($"{slot} : {item?.ItemId ?? 0} : {item?.FormattedName ?? "null"}");
+			}
+
+		}
+		ImGui.SameLine();
+		if (ImGui.Button("Get First Design##GlamourerIPC##Debug##ConfigWindow")) {
+			var designList = PluginServices.Glamourer.GetDesignList();
+			if(designList.Count > 0) {
+				PluginLog.Debug($"{PluginServices.Glamourer.GetDesignJObject(designList.First().Key)}");
+			} else {
+				PluginLog.Debug($"No designs available");
+			}
+		}
+
+
+
 		if (ImGui.Button("SetMetaData Hat##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Hat)}");
 		}
@@ -932,6 +988,17 @@ public class ConfigWindow : Window, IDisposable {
 		if (ImGui.Button("SetMetaData Weapon##GlamourerIPC##Debug##ConfigWindow")) {
 			PluginLog.Debug($"{PluginServices.Glamourer.SetMetaData(PluginServices.Context.LocalPlayer, GlamourerService.MetaData.Weapon)}");
 		}
+
+
+		var newDesignName = "ABCDEFG01981984";
+		if (ImGui.Button($"Create [{newDesignName}] design From Current Plate##GlamourerIPC##Debug##ConfigWindow")) {
+			var set = PluginServices.ApplyGearChange.GetCurrentPlate();
+			if(set != null) {
+				PluginServices.Glamourer.AddDesignFromItemSet(set.Value, newDesignName, out var createdGuid);
+				PluginLog.Debug($"Created design {createdGuid}");
+			}
+		}
+		
 
 	}
 	private void DrawPenumbraIpcDebug() {
@@ -1018,6 +1085,23 @@ public class ConfigWindow : Window, IDisposable {
 
 	}
 
+	private void DrawVariablesStyleConfig() {
+
+		ImGui.TextDisabled("Global (Plate Creation & Item Gear Browser)");
+		ImGui.Checkbox($"Enable Custom Theme##Variables##Style##Config", ref ConfigurationManager.Config.EnableCustomTheme);
+
+		ImGui.TextDisabled("Spacing and Sizing");
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableFramePadding    ), "Frame Padding",     0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorFramePadding     * Styler.IconSizeMultiplier2D})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableItemSpacing     ), "Item Spacing",      0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorItemSpacing      * Styler.IconSizeMultiplier2D})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableFrameRounding   ), "Frame Rounding",    0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorFrameRounding    * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableFrameBorderSize ), "Frame BorderSize",  0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorFrameBorderSize  * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableScrollbarSize   ), "Scrollbar Size",    0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorScrollbarSize    * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableWindowPadding   ), "Window Padding",    0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorWindowPadding    * Styler.IconSizeMultiplier2D})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableWindowRounding  ), "Window Rounding",   0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorWindowRounding   * Styler.IconSizeMultiplier})"); }
+		ConfigControls.ConfigFloat(nameof(Configuration.StyleVariableWindowBorderSize), "Window BorderSize", 0.1f); /* debug display */ if(ConfigurationManager.Config.Debug) { ImGui.SameLine(); ImGui.TextDisabled($"(Debug value after multiplier: {Styler.FactorWindowBorderSize * Styler.IconSizeMultiplier})"); }
+
+
+	}
 	private void DrawColorStyleConfig() {
 		ImGui.TextDisabled("Frames");
 		ConfigControls.ConfigColorVecot4(nameof(Configuration.CollectionColorBackground), "Window Background", "Background color for the frames that contain items", ImGuiColorEditFlags.None);

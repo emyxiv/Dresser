@@ -83,7 +83,7 @@ public class DyePicker {
 	private void DrawLogic() {
 
 
-		ImGui.BeginChildFrame(9151,new Vector2(ImGui.GetContentRegionAvail().X, ItemIcon.IconSize.Y + (ItemIcon.IconSize.Y *_headerPaddingIconSizeMult.Y *2)), ImGuiWindowFlags.NoScrollbar);
+		ImGui.BeginChild("##ItemDyeInformation##DyePicker##Dresser",new Vector2(ImGui.GetContentRegionAvail().X, ItemIcon.IconSize.Y + (ItemIcon.IconSize.Y *_headerPaddingIconSizeMult.Y *2)), false, ImGuiWindowFlags.NoScrollbar);
 
 
 
@@ -92,31 +92,31 @@ public class DyePicker {
 		} catch(Exception e) {
 			PluginLog.Error(e, "Error while drawing dye picker header line 2");
 		}finally {
-			ImGui.EndChildFrame();
+			ImGui.EndChild();
 		}
 
 
 		ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, StainPickerItemSpacing);
 		var size = Vector2.Clamp(CalculateStainAvailableSize(), Vector2.Zero, ImGui.GetContentRegionAvail());
-		ImGui.BeginChildFrame(9152,size,ImGuiWindowFlags.HorizontalScrollbar);
+		ImGui.BeginChild("##AvailableDyes##DyePicker##Dresser",size, false, ImGuiWindowFlags.HorizontalScrollbar);
 		try {
 			DrawStainAvailable();
 		} catch (Exception ex) {
 			PluginLog.Warning(ex, "Error in Dye Picker color square rendering.");
 		} finally {
-			ImGui.EndChildFrame();
+			ImGui.EndChild();
 			ImGui.PopStyleVar(1);
 		}
 
 		ImGui.SameLine();
 
-		ImGui.BeginChildFrame(9153, new Vector2(ImGui.GetContentRegionAvail().X,size.Y));
+		ImGui.BeginChild("##DyeCommands##DyePicker##Dresser", new Vector2(ImGui.GetContentRegionAvail().X,size.Y));
 		try {
 			DrawSideBar();
 		} catch (Exception ex) {
 			PluginLog.Warning(ex, "Error rendering of dye picker side bar.");
 		} finally {
-			ImGui.EndChildFrame();
+			ImGui.EndChild();
 		}
 
 
