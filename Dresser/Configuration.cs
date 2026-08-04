@@ -40,6 +40,8 @@ namespace Dresser {
 		public bool DebugLogForTroubleshooting = false;
 		public bool EnableVerboseGlamourerIpc = false;
 
+		public bool GlamourerChangesReflectedOnDresser = false; 
+
 		public InventoryItemSet DisplayPlateItems { get; set; } = new();
 		[Obsolete]
 		public Dictionary<ushort, InventoryItemSet> PendingPlateItems { get; set; } = new();

@@ -274,6 +274,10 @@ public class ConfigWindow : Window, IDisposable {
 
 		}
 		ImGui.TextWrapped("Glamourer is required to display glamours directly on your character.");
+		if (PluginServices.Context.GlamourerState) {
+			ImGui.Checkbox($"Reflect in Dresser the changes made in Glamourer##OptionalPlugins##ConfigWindow", ref ConfigurationManager.Config.GlamourerChangesReflectedOnDresser);
+			GuiHelpers.Tooltip("Items and/or dyes of the current plate will be overwritten when an item/dye change is executed in Glamourer.");
+		}
 	}
 	private void OptionalPlugins() {
 /*

@@ -1,5 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Objects.Types;
 
+using Dresser.Extensions;
+using Dresser.Interop.Agents;
 using Dresser.Logic;
 using Dresser.Logic.Ipc.Glamourer;
 using Dresser.Models;
@@ -221,11 +223,15 @@ namespace Dresser.Services.Ipc {
 			PluginLog.Debug("External equipment change detected:");
 			foreach (var (slot, itemId, stain, stain2) in changedSlots) {
 				PluginLog.Debug($"  {slot}: ItemId={itemId}, Stain={stain}, Stain2={stain2}");
+				if (ConfigurationManager.Config.GlamourerChangesReflectedOnDresser) {
+					var item = new InventoryItem(itemId, stain, stain2);
+					PluginServices.ApplyGearChange.GetCurrentPlate()?.SetSlot(slot, item);
+				}
 			}
 		}
 
-		private List<(string Slot, uint ItemId, byte Stain, byte Stain2)> GetChangedEquipmentSlots(JToken current, JToken last) {
-			var changes = new List<(string, uint, byte, byte)>();
+		private List<(GlamourPlateSlot Slot, uint ItemId, byte Stain, byte Stain2)> GetChangedEquipmentSlots(JToken current, JToken last) {
+			var changes = new List<(GlamourPlateSlot, uint, byte, byte)>();
 
 			foreach (var slot in Enum.GetValues<EquipSlot>()) {
 				var slotName = slot.ToString();
@@ -246,7 +252,10 @@ namespace Dresser.Services.Ipc {
 				// Check if anything changed
 				if (currentItemId != lastItemId || currentStain != lastStain || currentStain2 != lastStain2) {
 					//PluginLog.Debug($"Detected change in slot {slotName}: ItemId {lastItemId} → {currentItemId}, Stain {lastStain} → {currentStain}, Stain2 {lastStain2} → {currentStain2}");
-					changes.Add((slotName, currentItemId, currentStain, currentStain2));
+					var glamourPlateSlot = slot.ToGlamourPlateSlotOrNull();
+					if(glamourPlateSlot != null) {
+						changes.Add((glamourPlateSlot.Value, currentItemId, currentStain, currentStain2));
+					}
 				}
 			}
 
@@ -288,15 +297,19 @@ namespace Dresser.Services.Ipc {
 			foreach (var (slot, oldStain, newStain, oldStain2, newStain2) in changedStains) {
 				if (oldStain != newStain) {
 					PluginLog.Debug($"  {slot}: Stain {oldStain} → {newStain}");
+					if (ConfigurationManager.Config.GlamourerChangesReflectedOnDresser)
+						PluginServices.ApplyGearChange.GetCurrentPlate()?.GetSlot(slot)?.Stain = newStain;
 				}
 				if (oldStain2 != newStain2) {
 					PluginLog.Debug($"  {slot}: Stain2 {oldStain2} → {newStain2}");
+					if (ConfigurationManager.Config.GlamourerChangesReflectedOnDresser)
+						PluginServices.ApplyGearChange.GetCurrentPlate()?.GetSlot(slot)?.Stain2 = newStain2;
 				}
 			}
 		}
 
-		private List<(string Slot, byte OldStain, byte NewStain, byte OldStain2, byte NewStain2)> GetChangedStains(JToken current, JToken last) {
-			var changes = new List<(string, byte, byte, byte, byte)>();
+		private List<(GlamourPlateSlot Slot, byte OldStain, byte NewStain, byte OldStain2, byte NewStain2)> GetChangedStains(JToken current, JToken last) {
+			var changes = new List<(GlamourPlateSlot, byte, byte, byte, byte)>();
 
 			foreach (var slot in Enum.GetValues<EquipSlot>()) {
 				var slotName = slot.ToString();
@@ -304,6 +317,8 @@ namespace Dresser.Services.Ipc {
 				var lastData = last[slotName];
 
 				if (currentData == null) continue;
+				var glamourPlateSlot = slot.ToGlamourPlateSlotOrNull();
+				if (glamourPlateSlot == null) continue;
 
 				var currentStain = (byte?)currentData["Stain"] ?? 0;
 				var currentStain2 = (byte?)currentData["Stain2"] ?? 0;
@@ -311,7 +326,7 @@ namespace Dresser.Services.Ipc {
 				var lastStain2 = (byte?)lastData?["Stain2"] ?? 0;
 
 				if (currentStain != lastStain || currentStain2 != lastStain2) {
-					changes.Add((slotName, lastStain, currentStain, lastStain2, currentStain2));
+					changes.Add((glamourPlateSlot.Value, lastStain, currentStain, lastStain2, currentStain2));
 				}
 			}
 

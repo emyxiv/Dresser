@@ -72,6 +72,11 @@ namespace Dresser.Models {
 		public InventoryItem(InventoryType inventoryType, uint itemId) : this(inventoryType, 0, itemId, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) {
 			this.SortedContainer = inventoryType;
 		}
+		public InventoryItem(uint itemId) : this(InventoryType.Bag0, itemId) {}
+		public InventoryItem(uint itemId, byte stain1, byte stain2) : this(itemId) {
+			this.Stain = stain1;
+			this.Stain2 = stain2;
+		}
 		public InventoryItem(InventoryType inventoryType, uint itemId, string modName, string modDirectory, string modModelPath) : this(inventoryType, itemId) {
 			this.ModName = modName;
 			this.ModDirectory = modDirectory;

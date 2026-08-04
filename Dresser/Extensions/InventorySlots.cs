@@ -1,6 +1,7 @@
 using CriticalCommonLib.Extensions;
 
 using Dresser.Interop.Agents;
+using Dresser.Logic;
 using Dresser.Models;
 
 using System;
@@ -46,6 +47,16 @@ namespace Dresser.Extensions {
 				_ => throw new Exception($"Unidentified EquipSlot: {slot}")
 			};
 		}
+		public static GlamourPlateSlot? ToGlamourPlateSlotOrNull(this Penumbra.GameData.Enums.EquipSlot slot) {
+			try {
+				return slot.ToGlamourPlateSlot();
+			}
+			catch (Exception) {
+				PluginLog.Debug($"Failed to to convert Glamourer EquipSlot [{slot}] to Dresser's, nulling it");
+				return null;
+			}
+		}
+
 		public static string ToFormattedName(this CriticalInventoryType type) {
 			if ((InventoryTypeExtra)type >= InventoryTypeExtra.AllItems) return ((InventoryTypeExtra)type).ToString().AddSpaceBeforeCapital();
 			return type switch {
