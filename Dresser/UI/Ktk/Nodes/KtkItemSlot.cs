@@ -23,7 +23,7 @@ using KamiToolKit.Classes;
 using KamiToolKit.Enums;
 
 using KamiToolKit.Nodes;
-using KamiToolKit.Premade.Node.Simple;
+using KamiToolKit.Nodes.Simplified;
 
 namespace Dresser.UI.Ktk.Nodes {
 	/// <summary>
@@ -61,7 +61,7 @@ namespace Dresser.UI.Ktk.Nodes {
 			_iconNode.IconExtras.QuantityTextNode.IsVisible = false;
 			_iconNode.IconExtras.AntsNode.IsVisible = false;
 			_iconNode.ItemTooltip = PluginServices.ApplyGearChange.GetCurrentPlateItem(slot)?.ItemId ?? 0; // Set initial tooltip based on currently equipped item
-			_iconNode.InventoryItemTooltip = new KamiToolKit.InventoryItemTooltip(FFXIVClientStructs.FFXIV.Client.Game.InventoryType.ArmoryBody, 1); {
+			_iconNode.InventoryItemTooltip = new InventoryItemTooltip(FFXIVClientStructs.FFXIV.Client.Game.InventoryType.ArmoryBody, 1); {
 				
 			}; // Use native item tooltips
 			_iconNode.AttachNode(this);
@@ -78,7 +78,7 @@ namespace Dresser.UI.Ktk.Nodes {
 			_frameNode.Position = new Vector2(0, 0);
 			// _frameNode.PartId = 0; // ItemSlot frame (index 4 in IconA_Frame)
 			_frameNode.NodeId = 18; // Before cooldown node for correct layering
-			_frameNode.AttachNode(_iconNode.IconExtras.CooldownNode, KamiToolKit.Classes.NodePosition.BeforeTarget);
+			_frameNode.AttachNode(_iconNode.IconExtras.CooldownNode, NodePosition.BeforeTarget);
 
 			// Empty slot placeholder icon (shown when no item equipped)
 			_emptySlotNode = KtkTextureFactory.CreateEmptySlotNode(slot, resolver, new Vector2(32, 32));
@@ -86,7 +86,7 @@ namespace Dresser.UI.Ktk.Nodes {
 				_emptySlotNode.Position = new Vector2(8, 8);
 				_emptySlotNode.IsVisible = true;
 				_frameNode.NodeId = 17; // Before cooldown node for correct layering
-				_emptySlotNode.AttachNode(_iconNode.IconExtras.CooldownNode, KamiToolKit.Classes.NodePosition.BeforeTarget);
+				_emptySlotNode.AttachNode(_iconNode.IconExtras.CooldownNode, NodePosition.BeforeTarget);
 			}
 
 			if (_currentItem != null && _currentItem.Item.IsDyeable1()) {
@@ -97,7 +97,7 @@ namespace Dresser.UI.Ktk.Nodes {
 					Position = new Vector2(25, -1),
 					NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
 				};
-				stain1.AttachNode(_iconNode.IconExtras.AlternateCooldownNode, KamiToolKit.Classes.NodePosition.AfterTarget);
+				stain1.AttachNode(_iconNode.IconExtras.AlternateCooldownNode, NodePosition.AfterTarget);
 				StainNodes.Add(stain1);
 			}
 			if( _currentItem != null && _currentItem.Item.IsDyeable2()) {
@@ -108,7 +108,7 @@ namespace Dresser.UI.Ktk.Nodes {
 					Position = new Vector2(25, 12),
 					NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
 				};
-				stain2.AttachNode(_iconNode.IconExtras.AlternateCooldownNode, KamiToolKit.Classes.NodePosition.AfterTarget);
+				stain2.AttachNode(_iconNode.IconExtras.AlternateCooldownNode, NodePosition.AfterTarget);
 				StainNodes.Add(stain2);
 			}
 

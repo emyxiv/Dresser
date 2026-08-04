@@ -18,8 +18,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit;
 using KamiToolKit.Classes;
 using KamiToolKit.Nodes;
-using KamiToolKit.Premade.Node;
-using KamiToolKit.Premade.Node.Simple;
+using KamiToolKit.BaseTypes;
+using KamiToolKit.Nodes.Simplified;
 using KamiToolKit.Timelines;
 
 namespace Dresser.UI.Ktk {
@@ -60,7 +60,7 @@ namespace Dresser.UI.Ktk {
 
 		private readonly float Padding = 10.0f;
 		private readonly Vector2 MarginX = new(20, 0);
-		protected override void OnSetup(AtkUnitBase* addon) {
+		protected override void OnSetup(AtkUnitBase* addon, Span<AtkValue> atkValueSpan) {
 			PluginLog.Debug($"KtkCurrentGear.OnSetup: called (InternalAddon=0x{(nint)addon:X})");
 			try {
 				PluginLog.Debug($"KtkCurrentGear.OnSetup: ContentStartPosition={ContentStartPosition} ContentSize={ContentSize}");

@@ -7,7 +7,6 @@ using Dresser.Services;
 using KamiToolKit.Classes;
 using KamiToolKit.Enums;
 using KamiToolKit.Nodes;
-using KamiToolKit.Premade.Node.Simple;
 
 using FFXIVClientStructs.FFXIV.Component.GUI;
 

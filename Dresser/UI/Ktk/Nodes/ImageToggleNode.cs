@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using Humanizer;
 
 using KamiToolKit.Nodes;
-using KamiToolKit.Premade.Node.Simple;
+using KamiToolKit.Nodes.Simplified;
 
 namespace Dresser.UI.Ktk.Nodes;
 
