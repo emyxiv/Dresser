@@ -17,8 +17,7 @@ public unsafe class CurrentGearContentsNode : HorizontalFlexNode {
     public SlotsGridNode SlotsGrid = null!;
     public PlateSelectorNode PlateSelector = null!;
     public PreviewNode PreviewNode = null!;
-    private readonly float Padding = 10.0f;
-    private readonly Vector2 MarginX = new(5, 5);
+
     public CurrentGearContentsNode(AtkUnitBase* parentAddon) {
 
         // plate selector
