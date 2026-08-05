@@ -22,6 +22,19 @@ public class ImageToggleNode : SimpleComponentNode {
     private int _imageSize = 36;
     private int _imageHighlightSize = 36;
 
+    /// <summary>
+    /// Action executed on toggle
+    /// </summary>
+    public required Action<bool> OnToggle;
+
+    /// <summary>
+    /// Name of the property in config, if it must toggle a boolean
+    /// </summary>
+    /// <example>
+    /// nameof(Configuration.SomePropName)
+    /// </example>
+    public string? ConfigProperty = null;
+
     public unsafe ImageToggleNode(UldBundle partBundle) {
         PartBundle = partBundle;
 
@@ -42,9 +55,10 @@ public class ImageToggleNode : SimpleComponentNode {
         // };
         // clipNode.AttachNode(this);
 
-       highlightNode = new ImageNode {
+        var value = GetConfig() ?? false;
+        highlightNode = new ImageNode {
             TextureResolveTheme = false,
-            IsVisible = false,
+            IsVisible = value,
 
             Size = new Vector2(_imageHighlightSize),
             WrapMode = KamiToolKit.Enums.WrapMode.Stretch,
@@ -79,6 +93,8 @@ public class ImageToggleNode : SimpleComponentNode {
 
     private void ToggleValue() {
         IsToggled = !IsToggled;
+        SetConfig(IsToggled);
+        OnToggle.Invoke(IsToggled);
     }
 
     public UldBundle PartBundle {get; set;}
@@ -111,4 +127,26 @@ public class ImageToggleNode : SimpleComponentNode {
         // lowlightNode.Size = Size;
         // lowlightNode.Position = Vector2.Zero;
     }
+
+    private bool? GetConfig() {
+        if(ConfigProperty == null) return null;
+        // get current value
+        var fieldInfo = typeof(Configuration).GetField(ConfigProperty);
+        if (fieldInfo == null) return null;
+        var valueGet = fieldInfo?.GetValue(ConfigurationManager.Config);
+        if (valueGet == null || valueGet.GetType() != typeof(bool)) return null;
+        var value = (bool)valueGet;
+        return value;
+    }
+    private void SetConfig(bool newValue) {
+        if(ConfigProperty == null) return;
+        // get current value
+        var fieldInfo = typeof(Configuration).GetField(ConfigProperty);
+        if (fieldInfo == null) return;
+        var valueGet = fieldInfo?.GetValue(ConfigurationManager.Config);
+        if (valueGet == null || valueGet.GetType() != typeof(bool)) return;
+
+        fieldInfo?.SetValue(ConfigurationManager.Config, newValue);
+    }
+
 }

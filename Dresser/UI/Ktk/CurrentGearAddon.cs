@@ -57,6 +57,7 @@ namespace Dresser.UI.Ktk {
 					AlignmentFlags = FlexFlags.FitContentHeight | FlexFlags.CenterHorizontally | FlexFlags.CenterVertically,
 					Width = _mainContainer.Width,
 					Position = mainPosition + new Vector2(0f, _mainContainer.Height),
+					PreviewNode = _mainContainer.PreviewNode,
 				};
 				_bottomButtonContainer.AttachNode(this);
 

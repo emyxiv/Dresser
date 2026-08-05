@@ -40,6 +40,7 @@ public unsafe class PreviewNode : ResNode {
     private readonly InputManager* _inputManager;
     private readonly Character* _character;
     private readonly ViewportEventListener _previewMouseEventListener;
+    public readonly AgentInspect.InspectCharaView* InspectCharaView;
 
     // nodes
 	private readonly ImageNode InspectImage;
@@ -64,12 +65,13 @@ public unsafe class PreviewNode : ResNode {
 
         this._renderTargetManager = RenderTargetManager.Instance();
         this._agentInspect = AgentInspect.Instance();
+        this.InspectCharaView = &this._agentInspect->CharaView;
         this._inputData = &UIInputData.Instance()->InputData;
         this._cursorInputData = &this._inputData->CursorInputs;
         this._cursor = Cursor.Instance();
         this._inputManager = InputManager.Instance();
 
-        // PluginLog.Debug($"camera type: {this._agentInspect->CharaView.CameraType}");
+        // PluginLog.Debug($"camera type: {InspectCharaView->CameraType}");
 
         Size = ViewPortSize + new Vector2(8f);
 
@@ -108,8 +110,8 @@ public unsafe class PreviewNode : ResNode {
 
         // setup inspect viewport
         PluginServices.Framework.RunOnFrameworkThread(() => {
-			this._agentInspect->CharaView.Initialize(&this._agentInspect->AgentInterface, 1, 0);
-			this._agentInspect->CharaView.ModelData.CopyFromCharacter(_character);
+			InspectCharaView->Initialize(&this._agentInspect->AgentInterface, 1, 0);
+			InspectCharaView->ModelData.CopyFromCharacter(_character);
 		});
         PluginServices.Framework.Update += this.OnFramework;
 
@@ -132,14 +134,14 @@ public unsafe class PreviewNode : ResNode {
         
     }
 	private void OnFramework(IFramework framework) {
-		this._agentInspect->CharaView.Update(this._counter, this._character);
-		this._agentInspect->CharaView.Render(this._counter++);
+		InspectCharaView->Update(this._counter, this._character);
+		InspectCharaView->Render(this._counter++);
 	}
     protected override void Dispose(bool isNativeDestructor) {
         if (IsDisposed) return;
 
         PluginServices.Framework.Update -= this.OnFramework;
-		this._agentInspect->CharaView.Release();
+		InspectCharaView->Release();
         _previewMouseEventListener.RemoveEvent(AtkEventType.MouseMove);
         _previewMouseEventListener.Dispose();
 
@@ -151,7 +153,8 @@ public unsafe class PreviewNode : ResNode {
     /// Update appearance ///
     /////////////////////////
     private void UpdateAppearance() {
-        this._agentInspect->CharaView.Update(this._counter, this._character);
+        InspectCharaView->Update(this._counter, this._character);
+        InspectCharaView->ToggleDrawWeapon(true);
         // todo inject dresser data
     }
 
@@ -212,7 +215,7 @@ public unsafe class PreviewNode : ResNode {
         var wheelDirection = atkEventData->MouseData.WheelDirection;
         var distance = -wheelDirection * ZoomSpeed;
 
-        this._agentInspect->CharaView.SetCameraDistance(distance);   
+        InspectCharaView->SetCameraDistance(distance);   
     }
     private void MouseMove(AtkEventListener* thisPtr, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData) {
         if (!_isRotaOrMove) return;
@@ -226,13 +229,13 @@ public unsafe class PreviewNode : ResNode {
         var mouseXY = new Vector2(mouseDelta.X, -mouseDelta.Y) * (1/_parentAddon->Scale) * MoveSpeed;
 
         if (_isRota) {
-            this._agentInspect->CharaView.SetCameraYawAndPitch(mouseDelta.X, mouseDelta.Y);
+            InspectCharaView->SetCameraYawAndPitch(mouseDelta.X, mouseDelta.Y);
 
             // even if it's just rota, it's handy to pan Y axis as Pitch rota doesn't work anyway
-            this._agentInspect->CharaView.SetCameraXAndY(0f, mouseXY.Y);
+            InspectCharaView->SetCameraXAndY(0f, mouseXY.Y);
         }
         if (_isMove) {
-            this._agentInspect->CharaView.SetCameraXAndY(mouseXY.X, mouseXY.Y);
+            InspectCharaView->SetCameraXAndY(mouseXY.X, mouseXY.Y);
         }
 
         // Save last mouse positions to calculate the delta
