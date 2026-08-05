@@ -1,18 +1,43 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Dresser.Gui;
+using Dresser.Services;
+
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.Nodes.Simplified;
 using KamiToolKit.Timelines;
 using Lumina.Text.ReadOnly;
 
-namespace Dresser.UI.Ktk.Nodes;
+namespace Dresser.UI.Ktk.Nodes.CurrentGearNodes;
 
 public class PlateSelectorNode : SimpleComponentNode {
 
     private readonly List<PlateRadioNode> radioButtons = [];
 
     public PlateSelectorNode() {
+        foreach( (var plateNumber, var plateType) in CurrentGear.GetAllPlateNumbers()) {
+
+
+            var plateName = plateType switch {
+                CurrentGear.PlateType.Sandbox => "",
+                CurrentGear.PlateType.Normal => $"{plateNumber + 1}",
+                CurrentGear.PlateType.Free => $"{plateNumber - Storage.PlateNumber + 1}",
+                _ => ""
+            };
+            this.AddButton(plateName, () => PluginServices.ApplyGearChange.changeCurrentPendingPlate(plateNumber));
+
+            // if(plateNumber == ushort.MaxValue) {
+            // 	// ImGui.SameLine();
+            // 	// ImGui.SetCursorPos(ImGui.GetCursorPos() + new Vector2(10 * ConfigurationManager.Config.IconSizeMult, 0));
+            // }
+        }
+        // CurrentGear.GetAllPlateNumbers().ForEach(plateNumber => {
+
+
+        // });
+
         BuildTimelines();
     }
 

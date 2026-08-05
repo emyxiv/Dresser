@@ -234,7 +234,7 @@ public unsafe class MiragePlateWindowNode : WindowNodeBase {
 
     public override Vector2 ContentSize => new(BackgroundNode.Width, BackgroundNode.Height - HeaderHeight);
 
-    public override Vector2 ContentStartPosition => new(BackgroundNode.X, BackgroundNode.Y + HeaderHeight);
+    public override Vector2 ContentStartPosition => new(BackgroundNode.X  + 12f, BackgroundNode.Y + HeaderHeight);
 
     public override ResNode WindowHeaderFocusNode => HeaderContainerNode;
 

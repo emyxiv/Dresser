@@ -19,13 +19,13 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Input;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
-namespace Dresser.UI.Ktk.Nodes;
+namespace Dresser.UI.Ktk.Nodes.CurrentGearNodes;
 
 public unsafe class PreviewNode : ResNode {
 
     // configs
     public static Vector2 ViewPortSize => new Vector2(192.0f, 320.0f) * ViewPortScale;
-    public static float ViewPortScale => 1.5f;
+    public static float ViewPortScale => 1.3f;
     public static float ZoomSpeed => 1.8f;
     public static float RotaSpeed => 0.25f;
     public static float MoveSpeed => 0.5f;
@@ -44,6 +44,8 @@ public unsafe class PreviewNode : ResNode {
     // nodes
 	private readonly ImageNode InspectImage;
     public readonly CollisionNode CollisionNode;
+    private readonly NineGridNode Border;
+
 
     // data
     private uint _counter;
@@ -69,19 +71,35 @@ public unsafe class PreviewNode : ResNode {
 
         // PluginLog.Debug($"camera type: {this._agentInspect->CharaView.CameraType}");
 
+        Size = ViewPortSize + new Vector2(8f);
+
         // setup nodes
 		this.InspectImage = new ImageNode() {
             NodeId = 8,
 			Size = ViewPortSize,
+			Position = new Vector2(4, 3),
 			ImageNodeFlags = (ImageNodeFlags)0x8C,
 			WrapMode = WrapMode.Tile
 		};
         this.CollisionNode = new CollisionNode() {
             NodeId = 16,
-            Size = ViewPortSize,
+            Size = Size,
             NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.HasCollision | NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.Focusable,
         };
-
+		this.Border = new NineGridNode() {
+            NodeId = 24,
+			Size = Size,
+			TopOffset = 14.0f,
+			LeftOffset = 14.0f,
+			RightOffset = 14.0f,
+			BottomOffset = 14.0f,
+		};
+		this.Border.AddPart(new Part {
+			TexturePath = "ui/uld/PreviewA_hr1.tex",
+			Size = new Vector2(36.0f, 36.0f),
+			TextureCoordinates = new Vector2(0, 0f),
+			Id = 0
+		});
 		var part = this.InspectImage.AddPart(new Part {
             Size = ViewPortSize,
 		});
@@ -101,6 +119,7 @@ public unsafe class PreviewNode : ResNode {
         // attach nodes
 		this.InspectImage.AttachNode(this);
         this.CollisionNode.AttachNode(this);
+        this.Border.AttachNode(this);
 
         // mouse events
         CollisionNode.AddEvent(AtkEventType.MouseDown, MouseDown);

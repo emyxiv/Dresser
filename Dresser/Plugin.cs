@@ -36,7 +36,7 @@ namespace Dresser {
 		internal CurrentGear CurrentGear { get; init; }
 		internal TagManager TagManager { get; init; }
 		internal Dialogs? Dialogs = null;
-		internal KtkCurrentGear? KtkCurrentGear = null;
+		internal CurrentGearAddon? KtkCurrentGear = null;
 		private bool _ktkCurrentGearCrashed = false;
 
 		public Plugin(
@@ -84,11 +84,11 @@ namespace Dresser {
 		public void InitKtkCurrentGear() {
 			PluginLog.Debug("Plugin.InitKtkCurrentGear: begin");
 			try {
-				KtkCurrentGear = new KtkCurrentGear {
+				KtkCurrentGear = new CurrentGearAddon {
 					InternalName = "DresserCurrentGear",
 					Title = "Plate Creation",
 					Size = new System.Numerics.Vector2(220, 420),
-					CreateWindowNode = KtkCurrentGear.CreateWindowNodeFunc,
+					CreateWindowNode = CurrentGearAddon.CreateWindowNodeFunc,
 				};
 				PluginLog.Debug($"Plugin.InitKtkCurrentGear: instance created (InternalName={KtkCurrentGear.InternalName})");
 				KtkCurrentGear.OnCrashFallback = () => {
