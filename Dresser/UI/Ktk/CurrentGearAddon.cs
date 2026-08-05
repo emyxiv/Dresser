@@ -23,7 +23,7 @@ namespace Dresser.UI.Ktk {
 	internal sealed unsafe class CurrentGearAddon : NativeAddon, IDisposable {
 
 		private CurrentGearContentsNode _mainContainer = null!;
-		private HorizontalFlexNode _bottomButtonContainer = null!;
+		private ButtonsNode _bottomButtonContainer = null!;
 		private bool _hasCrashed;
 
 		/// <summary>
@@ -53,12 +53,11 @@ namespace Dresser.UI.Ktk {
 				_mainContainer.AttachNode(this);
 
 				// buttons
-				_bottomButtonContainer = new HorizontalFlexNode {
+				_bottomButtonContainer = new ButtonsNode {
 					AlignmentFlags = FlexFlags.FitContentHeight | FlexFlags.CenterHorizontally | FlexFlags.CenterVertically,
 					Width = _mainContainer.Width,
 					Position = mainPosition + new Vector2(0f, _mainContainer.Height),
 				};
-				PopulateButtons();
 				_bottomButtonContainer.AttachNode(this);
 
 				PluginLog.Debug("KtkCurrentGear.OnSetup: container attached, building slot grid");
@@ -74,30 +73,6 @@ namespace Dresser.UI.Ktk {
 				HandleCrash();
 			}
 		}
-		private void PopulateButtons() {
-
-			var toggleWeapon = new ImageToggleNode(UldBundle.CircleSmallWeapon) {
-				Size = new Vector2(28.0f, 28.0f),
-				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
-				TextTooltip = "Hide/Display main and offhand weapons.",
-			};
-			_bottomButtonContainer.AddNode(toggleWeapon);
-
-			var toggleHeadgear = new ImageToggleNode(UldBundle.CircleSmallHat) {
-				Size = new Vector2(28.0f, 28.0f),
-				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
-				TextTooltip = "Hide/Display headgear.",
-			};
-			_bottomButtonContainer.AddNode(toggleHeadgear);
-
-			var toggleVisor = new ImageToggleNode(UldBundle.CircleSmallVisor) {
-				Size = new Vector2(28.0f, 28.0f),
-				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
-				TextTooltip = "Manually adjust visor.",
-			};
-			_bottomButtonContainer.AddNode(toggleVisor);
-		}
-
 
 		public static Func<WindowNodeBase>? CreateWindowNodeFunc => () => {
 
