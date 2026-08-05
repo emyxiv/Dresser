@@ -37,6 +37,7 @@ namespace Dresser.UI.Ktk {
 		private GridNode _slotsGrid = null!;
 		private PlateSelectorNode _plateSelector = null!;
 		private SimpleComponentNode _bottomButtonContainer = null!;
+		private PreviewNode _previewNode = null!;
 		private bool _hasCrashed;
 
 		/// <summary>
@@ -74,6 +75,7 @@ namespace Dresser.UI.Ktk {
 				BuildPlateSelectionRadios();
 				BuildSlotGrid();
 				BuildBottomButtons();
+				BuildPreview();
 				RecalculateSize();
 
 				PluginLog.Debug("KtkCurrentGear.OnSetup: complete");
@@ -129,6 +131,13 @@ namespace Dresser.UI.Ktk {
 		};
 
 
+		private void BuildPreview() {
+			_previewNode = new PreviewNode(this.InternalAddon) {
+				Position = new Vector2(10.0f, 10.0f),
+				NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents,
+			};
+			_previewNode.AttachNode(_mainContainer);
+		}
 
 		private void BuildPlateSelectionRadios() {
 			_plateSelector = new PlateSelectorNode() {
